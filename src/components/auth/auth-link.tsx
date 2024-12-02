@@ -20,7 +20,7 @@ const AuthLink: FC<Props> = ({
   type = 'dynamic',
   children,
 }) => {
-  const styles = 'font-medium__ w-full sm:w-fit px-3 py-2'
+  const styles = 'w-full sm:w-fit px-3 py-2'
 
   const Login = (
     <LoginLink className={cn([styles, 'btn-text', className])}>

@@ -21,7 +21,7 @@ const Popover: FC<Props> = ({
       <Radix.Trigger {...triggerProps}>{trigger}</Radix.Trigger>
       <Radix.Content sideOffset={5} {...contentProps}>
         {children}
-        <Radix.Arrow className='fill-white' />
+        <Radix.Arrow className='fill-gray-200' />
       </Radix.Content>
     </Radix.Root>
   )

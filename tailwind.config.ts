@@ -14,9 +14,10 @@ export default {
       },
       colors: {
         // Brand
-        brand: '#4A88EA',
-        'brand-light': '#5D9AF9',
-        'brand-dark': '#3D75CE',
+        brand: '#0D9B8A',
+        'brand-light': '#12A594',
+        'brand-dark': '#008573',
+        'brand-extra-dark': '#0D3D38',
         // Generic
         'medium-gray': '#696A72',
         'dark-gray': '#5B5D6B',
@@ -27,9 +28,10 @@ export default {
       fontSize: {
         '2xs': ['0.625rem', '0.75rem'],
       },
-      maxWidth: {
-        layout: '68.75rem',
-      },
+      width: { layout: '90rem' },
+      maxWidth: ({ theme }) => ({
+        layout: theme('width.layout'),
+      }),
       screens: {
         '2xl': '1440px',
       },
