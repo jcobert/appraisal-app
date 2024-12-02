@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import { ReactNode } from 'react'
+import { Toaster } from 'react-hot-toast'
 
+import { AuthProvider } from '@/providers/auth-provider'
 import QueryProvider from '@/providers/query-provider'
 
 import { baseOpenGraph, baseTwitter } from '@/configuration/seo'
@@ -23,16 +25,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='en'>
-      <body>
-        <QueryProvider>
-          <div className='flex flex-col min-h-dvh'>
-            {/** @todo Header here */}
-            <div className='grow'>{children}</div>
-            {/** @todo Footer here */}
-          </div>
-        </QueryProvider>
-      </body>
-    </html>
+    <AuthProvider>
+      <html lang='en'>
+        <body>
+          <QueryProvider>
+            <Toaster
+              position='top-right'
+              toastOptions={{ success: { duration: 4000 } }}
+            />
+            <div className='flex flex-col min-h-dvh'>
+              {/** @todo Header here */}
+              <div className='grow'>{children}</div>
+              {/** @todo Footer here */}
+            </div>
+          </QueryProvider>
+        </body>
+      </html>
+    </AuthProvider>
   )
 }
