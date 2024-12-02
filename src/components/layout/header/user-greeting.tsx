@@ -1,6 +1,8 @@
 import { FC } from 'react'
 import { FaCircleUser } from 'react-icons/fa6'
 
+import { fullName } from '@/utils/string'
+
 import { SessionData } from '@/types/auth'
 
 export const UserGreeting: FC<{ user: SessionData['user'] }> = ({ user }) => {
@@ -22,7 +24,9 @@ export const UserGreeting: FC<{ user: SessionData['user'] }> = ({ user }) => {
       </div>
       <div className='flex flex-col'>
         {user?.given_name ? (
-          <div className='font-medium font-display'>Hi, {user?.given_name}</div>
+          <div className='font-medium font-display text-balance'>
+            {fullName(user?.given_name, user.family_name)}
+          </div>
         ) : null}
         {user?.email ? (
           <div className='-mt-1 text-xs text-medium-gray'>{user?.email}</div>

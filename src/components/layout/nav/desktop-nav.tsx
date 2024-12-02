@@ -26,9 +26,9 @@ const DesktopNav: FC<Props> = ({
 }) => {
   return (
     <div
-      id='desktop-nav'
+      id='desktop-navbar'
       className={cn([
-        'hidden z-50 sm:block w-full border-b border-gray-200 shadow-sm py-2 sticky top-0 background-saturate-150 backdrop-blur-lg',
+        'hidden z-50 md:block w-full border-b border-gray-200 shadow-sm py-2 sticky top-0 background-saturate-150 backdrop-blur-lg',
         className,
       ])}
     >

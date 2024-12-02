@@ -35,9 +35,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               position='top-right'
               toastOptions={{ success: { duration: 4000 } }}
             />
-            <div className='flex flex-col min-h-dvh'>
+            <div className='flex flex-col h-0 min-h-dvh'>
               <Header />
-              <div className='grow'>{children}</div>
+              <div className='grow h-full'>{children}</div>
               {/** @todo Footer here */}
             </div>
           </QueryProvider>
