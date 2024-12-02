@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   title: buildPageTitle('Home'),
 }
 
-const HomePage: FC = () => {
+const Page: FC = () => {
   return <PageLayout></PageLayout>
 }
 
-export default HomePage
+export default Page
