@@ -1,6 +1,7 @@
 export const siteConfig = {
-  title: 'Next Template Generic',
-  description: 'A generic Next.js starter project.',
+  title: 'Appraisal App',
+  description:
+    'An app for real estate appraisers to organize and manage their jobs.',
   url: process.env.SITE_BASE_URL || '',
 } as const
 
