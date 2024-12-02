@@ -4,22 +4,24 @@ import { CgClose } from 'react-icons/cg'
 
 import { cn } from '@/utils/style'
 
-type Props = {
+export type ModalProps = {
   children?: ReactNode
   trigger?: ReactNode
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
   closeButton?: boolean
   className?: string
+  title?: ReactNode
 }
 
-const Modal: FC<Props> = ({
+const Modal: FC<ModalProps> = ({
   children,
   trigger,
   isOpen,
   setIsOpen,
   closeButton = true,
   className = '',
+  title,
 }) => {
   return (
     <>
@@ -33,6 +35,7 @@ const Modal: FC<Props> = ({
               className,
             ])}
           >
+            <Dialog.Title>{title}</Dialog.Title>
             {closeButton && (
               <Dialog.Close
                 className='absolute top-2 right-2'

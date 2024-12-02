@@ -2,6 +2,7 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { Metadata } from 'next'
 import { FC } from 'react'
 
+import Greeting from '@/components/auth/greeting'
 import PageLayout from '@/components/layout/page-layout'
 
 import { buildPageTitle } from '@/configuration/seo'
@@ -13,7 +14,7 @@ const Page: FC = async () => {
   const { getUser } = getKindeServerSession()
   const user = await getUser()
 
-  return <PageLayout></PageLayout>
+  return <PageLayout heading={<Greeting user={user} />}></PageLayout>
 }
 
 export default Page

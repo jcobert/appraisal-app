@@ -5,6 +5,8 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/providers/auth-provider'
 import QueryProvider from '@/providers/query-provider'
 
+import Header from '@/components/layout/header/header'
+
 import { baseOpenGraph, baseTwitter } from '@/configuration/seo'
 import { siteConfig } from '@/configuration/site'
 import '@/styles/tailwind.css'
@@ -33,9 +35,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               position='top-right'
               toastOptions={{ success: { duration: 4000 } }}
             />
-            <div className='flex flex-col min-h-dvh'>
-              {/** @todo Header here */}
-              <div className='grow'>{children}</div>
+            <div className='flex flex-col h-0 min-h-dvh'>
+              <Header />
+              <div className='grow h-full'>{children}</div>
               {/** @todo Footer here */}
             </div>
           </QueryProvider>
