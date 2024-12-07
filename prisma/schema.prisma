@@ -13,10 +13,154 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// -----------------
+//       ENUMS
+// -----------------
+
+enum PropertyType {
+  singleFamily
+  singleFamilyFHA
+  multiFamily
+  multiFamilyFHA
+  condo
+  coOp
+}
+
+enum PaymentType {
+  full
+  partial
+}
+
+enum PaymentStatus {
+  unpaid
+  paid
+  partial
+}
+
+enum OrderStatus {
+  open
+  closed
+  cancelled
+}
+
+enum AppraisalType {
+  purchase
+  refinance
+}
+
+// ------------------
+//       TABLES
+// ------------------
+
 model Appraiser {
   id        String   @id @default(uuid())
-  firstName String
-  lastName  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+  firstName String
+  lastName  String
+  Order     Order[]
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+  name      String
+  phone     String?
+  email     String?
+  street    String?
+  street2   String?
+  city      String?
+  state     String?
+  zip       String?
+  website   String?
+  logo      String?
+  poc       String? // point of contact
+  note      String?
+  favorite  Boolean? @default(false)
+  Order     Order[]
+}
+
+model Borrower {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+  firstName String
+  lastName  String?
+  phone     String?
+  email     String?
+  street    String?
+  street2   String?
+  city      String?
+  state     String?
+  zip       String?
+  note      String?
+  Order     Order[]
+}
+
+model Property {
+  id           String       @id @default(uuid())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  createdBy    String
+  updatedBy    String
+  propertyType PropertyType
+  street       String?
+  street2      String?
+  city         String?
+  state        String?
+  zip          String?
+  note         String?
+  Order        Order[]
+}
+
+model Order {
+  id               String         @id @default(uuid())
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  createdBy        String
+  updatedBy        String
+  fileNumber       String?
+  clientOrderNum   String?
+  orderDate        DateTime?
+  inspectionDate   DateTime?
+  dueDate          DateTime?
+  borrower         Borrower?      @relation(fields: [borrowerId], references: [id])
+  borrowerId       String?
+  property         Property?      @relation(fields: [propertyId], references: [id])
+  propertyId       String?
+  client           Client?        @relation(fields: [clientId], references: [id])
+  clientId         String?
+  appraiser        Appraiser?     @relation(fields: [appraiserId], references: [id])
+  appraiserId      String?
+  orderStatus      OrderStatus?
+  appraisalType    AppraisalType?
+  paymentStatus    PaymentStatus?
+  baseFee          Int?
+  techFee          Int?
+  questionnaireFee Int?
+  contract         Boolean?
+  questionnaire    Boolean?
+  sent             Boolean?
+  Payment          Payment[]
+}
+
+model Payment {
+  id          String       @id @default(uuid())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  createdBy   String
+  updatedBy   String
+  order       Order        @relation(fields: [orderId], references: [id])
+  orderId     String
+  amount      Int
+  paymentDate DateTime?
+  paymentType PaymentType?
+  description String?
 }
