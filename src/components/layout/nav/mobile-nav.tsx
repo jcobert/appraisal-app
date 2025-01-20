@@ -92,7 +92,7 @@ const MobileNav: FC<Props> = ({
           </button>
         </div>
 
-        <div className='px-8 pt-4 overflow-y-auto pb-16 h-dvh'>
+        <div className='px-8 pt-4 overflow-y-auto pb-16 h-dvh flex flex-col'>
           {/* User */}
           {user ? (
             <UserGreeting user={user} />
@@ -108,7 +108,7 @@ const MobileNav: FC<Props> = ({
           )}
 
           {/* Links */}
-          <div className='flex flex-col gap-6 mt-6 pb-safe mb-24'>
+          <div className='flex flex-col gap-6 mt-6 pb-safe flex-1'>
             {navItems?.map((item) => {
               const hasMenu = !!item?.menu?.links?.length
               return (
@@ -172,7 +172,7 @@ const MobileNav: FC<Props> = ({
             })}
           </div>
 
-          <div className='mt-auto flex flex-col items-center gap-2'>
+          <div className='mt-auto__ flex flex-col items-center gap-2'>
             <p className='text-balance'>Already have an account?</p>
             <AuthLink loggedIn={loggedIn} />
           </div>

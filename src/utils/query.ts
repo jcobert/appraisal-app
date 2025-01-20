@@ -1,4 +1,15 @@
-import { QueryKey } from '@tanstack/react-query'
+import { QueryClient, QueryKey } from '@tanstack/react-query'
+
+export const createQueryClient = () => {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false,
+        staleTime: 5 * 60 * 1000,
+      },
+    },
+  })
+}
 
 export const filteredQueryKey = (
   params: Record<string, unknown>,

@@ -10,6 +10,7 @@ import { buildPageTitle } from '@/configuration/seo'
 export const metadata: Metadata = {
   title: buildPageTitle('Dashboard'),
 }
+
 const Page: FC = async () => {
   const { getUser } = getKindeServerSession()
   const user = await getUser()
