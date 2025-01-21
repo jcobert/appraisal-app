@@ -16,7 +16,7 @@ const LoadingDots: FC<Props> = ({ size = 'md', className = '' }) => {
     >
       <span
         className={cn(
-          'bg-zinc-800 dark:bg-zinc-200 rounded-full inline-block animate-[blink_1.4s_infinite_both]',
+          'bg-brand dark:bg-zinc-200 rounded-full inline-block animate-[blink_1.4s_infinite_both]',
           {
             'w-[3px] h-[3px]': size === 'sm',
             'w-[5px] h-[5px]': size === 'md',
@@ -26,7 +26,7 @@ const LoadingDots: FC<Props> = ({ size = 'md', className = '' }) => {
       />
       <span
         className={cn(
-          'bg-zinc-800 dark:bg-zinc-200 w-[5px] h-[5px] rounded-full inline-block animate-[blink_1.4s_infinite_200ms_both]',
+          'bg-brand dark:bg-zinc-200 w-[5px] h-[5px] rounded-full inline-block animate-[blink_1.4s_infinite_200ms_both]',
           {
             'w-[3px] h-[3px]': size === 'sm',
             'w-[5px] h-[5px]': size === 'md',
@@ -36,7 +36,7 @@ const LoadingDots: FC<Props> = ({ size = 'md', className = '' }) => {
       />
       <span
         className={cn(
-          'bg-zinc-800 dark:bg-zinc-200 w-[5px] h-[5px] rounded-full inline-block animate-[blink_1.4s_infinite_400ms_both]',
+          'bg-brand dark:bg-zinc-200 w-[5px] h-[5px] rounded-full inline-block animate-[blink_1.4s_infinite_400ms_both]',
           {
             'w-[3px] h-[3px]': size === 'sm',
             'w-[5px] h-[5px]': size === 'md',

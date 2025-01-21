@@ -2,9 +2,12 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Appraiser } from '@prisma/client'
+import { useQuery } from '@tanstack/react-query'
 import { FC } from 'react'
 import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { z } from 'zod'
+
+import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
 import Button from '@/components/general/button'
 import TextInput from '@/components/inputs/text-input'
@@ -33,7 +36,7 @@ const AppraiserForm: FC<Props> = () => {
   })
 
   const { mutateAsync: createAppraiser } = useCoreMutation({
-    url: '/api/core/appraiser',
+    url: CORE_API_ENDPOINTS.appraiser,
     method: 'POST',
   })
 
