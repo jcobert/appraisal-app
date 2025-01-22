@@ -27,7 +27,7 @@ const Header: FC = async () => {
       {/* Desktop */}
       <DesktopNav className={navClassName} sessionData={sessionData}>
         <div className='ml-auto flex items-center gap-8'>
-          <AuthLink loggedIn={loggedIn} type='register' />
+          {!loggedIn ? <AuthLink loggedIn={loggedIn} type='register' /> : null}
           <UserMenu sessionData={{ loggedIn, permissions, user }} />
         </div>
       </DesktopNav>

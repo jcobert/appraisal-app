@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Appraiser } from '@prisma/client'
+import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -19,18 +20,27 @@ import { ZodObject } from '@/types/general'
 type AppraiserFormData = TableMutable<Appraiser>
 
 type Props = {
-  //
+  initialData?: Appraiser | null
 }
 
-const AppraiserForm: FC<Props> = () => {
-  const schema = z.object<ZodObject<AppraiserFormData>>({
-    firstName: z.string(),
-    lastName: z.string(),
-  })
+const schema = z.object<ZodObject<AppraiserFormData>>({
+  firstName: z.string(),
+  lastName: z.string(),
+})
+
+const defaultValues = {
+  firstName: '',
+  lastName: '',
+} as const satisfies AppraiserFormData
+
+const AppraiserForm: FC<Props> = ({ initialData }) => {
+  const router = useRouter()
+  const isUpdate = !!initialData?.id
+  const prevUrl = `/appraisers/${initialData?.id || ''}`
 
   const { handleSubmit, control } = useForm<AppraiserFormData>({
     mode: 'onSubmit',
-    defaultValues: { firstName: '', lastName: '' },
+    defaultValues: initialData || defaultValues,
     resolver: zodResolver(schema),
   })
 
@@ -39,8 +49,21 @@ const AppraiserForm: FC<Props> = () => {
     method: 'POST',
   })
 
+  const { mutateAsync: updateAppraiser } = useCoreMutation({
+    url: `${CORE_API_ENDPOINTS.appraiser}/${initialData?.id}`,
+    method: 'PUT',
+  })
+
   const onSubmit: SubmitHandler<AppraiserFormData> = async (data) => {
-    await createAppraiser(data)
+    if (isUpdate) {
+      await updateAppraiser(data)
+    } else {
+      await createAppraiser(data)
+    }
+  }
+
+  const onCancel = () => {
+    router.push(prevUrl)
   }
 
   return (
@@ -74,8 +97,10 @@ const AppraiserForm: FC<Props> = () => {
         />
       </div>
       <div className='flex justify-end items-center gap-6'>
-        <Button variant='secondary'>Cancel</Button>
-        <Button type='submit'>Create</Button>
+        <Button variant='secondary' onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type='submit'>{isUpdate ? 'Save' : 'Create'}</Button>
       </div>
     </form>
   )

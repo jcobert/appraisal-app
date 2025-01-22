@@ -2,9 +2,10 @@ import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { db } from '@/lib/db/client'
+import { getAppraiser } from '@/lib/db/operations/appraiser'
 
-import { protectPage } from '@/utils/auth'
+import { protect } from '@/utils/auth'
+import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
 import AppraiserPage from '@/components/features/appraiser/appraiser-page'
@@ -21,34 +22,25 @@ export const metadata: Metadata = generatePageMeta({
   title: 'Appraisers',
 })
 
-// export const generateMetadata = async ({ params }: Props) => {
-//   const appraiserId = (await params)?.id
-//   const data = await db.appraiser.findUnique({ where: { id: appraiserId } })
-
-//   return generatePageMeta({
-//     title: `Appraisers - ${fullName(data?.firstName, data?.lastName)}`,
-//     url: canonicalUrl('/appraisers'),
-//   })
-// }
-
 const Page: FC<Props> = async ({ params }) => {
-  await protectPage()
+  await protect()
 
   const appraiserId = (await params)?.id
 
   const queryClient = createQueryClient()
 
-  const data = await db.appraiser.findUnique({ where: { id: appraiserId } })
-
   await queryClient.prefetchQuery({
     queryKey: appraisersQueryKey.filtered({ id: appraiserId }),
-    initialData: { data },
+    queryFn: async () => {
+      const data = await getAppraiser({ where: { id: appraiserId } })
+      return { data } satisfies FetchResponse
+    },
   })
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <PageLayout>
-        <AppraiserPage appraiser={data} />
+        <AppraiserPage appraiserId={appraiserId} />
       </PageLayout>
     </HydrationBoundary>
   )

@@ -37,30 +37,35 @@ export const getUserPermissions = (
 }
 
 export const isAllowed = (
-  permissions: KindePermissions | null,
-  action: PermissionKey,
+  userPermissions: KindePermissions | null,
+  permission: PermissionKey,
 ) => {
-  const userPermission = getUserPermissions(permissions)?.find(
-    (perm) => perm?.key === action,
+  const userPermission = getUserPermissions(userPermissions)?.find(
+    (perm) => perm?.key === permission,
   )
 
   return !!userPermission?.allowed
 }
 
-export const isAllowedServer = async (action?: PermissionKey) => {
+export const isAllowedServer = async (permission?: PermissionKey) => {
   const session = getKindeServerSession()
   if (!(await session.isAuthenticated())) {
     return false
   }
-  return !!action ? isAllowed(await session?.getPermissions(), action) : true
+  return !!permission
+    ? isAllowed(await session?.getPermissions(), permission)
+    : true
 }
 
-export const protectPage = async (
-  action?: PermissionKey,
-  url: string = '/',
-) => {
-  const isAllowed = await isAllowedServer(action)
+export type ProtectOptions = {
+  permission?: PermissionKey
+  redirectUrl?: string
+}
+
+export const protect = async (options: ProtectOptions = {}) => {
+  const { permission, redirectUrl = '/' } = options
+  const isAllowed = await isAllowedServer(permission)
   if (!isAllowed) {
-    redirect(url)
+    redirect(redirectUrl)
   }
 }

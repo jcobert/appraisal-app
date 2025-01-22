@@ -26,7 +26,11 @@ const UserMenu: FC<{ sessionData: SessionData }> = ({
               Already have an account?
             </p>
           ) : null}
-          <AuthLink loggedIn={loggedIn} />
+          {!loggedIn ? (
+            <AuthLink loggedIn={loggedIn} type='register' />
+          ) : (
+            <AuthLink loggedIn={loggedIn} type='logout' />
+          )}
         </div>
       </div>
     </Popover>
