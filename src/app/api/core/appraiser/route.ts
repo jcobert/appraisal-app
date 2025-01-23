@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/lib/db/client'
 
-import { FetchResponse } from '@/utils/fetch'
+import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 
 // =============
 //      GET
@@ -19,7 +19,10 @@ export const GET = async (_req: NextRequest) => {
   if (!isLoggedIn || !user) {
     return NextResponse.json(
       {
-        error: { code: 'AUTH', message: 'User not authenticated.' },
+        error: {
+          code: FetchErrorCode.AUTH,
+          message: 'User not authenticated.',
+        },
         data: null,
       } satisfies FetchResponse<Appraiser[]>,
       { status: 401 },
@@ -53,7 +56,7 @@ export const GET = async (_req: NextRequest) => {
         {
           data: null,
           error: {
-            code: 'DATABASE_FAILURE',
+            code: FetchErrorCode.DATABASE_FAILURE,
             message: 'The request was not successful.',
           },
         } satisfies FetchResponse<Appraiser[]>,
@@ -75,7 +78,7 @@ export const GET = async (_req: NextRequest) => {
       {
         data: null,
         error: {
-          code: 'FAILURE',
+          code: FetchErrorCode.FAILURE,
           message: 'An unknown failure occurred.',
         },
       } satisfies FetchResponse<Appraiser[]>,
@@ -97,7 +100,10 @@ export const POST = async (req: NextRequest) => {
   if (!isLoggedIn || !user) {
     return NextResponse.json(
       {
-        error: { code: 'AUTH', message: 'User not authenticated.' },
+        error: {
+          code: FetchErrorCode.AUTH,
+          message: 'User not authenticated.',
+        },
         data: null,
       } satisfies FetchResponse<Appraiser>,
       { status: 401 },
@@ -124,7 +130,10 @@ export const POST = async (req: NextRequest) => {
       return NextResponse.json(
         {
           data: null,
-          error: { code: 'INVALID_DATA', message: 'Missing required fields.' },
+          error: {
+            code: FetchErrorCode.INVALID_DATA,
+            message: 'Missing required fields.',
+          },
         } satisfies FetchResponse<Appraiser>,
         { status: 400 },
       )
@@ -146,7 +155,7 @@ export const POST = async (req: NextRequest) => {
         {
           data: null,
           error: {
-            code: 'DATABASE_FAILURE',
+            code: FetchErrorCode.DATABASE_FAILURE,
             message: 'The request was not successful.',
           },
         } satisfies FetchResponse<Appraiser>,
@@ -169,7 +178,7 @@ export const POST = async (req: NextRequest) => {
       {
         data: null,
         error: {
-          code: 'FAILURE',
+          code: FetchErrorCode.FAILURE,
           message: 'An unknown failure occurred.',
         },
       } satisfies FetchResponse<Appraiser>,

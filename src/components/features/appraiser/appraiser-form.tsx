@@ -9,8 +9,13 @@ import { z } from 'zod'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
+import { isSuccess } from '@/utils/fetch'
+import { fullName } from '@/utils/string'
+import { requestToast } from '@/utils/toast'
+
 import Button from '@/components/general/button'
 import TextInput from '@/components/inputs/text-input'
+import Alert from '@/components/layout/alert'
 
 import useCoreMutation from '@/hooks/use-core-mutation'
 
@@ -44,21 +49,49 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
     resolver: zodResolver(schema),
   })
 
-  const { mutateAsync: createAppraiser } = useCoreMutation({
+  const { mutateAsync: createAppraiser } = useCoreMutation<
+    AppraiserFormData,
+    Appraiser
+  >({
     url: CORE_API_ENDPOINTS.appraiser,
     method: 'POST',
   })
 
-  const { mutateAsync: updateAppraiser } = useCoreMutation({
+  const { mutateAsync: updateAppraiser } = useCoreMutation<
+    AppraiserFormData,
+    Appraiser
+  >({
     url: `${CORE_API_ENDPOINTS.appraiser}/${initialData?.id}`,
     method: 'PUT',
   })
 
+  const { mutateAsync: deleteAppraiser } = useCoreMutation<{}, Appraiser>({
+    url: `${CORE_API_ENDPOINTS.appraiser}/${initialData?.id}`,
+    method: 'DELETE',
+  })
+
   const onSubmit: SubmitHandler<AppraiserFormData> = async (data) => {
     if (isUpdate) {
-      await updateAppraiser(data)
+      await requestToast(() => updateAppraiser(data))
     } else {
-      await createAppraiser(data)
+      const res = await requestToast(() => createAppraiser(data), {
+        success: () =>
+          `Appraiser ${fullName(data?.firstName, data?.lastName)} has been created!`,
+      })
+      if (isSuccess(res.status)) {
+        router.push('/appraisers')
+      }
+    }
+  }
+
+  const onDelete = async () => {
+    const res = await requestToast(() => deleteAppraiser({}), {
+      loading: 'Deleting appraiser...',
+      success: ({ data }) =>
+        `Appraiser ${fullName(data?.firstName, data?.lastName)} has been deleted.`,
+    })
+    if (isSuccess(res.status)) {
+      router.push('/appraisers')
     }
   }
 
@@ -67,7 +100,10 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-8'>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className='flex flex-col gap-8 h-full'
+    >
       <div className='flex gap-6'>
         <Controller
           control={control}
@@ -96,7 +132,17 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
           )}
         />
       </div>
-      <div className='flex justify-end items-center gap-6'>
+
+      <div className='flex max-sm:flex-col justify-end items-center gap-6 mt-auto'>
+        {isUpdate ? (
+          <Alert
+            description={`${fullName(initialData?.firstName, initialData?.lastName)} will be permanently deleted.`}
+            trigger={<Button variant='tertiary'>Delete</Button>}
+            onConfirm={async () => {
+              await onDelete()
+            }}
+          />
+        ) : null}
         <Button variant='secondary' onClick={onCancel}>
           Cancel
         </Button>

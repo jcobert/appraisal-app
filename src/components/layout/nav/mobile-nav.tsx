@@ -173,7 +173,9 @@ const MobileNav: FC<Props> = ({
           </div>
 
           <div className='mt-auto__ flex flex-col items-center gap-2'>
-            <p className='text-balance'>Already have an account?</p>
+            {!loggedIn ? (
+              <p className='text-balance'>Already have an account?</p>
+            ) : null}
             <AuthLink loggedIn={loggedIn} />
           </div>
         </div>

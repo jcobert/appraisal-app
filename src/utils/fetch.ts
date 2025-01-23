@@ -1,11 +1,19 @@
+export enum FetchErrorCode {
+  AUTH = 'AUTH',
+  NOT_FOUND = 'NOT_FOUND',
+  INVALID_DATA = 'INVALID_DATA',
+  DATABASE_FAILURE = 'DATABASE_FAILURE',
+  FAILURE = 'FAILURE',
+}
+
+export type FetchMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+
 export type FetchResponse<TData = any> = {
   status?: number
   data?: TData | null
   message?: string
-  error?: { code?: string; message?: string }
+  error?: { code?: FetchErrorCode; message?: string }
 }
-
-export type FetchMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 export const isSuccess = (status?: number) => {
   if (!status) return false
@@ -31,12 +39,12 @@ const GET = async <TData = Record<string, unknown>>({
     }
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error(error)
+    console.log(error)
     return {
       data: null,
       status: 500,
       error: {
-        code: 'FAILURE',
+        code: FetchErrorCode.FAILURE,
         message: 'An unknown failure occurred.',
       },
     }
@@ -68,12 +76,12 @@ const POST = async <
     }
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error(error)
+    console.log(error)
     return {
       data: null,
       status: 500,
       error: {
-        code: 'FAILURE',
+        code: FetchErrorCode.FAILURE,
         message: 'An unknown failure occurred.',
       },
     }
@@ -105,12 +113,12 @@ const PUT = async <
     }
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error(error)
+    console.log(error)
     return {
       data: null,
       status: 500,
       error: {
-        code: 'FAILURE',
+        code: FetchErrorCode.FAILURE,
         message: 'An unknown failure occurred.',
       },
     }
@@ -142,12 +150,12 @@ const PATCH = async <
     }
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error(error)
+    console.log(error)
     return {
       data: null,
       status: 500,
       error: {
-        code: 'FAILURE',
+        code: FetchErrorCode.FAILURE,
         message: 'An unknown failure occurred.',
       },
     }
@@ -155,21 +163,17 @@ const PATCH = async <
 }
 
 const DELETE = async <
-  TPayload extends Record<string, unknown> = Record<string, unknown>,
   TResData extends Record<string, unknown> = Record<string, unknown>,
 >({
   url,
-  payload,
   options,
 }: {
   url: string
-  payload: TPayload
   options?: Omit<RequestInit, 'method' | 'body'>
 }): Promise<FetchResponse<TResData>> => {
   try {
     const res = await fetch(url, {
       method: 'DELETE',
-      body: JSON.stringify(payload),
       ...options,
     })
     const responseData = (await res.json()) as FetchResponse<TResData>
@@ -179,12 +183,12 @@ const DELETE = async <
     }
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error(error)
+    console.log(error)
     return {
       data: null,
       status: 500,
       error: {
-        code: 'FAILURE',
+        code: FetchErrorCode.FAILURE,
         message: 'An unknown failure occurred.',
       },
     }

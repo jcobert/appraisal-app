@@ -33,14 +33,13 @@ export const useCoreMutation = <
     TPayload
   > = async (payload) => {
     switch (method) {
-      case 'POST':
-        return await fetch.POST({ url, payload })
       case 'PUT':
         return await fetch.PUT({ url, payload })
       case 'PATCH':
         return await fetch.PATCH({ url, payload })
       case 'DELETE':
-        return await fetch.DELETE({ url, payload })
+        return await fetch.DELETE({ url })
+      case 'POST':
       default:
         return await fetch.POST({ url, payload })
     }

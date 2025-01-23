@@ -7,7 +7,7 @@ type Props = {
   appraisers?: Appraiser[] | null
 }
 
-const AppraiserList: FC<Props> = ({ appraisers }) => {
+const AppraisersList: FC<Props> = ({ appraisers }) => {
   if (!appraisers?.length) return null
 
   return (
@@ -19,4 +19,4 @@ const AppraiserList: FC<Props> = ({ appraisers }) => {
   )
 }
 
-export default AppraiserList
+export default AppraisersList
