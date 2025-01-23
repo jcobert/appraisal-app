@@ -17,7 +17,7 @@
   }
 
   .layout {
-    @apply mx-auto max-w-layout sm:w-11/12;
+    @apply mx-auto max-w-layout w-[96%] sm:w-11/12;
   }
 }
 

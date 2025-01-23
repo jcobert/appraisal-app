@@ -13,15 +13,13 @@ const Back: FC<Props> = ({ text = '', className = '', ...props }) => {
   return (
     <Link
       className={cn(
-        'flex items-center gap-1 w-fit group font-medium self-start mt-6 md:-mb-8 print:hidden',
-        [className],
+        'flex items-center gap-1 w-fit group font-medium self-start print:hidden',
+        className,
       )}
       {...props}
     >
-      <IoIosArrowBack className='group-hover:text-almost-black/hover transition' />
-      <span className='group-hover:text-almost-black/hover transition'>
-        {text}
-      </span>
+      <IoIosArrowBack className='group-hover:text-dark-gray transition' />
+      <span className='group-hover:text-dark-gray transition'>{text}</span>
     </Link>
   )
 }

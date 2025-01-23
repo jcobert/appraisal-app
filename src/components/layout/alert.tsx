@@ -26,7 +26,7 @@ const Alert: FC<Props> = ({
   onConfirm,
   trigger,
   triggerWrapperClassName,
-  triggerClassName = 'btn-text',
+  triggerClassName,
   triggerDisabled = false,
   bypass = false,
 }) => {
@@ -49,6 +49,7 @@ const Alert: FC<Props> = ({
           <AlertDialog.Trigger
             className={triggerClassName}
             disabled={triggerDisabled}
+            asChild
           >
             {trigger}
           </AlertDialog.Trigger>

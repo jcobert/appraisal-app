@@ -2,26 +2,29 @@ import { FC, ReactNode } from 'react'
 
 import { cn } from '@/utils/style'
 
+import BackgroundImage from '@/components/layout/background-image'
 import Heading from '@/components/layout/heading'
 
 export type PageLayoutProps = {
   heading?: string | JSX.Element
   children?: ReactNode
-  className?: string
   defaultLayout?: boolean
-  mainClassName?: string
   backgroundImage?: string
+  className?: string
+  mainClassName?: string
   pageClassName?: string
+  backgroundImageClassName?: string
 }
 
 const PageLayout: FC<PageLayoutProps> = ({
   heading,
   children,
-  className = '',
   defaultLayout = true,
-  mainClassName = '',
   backgroundImage,
-  pageClassName = '',
+  className,
+  mainClassName,
+  pageClassName,
+  backgroundImageClassName,
 }) => {
   const pageHeading =
     typeof heading === 'string' ? <Heading text={heading} /> : heading
@@ -29,28 +32,28 @@ const PageLayout: FC<PageLayoutProps> = ({
   return (
     <main className={cn(['h-full', mainClassName])}>
       {backgroundImage ? (
-        <div
-          className='absolute h-dvh w-full bg-fixed bg-no-repeat bg-cover bg-center before:absolute before:w-full before:h-dvh before:bg-[#0000006c]'
-          style={{ backgroundImage: `url(${backgroundImage})` }}
+        <BackgroundImage
+          backgroundImage={backgroundImage}
+          /** You might want to apply a margin here to offset a fixed header for example. */
+          className={backgroundImageClassName}
         />
       ) : null}
 
       <div
         className={cn([
-          'items-center justify-start pb-safe',
+          'items-center justify-start pb-safe h-full',
           !!backgroundImage && 'relative',
         ])}
       >
         <div
           className={cn([
-            'flex flex-col gap-2',
+            'flex flex-col gap-2 h-full',
             defaultLayout && 'layout py-6',
             pageClassName,
           ])}
         >
           {heading ? pageHeading : null}
-
-          <div className={cn(['px-2', className])}>{children}</div>
+          <div className={cn('h-full', className)}>{children}</div>
         </div>
       </div>
     </main>

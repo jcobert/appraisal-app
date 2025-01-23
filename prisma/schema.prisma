@@ -56,8 +56,8 @@ model Appraiser {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
+  createdBy String?
+  updatedBy String?
   firstName String
   lastName  String
   Order     Order[]
@@ -67,9 +67,9 @@ model Client {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
-  name      String
+  createdBy String?
+  updatedBy String?
+  name      String?
   phone     String?
   email     String?
   street    String?
@@ -89,9 +89,9 @@ model Borrower {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
-  firstName String
+  createdBy String?
+  updatedBy String?
+  firstName String?
   lastName  String?
   phone     String?
   email     String?
@@ -108,8 +108,8 @@ model Property {
   id           String       @id @default(uuid())
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
-  createdBy    String
-  updatedBy    String
+  createdBy    String?
+  updatedBy    String?
   propertyType PropertyType
   street       String?
   street2      String?
@@ -124,8 +124,8 @@ model Order {
   id               String         @id @default(uuid())
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
-  createdBy        String
-  updatedBy        String
+  createdBy        String?
+  updatedBy        String?
   fileNumber       String?
   clientOrderNum   String?
   orderDate        DateTime?
@@ -155,8 +155,8 @@ model Payment {
   id          String       @id @default(uuid())
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  createdBy   String
-  updatedBy   String
+  createdBy   String?
+  updatedBy   String?
   order       Order        @relation(fields: [orderId], references: [id])
   orderId     String
   amount      Int

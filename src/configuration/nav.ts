@@ -26,4 +26,6 @@ export const homeUrl = (loggedIn: boolean) => {
   return loggedIn ? '/dashboard' : '/'
 }
 
-export const navItems: NavItem[] = []
+export const navItems: NavItem[] = [
+  { id: 'appraisers', name: 'Appraisers', url: '/appraisers' },
+]
