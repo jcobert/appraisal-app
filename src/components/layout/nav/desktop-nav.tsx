@@ -11,16 +11,18 @@ import NavLink from '@/components/layout/nav/nav-link'
 
 import { SessionData } from '@/types/auth'
 
-import { navItems } from '@/configuration/nav'
+import { NavItem } from '@/configuration/nav'
 
 type Props = {
   sessionData: Partial<SessionData>
+  navItems: NavItem[]
   className?: string
   children?: ReactNode
 }
 
 const DesktopNav: FC<Props> = ({
   sessionData: { loggedIn },
+  navItems,
   className,
   children,
 }) => {

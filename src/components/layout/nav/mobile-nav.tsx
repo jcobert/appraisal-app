@@ -16,16 +16,18 @@ import LogoLink from '@/components/layout/nav/logo-link'
 
 import { SessionData } from '@/types/auth'
 
-import { isActive, navItems } from '@/configuration/nav'
+import { NavItem, isActive } from '@/configuration/nav'
 
 type Props = {
   sessionData: Partial<SessionData>
+  navItems: NavItem[]
   className?: string
 }
 
 const MobileNav: FC<Props> = ({
-  className,
   sessionData: { user, loggedIn },
+  navItems,
+  className,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
