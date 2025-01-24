@@ -16,21 +16,31 @@ const UserMenu: FC<{ sessionData: SessionData }> = ({
       triggerProps={{
         className: 'text-brand hover:text-brand-dark transition text-2xl',
       }}
+      contentProps={{ collisionPadding: 5 }}
     >
-      <div className='bg-white rounded border p-2 px-4 shadow flex flex-col gap-4 min-w-56'>
+      <div className='bg-white rounded border p-4 shadow flex flex-col gap-4 min-w-60'>
         <UserGreeting user={user} />
 
         <div className='flex flex-col items-center gap-1'>
           {!loggedIn ? (
-            <p className='text-balance text-sm mt-2'>
-              Already have an account?
-            </p>
+            <div className='flex flex-col gap-12'>
+              <div className='flex flex-col items-center gap-2'>
+                <p className='text-balance'>Ready to get started?</p>
+                <AuthLink
+                  loggedIn={loggedIn}
+                  type='register'
+                  className='self-center w-full'
+                />
+              </div>
+              <div className='flex flex-col items-center'>
+                <p className='text-balance text-sm'>
+                  Already have an account?
+                </p>
+                <AuthLink loggedIn={loggedIn} type='login' />
+              </div>
+            </div>
           ) : null}
-          {!loggedIn ? (
-            <AuthLink loggedIn={loggedIn} type='register' />
-          ) : (
-            <AuthLink loggedIn={loggedIn} type='logout' />
-          )}
+          {loggedIn ? <AuthLink loggedIn={loggedIn} type='logout' /> : null}
         </div>
       </div>
     </Popover>

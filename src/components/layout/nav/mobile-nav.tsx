@@ -35,7 +35,7 @@ const MobileNav: FC<Props> = ({
       id='mobile-navbar'
       className={cn([
         'md:hidden',
-        'border-b border-gray-200 shadow-sm sticky top-0 bg-almost-white/50 backdrop-blur-lg',
+        'border-b border-gray-200 shadow-sm sticky top-0 bg-almost-white/50 backdrop-blur-lg pb-safe',
         className,
       ])}
     >
