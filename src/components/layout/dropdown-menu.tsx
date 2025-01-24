@@ -14,7 +14,7 @@ export const DropdownMenuItem: FC<Dropdown.DropdownMenuItemProps> = ({
   return (
     <Dropdown.Item
       className={cn(
-        'text-brand font-medium rounded pl-4 pr-2 py-px data-[highlighted]:text-almost-white flex items-center gap-2 select-none data-[highlighted]:bg-brand outline-none',
+        'text-brand cursor-default font-medium rounded pl-4 pr-2 py-px data-[highlighted]:text-almost-white flex items-center gap-2 select-none data-[highlighted]:bg-brand outline-none',
         className,
       )}
       {...props}

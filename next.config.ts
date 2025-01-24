@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
     { source: '/ping', destination: '/api/health' },
   ],
   env: {
+    NEXT_PUBLIC_SITE_BASE_URL:
+      process.env.NEXT_PUBLIC_SITE_BASE_URL ??
+      `https://${process.env.VERCEL_URL}`,
     KINDE_SITE_URL:
       process.env.KINDE_SITE_URL ?? `https://${process.env.VERCEL_URL}`,
     KINDE_POST_LOGOUT_REDIRECT_URL:
