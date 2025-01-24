@@ -79,7 +79,7 @@ export type OgImageParams = {
 }
 
 export const buildOgImage = (params?: OgImageParams) => {
-  const endpoint = `${process.env.SITE_BASE_URL}/api/og`
+  const endpoint = `${process.env.NEXT_PUBLIC_SITE_BASE_URL}/api/og`
   if (!params) return endpoint
 
   const searchParams = {}

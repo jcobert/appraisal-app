@@ -11,7 +11,7 @@ export const GET = async (request: Request) => {
 
     // Base logo image
     const logoData = (await fetch(
-      new URL(`${process.env.SITE_BASE_URL}/images/logo.png`, import.meta.url),
+      new URL(`${process.env.NEXT_PUBLIC_SITE_BASE_URL}/images/logo.png`, import.meta.url),
     ).then((res) => res.arrayBuffer())) as string
 
     // Dynamic data
