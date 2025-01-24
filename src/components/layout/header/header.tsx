@@ -6,6 +6,8 @@ import UserMenu from '@/components/layout/header/user-menu'
 import DesktopNav from '@/components/layout/nav/desktop-nav'
 import MobileNav from '@/components/layout/nav/mobile-nav'
 
+import { filterProtectedNavItems, navItems } from '@/configuration/nav'
+
 const Header: FC = async () => {
   const session = getKindeServerSession()
 
@@ -19,13 +21,23 @@ const Header: FC = async () => {
 
   const navClassName = 'bg-almost-white/90'
 
+  const navLinks = filterProtectedNavItems(navItems, loggedIn)
+
   return (
     <>
       {/* Mobile */}
-      <MobileNav className={navClassName} sessionData={sessionData} />
+      <MobileNav
+        className={navClassName}
+        sessionData={sessionData}
+        navItems={navLinks}
+      />
 
       {/* Desktop */}
-      <DesktopNav className={navClassName} sessionData={sessionData}>
+      <DesktopNav
+        className={navClassName}
+        sessionData={sessionData}
+        navItems={navLinks}
+      >
         <div className='ml-auto flex items-center gap-8'>
           {!loggedIn ? <AuthLink loggedIn={loggedIn} type='register' /> : null}
           <UserMenu sessionData={sessionData} />
