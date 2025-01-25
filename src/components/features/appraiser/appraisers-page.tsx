@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'nextjs-toploader/app'
+import { useRouter } from 'next-nprogress-bar'
 import { FC } from 'react'
 import { FiUserPlus } from 'react-icons/fi'
 

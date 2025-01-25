@@ -1,8 +1,8 @@
 'use client'
 
 import { Appraiser } from '@prisma/client'
+import { useRouter } from 'next-nprogress-bar'
 import { usePathname } from 'next/navigation'
-import { useRouter } from 'nextjs-toploader/app'
 import { FC } from 'react'
 import { FaGear } from 'react-icons/fa6'
 
