@@ -1,15 +1,14 @@
-import Link, { LinkProps } from 'next/link'
-import { FC } from 'react'
+import Link from 'next/link'
+import { ComponentPropsWithoutRef, FC } from 'react'
 
+import { homeUrl } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import Logo from '@/components/general/logo'
 
 import { SessionData } from '@/types/auth'
 
-import { homeUrl } from '@/configuration/nav'
-
-type Props = Partial<LinkProps> &
+type Props = Partial<ComponentPropsWithoutRef<typeof Link>> &
   Pick<SessionData, 'loggedIn'> & {
     className?: string
   }

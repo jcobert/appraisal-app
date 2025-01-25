@@ -2,7 +2,8 @@ import { Metadata } from 'next'
 import { ReactNode } from 'react'
 import { Toaster } from 'react-hot-toast'
 
-import { AuthProvider } from '@/providers/auth-provider'
+import AuthProvider from '@/providers/auth-provider'
+import ProgressProvider from '@/providers/progress-provider'
 import QueryProvider from '@/providers/query-provider'
 
 import Header from '@/components/layout/header/header'
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <html lang='en'>
         <body>
           <QueryProvider>
+            <ProgressProvider />
             <Toaster
               position='top-right'
               toastOptions={{ success: { duration: 4000 } }}
