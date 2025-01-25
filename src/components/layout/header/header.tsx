@@ -1,12 +1,14 @@
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { FC } from 'react'
 
+import { filterProtectedNavItems } from '@/utils/nav'
+
 import AuthLink from '@/components/auth/auth-link'
 import UserMenu from '@/components/layout/header/user-menu'
 import DesktopNav from '@/components/layout/nav/desktop-nav'
 import MobileNav from '@/components/layout/nav/mobile-nav'
 
-import { filterProtectedNavItems, navItems } from '@/configuration/nav'
+import { NAVIGATION_ITEMS } from '@/configuration/nav'
 
 const Header: FC = async () => {
   const session = getKindeServerSession()
@@ -21,7 +23,7 @@ const Header: FC = async () => {
 
   const navClassName = 'bg-almost-white/90'
 
-  const navLinks = filterProtectedNavItems(navItems, loggedIn)
+  const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
 
   return (
     <>
@@ -29,14 +31,14 @@ const Header: FC = async () => {
       <MobileNav
         className={navClassName}
         sessionData={sessionData}
-        navItems={navLinks}
+        navItems={navItems}
       />
 
       {/* Desktop */}
       <DesktopNav
         className={navClassName}
         sessionData={sessionData}
-        navItems={navLinks}
+        navItems={navItems}
       >
         <div className='ml-auto flex items-center gap-8'>
           {!loggedIn ? <AuthLink loggedIn={loggedIn} type='register' /> : null}

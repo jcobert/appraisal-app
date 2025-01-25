@@ -6,6 +6,7 @@ import { FC, useState } from 'react'
 import { CgClose } from 'react-icons/cg'
 import { RxHamburgerMenu } from 'react-icons/rx'
 
+import { NavItem, isActive } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import AuthLink from '@/components/auth/auth-link'
@@ -15,8 +16,6 @@ import UserGreeting from '@/components/layout/header/user-greeting'
 import LogoLink from '@/components/layout/nav/logo-link'
 
 import { SessionData } from '@/types/auth'
-
-import { NavItem, isActive } from '@/configuration/nav'
 
 type Props = {
   sessionData: Partial<SessionData>
@@ -82,6 +81,9 @@ const MobileNav: FC<Props> = ({
           <LogoLink
             className='relative left-[calc(50%-1rem)]'
             loggedIn={!!loggedIn}
+            onClickCapture={() => {
+              setIsMenuOpen(false)
+            }}
           />
           {/* Hamburger */}
           <button

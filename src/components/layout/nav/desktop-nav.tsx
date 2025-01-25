@@ -4,14 +4,13 @@ import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import React, { FC, ReactNode } from 'react'
 import { FaAngleUp } from 'react-icons/fa6'
 
+import { NavItem } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import LogoLink from '@/components/layout/nav/logo-link'
 import NavLink from '@/components/layout/nav/nav-link'
 
 import { SessionData } from '@/types/auth'
-
-import { NavItem } from '@/configuration/nav'
 
 type Props = {
   sessionData: Partial<SessionData>

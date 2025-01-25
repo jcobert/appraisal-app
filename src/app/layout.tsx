@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
+import NextTopLoader from 'nextjs-toploader'
 import { ReactNode } from 'react'
 import { Toaster } from 'react-hot-toast'
+import twConfig from 'tailwind.config'
 
 import { AuthProvider } from '@/providers/auth-provider'
 import QueryProvider from '@/providers/query-provider'
@@ -31,6 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <html lang='en'>
         <body>
           <QueryProvider>
+            <NextTopLoader color={twConfig.theme.extend.colors.brand} showSpinner={false} />
             <Toaster
               position='top-right'
               toastOptions={{ success: { duration: 4000 } }}
