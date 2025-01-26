@@ -1,10 +1,3 @@
-/*
-  Warnings:
-
-  - Added the required column `email` to the `Appraiser` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `phone` to the `Appraiser` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- AlterTable
 ALTER TABLE "Appraiser" ADD COLUMN     "email" TEXT,
 ADD COLUMN     "phone" TEXT,
