@@ -6,8 +6,8 @@
 
 */
 -- AlterTable
-ALTER TABLE "Appraiser" ADD COLUMN     "email" TEXT NOT NULL,
-ADD COLUMN     "phone" TEXT NOT NULL,
+ALTER TABLE "Appraiser" ADD COLUMN     "email" TEXT,
+ADD COLUMN     "phone" TEXT,
 ALTER COLUMN "createdBy" DROP NOT NULL,
 ALTER COLUMN "updatedBy" DROP NOT NULL;
 
