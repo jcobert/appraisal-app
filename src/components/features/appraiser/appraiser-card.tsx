@@ -17,7 +17,7 @@ const AppraiserCard: FC<Props> = ({ appraiser }) => {
   return (
     <Link
       href={`/appraisers/${id}`}
-      className='border rounded p-4 group transition hover:border-brand/50 hover:shadow-sm'
+      className='border rounded p-4 group transition hover:border-brand/50 hover:shadow-sm bg-almost-white'
     >
       <div className='flex gap-4 items-center'>
         <Avatar

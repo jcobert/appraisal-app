@@ -171,10 +171,15 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
           {isUpdate ? (
             <Alert
               description={`${fullName(initialData?.firstName, initialData?.lastName)} will be permanently deleted.`}
-              trigger={<Button variant='tertiary'>Delete</Button>}
+              trigger={
+                <Button variant='tertiary' color='danger'>
+                  Delete
+                </Button>
+              }
               onConfirm={async () => {
                 await onDelete()
               }}
+              triggerWrapperClassName='sm:mr-auto'
             />
           ) : null}
           <Button variant='secondary' onClick={onCancel}>

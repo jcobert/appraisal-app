@@ -4,8 +4,11 @@ import { cn } from '@/utils/style'
 
 type StyleVariant = 'primary' | 'secondary' | 'tertiary'
 
+type Color = 'danger' | 'brand'
+
 export type ButtonProps = ComponentPropsWithRef<'button'> & {
   variant?: StyleVariant
+  color?: Color
   unstyled?: boolean
 }
 
@@ -15,11 +18,26 @@ const variantClassNames: { [x in StyleVariant]: string } = {
   tertiary: 'btn-text',
 }
 
+const colorClassNames: {
+  [x in Color]: Partial<typeof variantClassNames>
+} = {
+  brand: {},
+  danger: {
+    primary:
+      'border-rose-600 bg-rose-600 hover:bg-rose-700 disabled:border-rose-600/25 disabled:bg-rose-600/70',
+    secondary:
+      'border-rose-600 text-rose-600 hover:border-rose-700 [&:not(:disabled)]:hover:bg-rose-500/5 hover:text-rose-700 disabled:border-rose-600/25 disabled:text-rose-600/60',
+    tertiary:
+      'text-rose-600 hover:text-rose-700 disabled:text-rose-600/60 [&:not(:disabled)]:hover:bg-rose-600/5',
+  },
+}
+
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       children,
       variant = 'primary',
+      color,
       className = '',
       type = 'button',
       unstyled = false,
@@ -27,14 +45,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
-    const defaultStyle =
+    const variantStyle =
       variantClassNames?.[variant] || variantClassNames?.primary
+
+    const emphasisStyle = color ? colorClassNames?.[color]?.[variant] : ''
 
     return (
       <>
         <button
           className={cn([
-            !unstyled && defaultStyle,
+            !unstyled && variantStyle,
+            !unstyled && emphasisStyle,
             'flex items-center',
             className,
           ])}
