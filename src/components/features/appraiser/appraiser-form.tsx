@@ -7,6 +7,7 @@ import { Controller, SubmitHandler } from 'react-hook-form'
 import { z } from 'zod'
 
 import { successful } from '@/utils/fetch'
+import { formDefaults } from '@/utils/form'
 import { fullName } from '@/utils/string'
 import { toastyRequest } from '@/utils/toast'
 
@@ -21,21 +22,25 @@ import useZodForm from '@/hooks/use-zod-form'
 import { TableMutable } from '@/types/db'
 import { ZodObject } from '@/types/general'
 
-export type AppraiserFormData = TableMutable<Appraiser>
+const schema = z.object({
+  firstName: z.string().nonempty(),
+  lastName: z.string().nonempty(),
+  email: z.string().email().optional().or(z.literal('')),
+  phone: z.string().optional(),
+} satisfies ZodObject<TableMutable<Appraiser>>)
+
+type AppraiserFormData = z.infer<typeof schema>
+
+const defaultFormValues = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+} satisfies AppraiserFormData
 
 type Props = {
   initialData?: Appraiser | null
 }
-
-const schema = z.object<ZodObject<AppraiserFormData>>({
-  firstName: z.string().nonempty(),
-  lastName: z.string().nonempty(),
-})
-
-const defaultValues = {
-  firstName: '',
-  lastName: '',
-} as const satisfies AppraiserFormData
 
 const AppraiserForm: FC<Props> = ({ initialData }) => {
   const router = useRouter()
@@ -44,8 +49,10 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
 
   const heading = isUpdate ? 'Edit Appraiser' : 'New Appraiser'
 
+  const defaultValues = formDefaults(defaultFormValues, initialData)
+
   const { handleSubmit, control } = useZodForm<AppraiserFormData>(schema, {
-    defaultValues: initialData || defaultValues,
+    defaultValues,
   })
 
   const {
@@ -57,16 +64,22 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
   } = useAppraiserMutations({ initialData })
 
   const onSubmit: SubmitHandler<AppraiserFormData> = async (data) => {
+    const payload = { ...initialData, ...data }
     if (isUpdate) {
-      const res = await toastyRequest(() => updateAppraiser.mutateAsync(data))
+      const res = await toastyRequest(() =>
+        updateAppraiser.mutateAsync(payload),
+      )
       if (successful(res.status)) {
         router.push(prevUrl)
       }
     } else {
-      const res = await toastyRequest(() => createAppraiser.mutateAsync(data), {
-        success: () =>
-          `Appraiser ${fullName(data?.firstName, data?.lastName)} has been created!`,
-      })
+      const res = await toastyRequest(
+        () => createAppraiser.mutateAsync(payload),
+        {
+          success: () =>
+            `Appraiser ${fullName(payload?.firstName, payload?.lastName)} has been created!`,
+        },
+      )
       if (successful(res.status)) {
         router.push('/appraisers')
       }
@@ -138,7 +151,7 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
               )}
             />
           </div>
-          {/* <div className='flex gap-6 max-sm:flex-col'>
+          <div className='flex gap-6 max-sm:flex-col'>
             <Controller
               control={control}
               name='email'
@@ -169,7 +182,7 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
                 />
               )}
             />
-          </div> */}
+          </div>
         </div>
 
         <div className='flex max-sm:flex-col justify-end items-center gap-6 mt-auto'>
