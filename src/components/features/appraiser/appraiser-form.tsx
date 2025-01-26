@@ -13,6 +13,7 @@ import { toastyRequest } from '@/utils/toast'
 
 import { useAppraiserMutations } from '@/components/features/appraiser/hooks/use-appraiser-mutations'
 import Button from '@/components/general/button'
+import PatternInput from '@/components/inputs/pattern-input'
 import TextInput from '@/components/inputs/text-input'
 import Alert from '@/components/layout/alert'
 import Heading from '@/components/layout/heading'
@@ -171,7 +172,7 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
               control={control}
               name='phone'
               render={({ field, fieldState: { error } }) => (
-                <TextInput
+                <PatternInput
                   {...field}
                   id={field.name}
                   label='Phone'
@@ -179,6 +180,9 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
                   className='flex-1'
                   icon='phone'
                   placeholder='(123) 456-7890'
+                  required
+                  format='(###) ###-####'
+                  mask='_'
                 />
               )}
             />

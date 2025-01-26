@@ -1,37 +1,20 @@
 'use client'
 
-import { InputHTMLAttributes, forwardRef, useState } from 'react'
-import { IconType } from 'react-icons'
-import { FiBriefcase, FiGlobe, FiMail, FiPhone, FiUser } from 'react-icons/fi'
+import { forwardRef, useState } from 'react'
+import { PatternFormat, PatternFormatProps } from 'react-number-format'
 
 import { cn } from '@/utils/style'
 
-export type InputIcon = 'mail' | 'phone' | 'web' | 'person' | 'briefcase'
+import {
+  AdditionalInputProps,
+  inputIconMap,
+} from '@/components/inputs/text-input'
 
-export type AdditionalInputProps = {
-  label?: string
-  helper?: string
-  error?: string
-  icon?: InputIcon
-  labelClassName?: string
-  inputClassName?: string
-}
+export type PatternInputProps = PatternFormatProps & AdditionalInputProps
 
-export type TextInputProps = Partial<InputHTMLAttributes<HTMLInputElement>> &
-  AdditionalInputProps
-
-export const inputIconMap: { [x in InputIcon]: IconType } = {
-  mail: FiMail,
-  phone: FiPhone,
-  web: FiGlobe,
-  person: FiUser,
-  briefcase: FiBriefcase,
-}
-
-const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
+const PatternInput = forwardRef<HTMLInputElement, PatternInputProps>(
   (
     {
-      type = 'text',
       id,
       name,
       label,
@@ -73,7 +56,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           ) : null}
         </label>
 
-        <input
+        <PatternFormat
           aria-required={required}
           className={cn([
             'w-full h-10 px-[0.875rem] py-2 border border-gray-300 hover:border-gray-400 transition rounded',
@@ -81,12 +64,11 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             error && 'border-red-500 hover:border-red-500',
             inputClassName,
           ])}
-          type={type}
           id={id || name}
           name={name}
           placeholder={placeholder}
           {...props}
-          ref={ref}
+          getInputRef={ref}
           onFocusCapture={() => {
             setHelperVisible(true)
           }}
@@ -104,4 +86,4 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   },
 )
 
-export default TextInput
+export default PatternInput

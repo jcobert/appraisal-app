@@ -3,6 +3,7 @@
  *
  * Options:
  * - allowEmptyString - If `true` empty string will be considered an existant value and `true` will be returned.
+ * Default is `false`.
  */
 export const exists = (
   val: unknown,

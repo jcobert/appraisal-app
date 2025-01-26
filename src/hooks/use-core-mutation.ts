@@ -18,6 +18,7 @@ export type UseCoreMutationProps<
 > & {
   url: string
   method?: Exclude<FetchMethod, 'GET'>
+  transform?: (payload: TPayload) => TPayload
 }
 
 export const useCoreMutation = <
@@ -26,12 +27,14 @@ export const useCoreMutation = <
 >({
   url,
   method = 'POST',
+  transform,
   ...options
 }: UseCoreMutationProps<TPayload, TResData>) => {
   const mutationFn: MutationFunction<
     FetchResponse<TResData>,
     TPayload
-  > = async (payload) => {
+  > = async (data) => {
+    const payload = transform ? transform(data) : data
     switch (method) {
       case 'PUT':
         return await fetch.PUT({ url, payload })
