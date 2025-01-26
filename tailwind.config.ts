@@ -16,6 +16,7 @@ export default {
         // Brand
         brand: '#0D9B8A',
         'brand-light': '#12A594',
+        'brand-extra-light': '#d8edea',
         'brand-dark': '#008573',
         'brand-extra-dark': '#0D3D38',
         // Generic

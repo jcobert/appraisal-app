@@ -41,6 +41,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       className,
       labelClassName,
       inputClassName,
+      required,
       ...props
     },
     ref,
@@ -55,7 +56,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           htmlFor={id || name}
           className={cn([
             'text-sm text-gray-700 w-fit',
-            props?.required &&
+            required &&
               "after:content-['*'] after:ml-[0.125rem] after:text-red-400",
             error && 'text-red-500',
             labelClassName,
@@ -73,6 +74,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
         </label>
 
         <input
+          aria-required={required}
           className={cn([
             'w-full h-10 px-[0.875rem] py-2 border border-gray-300 hover:border-gray-400 transition rounded',
             !!Icon && 'pl-9',

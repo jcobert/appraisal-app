@@ -13,7 +13,7 @@ export type RequestToastMsgs<T> = {
 }
 
 /** Runs provided async request with toasts. */
-export const requestToast = <T>(
+export const toastyRequest = <T>(
   request: () => Promise<FetchResponse<T>>,
   msgs?: RequestToastMsgs<T>,
   opts?: DefaultToastOptions,
