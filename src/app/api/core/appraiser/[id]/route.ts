@@ -148,7 +148,7 @@ export const PUT = async (
 
     const res = await db.appraiser.update({
       where: { id },
-      data: payload,
+      data: { ...payload, updatedBy: user?.id },
     })
 
     /**

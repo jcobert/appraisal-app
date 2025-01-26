@@ -39,7 +39,7 @@ const Page: FC<Props> = async () => {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <PageLayout heading='Appraisers' className='mt-4'>
+      <PageLayout heading='Appraisers' className='max-md:mt-4'>
         <AppraisersPage />
       </PageLayout>
     </HydrationBoundary>

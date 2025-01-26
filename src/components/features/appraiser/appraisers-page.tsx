@@ -13,7 +13,7 @@ const AppraisersPage: FC = () => {
   const { response } = useGetAppraisers({ options: { enabled: true } })
 
   return (
-    <div className='flex flex-col gap-8'>
+    <div className='flex flex-col gap-8 pb-8'>
       {/* Toolbar */}
       <div className='flex justify-end'>
         <Button

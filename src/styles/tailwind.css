@@ -17,13 +17,13 @@
   }
 
   .layout {
-    @apply mx-auto max-w-layout w-[96%] sm:w-11/12;
+    @apply mx-auto w-[96%] max-w-layout sm:w-11/12;
   }
 }
 
 @layer components {
   .btn {
-    @apply flex w-fit min-w-[6rem] cursor-pointer items-center justify-center gap-2 rounded border border-brand bg-brand px-8 py-3 text-almost-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:border-brand/25 disabled:bg-brand/70 max-sm:w-full max-sm:text-lg sm:px-4 sm:py-1 [&:not(:disabled)]:shadow [&:not(:disabled)]:hover:shadow-sm;
+    @apply flex min-h-[2.125rem] w-fit min-w-[6rem] cursor-pointer items-center justify-center gap-2 rounded border border-brand bg-brand px-8 py-3 text-almost-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:border-brand/25 disabled:bg-brand/70 max-sm:min-h-[3.375rem] max-sm:w-full max-sm:text-lg sm:px-4 sm:py-1 [&:not(:disabled)]:shadow [&:not(:disabled)]:hover:shadow-sm;
   }
 
   .btn-outline {

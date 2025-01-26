@@ -42,12 +42,19 @@ const AppraiserPage: FC<Props> = ({ appraiserId }) => {
         <Back href='/appraisers' text='Appraisers' />
       </div>
       <div className='md:flex justify-between'>
-        <Heading text={name} className='font-normal' />
+        <div className='flex flex-col gap-2 w-full'>
+          <Heading text={name} className='font-normal' />
+
+          <span
+            aria-hidden
+            className='h-px w-1/2 border-b-2 border-brand-extra-light max-md:hidden'
+          />
+        </div>
         <DropdownMenu
           trigger={
             <Button
               variant='secondary'
-              className='p-2 min-w-0 w-fit max-md:ml-auto'
+              className='p-2 min-w-0 size-fit max-md:ml-auto'
             >
               <FaGear className='text-lg' />
             </Button>

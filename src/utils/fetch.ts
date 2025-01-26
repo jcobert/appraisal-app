@@ -15,7 +15,7 @@ export type FetchResponse<TData = any> = {
   error?: { code?: FetchErrorCode; message?: string }
 }
 
-export const isSuccess = (status?: number) => {
+export const successful = (status?: number) => {
   if (!status) return false
   return status >= 200 && status < 300
 }

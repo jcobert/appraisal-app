@@ -4,7 +4,7 @@ import toast, {
   ValueOrFunction,
 } from 'react-hot-toast'
 
-import { FetchErrorCode, FetchResponse, isSuccess } from '@/utils/fetch'
+import { FetchErrorCode, FetchResponse, successful } from '@/utils/fetch'
 
 export type RequestToastMsgs<T> = {
   loading?: Renderable
@@ -13,7 +13,7 @@ export type RequestToastMsgs<T> = {
 }
 
 /** Runs provided async request with toasts. */
-export const requestToast = <T>(
+export const toastyRequest = <T>(
   request: () => Promise<FetchResponse<T>>,
   msgs?: RequestToastMsgs<T>,
   opts?: DefaultToastOptions,
@@ -21,7 +21,7 @@ export const requestToast = <T>(
   const response = toast.promise<FetchResponse<T>>(
     new Promise<FetchResponse<T>>(async (resolve, reject) => {
       const res = await request()
-      if (!isSuccess(res.status)) {
+      if (!successful(res.status)) {
         reject(res)
       }
       resolve(res as FetchResponse<T>)
