@@ -35,5 +35,27 @@ export const useAppraiserMutations = ({
     ...options,
   })
 
-  return { createAppraiser, updateAppraiser, deleteAppraiser }
+  const isPending =
+    createAppraiser.isPending ||
+    updateAppraiser.isPending ||
+    deleteAppraiser.isPending
+
+  const isSuccess =
+    createAppraiser.isSuccess ||
+    updateAppraiser.isSuccess ||
+    deleteAppraiser.isSuccess
+
+  const isError =
+    createAppraiser.isError ||
+    updateAppraiser.isError ||
+    deleteAppraiser.isError
+
+  return {
+    createAppraiser,
+    updateAppraiser,
+    deleteAppraiser,
+    isPending,
+    isSuccess,
+    isError,
+  }
 }

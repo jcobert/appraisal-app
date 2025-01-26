@@ -2,6 +2,8 @@ import { ComponentPropsWithRef, forwardRef } from 'react'
 
 import { cn } from '@/utils/style'
 
+import Spinner from '@/components/general/spinner'
+
 type StyleVariant = 'primary' | 'secondary' | 'tertiary'
 
 type Color = 'danger' | 'brand'
@@ -10,6 +12,7 @@ export type ButtonProps = ComponentPropsWithRef<'button'> & {
   variant?: StyleVariant
   color?: Color
   unstyled?: boolean
+  loading?: boolean
 }
 
 const variantClassNames: { [x in StyleVariant]: string } = {
@@ -37,10 +40,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     {
       children,
       variant = 'primary',
-      color,
+      color = 'brand',
       className = '',
       type = 'button',
       unstyled = false,
+      loading = false,
       ...props
     },
     ref,
@@ -63,7 +67,21 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           {...props}
           ref={ref}
         >
-          {children}
+          {loading ? (
+            <Spinner
+              className={cn({
+                'fill-almost-white': variant === 'primary',
+                'fill-brand':
+                  (variant === 'secondary' || variant === 'tertiary') &&
+                  color === 'brand',
+                'fill-rose-600':
+                  (variant === 'secondary' || variant === 'tertiary') &&
+                  color === 'danger',
+              })}
+            />
+          ) : (
+            children
+          )}
         </button>
       </>
     )

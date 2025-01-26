@@ -6,7 +6,7 @@ import { FC } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 import { z } from 'zod'
 
-import { isSuccess } from '@/utils/fetch'
+import { successful } from '@/utils/fetch'
 import { fullName } from '@/utils/string'
 import { toastyRequest } from '@/utils/toast'
 
@@ -48,13 +48,18 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
     defaultValues: initialData || defaultValues,
   })
 
-  const { createAppraiser, updateAppraiser, deleteAppraiser } =
-    useAppraiserMutations({ initialData })
+  const {
+    createAppraiser,
+    updateAppraiser,
+    deleteAppraiser,
+    isPending,
+    isSuccess,
+  } = useAppraiserMutations({ initialData })
 
   const onSubmit: SubmitHandler<AppraiserFormData> = async (data) => {
     if (isUpdate) {
       const res = await toastyRequest(() => updateAppraiser.mutateAsync(data))
-      if (isSuccess(res.status)) {
+      if (successful(res.status)) {
         router.push(prevUrl)
       }
     } else {
@@ -62,7 +67,7 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
         success: () =>
           `Appraiser ${fullName(data?.firstName, data?.lastName)} has been created!`,
       })
-      if (isSuccess(res.status)) {
+      if (successful(res.status)) {
         router.push('/appraisers')
       }
     }
@@ -74,7 +79,7 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
       success: ({ data }) =>
         `Appraiser ${fullName(data?.firstName, data?.lastName)} has been deleted.`,
     })
-    if (isSuccess(res.status)) {
+    if (successful(res.status)) {
       router.push('/appraisers')
     }
   }
@@ -172,7 +177,11 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
             <Alert
               description={`${fullName(initialData?.firstName, initialData?.lastName)} will be permanently deleted.`}
               trigger={
-                <Button variant='tertiary' color='danger'>
+                <Button
+                  variant='tertiary'
+                  color='danger'
+                  inert={isPending || deleteAppraiser.isSuccess}
+                >
                   Delete
                 </Button>
               }
@@ -185,7 +194,13 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
           <Button variant='secondary' onClick={onCancel}>
             Cancel
           </Button>
-          <Button type='submit'>{isUpdate ? 'Save' : 'Create'}</Button>
+          <Button
+            type='submit'
+            inert={isPending || isSuccess}
+            loading={isPending}
+          >
+            {isUpdate ? 'Save' : 'Create'}
+          </Button>
         </div>
       </div>
     </form>
