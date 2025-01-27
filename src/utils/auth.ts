@@ -69,3 +69,9 @@ export const protect = async (options: ProtectOptions = {}) => {
     redirect(redirectUrl)
   }
 }
+
+export const getUserId = async () => {
+  const session = getKindeServerSession()
+  const userId = (await session.getUser())?.id
+  return userId || ''
+}
