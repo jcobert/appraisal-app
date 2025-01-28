@@ -18,7 +18,7 @@ export type Stringified<T extends Record<string, unknown>> = {
 }
 
 export type ZodObject<T extends Record<string, unknown>> = {
-  [k in keyof T]: ZodTypeAny
+  [k in keyof T]?: ZodTypeAny
 }
 
 /** Removes readonly modifier from any properties of object type `T`. */
