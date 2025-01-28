@@ -14,7 +14,7 @@ const Page: FC<Props> = async () => {
   const session = getKindeServerSession()
   const user = await session.getUser()
 
-  const userProfile = await getUserProfile({ where: { accountId: user.id } })
+  const userProfile = await getUserProfile({ where: { accountId: user?.id } })
 
   return (
     <PageLayout>
