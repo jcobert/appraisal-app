@@ -1,6 +1,7 @@
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { Metadata } from 'next'
 import { FC } from 'react'
+
+import { getActiveUserProfile } from '@/lib/db/operations/user'
 
 import Greeting from '@/components/auth/greeting'
 import PageLayout from '@/components/layout/page-layout'
@@ -12,8 +13,7 @@ export const metadata: Metadata = {
 }
 
 const Page: FC = async () => {
-  const { getUser } = getKindeServerSession()
-  const user = await getUser()
+  const user = await getActiveUserProfile()
 
   return <PageLayout heading={<Greeting user={user} />}></PageLayout>
 }

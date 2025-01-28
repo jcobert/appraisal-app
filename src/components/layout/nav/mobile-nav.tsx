@@ -24,7 +24,7 @@ type Props = {
 }
 
 const MobileNav: FC<Props> = ({
-  sessionData: { user, loggedIn },
+  sessionData: { loggedIn, profile },
   navItems,
   className,
 }) => {
@@ -98,8 +98,8 @@ const MobileNav: FC<Props> = ({
 
         <div className='px-8 pt-4 overflow-y-auto pb-16 h-dvh flex flex-col'>
           {/* User */}
-          {user ? (
-            <UserGreeting user={user} />
+          {profile ? (
+            <UserGreeting user={profile} />
           ) : (
             <div className='flex flex-col items-center gap-2 mt-4'>
               <p className='text-balance'>Ready to get started?</p>

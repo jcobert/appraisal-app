@@ -4,25 +4,28 @@ import { cn } from '@/utils/style'
 
 import Spinner from '@/components/general/spinner'
 
-type StyleVariant = 'primary' | 'secondary' | 'tertiary'
+export type StyleVariant = 'primary' | 'secondary' | 'tertiary'
 
-type Color = 'danger' | 'brand'
+export type ButtonColor = 'danger' | 'brand'
 
-export type ButtonProps = ComponentPropsWithRef<'button'> & {
+export type AdditionalButtonProps = {
   variant?: StyleVariant
-  color?: Color
+  color?: ButtonColor
   unstyled?: boolean
   loading?: boolean
 }
 
-const variantClassNames: { [x in StyleVariant]: string } = {
+export type ButtonProps = ComponentPropsWithRef<'button'> &
+  AdditionalButtonProps
+
+export const buttonVariantClassNames: { [x in StyleVariant]: string } = {
   primary: 'btn',
   secondary: 'btn-outline',
   tertiary: 'btn-text',
 }
 
-const colorClassNames: {
-  [x in Color]: Partial<typeof variantClassNames>
+export const buttonColorClassNames: {
+  [x in ButtonColor]: Partial<typeof buttonVariantClassNames>
 } = {
   brand: {},
   danger: {
@@ -50,9 +53,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const variantStyle =
-      variantClassNames?.[variant] || variantClassNames?.primary
+      buttonVariantClassNames?.[variant] || buttonVariantClassNames?.primary
 
-    const emphasisStyle = color ? colorClassNames?.[color]?.[variant] : ''
+    const emphasisStyle = color ? buttonColorClassNames?.[color]?.[variant] : ''
 
     return (
       <>

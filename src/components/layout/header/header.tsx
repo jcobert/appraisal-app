@@ -1,12 +1,16 @@
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { FC } from 'react'
 
+import { getActiveUserProfile } from '@/lib/db/operations/user'
+
 import { filterProtectedNavItems } from '@/utils/nav'
 
 import AuthLink from '@/components/auth/auth-link'
 import UserMenu from '@/components/layout/header/user-menu'
 import DesktopNav from '@/components/layout/nav/desktop-nav'
 import MobileNav from '@/components/layout/nav/mobile-nav'
+
+import { SessionData } from '@/types/auth'
 
 import { NAVIGATION_ITEMS } from '@/configuration/nav'
 
@@ -18,8 +22,14 @@ const Header: FC = async () => {
   const user = await getUser()
   const loggedIn = await isAuthenticated()
   const permissions = await getPermissions()
+  const profile = await getActiveUserProfile()
 
-  const sessionData = { loggedIn, permissions, user }
+  const sessionData = {
+    loggedIn,
+    permissions,
+    user,
+    profile,
+  } satisfies SessionData
 
   const navClassName = 'bg-almost-white/90'
 

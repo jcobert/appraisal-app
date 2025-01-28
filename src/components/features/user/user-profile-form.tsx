@@ -1,6 +1,6 @@
 'use client'
 
-import { Appraiser } from '@prisma/client'
+import { User } from '@prisma/client'
 import { useRouter } from 'next-nprogress-bar'
 import { FC } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
@@ -8,15 +8,14 @@ import { z } from 'zod'
 
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
+import { withoutBlanks } from '@/utils/general'
 import { fullName } from '@/utils/string'
 import { toastyRequest } from '@/utils/toast'
 
-import { useAppraiserMutations } from '@/components/features/appraiser/hooks/use-appraiser-mutations'
+import { useUserMutations } from '@/components/features/user/hooks/use-user-profile-mutations'
 import Button from '@/components/general/button'
 import PatternInput from '@/components/inputs/pattern-input'
 import TextInput from '@/components/inputs/text-input'
-import Alert from '@/components/layout/alert'
-import Heading from '@/components/layout/heading'
 
 import useZodForm from '@/hooks/use-zod-form'
 
@@ -27,76 +26,58 @@ const schema = z.object({
   firstName: z.string().nonempty(),
   lastName: z.string().nonempty(),
   email: z.string().email().optional().or(z.literal('')),
-  phone: z.string().optional(),
-  userId: z.string(),
-} satisfies ZodObject<TableMutable<Appraiser>>)
+  phone: z.string().optional().or(z.literal('')),
+} satisfies ZodObject<
+  Omit<TableMutable<User>, 'accountId' | 'userRole' | 'avatar'>
+>)
 
-type AppraiserFormData = z.infer<typeof schema>
+type UserProfileFormData = z.infer<typeof schema>
 
 const defaultFormValues = {
   firstName: '',
   lastName: '',
   email: '',
   phone: '',
-  userId: '',
-} satisfies AppraiserFormData
+} satisfies UserProfileFormData
 
 type Props = {
-  initialData?: Appraiser | null
+  initialData?: User | null
+  registration?: boolean
 }
 
-const AppraiserForm: FC<Props> = ({ initialData }) => {
+const UserProfileForm: FC<Props> = ({ initialData, registration = false }) => {
   const router = useRouter()
   const isUpdate = !!initialData?.id
-  const prevUrl = `/appraisers/${initialData?.id || ''}`
+  const prevUrl = '/dashboard'
 
-  const heading = isUpdate ? 'Edit Appraiser' : 'New Appraiser'
+  const defaultValues = formDefaults(
+    defaultFormValues,
+    withoutBlanks(initialData || {}),
+  )
 
-  const defaultValues = formDefaults(defaultFormValues, initialData)
-
-  const { handleSubmit, control } = useZodForm<AppraiserFormData>(schema, {
+  const { handleSubmit, control } = useZodForm<UserProfileFormData>(schema, {
     defaultValues,
   })
 
-  const {
-    createAppraiser,
-    updateAppraiser,
-    deleteAppraiser,
-    isPending,
-    isSuccess,
-  } = useAppraiserMutations({ initialData })
+  const { createUser, updateUser, isPending, isSuccess } = useUserMutations({
+    initialData,
+  })
 
-  const onSubmit: SubmitHandler<AppraiserFormData> = async (data) => {
+  const onSubmit: SubmitHandler<UserProfileFormData> = async (data) => {
     const payload = { ...initialData, ...data }
     if (isUpdate) {
-      const res = await toastyRequest(() =>
-        updateAppraiser.mutateAsync(payload),
-      )
+      const res = await toastyRequest(() => updateUser.mutateAsync(payload))
       if (successful(res.status)) {
         router.push(prevUrl)
       }
     } else {
-      const res = await toastyRequest(
-        () => createAppraiser.mutateAsync(payload),
-        {
-          success: () =>
-            `Appraiser ${fullName(payload?.firstName, payload?.lastName)} has been created!`,
-        },
-      )
+      const res = await toastyRequest(() => createUser.mutateAsync(payload), {
+        success: () =>
+          `Appraiser ${fullName(payload?.firstName, payload?.lastName)} has been created!`,
+      })
       if (successful(res.status)) {
         router.push('/appraisers')
       }
-    }
-  }
-
-  const onDelete = async () => {
-    const res = await toastyRequest(() => deleteAppraiser.mutateAsync({}), {
-      loading: 'Deleting appraiser...',
-      success: ({ data }) =>
-        `Appraiser ${fullName(data?.firstName, data?.lastName)} has been deleted.`,
-    })
-    if (successful(res.status)) {
-      router.push('/appraisers')
     }
   }
 
@@ -109,11 +90,6 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
       onSubmit={handleSubmit(onSubmit)}
       className='flex flex-col gap-8 max-sm:h-full'
     >
-      <div>
-        {/* {isUpdate ? <Back href={prevUrl} text='Back' /> : null} */}
-        <Heading text={heading} alignment='center' className='font-normal' />
-      </div>
-
       {/* <p className='max-w-prose self-center w-full text-pretty'>
         Add a new appraiser to your organization.
       </p> */}
@@ -167,6 +143,8 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
                   className='flex-1'
                   icon='mail'
                   placeholder='johnsmith@example.com'
+                  // required
+                  disabled
                 />
               )}
             />
@@ -182,7 +160,6 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
                   className='flex-1'
                   icon='phone'
                   placeholder='(123) 456-7890'
-                  required
                   format='(###) ###-####'
                   mask='_'
                 />
@@ -192,26 +169,11 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
         </div>
 
         <div className='flex max-sm:flex-col justify-end items-center gap-6 mt-auto'>
-          {isUpdate ? (
-            <Alert
-              description={`${fullName(initialData?.firstName, initialData?.lastName)} will be permanently deleted.`}
-              trigger={
-                <Button
-                  variant='tertiary'
-                  color='danger'
-                  inert={isPending || deleteAppraiser.isSuccess}
-                >
-                  Delete
-                </Button>
-              }
-              onConfirm={async () => {
-                await onDelete()
-              }}
-              triggerWrapperClassName='sm:mr-auto'
-            />
-          ) : null}
-          <Button variant='secondary' onClick={onCancel}>
-            Cancel
+          <Button
+            variant={registration ? 'tertiary' : 'secondary'}
+            onClick={onCancel}
+          >
+            {registration ? 'Set up later' : 'Cancel'}
           </Button>
           <Button
             type='submit'
@@ -226,4 +188,4 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
   )
 }
 
-export default AppraiserForm
+export default UserProfileForm

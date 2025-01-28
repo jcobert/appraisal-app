@@ -8,16 +8,18 @@ type Props = {
   trigger?: ReactNode
   triggerProps?: Radix.PopoverTriggerProps
   contentProps?: Radix.PopoverContentProps
-}
+} & Pick<Radix.PopoverProps, 'open' | 'onOpenChange'>
 
 const Popover: FC<Props> = ({
   children,
   trigger,
   triggerProps,
   contentProps,
+  open,
+  onOpenChange,
 }) => {
   return (
-    <Radix.Root>
+    <Radix.Root open={open} onOpenChange={onOpenChange}>
       <Radix.Trigger {...triggerProps}>{trigger}</Radix.Trigger>
       <Radix.Content sideOffset={5} {...contentProps}>
         {children}

@@ -17,6 +17,11 @@ datasource db {
 //       ENUMS
 // -----------------
 
+enum UserRole {
+  manager
+  appraiser
+}
+
 enum PropertyType {
   singleFamily
   singleFamilyFHA
@@ -52,17 +57,50 @@ enum AppraisalType {
 //       TABLES
 // ------------------
 
-model Appraiser {
+model User {
+  id                 String         @id @default(uuid())
+  accountId          String         @unique
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  createdBy          String?
+  updatedBy          String?
+  firstName          String
+  lastName           String
+  email              String?
+  phone              String?
+  avatar             String?
+  userRole           UserRole[]
+  organizations      Organization[] @relation("OrganizationMembers")
+  ownedOrganizations Organization[] @relation("OrganizationOwner")
+  appraiser          Appraiser?
+}
+
+model Organization {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   createdBy String?
   updatedBy String?
-  firstName String
-  lastName  String
-  email     String?
-  phone     String?
-  Order     Order[]
+  name      String
+  avatar    String?
+  members   User[]   @relation("OrganizationMembers")
+  owner     User     @relation("OrganizationOwner", fields: [ownerId], references: [id])
+  ownerId   String
+}
+
+model Appraiser {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  firstName   String
+  lastName    String
+  email       String?
+  phone       String?
+  orders      Order[]
+  userProfile User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
 }
 
 model Client {
