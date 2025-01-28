@@ -43,6 +43,7 @@ export type FormProps = {
    */
   loading?: boolean
   onSubmit?: (e: SyntheticEvent) => Promise<void> | void
+  unstyled?: boolean
 } & Omit<FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>
 
 const Form: FC<FormProps> = ({
@@ -52,6 +53,7 @@ const Form: FC<FormProps> = ({
   loader = 'fullscreen',
   className,
   onSubmit,
+  unstyled = false,
   ...formProps
 }) => {
   const formRef = useRef<HTMLFormElement>(null)
@@ -79,9 +81,17 @@ const Form: FC<FormProps> = ({
         ref={formRef}
         onSubmit={onSubmitHandler}
         {...formProps}
-        className={cn('flex flex-col h-full', className)}
+        className={cn(
+          { 'flex flex-col gap-8 max-sm:h-full': !unstyled },
+          className,
+        )}
       >
-        {children}
+        {!unstyled ? (
+          <div className='flex flex-col gap-16 max-w-3xl self-center size-full border rounded bg-almost-white p-4'>
+            {children}
+          </div>
+        ) : null}
+        {unstyled ? children : null}
       </form>
     </>
   )
