@@ -12,13 +12,13 @@ export const usersQueryKey = {
     filteredQueryKey(params, usersQueryKey.all),
 } as const
 
-type ResponseData<T extends User['id'] | undefined> = T extends string
-  ? User
-  : User[]
+// type ResponseData<T extends User['id'] | undefined> = T extends string
+//   ? User
+//   : User[]
 
 type Props<T extends User['id'] | undefined = undefined> = {
   id?: T
-  options?: Partial<UseCoreQueryProps<ResponseData<T>>>
+  options?: Partial<UseCoreQueryProps<User>>
 }
 
 export const useGetUserProfile = <
@@ -26,7 +26,7 @@ export const useGetUserProfile = <
 >({ id, options }: Props<T> = {}) => {
   const endpoint = CORE_API_ENDPOINTS.user
   const url = id ? `${endpoint}/${id}` : `${endpoint}/active`
-  return useCoreQuery<ResponseData<T>>({
+  return useCoreQuery<User>({
     url,
     queryKey: usersQueryKey.filtered({ id }),
     ...options,

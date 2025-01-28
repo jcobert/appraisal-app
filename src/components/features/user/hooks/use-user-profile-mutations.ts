@@ -1,9 +1,12 @@
 import { User } from '@prisma/client'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
 import { exists } from '@/utils/general'
 import { digitString } from '@/utils/string'
+
+import { usersQueryKey } from '@/components/features/user/hooks/use-get-user-profile'
 
 import useCoreMutation, {
   UseCoreMutationProps,
@@ -29,10 +32,18 @@ export const useUserMutations = ({
   initialData,
   options,
 }: UseUserMutationsProps = {}) => {
+  const queryClient = useQueryClient()
+
   const createUser = useCoreMutation<Payload, User>({
     url: CORE_API_ENDPOINTS.user,
     method: 'POST',
     transform,
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKey.all,
+        type: 'all',
+      })
+    },
     ...options,
   })
 
@@ -40,6 +51,12 @@ export const useUserMutations = ({
     url: `${CORE_API_ENDPOINTS.user}/active`,
     method: 'PUT',
     transform,
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKey.all,
+        type: 'all',
+      })
+    },
     ...options,
   })
 

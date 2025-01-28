@@ -3,8 +3,6 @@ import { FC } from 'react'
 
 import Heading from '@/components/layout/heading'
 
-import { SessionData } from '@/types/auth'
-
 type Props = {
   user: User | null
 }

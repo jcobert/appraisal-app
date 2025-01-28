@@ -35,7 +35,10 @@ const AuthLink: FC<Props> = ({
   )
 
   const Register = (
-    <RegisterLink className={cn([styles, 'btn', className])}>
+    <RegisterLink
+      className={cn([styles, 'btn', className])}
+      postLoginRedirectURL='/user/welcome'
+    >
       {children ?? 'Sign up'}
     </RegisterLink>
   )

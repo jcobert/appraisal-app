@@ -16,7 +16,6 @@ import { useUserMutations } from '@/components/features/user/hooks/use-user-prof
 import Button from '@/components/general/button'
 import PatternInput from '@/components/inputs/pattern-input'
 import TextInput from '@/components/inputs/text-input'
-import Heading from '@/components/layout/heading'
 
 import useZodForm from '@/hooks/use-zod-form'
 
@@ -43,14 +42,13 @@ const defaultFormValues = {
 
 type Props = {
   initialData?: User | null
+  registration?: boolean
 }
 
-const UserProfileForm: FC<Props> = ({ initialData }) => {
+const UserProfileForm: FC<Props> = ({ initialData, registration = false }) => {
   const router = useRouter()
   const isUpdate = !!initialData?.id
   const prevUrl = '/dashboard'
-
-  const heading = isUpdate ? 'My Profile' : 'New Appraiser'
 
   const defaultValues = formDefaults(
     defaultFormValues,
@@ -92,11 +90,6 @@ const UserProfileForm: FC<Props> = ({ initialData }) => {
       onSubmit={handleSubmit(onSubmit)}
       className='flex flex-col gap-8 max-sm:h-full'
     >
-      <div>
-        {/* {isUpdate ? <Back href={prevUrl} text='Back' /> : null} */}
-        <Heading text={heading} alignment='center' className='font-normal' />
-      </div>
-
       {/* <p className='max-w-prose self-center w-full text-pretty'>
         Add a new appraiser to your organization.
       </p> */}
@@ -176,8 +169,11 @@ const UserProfileForm: FC<Props> = ({ initialData }) => {
         </div>
 
         <div className='flex max-sm:flex-col justify-end items-center gap-6 mt-auto'>
-          <Button variant='secondary' onClick={onCancel}>
-            Cancel
+          <Button
+            variant={registration ? 'tertiary' : 'secondary'}
+            onClick={onCancel}
+          >
+            {registration ? 'Set up later' : 'Cancel'}
           </Button>
           <Button
             type='submit'

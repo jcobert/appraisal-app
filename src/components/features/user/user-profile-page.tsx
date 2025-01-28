@@ -2,6 +2,7 @@ import { User } from '@prisma/client'
 import { FC } from 'react'
 
 import UserProfileForm from '@/components/features/user/user-profile-form'
+import Heading from '@/components/layout/heading'
 
 import { SessionData } from '@/types/auth'
 
@@ -26,7 +27,12 @@ const UserProfilePage: FC<Props> = ({ sessionUser, userProfile }) => {
     } as User)
 
   return (
-    <div>
+    <div className='flex flex-col gap-4'>
+      <Heading
+        text={initialData ? 'My Profile' : 'New Appraiser'}
+        alignment='center'
+        className='font-medium sm:text-2xl'
+      />
       <UserProfileForm initialData={initialData} />
     </div>
   )

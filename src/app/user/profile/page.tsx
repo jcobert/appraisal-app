@@ -16,14 +16,6 @@ const Page: FC<Props> = async () => {
 
   const userProfile = await getUserProfile({ where: { accountId: user.id } })
 
-  // const res = await createUserProfile({
-  //   data: {
-  //     accountId: user.id,
-  //     firstName: user.given_name || '',
-  //     lastName: user.family_name || '',
-  //   },
-  // })
-
   return (
     <PageLayout>
       <UserProfilePage sessionUser={user} userProfile={userProfile} />

@@ -13,9 +13,10 @@ import Popover from '@/components/layout/popover'
 import { SessionData } from '@/types/auth'
 
 const UserMenu: FC<{ sessionData: SessionData }> = ({
-  sessionData: { user, loggedIn },
+  sessionData: { profile, loggedIn },
 }) => {
   const [open, setOpen] = useState(false)
+
   return (
     <Popover
       open={open}
@@ -27,7 +28,7 @@ const UserMenu: FC<{ sessionData: SessionData }> = ({
       contentProps={{ collisionPadding: 5 }}
     >
       <div className='bg-white rounded border p-4 shadow flex flex-col gap-4 min-w-60'>
-        <UserGreeting user={user} />
+        <UserGreeting user={profile} />
 
         {loggedIn ? (
           <div className='flex justify-center'>

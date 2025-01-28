@@ -60,14 +60,22 @@ export const isAllowedServer = async (permission?: PermissionKey) => {
 export type ProtectOptions = {
   permission?: PermissionKey
   redirectUrl?: string
+  redirect?: boolean
 }
 
 export const protect = async (options: ProtectOptions = {}) => {
-  const { permission, redirectUrl = '/' } = options
+  const {
+    permission,
+    redirectUrl = '/',
+    redirect: shouldRedirect = true,
+  } = options
   const isAllowed = await isAllowedServer(permission)
   if (!isAllowed) {
-    redirect(redirectUrl)
+    if (shouldRedirect) {
+      redirect(redirectUrl)
+    }
   }
+  return isAllowed
 }
 
 export const getUserId = async () => {

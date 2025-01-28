@@ -3,18 +3,29 @@ import { FaCircleUser } from 'react-icons/fa6'
 
 import { fullName } from '@/utils/string'
 
+import { useGetUserProfile } from '@/components/features/user/hooks/use-get-user-profile'
+
 import { SessionData } from '@/types/auth'
 
-export const UserGreeting: FC<{ user: SessionData['user'] }> = ({ user }) => {
+type Props = { user: SessionData['profile'] }
+
+export const UserGreeting: FC<Props> = (props) => {
+  const { response } = useGetUserProfile({
+    id: props.user?.id,
+    options: { enabled: true, staleTime: 60 * 60 * 1000 },
+  })
+
+  const user = response?.data || props?.user
+
   if (!user) return null
 
   return (
     <div className='flex items-center justify-center mx-auto w-fit gap-2'>
       <div className='my-auto transition-all rounded-full size-8 border'>
-        {user?.picture ? (
+        {user?.avatar ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={user?.picture}
+            src={user?.avatar}
             alt='user avatar'
             className='object-scale-down object-center rounded-full'
           />
@@ -23,9 +34,9 @@ export const UserGreeting: FC<{ user: SessionData['user'] }> = ({ user }) => {
         )}
       </div>
       <div className='flex flex-col'>
-        {user?.given_name ? (
+        {user?.firstName ? (
           <div className='font-medium font-display text-balance'>
-            {fullName(user?.given_name, user.family_name)}
+            {fullName(user?.firstName, user?.lastName)}
           </div>
         ) : null}
         {user?.email ? (
