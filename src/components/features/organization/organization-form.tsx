@@ -40,6 +40,7 @@ type Props = {
 const OrganizationForm: FC<Props> = ({ initialData }) => {
   const router = useRouter()
   const isUpdate = !!initialData?.id
+  const prevUrl = `/organizations/${initialData?.id || ''}`
 
   const defaultValues = formDefaults(defaultFormValues, initialData)
 
@@ -59,7 +60,7 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
         updateOrganization.mutateAsync(payload),
       )
       if (successful(res.status)) {
-        router.push('/dashboard')
+        router.push(prevUrl)
       }
     } else {
       const res = await toastyRequest(
@@ -69,9 +70,13 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
         },
       )
       if (successful(res.status)) {
-        router.push('/dashboard')
+        router.push('/organizations')
       }
     }
+  }
+
+  const onCancel = () => {
+    router.push(prevUrl)
   }
 
   return (
@@ -93,7 +98,9 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
       </div>
 
       <FormActionBar>
-        <Button variant='secondary'>Cancel</Button>
+        <Button variant='secondary' onClick={onCancel}>
+          Cancel
+        </Button>
         <Button type='submit'>{isUpdate ? 'Save' : 'Create'}</Button>
       </FormActionBar>
     </Form>

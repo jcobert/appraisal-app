@@ -4,7 +4,6 @@ import { FC } from 'react'
 import { getActiveUserProfile } from '@/lib/db/operations/user'
 
 import Greeting from '@/components/auth/greeting'
-import OrganizationForm from '@/components/features/organization/organization-form'
 import PageLayout from '@/components/layout/page-layout'
 
 import { buildPageTitle } from '@/configuration/seo'
@@ -16,11 +15,7 @@ export const metadata: Metadata = {
 const Page: FC = async () => {
   const user = await getActiveUserProfile()
 
-  return (
-    <PageLayout heading={<Greeting user={user} />}>
-      <OrganizationForm />
-    </PageLayout>
-  )
+  return <PageLayout heading={<Greeting user={user} />}></PageLayout>
 }
 
 export default Page
