@@ -2,7 +2,7 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { redirect } from 'next/navigation'
 import { FC } from 'react'
 
-import { registerUserProfile } from '@/lib/db/operations/user'
+import { registerUserProfile } from '@/lib/db/queries/user'
 
 import UserProfileForm from '@/components/features/user/user-profile-form'
 import PageLayout from '@/components/layout/page-layout'

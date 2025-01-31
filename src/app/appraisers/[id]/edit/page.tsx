@@ -1,9 +1,9 @@
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { getAppraiser } from '@/lib/db/operations/appraiser'
+import { getAppraiser } from '@/lib/db/queries/appraiser'
 
-import { protect } from '@/utils/auth'
+import { protectPage } from '@/utils/auth'
 
 import AppraiserForm from '@/components/features/appraiser/appraiser-form'
 import PageLayout from '@/components/layout/page-layout'
@@ -19,7 +19,7 @@ export const metadata: Metadata = generatePageMeta({
 type Props = PageParams<{ id?: string }>
 
 const Page: FC<Props> = async ({ params }) => {
-  await protect()
+  await protectPage()
 
   const id = (await params)?.id
 

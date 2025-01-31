@@ -92,3 +92,19 @@ export const replaceEmptyValues = <
           : TReplacement | null
       }
 }
+
+/**
+ * Resolves an arbitrary promise after the specified `time` (in ms). Default `time` is 1 second.
+ * Useful during development (e.g. simulating API request) or to add a fixed delay within async operations.
+ * @example
+ * const onSubmit = async () => {
+ *   foo()
+ *   await asyncDelay(3000)
+ *   await fetchData()
+ * }
+ */
+export const asyncDelay = (time = 1000) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, time)
+  })
+}

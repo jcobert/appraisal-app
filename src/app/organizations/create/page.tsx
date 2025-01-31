@@ -3,7 +3,7 @@ import { FC } from 'react'
 
 import { protectPage } from '@/utils/auth'
 
-import AppraiserForm from '@/components/features/appraiser/appraiser-form'
+import OrganizationForm from '@/components/features/organization/organization-form'
 import PageLayout from '@/components/layout/page-layout'
 
 import { PageParams } from '@/types/general'
@@ -11,7 +11,7 @@ import { PageParams } from '@/types/general'
 import { generatePageMeta } from '@/configuration/seo'
 
 export const metadata: Metadata = generatePageMeta({
-  title: 'Appraisers',
+  title: 'Organizations',
 })
 
 type Props = PageParams
@@ -21,7 +21,7 @@ const Page: FC<Props> = async () => {
 
   return (
     <PageLayout>
-      <AppraiserForm />
+      <OrganizationForm />
     </PageLayout>
   )
 }

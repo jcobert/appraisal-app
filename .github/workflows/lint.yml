@@ -20,12 +20,14 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 22
 
       - name: 📥 Download deps
         uses: u0reo/npm-install@fix/restore-failure
         with:
           useRollingCache: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: 🔬 Lint
         run: yarn lint:strict

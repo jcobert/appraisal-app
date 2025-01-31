@@ -72,6 +72,7 @@
     "react-select": "^5.8.3",
     "server-only": "^0.0.1",
     "tailwind-merge": "^2.1.0",
+    "usehooks-ts": "^3.1.0",
     "zod": "^3.24.1",
     "zustand": "^5.0.1"
   },

@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { getActiveUserProfile } from '@/lib/db/operations/user'
+import { getActiveUserProfile } from '@/lib/db/queries/user'
 
 import Greeting from '@/components/auth/greeting'
 import PageLayout from '@/components/layout/page-layout'

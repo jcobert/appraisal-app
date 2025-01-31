@@ -4,39 +4,43 @@ import 'server-only'
 import { Prisma } from '@prisma/client'
 
 import { db } from '@/lib/db/client'
+import { canQuery, CanQueryOptions } from '@/lib/db/utils'
 
-import { ProtectOptions, getUserId, protect } from '@/utils/auth'
+import { getUserId } from '@/utils/auth'
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { redirect } from 'next/navigation'
 
 export const getUserProfiles = async (
   params?: Prisma.UserFindManyArgs,
-  options?: ProtectOptions,
+  authOptions?: CanQueryOptions,
 ) => {
-  await protect(options)
+  const authorized = await canQuery(authOptions)
+  if (!authorized) return null
   const data = await db.user.findMany(params)
   return data
 }
 
 export const getUserProfile = async (
   params: Prisma.UserFindUniqueArgs,
-  options?: ProtectOptions,
+  authOptions?: CanQueryOptions,
 ) => {
-  await protect(options)
+  const authorized = await canQuery(authOptions)
+  if (!authorized) return null
   const data = await db.user.findUnique(params)
   return data
 }
 
-export const getActiveUserProfile = async () => {
-  const isAllowed = await protect({ redirect: false })
-  if (!isAllowed) return null
+export const getActiveUserProfile = async (authOptions?: CanQueryOptions) => {
+  const authorized = await canQuery(authOptions)
+  if (!authorized) return null
   const userId = await getUserId()
   const data = await db.user.findUnique({ where: { accountId: userId } })
   return data
 }
 
-export const registerUserProfile = async () => {
-  await protect()
+export const registerUserProfile = async (authOptions?: CanQueryOptions) => {
+  const authorized = await canQuery(authOptions)
+  if (!authorized) return null
   const session = getKindeServerSession()
   const user = await session.getUser()
   const currentProfile = await getActiveUserProfile()
@@ -62,27 +66,30 @@ export const registerUserProfile = async () => {
 
 export const createUserProfile = async (
   params: Prisma.UserCreateArgs,
-  options?: ProtectOptions,
+  authOptions?: CanQueryOptions,
 ) => {
-  await protect(options)
+  const authorized = await canQuery(authOptions)
+  if (!authorized) return null
   const data = await db.user.create(params)
   return data
 }
 
 export const updateUserProfile = async (
   params: Prisma.UserUpdateArgs,
-  options?: ProtectOptions,
+  authOptions?: CanQueryOptions,
 ) => {
-  await protect(options)
+  const authorized = await canQuery(authOptions)
+  if (!authorized) return null
   const data = await db.user.update(params)
   return data
 }
 
 export const deleteUserProfile = async (
   params: Prisma.UserDeleteArgs,
-  options?: ProtectOptions,
+  authOptions?: CanQueryOptions,
 ) => {
-  await protect(options)
+  const authorized = await canQuery(authOptions)
+  if (!authorized) return null
   const data = await db.user.delete(params)
   return data
 }

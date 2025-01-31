@@ -2,9 +2,9 @@ import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { getAppraiser } from '@/lib/db/operations/appraiser'
+import { getAppraiser } from '@/lib/db/queries/appraiser'
 
-import { protect } from '@/utils/auth'
+import { protectPage } from '@/utils/auth'
 import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
@@ -23,7 +23,7 @@ export const metadata: Metadata = generatePageMeta({
 })
 
 const Page: FC<Props> = async ({ params }) => {
-  await protect()
+  await protectPage()
 
   const appraiserId = (await params)?.id
 

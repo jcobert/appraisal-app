@@ -27,7 +27,7 @@ const schema = z.object({
   firstName: z.string().nonempty(),
   lastName: z.string().nonempty(),
   email: z.string().email().optional().or(z.literal('')),
-  phone: z.string().optional(),
+  phone: z.string().optional().or(z.literal('')),
   userId: z.string(),
 } satisfies ZodObject<TableMutable<Appraiser>>)
 
