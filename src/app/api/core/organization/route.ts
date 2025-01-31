@@ -1,22 +1,23 @@
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { Organization } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { db } from '@/lib/db/client'
+import {
+  createOrganization,
+  getUserOrganizations,
+} from '@/lib/db/queries/organization'
+import { getActiveUserProfile } from '@/lib/db/queries/user'
 
+import { isAllowedServer } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 
 // =============
 //      GET
 // =============
 export const GET = async (_req: NextRequest) => {
-  const { getUser, isAuthenticated } = getKindeServerSession()
-
-  const user = await getUser()
-  const isLoggedIn = await isAuthenticated()
+  const { allowed } = await isAllowedServer()
 
   // No user
-  if (!isLoggedIn || !user) {
+  if (!allowed) {
     return NextResponse.json(
       {
         error: {
@@ -41,10 +42,7 @@ export const GET = async (_req: NextRequest) => {
   // }
 
   try {
-    const res = await db.organization.findMany({
-      where: { members: { some: { accountId: user?.id } } },
-    })
-
+    const res = await getUserOrganizations()
     /**
      * @todo
      * Identify alternate possibilities of res data structure for improved error handling/messaging.
@@ -93,13 +91,10 @@ export const GET = async (_req: NextRequest) => {
 //      POST
 // ==============
 export const POST = async (req: NextRequest) => {
-  const { getUser, isAuthenticated } = getKindeServerSession()
-
-  const user = await getUser()
-  const isLoggedIn = await isAuthenticated()
+  const { allowed, user } = await isAllowedServer()
 
   // No user
-  if (!isLoggedIn || !user) {
+  if (!allowed) {
     return NextResponse.json(
       {
         error: {
@@ -127,9 +122,7 @@ export const POST = async (req: NextRequest) => {
     const payload = (await req.json()) as Organization
     const { name } = payload
 
-    const userProfile = await db.user.findUnique({
-      where: { accountId: user.id },
-    })
+    const userProfile = await getActiveUserProfile()
 
     // Bad data from client
     if (!name) {
@@ -159,11 +152,9 @@ export const POST = async (req: NextRequest) => {
       )
     }
 
-    const existingOrgs = await db.organization.findMany({
-      where: {
-        ownerId: userProfile?.id,
-        name: { equals: name, mode: 'insensitive' },
-      },
+    const existingOrgs = await getUserOrganizations({
+      owner: true,
+      filter: { name: { equals: name, mode: 'insensitive' } },
     })
 
     // User already owns an org with the same name
@@ -180,7 +171,7 @@ export const POST = async (req: NextRequest) => {
       )
     }
 
-    const res = await db.organization.create({
+    const res = await createOrganization({
       data: {
         ...payload,
         ownerId: userProfile?.id,

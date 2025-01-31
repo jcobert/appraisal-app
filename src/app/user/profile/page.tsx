@@ -1,7 +1,7 @@
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { FC } from 'react'
 
-import { getUserProfile } from '@/lib/db/operations/user'
+import { getUserProfile } from '@/lib/db/queries/user'
 
 import UserProfilePage from '@/components/features/user/user-profile-page'
 import PageLayout from '@/components/layout/page-layout'

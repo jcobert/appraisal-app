@@ -1,7 +1,7 @@
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { FC } from 'react'
 
-import { getActiveUserProfile } from '@/lib/db/operations/user'
+import { getActiveUserProfile } from '@/lib/db/queries/user'
 
 import { filterProtectedNavItems } from '@/utils/nav'
 

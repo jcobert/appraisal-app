@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { protect } from '@/utils/auth'
+import { protectPage } from '@/utils/auth'
 
 import OrganizationForm from '@/components/features/organization/organization-form'
 import PageLayout from '@/components/layout/page-layout'
@@ -17,7 +17,7 @@ export const metadata: Metadata = generatePageMeta({
 type Props = PageParams
 
 const Page: FC<Props> = async () => {
-  await protect()
+  await protectPage()
 
   return (
     <PageLayout>

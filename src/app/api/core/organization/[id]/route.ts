@@ -1,10 +1,14 @@
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { Organization } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { db } from '@/lib/db/client'
-import { getUserOrganizations } from '@/lib/db/operations/organization'
+import {
+  deleteOrganization,
+  getOrganization,
+  updateOrganization,
+  userIsOwner,
+} from '@/lib/db/queries/organization'
 
+import { isAllowedServer } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 
 // =============
@@ -14,13 +18,10 @@ export const GET = async (
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
-  const { getUser, isAuthenticated } = getKindeServerSession()
-
-  const user = await getUser()
-  const isLoggedIn = await isAuthenticated()
+  const { allowed } = await isAllowedServer()
 
   // No user
-  if (!isLoggedIn || !user) {
+  if (!allowed) {
     return NextResponse.json(
       {
         error: {
@@ -46,9 +47,7 @@ export const GET = async (
 
   try {
     const id = (await params)?.id
-    const res = await db.organization.findUnique({
-      where: { id, members: { some: { accountId: user?.id } } },
-    })
+    const res = await getOrganization({ where: { id } })
 
     /**
      * @todo
@@ -101,13 +100,15 @@ export const PUT = async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
-  const { getUser, isAuthenticated } = getKindeServerSession()
+  // const { getUser, isAuthenticated } = getKindeServerSession()
 
-  const user = await getUser()
-  const isLoggedIn = await isAuthenticated()
+  // const user = await getUser()
+  // const isLoggedIn = await isAuthenticated()
+
+  const { allowed, user } = await isAllowedServer()
 
   // No user
-  if (!isLoggedIn || !user) {
+  if (!allowed) {
     return NextResponse.json(
       {
         error: {
@@ -120,29 +121,19 @@ export const PUT = async (
     )
   }
 
-  // Not authorized
-  // if (!isAuthorized) {
-  //   return NextResponse.json(
-  //     {
-  //       error: { code: 'AUTH', message: 'User not authorized.' },
-  //       data: null,
-  //     } satisfies FetchResponse<Organization>,
-  //     { status: 403 },
-  //   )
-  // }
-
   try {
     const id = (await params)?.id
 
-    const userOrgs = await getUserOrganizations()
+    // const isMember = await userIsMember({ organizationId: id })
+    const isOwner = await userIsOwner({ organizationId: id })
 
-    if (!userOrgs?.some((org) => org?.id === id)) {
+    if (!isOwner) {
       return NextResponse.json(
         {
           data: null,
           error: {
             code: FetchErrorCode.AUTH,
-            message: 'User not a member of this organization.',
+            message: 'Unauthorized to update this organization.',
           },
         } satisfies FetchResponse<Organization>,
         { status: 403 },
@@ -153,7 +144,7 @@ export const PUT = async (
     const { name } = payload
 
     // Bad data from client
-    if (!name)
+    if (!name) {
       return NextResponse.json(
         {
           data: null,
@@ -164,8 +155,9 @@ export const PUT = async (
         } satisfies FetchResponse<Organization>,
         { status: 400 },
       )
+    }
 
-    const res = await db.organization.update({
+    const res = await updateOrganization({
       where: { id },
       data: { ...payload, updatedBy: user?.id },
     })
@@ -222,13 +214,10 @@ export const DELETE = async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
-  const { getUser, isAuthenticated } = getKindeServerSession()
-
-  const user = await getUser()
-  const isLoggedIn = await isAuthenticated()
+  const { allowed } = await isAllowedServer()
 
   // No user
-  if (!isLoggedIn || !user) {
+  if (!allowed) {
     return NextResponse.json(
       {
         error: {
@@ -241,22 +230,11 @@ export const DELETE = async (
     )
   }
 
-  // Not authorized
-  // if (!isAuthorized) {
-  //   return NextResponse.json(
-  //     {
-  //       error: { code: 'AUTH', message: 'User not authorized.' },
-  //       data: null,
-  //     } satisfies FetchResponse<Organization>,
-  //     { status: 403 },
-  //   )
-  // }
-
   try {
     const id = (await params)?.id
 
     // Bad data from client
-    if (!id)
+    if (!id) {
       return NextResponse.json(
         {
           data: null,
@@ -267,10 +245,9 @@ export const DELETE = async (
         } satisfies FetchResponse<Organization>,
         { status: 400 },
       )
+    }
 
-    const res = await db.organization.delete({
-      where: { id },
-    })
+    const res = await deleteOrganization({ where: { id } })
 
     /**
      * @todo
