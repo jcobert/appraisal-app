@@ -6,7 +6,7 @@ import Spinner from '@/components/general/spinner'
 
 export type StyleVariant = 'primary' | 'secondary' | 'tertiary'
 
-export type ButtonColor = 'danger' | 'brand'
+export type ButtonColor = 'danger' | 'brand' | 'general'
 
 export type AdditionalButtonProps = {
   variant?: StyleVariant
@@ -35,6 +35,14 @@ export const buttonColorClassNames: {
       'border-rose-600 text-rose-600 hover:border-rose-700 [&:not(:disabled)]:hover:bg-rose-500/5 hover:text-rose-700 disabled:border-rose-600/25 disabled:text-rose-600/60',
     tertiary:
       'text-rose-600 hover:text-rose-700 disabled:text-rose-600/60 [&:not(:disabled)]:hover:bg-rose-600/5',
+  },
+  general: {
+    primary:
+      'border-gray-600 bg-gray-600 hover:bg-gray-700 disabled:border-gray-600/25 disabled:bg-gray-600/70',
+    secondary:
+      'border-gray-600 text-gray-600 hover:border-gray-700 [&:not(:disabled)]:hover:bg-gray-500/5 hover:text-gray-700 disabled:border-gray-600/25 disabled:text-gray-600/60',
+    tertiary:
+      'text-gray-600 hover:text-gray-700 disabled:text-gray-600/60 [&:not(:disabled)]:hover:bg-gray-600/5',
   },
 }
 
