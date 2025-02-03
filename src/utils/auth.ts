@@ -80,8 +80,8 @@ export const protectPage = async (options: ProtectOptions = {}) => {
   return allowed
 }
 
-export const getUserId = async () => {
+export const getActiveUserAccount = async () => {
   const session = getKindeServerSession()
-  const userId = (await session.getUser())?.id
-  return userId || ''
+  const user = await session.getUser()
+  return user
 }

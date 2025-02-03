@@ -114,3 +114,8 @@ export const asyncDelay = <T = FetchResponse>(time = 1000, res?: T) => {
   })
   return promise
 }
+
+export const isOk = (code?: string) => {
+  if (!code) return false
+  return code?.toLowerCase() === 'ok'
+}

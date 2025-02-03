@@ -144,7 +144,7 @@ const UserProfileForm: FC<Props> = ({ initialData, registration = false }) => {
                   icon='mail'
                   placeholder='johnsmith@example.com'
                   // required
-                  disabled
+                  // disabled
                 />
               )}
             />

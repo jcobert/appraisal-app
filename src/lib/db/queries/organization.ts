@@ -6,7 +6,7 @@ import { Organization, Prisma } from '@prisma/client'
 import { db } from '@/lib/db/client'
 import { canQuery, CanQueryOptions } from '@/lib/db/utils'
 
-import { getUserId } from '@/utils/auth'
+import { getActiveUserAccount } from '@/utils/auth'
 
 /**
  * Returns organizations that user is a member of.
@@ -20,7 +20,7 @@ export const getUserOrganizations = async (params?: {
   const { owner = false, filter, authOptions } = params || {}
   const authorized = await canQuery(authOptions)
   if (!authorized) return null
-  const userId = await getUserId()
+  const userId = (await getActiveUserAccount())?.id
   const baseFilter: Prisma.OrganizationFindManyArgs['where'] = owner
     ? {
         owner: { accountId: userId },
@@ -41,7 +41,7 @@ export const userIsMember = async (params?: {
   const { organizationId, authOptions } = params || {}
   const authorized = await canQuery(authOptions)
   if (!authorized) return false
-  const userId = await getUserId()
+  const userId = (await getActiveUserAccount())?.id
   const data = await db.organization.findUnique({
     where: {
       id: organizationId,
@@ -58,7 +58,7 @@ export const userIsOwner = async (params?: {
   const { organizationId, authOptions } = params || {}
   const authorized = await canQuery(authOptions)
   if (!authorized) return false
-  const userId = await getUserId()
+  const userId = (await getActiveUserAccount())?.id
   const data = await db.organization.findUnique({
     where: {
       id: organizationId,

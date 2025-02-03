@@ -3,6 +3,7 @@ import { User } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/lib/db/client'
+import { updateUserEmail } from '@/lib/kinde-management/queries'
 
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 
@@ -208,7 +209,7 @@ export const POST = async (req: NextRequest) => {
 //      PUT
 // =============
 export const PUT = async (req: NextRequest) => {
-  const { getUser, isAuthenticated } = getKindeServerSession()
+  const { getUser, isAuthenticated, refreshTokens } = getKindeServerSession()
 
   const user = await getUser()
   const isLoggedIn = await isAuthenticated()
@@ -253,6 +254,25 @@ export const PUT = async (req: NextRequest) => {
         } satisfies FetchResponse<User>,
         { status: 403 },
       )
+    }
+
+    // Apply email update to account record
+    if (!!payload?.email && payload?.email !== user?.email) {
+      const accountUpdate = await updateUserEmail(payload?.email)
+      if (!accountUpdate) {
+        return NextResponse.json(
+          {
+            data: null,
+            error: {
+              code: FetchErrorCode.DATABASE_FAILURE,
+              message: 'Account could not be updated.',
+            },
+          } satisfies FetchResponse<User>,
+          { status: 500 },
+        )
+      }
+      // Refresh session data after successful email update
+      await refreshTokens()
     }
 
     const res = await db.user.update({
