@@ -1,10 +1,9 @@
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
-import { redirect } from 'next/navigation'
 import { FC } from 'react'
 
 import { registerUserProfile } from '@/lib/db/queries/user'
 
 import UserProfileForm from '@/components/features/user/user-profile-form'
+import FullScreenLoader from '@/components/layout/full-screen-loader'
 import PageLayout from '@/components/layout/page-layout'
 
 import { PageParams } from '@/types/general'
@@ -12,16 +11,9 @@ import { PageParams } from '@/types/general'
 type Props = PageParams
 
 const Page: FC<Props> = async () => {
-  const session = getKindeServerSession()
-  const isAuthenticated = await session.isAuthenticated()
-  const user = await session.getUser()
-
-  // If not logged in, redirect home.
-  if (!isAuthenticated || !user) {
-    redirect('/')
-  }
-
   const profile = await registerUserProfile()
+
+  if (!profile) return <FullScreenLoader />
 
   return (
     <PageLayout heading='Welcome'>
