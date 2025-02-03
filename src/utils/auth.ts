@@ -36,7 +36,7 @@ export const getUserPermissions = (
     : permissionsMap?.filter((perm) => perm?.allowed)
 }
 
-export const isAllowed = (
+export const hasPermission = (
   userPermissions: KindePermissions | null,
   permission: PermissionKey,
 ) => {
@@ -54,7 +54,7 @@ export const isAllowedServer = async (permission?: PermissionKey) => {
     return { allowed: false, user }
   }
   const allowed = !!permission
-    ? isAllowed(await session?.getPermissions(), permission)
+    ? hasPermission(await session?.getPermissions(), permission)
     : true
   return { allowed, user }
 }
@@ -80,8 +80,8 @@ export const protectPage = async (options: ProtectOptions = {}) => {
   return allowed
 }
 
-export const getUserId = async () => {
+export const getActiveUserAccount = async () => {
   const session = getKindeServerSession()
-  const userId = (await session.getUser())?.id
-  return userId || ''
+  const user = await session.getUser()
+  return user
 }

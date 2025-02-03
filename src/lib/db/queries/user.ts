@@ -6,7 +6,7 @@ import { Prisma } from '@prisma/client'
 import { db } from '@/lib/db/client'
 import { canQuery, CanQueryOptions } from '@/lib/db/utils'
 
-import { getUserId } from '@/utils/auth'
+import { getActiveUserAccount } from '@/utils/auth'
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { redirect } from 'next/navigation'
 
@@ -33,7 +33,7 @@ export const getUserProfile = async (
 export const getActiveUserProfile = async (authOptions?: CanQueryOptions) => {
   const authorized = await canQuery(authOptions)
   if (!authorized) return null
-  const userId = await getUserId()
+  const userId = (await getActiveUserAccount())?.id
   const data = await db.user.findUnique({ where: { accountId: userId } })
   return data
 }

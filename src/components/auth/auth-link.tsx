@@ -14,6 +14,8 @@ type Props = {
   children?: ReactNode
 }
 
+const postLoginRedirectURL = '/user/welcome'
+
 const AuthLink: FC<Props> = ({
   className,
   loggedIn = false,
@@ -23,7 +25,10 @@ const AuthLink: FC<Props> = ({
   const styles = 'w-full sm:w-fit px-3 py-2'
 
   const Login = (
-    <LoginLink className={cn([styles, 'btn-text', className])}>
+    <LoginLink
+      className={cn([styles, 'btn-text', className])}
+      postLoginRedirectURL={postLoginRedirectURL}
+    >
       {children ?? 'Sign in'}
     </LoginLink>
   )
@@ -37,7 +42,7 @@ const AuthLink: FC<Props> = ({
   const Register = (
     <RegisterLink
       className={cn([styles, 'btn', className])}
-      postLoginRedirectURL='/user/welcome'
+      postLoginRedirectURL={postLoginRedirectURL}
     >
       {children ?? 'Sign up'}
     </RegisterLink>
