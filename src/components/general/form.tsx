@@ -62,7 +62,13 @@ const Form: FC<FormProps> = ({
 
   const onSubmitHandler: FormEventHandler<HTMLFormElement> = async (e) => {
     setIsSubmitting(true)
-    await onSubmit?.(e)
+    try {
+      await onSubmit?.(e)
+    } catch (error) {
+      setIsSubmitting(false)
+      // eslint-disable-next-line no-console
+      console.error(error)
+    }
     setIsSubmitting(false)
   }
 

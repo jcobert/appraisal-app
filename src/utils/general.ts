@@ -1,3 +1,5 @@
+import { FetchResponse } from '@/utils/fetch'
+
 /**
  * Returns whether the value is **not** one of the following: `undefined`, `null`, `''`.
  *
@@ -103,8 +105,12 @@ export const replaceEmptyValues = <
  *   await fetchData()
  * }
  */
-export const asyncDelay = (time = 1000) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, time)
+export const asyncDelay = <T = FetchResponse>(time = 1000, res?: T) => {
+  const response = res ?? {}
+  const promise = new Promise<T>((resolve) => {
+    setTimeout(() => {
+      resolve(response as T)
+    }, time)
   })
+  return promise
 }

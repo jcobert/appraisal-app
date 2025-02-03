@@ -1,12 +1,12 @@
 import { Metadata } from 'next'
 import { ReactNode } from 'react'
-import { Toaster } from 'react-hot-toast'
 
 import AuthProvider from '@/providers/auth-provider'
 import ProgressProvider from '@/providers/progress-provider'
 import QueryProvider from '@/providers/query-provider'
 
 import Header from '@/components/layout/header/header'
+import ToasterOven from '@/components/toast/toast-container'
 
 import { baseOpenGraph, baseTwitter } from '@/configuration/seo'
 import { siteConfig } from '@/configuration/site'
@@ -33,10 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <body>
           <QueryProvider>
             <ProgressProvider />
-            <Toaster
-              position='top-right'
-              toastOptions={{ success: { duration: 4000 } }}
-            />
+            <ToasterOven />
             <div className='flex flex-col h-0 min-h-dvh'>
               <Header />
               <div className='grow h-full'>{children}</div>
