@@ -4,8 +4,12 @@ import {
 } from '@kinde-oss/kinde-auth-nextjs/dist/types'
 import { User } from '@prisma/client'
 
+/** Session user data provided by Kinde. */
+export type SessionUser = KindeUser<Record<string, unknown>>
+
+/** Various user profile and session data. */
 export type SessionData = {
-  user: KindeUser<Record<string, unknown>> | null
+  user: SessionUser | null
   loggedIn: boolean
   permissions: KindePermissions | null
   profile?: User | null

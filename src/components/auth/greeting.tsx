@@ -11,7 +11,7 @@ const Greeting: FC<Props> = ({ user }) => {
   if (!user) return null
   return (
     <Heading
-      text={`Welcome${user?.firstName ? `, ${user?.firstName}.` : ''}`}
+      text={`Welcome${user?.firstName ? `, ${user?.firstName}${user?.firstName?.endsWith('.') ? '' : '.'}` : ''}`}
     />
   )
 }

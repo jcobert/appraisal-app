@@ -4,10 +4,10 @@ import { FC } from 'react'
 import UserProfileForm from '@/components/features/user/user-profile-form'
 import Heading from '@/components/layout/heading'
 
-import { SessionData } from '@/types/auth'
+import { SessionUser } from '@/types/auth'
 
 type Props = {
-  sessionUser: SessionData['user']
+  sessionUser: SessionUser
   userProfile: User | null
 }
 

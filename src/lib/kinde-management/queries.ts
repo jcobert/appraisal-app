@@ -1,36 +1,17 @@
-import { Identities, Users, init } from '@kinde/management-api-js'
+// sort-imports-ignore
+import 'server-only'
+
+import {
+  Identities,
+  UpdateUserData,
+  Users,
+  init,
+} from '@kinde/management-api-js'
 
 import { kindeManagementConfig } from '@/lib/kinde-management/config'
 import { KindeIdentityType } from '@/lib/kinde-management/types'
 
 import { getActiveUserAccount } from '@/utils/auth'
-
-// export const getUserAccount = async () => {
-//   init(kindeManagementConfig)
-//   const userId = (await getActiveUserAccount())?.id
-//   const res = await Users.getUserData({ id: userId })
-//   return res
-// }
-
-// export const updateUserAccount = async () => {
-//   init(kindeManagementConfig)
-//   const userId = (await getActiveUserAccount())?.id
-//   const res = await Users.updateUser({ id: userId, requestBody: {} })
-//   return res
-// }
-
-// export const getUserIdentity = async ({ identityId }: GetIdentityData) => {
-//   init(kindeManagementConfig)
-//   const res = await Identities.getIdentity({ identityId })
-//   return res
-// }
-
-// const refreshUserClaims = async () => {
-//   init(kindeManagementConfig)
-//   const userId = (await getActiveUserAccount())?.id
-//   const res = await Users.refreshUserClaims({ userId })
-//   return res
-// }
 
 const getUserIdentities = async () => {
   init(kindeManagementConfig)
@@ -41,7 +22,7 @@ const getUserIdentities = async () => {
 
 /**
  * @TODO if user doesn't have an email identity yet (e.g. only have social),
- * should calling this update fn create one?
+ * should we create identity and not delete existing?
  */
 
 /**
@@ -51,7 +32,7 @@ const getUserIdentities = async () => {
  * so this function deletes the current identity
  * and creates a new one with the provided email.
  */
-export const updateUserEmail = async (newEmail: string) => {
+export const updateAuthEmail = async (newEmail: string) => {
   init(kindeManagementConfig)
   const { identities } = await getUserIdentities()
   const { email, id: userId } = await getActiveUserAccount()
@@ -87,4 +68,16 @@ export const updateUserEmail = async (newEmail: string) => {
   await Users.refreshUserClaims({ userId })
 
   return deleteRes
+}
+
+/** Updates a user's kinde account profile (e.g. first, last name). */
+export const updateAuthAccount = async (
+  newUser: UpdateUserData['requestBody'],
+) => {
+  init(kindeManagementConfig)
+  const { id } = await getActiveUserAccount()
+  if (!id || !newUser || typeof newUser !== 'object') return null
+  const res = await Users.updateUser({ id, requestBody: newUser })
+  await Users.refreshUserClaims({ userId: id })
+  return res
 }
