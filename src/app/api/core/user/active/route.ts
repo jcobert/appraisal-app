@@ -159,6 +159,7 @@ export const POST = async (req: NextRequest) => {
     const res = await db.user.create({
       data: {
         ...payload,
+        email: payload?.email || user?.email,
         accountId: user.id,
         createdBy: user?.id,
         updatedBy: user?.id,
@@ -311,7 +312,11 @@ export const PUT = async (req: NextRequest) => {
 
     const res = await db.user.update({
       where: { accountId: user.id },
-      data: { ...payload, updatedBy: user?.id },
+      data: {
+        ...payload,
+        email: payload?.email || user?.email,
+        updatedBy: user?.id,
+      },
     })
 
     /**
