@@ -66,8 +66,8 @@ const MobileNav: FC<Props> = ({
 
       {/* Menu */}
       <Drawer
-        isOpen={isMenuOpen}
-        setIsOpen={setIsMenuOpen}
+        open={isMenuOpen}
+        onOpenChange={setIsMenuOpen}
         overlay={false}
         closeButton={false}
       >

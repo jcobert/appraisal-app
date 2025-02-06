@@ -13,15 +13,15 @@ type Props = ModalProps & {
 const Drawer: FC<Props> = ({
   children,
   trigger,
-  isOpen,
-  setIsOpen,
+  open,
+  onOpenChange,
   closeButton = true,
   className = '',
   overlay = true,
 }) => {
   return (
     <>
-      <Dialog.Root open={isOpen} onOpenChange={setIsOpen} modal>
+      <Dialog.Root open={open} onOpenChange={onOpenChange} modal>
         {!!trigger && <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>}
         <Dialog.Portal>
           {overlay ? (
