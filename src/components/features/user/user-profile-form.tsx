@@ -9,6 +9,7 @@ import {
   useFormState,
   useWatch,
 } from 'react-hook-form'
+import { FiAlertCircle } from 'react-icons/fi'
 import { z } from 'zod'
 
 import { successful } from '@/utils/fetch'
@@ -49,9 +50,14 @@ const defaultFormValues = {
 type Props = {
   initialData?: User | null
   registration?: boolean
+  readOnly?: boolean
 }
 
-const UserProfileForm: FC<Props> = ({ initialData, registration = false }) => {
+const UserProfileForm: FC<Props> = ({
+  initialData,
+  registration = false,
+  readOnly = false,
+}) => {
   const router = useRouter()
   const isUpdate = !!initialData?.id
   const prevUrl = '/dashboard'
@@ -114,12 +120,18 @@ const UserProfileForm: FC<Props> = ({ initialData, registration = false }) => {
       className='flex flex-col gap-8 max-sm:h-full'
       loader='none'
     >
-      {/* <p className='max-w-prose self-center w-full text-pretty'>
-        Add a new appraiser to your organization.
-      </p> */}
+      <div className='flex flex-col gap-16'>
+        <div className='flex flex-col gap-6'>
+          {readOnly ? (
+            <div className='flex gap-4 p-4 items-center border rounded bg-blue-50 border-blue-100'>
+              <FiAlertCircle aria-hidden className='shrink-0' />
+              <p className='text-sm text-pretty'>
+                This information comes from the provider that you signed in with
+                and cannot be changed.
+              </p>
+            </div>
+          ) : null}
 
-      <div className='flex flex-col gap-16 max-w-3xl self-center size-full border rounded bg-almost-white p-4'>
-        <div className='flex flex-col gap-8'>
           <div className='flex flex-col gap-4'>
             <h2 className='font-medium text-lg'>Personal Info</h2>
             <div className='flex gap-6 flex-col'>
@@ -134,9 +146,10 @@ const UserProfileForm: FC<Props> = ({ initialData, registration = false }) => {
                       label='First Name'
                       error={error?.message}
                       className='flex-1'
-                      required
+                      required={!readOnly}
                       icon='person'
                       placeholder='First'
+                      disabled={readOnly}
                     />
                   )}
                 />
@@ -150,9 +163,10 @@ const UserProfileForm: FC<Props> = ({ initialData, registration = false }) => {
                       label='Last Name'
                       error={error?.message}
                       className='flex-1'
-                      required
+                      required={!readOnly}
                       icon='person'
                       placeholder='Last'
+                      disabled={readOnly}
                     />
                   )}
                 />
@@ -172,6 +186,7 @@ const UserProfileForm: FC<Props> = ({ initialData, registration = false }) => {
                       placeholder='(123) 456-7890'
                       format='(###) ###-####'
                       mask='_'
+                      disabled={readOnly}
                     />
                   )}
                 />
@@ -196,7 +211,8 @@ const UserProfileForm: FC<Props> = ({ initialData, registration = false }) => {
                     className='sm:w-[calc(50%-0.75rem)]'
                     icon='mail'
                     placeholder='johnsmith@example.com'
-                    required
+                    required={!readOnly}
+                    disabled={readOnly}
                   />
                 )}
               />
@@ -211,17 +227,23 @@ const UserProfileForm: FC<Props> = ({ initialData, registration = false }) => {
           </div> */}
         </div>
 
-        <div className='flex max-sm:flex-col justify-end items-center gap-6 mt-auto'>
-          <Button
-            variant={registration ? 'tertiary' : 'secondary'}
-            onClick={onCancel}
-          >
-            {registration ? 'Set up later' : 'Cancel'}
-          </Button>
-          <Button type='submit' loading={isPending}>
-            {isUpdate ? 'Save' : 'Create'}
-          </Button>
-        </div>
+        {!readOnly ? (
+          <div className='flex max-sm:flex-col justify-end items-center gap-6 mt-auto'>
+            <Button
+              variant={registration ? 'tertiary' : 'secondary'}
+              onClick={onCancel}
+            >
+              {registration ? 'Set up later' : 'Cancel'}
+            </Button>
+            <Button type='submit' loading={isPending} disabled={readOnly}>
+              {isUpdate ? 'Save' : 'Create'}
+            </Button>
+          </div>
+        ) : (
+          <div className='flex max-sm:flex-col justify-end items-center gap-6 mt-auto'>
+            <Button onClick={onCancel}>Done</Button>
+          </div>
+        )}
       </div>
 
       <Confirmation
@@ -229,10 +251,10 @@ const UserProfileForm: FC<Props> = ({ initialData, registration = false }) => {
         description={
           <div className='prose flex flex-col gap-2'>
             <div>
-              You are changing the email that you use to sign into this account
-              with. Please confirm that you entered it correctly.
+              You are changing the email that you use to sign into this account.
+              Please confirm that you entered it correctly.
             </div>
-            <div className='font-medium text-center border__ rounded p-4 w-full mx-auto bg-gray-50'>
+            <div className='font-medium text-center rounded p-4 w-full mx-auto bg-gray-50'>
               {email}
             </div>
           </div>

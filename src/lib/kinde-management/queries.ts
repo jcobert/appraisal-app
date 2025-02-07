@@ -13,17 +13,17 @@ import { KindeIdentityType } from '@/lib/kinde-management/types'
 
 import { getActiveUserAccount } from '@/utils/auth'
 
-const getUserIdentities = async () => {
+export const getUserIdentities = async (options?: {
+  type?: KindeIdentityType
+}) => {
   init(kindeManagementConfig)
+  const { type } = options || {}
   const userId = (await getActiveUserAccount())?.id
   const res = await Users.getUserIdentities({ userId })
-  return res
+  if (!type) return res?.identities || []
+  const identities = res?.identities?.filter((id) => id?.type === type)
+  return identities || []
 }
-
-/**
- * @TODO if user doesn't have an email identity yet (e.g. only have social),
- * should we create identity and not delete existing?
- */
 
 /**
  * Updates a user's primary account email.
@@ -34,21 +34,19 @@ const getUserIdentities = async () => {
  */
 export const updateAuthEmail = async (newEmail: string) => {
   init(kindeManagementConfig)
-  const { identities } = await getUserIdentities()
+  const identities = await getUserIdentities()
   const { email, id: userId } = await getActiveUserAccount()
 
   // If no active user account info, abort.
-  if (!identities?.length || !email) return null
+  if (!identities?.length) return null
 
   // Find current email identity.
   const currentIdentity = identities?.find(
     (id) =>
       id?.type === KindeIdentityType.email &&
+      !!email &&
       id?.name?.toLowerCase() === email?.toLowerCase(),
   )
-
-  // If no current email identity, abort.
-  if (!currentIdentity?.id) return null
 
   // Create new email identity.
   const createRes = await Users.createUserIdentity({
@@ -59,15 +57,19 @@ export const updateAuthEmail = async (newEmail: string) => {
   // If creation failed, abort.
   if (!createRes?.identity) return null
 
-  // Delete the current email identity.
-  const deleteRes = await Identities.deleteIdentity({
-    identityId: currentIdentity?.id,
-  })
+  let response = createRes
+
+  // Delete the outgoing email identity if it exists.
+  if (currentIdentity?.id) {
+    response = await Identities.deleteIdentity({
+      identityId: currentIdentity?.id,
+    })
+  }
 
   // Sync user data.
   await Users.refreshUserClaims({ userId })
 
-  return deleteRes
+  return response
 }
 
 /** Updates a user's kinde account profile (e.g. first, last name). */

@@ -93,7 +93,7 @@ const Form: FC<FormProps> = ({
         )}
       >
         {!unstyled ? (
-          <div className='flex flex-col gap-16 max-w-3xl self-center size-full border rounded bg-almost-white p-4'>
+          <div className='flex flex-col gap-16 max-w-3xl self-center size-full border rounded bg-almost-white p-4 sm:p-6'>
             {children}
           </div>
         ) : null}

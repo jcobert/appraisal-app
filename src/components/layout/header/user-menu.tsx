@@ -28,19 +28,16 @@ const UserMenu: FC<{ sessionData: SessionData }> = ({
       contentProps={{ collisionPadding: 5 }}
     >
       <div className='bg-white rounded border p-4 shadow flex flex-col gap-4 min-w-60'>
-        <UserGreeting user={profile} />
-
         {loggedIn ? (
-          <div className='flex justify-center'>
-            <Link
-              href='/user/profile'
-              onClick={() => {
-                setOpen(false)
-              }}
-            >
-              My Profile
-            </Link>
-          </div>
+          <Link
+            href='/user/profile'
+            onClick={() => {
+              setOpen(false)
+            }}
+            className='group'
+          >
+            <UserGreeting user={profile} />
+          </Link>
         ) : null}
 
         <div
