@@ -80,6 +80,7 @@ export const protectPage = async (options: ProtectOptions = {}) => {
   return allowed
 }
 
+/** Returns the server session user. */
 export const getActiveUserAccount = async () => {
   const session = getKindeServerSession()
   const user = await session.getUser()

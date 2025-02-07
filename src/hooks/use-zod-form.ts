@@ -14,6 +14,11 @@ export const defaultErrorMap: ZodErrorMap = (error, ctx) => {
         message = `Must be at least ${error.minimum}`
       }
       break
+    case 'invalid_string':
+      if (!ctx.data) {
+        message = 'Field is required'
+      }
+      break
     default:
       break
   }

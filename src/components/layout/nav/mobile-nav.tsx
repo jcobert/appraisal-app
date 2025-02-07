@@ -66,8 +66,8 @@ const MobileNav: FC<Props> = ({
 
       {/* Menu */}
       <Drawer
-        isOpen={isMenuOpen}
-        setIsOpen={setIsMenuOpen}
+        open={isMenuOpen}
+        onOpenChange={setIsMenuOpen}
         overlay={false}
         closeButton={false}
       >
@@ -99,7 +99,15 @@ const MobileNav: FC<Props> = ({
         <div className='px-8 pt-4 overflow-y-auto pb-16 h-dvh flex flex-col'>
           {/* User */}
           {profile ? (
-            <UserGreeting user={profile} />
+            <Link
+              className='w-fit mx-auto'
+              href='/user/profile'
+              onClick={() => {
+                setIsMenuOpen(false)
+              }}
+            >
+              <UserGreeting user={profile} />
+            </Link>
           ) : (
             <div className='flex flex-col items-center gap-2 mt-4'>
               <p className='text-balance'>Ready to get started?</p>

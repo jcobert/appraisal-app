@@ -1,7 +1,9 @@
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
+import { redirect } from 'next/navigation'
 import { FC } from 'react'
 
 import { getUserProfile } from '@/lib/db/queries/user'
+import { getUserIdentities } from '@/lib/kinde-management/queries'
 
 import UserProfilePage from '@/components/features/user/user-profile-page'
 import PageLayout from '@/components/layout/page-layout'
@@ -16,9 +18,19 @@ const Page: FC<Props> = async () => {
 
   const userProfile = await getUserProfile({ where: { accountId: user?.id } })
 
+  if (!userProfile) {
+    redirect('/dashboard')
+  }
+
+  const identities = await getUserIdentities()
+
   return (
     <PageLayout>
-      <UserProfilePage sessionUser={user} userProfile={userProfile} />
+      <UserProfilePage
+        sessionUser={user}
+        userProfile={userProfile}
+        identities={identities}
+      />
     </PageLayout>
   )
 }

@@ -3,9 +3,14 @@ import { User } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/lib/db/client'
-import { updateUserEmail } from '@/lib/kinde-management/queries'
+import {
+  updateAuthAccount,
+  updateAuthEmail,
+} from '@/lib/kinde-management/queries'
 
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
+
+import { getProfileChanges } from '@/components/features/user/utils'
 
 // =============
 //      GET
@@ -154,6 +159,7 @@ export const POST = async (req: NextRequest) => {
     const res = await db.user.create({
       data: {
         ...payload,
+        email: payload?.email || user?.email,
         accountId: user.id,
         createdBy: user?.id,
         updatedBy: user?.id,
@@ -256,9 +262,16 @@ export const PUT = async (req: NextRequest) => {
       )
     }
 
+    const changes = getProfileChanges({
+      account: user,
+      profile: payload,
+    })
+
     // Apply email update to account record
-    if (!!payload?.email && payload?.email !== user?.email) {
-      const accountUpdate = await updateUserEmail(payload?.email)
+    if (!!changes?.email) {
+      const accountUpdate = await updateAuthEmail(
+        payload?.email || changes?.email,
+      )
       if (!accountUpdate) {
         return NextResponse.json(
           {
@@ -275,9 +288,35 @@ export const PUT = async (req: NextRequest) => {
       await refreshTokens()
     }
 
+    // Apply name update to account record
+    if (!!changes?.firstName || !!changes?.lastName) {
+      const accountUpdate = await updateAuthAccount({
+        given_name: payload?.firstName,
+        family_name: payload?.lastName,
+      })
+      if (!accountUpdate) {
+        return NextResponse.json(
+          {
+            data: null,
+            error: {
+              code: FetchErrorCode.DATABASE_FAILURE,
+              message: 'User account could not be updated.',
+            },
+          } satisfies FetchResponse<User>,
+          { status: 500 },
+        )
+      }
+      // Refresh session data after successful email update
+      await refreshTokens()
+    }
+
     const res = await db.user.update({
       where: { accountId: user.id },
-      data: { ...payload, updatedBy: user?.id },
+      data: {
+        ...payload,
+        email: payload?.email || user?.email,
+        updatedBy: user?.id,
+      },
     })
 
     /**
@@ -294,7 +333,7 @@ export const PUT = async (req: NextRequest) => {
           data: null,
           error: {
             code: FetchErrorCode.DATABASE_FAILURE,
-            message: 'The request was not successful.',
+            message: 'User profile could not be updated.',
           },
         } satisfies FetchResponse<User>,
         { status: 500 },

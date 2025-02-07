@@ -4,4 +4,5 @@ export enum KindeIdentityType {
   phone = 'phone',
   enterprise = 'enterprise',
   social = 'social',
+  google = 'oauth2:google',
 }

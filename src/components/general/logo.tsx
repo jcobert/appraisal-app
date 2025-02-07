@@ -8,10 +8,7 @@ type Props = SVGAttributes<SVGElement>
 const Logo: FC<Props> = ({ className, ...rest }) => {
   return (
     <GrCodeSandbox
-      className={cn(
-        'text-brand hover:text-brand-dark text-4xl transition',
-        className,
-      )}
+      className={cn('text-brand text-4xl transition', className)}
       {...rest}
     />
   )
