@@ -1,9 +1,11 @@
 import { Metadata } from 'next'
 import { FC } from 'react'
 
+import { getUserOrganizations } from '@/lib/db/queries/organization'
 import { getActiveUserProfile } from '@/lib/db/queries/user'
 
-import Greeting from '@/components/auth/greeting'
+import { protectPage } from '@/utils/auth'
+
 import Dashboard from '@/components/features/dashboard/dashboard'
 import PageLayout from '@/components/layout/page-layout'
 
@@ -14,11 +16,14 @@ export const metadata: Metadata = {
 }
 
 const Page: FC = async () => {
+  await protectPage()
+
   const user = await getActiveUserProfile()
+  const orgs = await getUserOrganizations()
 
   return (
-    <PageLayout heading={<Greeting user={user} />} pageClassName='gap-16'>
-      <Dashboard />
+    <PageLayout>
+      <Dashboard user={user} organizations={orgs} />
     </PageLayout>
   )
 }

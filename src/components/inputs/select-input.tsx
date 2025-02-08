@@ -61,6 +61,8 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
       setIsMounted(true)
     }, [])
 
+    if (!isMounted) return null
+
     return (
       <div className={cn(['flex flex-col', className])}>
         <label
