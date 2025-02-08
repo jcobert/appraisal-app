@@ -9,11 +9,20 @@ export type StoredSettings = {
 const storedSettingsKey =
   `${siteConfig.title?.toLowerCase()?.trim()?.replace(' ', '-')}-prefs` as const
 
-const initialSettings = { activeOrg: '' } satisfies StoredSettings
+const defaultSettings = { activeOrg: '' } satisfies StoredSettings
 
-export const useStoredSettings = () => {
+type UseStoredSettingsProps = {
+  initialSettings?: StoredSettings
+}
+
+export const useStoredSettings = ({
+  initialSettings,
+}: UseStoredSettingsProps = {}) => {
   const [settings, updateSettings, clearSettings] =
-    useLocalStorage<StoredSettings>(storedSettingsKey, initialSettings)
+    useLocalStorage<StoredSettings>(
+      storedSettingsKey,
+      initialSettings ?? defaultSettings,
+    )
 
   return { settings, updateSettings, clearSettings }
 }

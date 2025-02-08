@@ -28,9 +28,10 @@ export const selectStyles: StylesConfig<any, boolean, GroupBase<any>> = {
   }),
 }
 
-export type SelectInputProps = Omit<Props, 'onChange'> &
+export type SelectInputProps = Omit<Props, 'onChange' | 'aria-label'> &
   Omit<AdditionalInputProps, 'icon' | 'inputClassName'> & {
     className?: string
+    ariaLabel?: string
     onChange?: (
       opt: SelectOption<any, any>,
       actionMeta: ActionMeta<unknown>,
@@ -49,6 +50,7 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
       error,
       onChange,
       classNames,
+      ariaLabel,
       ...props
     },
     ref,
@@ -67,6 +69,7 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
       <div className={cn(['flex flex-col', className])}>
         <label
           htmlFor={id || name}
+          aria-label={!label ? ariaLabel || id : ariaLabel}
           className={cn([
             'text-sm text-gray-700 w-fit',
             props?.required &&
@@ -84,16 +87,19 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
           menuShouldBlockScroll
           menuShouldScrollIntoView
           classNames={{
-            control: () =>
+            control: (props) =>
               cn([
-                'hover:border-gray-400 !transition px-1 py-[1px] border border-gray-300 rounded dark:bg-zinc-600',
+                '!transition !px-1 !py-px !border !border-gray-300 [&:not(:disabled)]:hover:!border-gray-400 disabled:!text-gray-500 !rounded dark:!bg-zinc-600 !shadow-none',
                 error && 'border-red-500 hover:border-red-500',
+                props.isFocused && '!ring-2 !ring-brand-light ring-offset-2',
               ]),
             placeholder: () => 'text-base text-zinc-400 dark:text-zinc-300',
             menu: () => 'dark:bg-zinc-800',
             option: (props) =>
               cn({
-                'dark:bg-zinc-700': props.isFocused && !props.isSelected,
+                'dark:bg-zinc-700 !bg-brand-extra-light':
+                  props.isFocused && !props.isSelected,
+                '!bg-brand': props.isSelected,
               }),
             input: () => cn('dark:text-zinc-100'),
             singleValue: () => cn('dark:text-zinc-100'),

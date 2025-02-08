@@ -2,7 +2,7 @@
 
 import { Organization, User } from '@prisma/client'
 import { sortBy } from 'lodash'
-import { FC, useMemo } from 'react'
+import { FC, useEffect, useMemo } from 'react'
 import { FiUserPlus } from 'react-icons/fi'
 
 import { greeting } from '@/utils/string'
@@ -37,14 +37,17 @@ const Dashboard: FC<Props> = ({ user, organizations }) => {
 
   const selectedOrganization = useMemo(() => {
     if (!organizationOptions?.length) return undefined
-    if (!settings?.activeOrg) {
-      // updateSettings({ activeOrg: organizationOptions?.[0]?.value })
-      return organizationOptions?.[0]
-    }
     return organizationOptions?.find(
       (opt) => opt?.value === settings?.activeOrg,
     )
   }, [settings?.activeOrg, organizationOptions])
+
+  // Update local storage with first org on load, if none exists.
+  useEffect(() => {
+    if (!settings?.activeOrg || !selectedOrganization) {
+      updateSettings({ activeOrg: organizationOptions?.[0]?.value })
+    }
+  }, [selectedOrganization])
 
   return (
     <div>
@@ -53,14 +56,18 @@ const Dashboard: FC<Props> = ({ user, organizations }) => {
           className='max-md:mx-auto flex-none'
           text={greeting(user?.firstName)}
         />
-        <SelectInput
-          // label='Organization'
-          placeholder='Select organization...'
-          className='md:w-fit md:min-w-64'
-          options={organizationOptions}
-          value={selectedOrganization}
-          onChange={(opt) => updateSettings({ activeOrg: opt?.value })}
-        />
+        {hasOrgs ? (
+          <SelectInput
+            id='organization'
+            // label='Organization'
+            ariaLabel='Organization'
+            placeholder='Select organization...'
+            className='md:w-fit md:min-w-64'
+            options={organizationOptions}
+            value={selectedOrganization ?? null}
+            onChange={(opt) => updateSettings({ activeOrg: opt?.value })}
+          />
+        ) : null}
       </div>
 
       <section>
