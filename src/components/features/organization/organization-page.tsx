@@ -38,22 +38,17 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
       <div>
         <Back href='/organizations' text='Organizations' />
       </div>
-      <div className='md:flex justify-between'>
-        <div className='flex flex-col gap-2 w-full'>
+      <div className='flex max-md:flex-col md:items-center max-md:gap-4 gap-6'>
+        <div className='flex flex-col gap-2 border-b-2 pb-2 md:pr-12 md:pl-0 border-brand-extra-light sm:px-4 sm:w-fit w-full max-md:mx-auto'>
           <Heading text={name} className='font-normal' />
-
-          <span
-            aria-hidden
-            className='h-px w-1/2 border-b-2 border-brand-extra-light max-md:hidden'
-          />
         </div>
         <DropdownMenu
           trigger={
             <Button
               variant='secondary'
-              className='p-2 min-w-0 size-fit max-md:ml-auto'
+              className='p-2 min-w-0 max-w-16 size-fit aspect-square max-md:ml-auto'
             >
-              <FaGear className='text-lg' />
+              <FaGear className='text-2xl sm:text-lg' />
             </Button>
           }
         >

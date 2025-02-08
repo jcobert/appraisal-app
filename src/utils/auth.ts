@@ -65,6 +65,7 @@ export type ProtectOptions = {
   redirect?: boolean
 }
 
+/** Protects page server side by redirecting if user not authenticated. */
 export const protectPage = async (options: ProtectOptions = {}) => {
   const {
     permission,

@@ -16,6 +16,14 @@
     @apply transition;
   }
 
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  button:focus-visible,
+  a:focus-visible {
+    @apply outline-offset-4 outline-brand;
+  }
+
   .layout {
     @apply mx-auto w-[96%] max-w-layout sm:w-11/12;
   }
