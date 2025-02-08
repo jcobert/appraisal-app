@@ -9,7 +9,6 @@ import {
   useFormState,
   useWatch,
 } from 'react-hook-form'
-import { FiAlertCircle } from 'react-icons/fi'
 import { z } from 'zod'
 
 import { successful } from '@/utils/fetch'
@@ -18,6 +17,7 @@ import { withoutBlanks } from '@/utils/general'
 import { toastyRequest } from '@/utils/toast'
 
 import { useUserMutations } from '@/components/features/user/hooks/use-user-profile-mutations'
+import Banner from '@/components/general/banner'
 import Button from '@/components/general/button'
 import Form from '@/components/general/form'
 import PatternInput from '@/components/inputs/pattern-input'
@@ -123,13 +123,10 @@ const UserProfileForm: FC<Props> = ({
       <div className='flex flex-col gap-16'>
         <div className='flex flex-col gap-6'>
           {readOnly ? (
-            <div className='flex gap-4 p-4 items-center border rounded bg-blue-50 border-blue-100'>
-              <FiAlertCircle aria-hidden className='shrink-0' />
-              <p className='text-sm text-pretty'>
-                This information comes from the provider that you signed in with
-                and cannot be changed.
-              </p>
-            </div>
+            <Banner>
+              This information comes from the provider that you signed in with
+              and cannot be changed.
+            </Banner>
           ) : null}
 
           <div className='flex flex-col gap-4'>
