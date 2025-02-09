@@ -10,7 +10,7 @@ import { greeting } from '@/utils/string'
 import Banner from '@/components/general/banner'
 import Link from '@/components/general/link'
 import NoResults from '@/components/general/no-results'
-import SelectInput, { SelectOption } from '@/components/inputs/select-input'
+import SelectInput, { SelectOption } from '@/components/form/inputs/select-input'
 import Heading from '@/components/layout/heading'
 
 import { useStoredSettings } from '@/hooks/use-stored-settings'

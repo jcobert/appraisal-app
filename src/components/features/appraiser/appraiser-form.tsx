@@ -13,8 +13,8 @@ import { toastyRequest } from '@/utils/toast'
 
 import { useAppraiserMutations } from '@/components/features/appraiser/hooks/use-appraiser-mutations'
 import Button from '@/components/general/button'
-import PatternInput from '@/components/inputs/pattern-input'
-import TextInput from '@/components/inputs/text-input'
+import PatternInput from '@/components/form/inputs/pattern-input'
+import TextInput from '@/components/form/inputs/text-input'
 import Alert from '@/components/layout/alert'
 import Heading from '@/components/layout/heading'
 

@@ -4,7 +4,9 @@ import { TextareaHTMLAttributes, forwardRef, useState } from 'react'
 
 import { cn } from '@/utils/style'
 
-import { AdditionalInputProps } from '@/components/inputs/text-input'
+import FieldError from '@/components/form/field-error'
+import FieldHelper from '@/components/form/field-helper'
+import { AdditionalInputProps } from '@/components/form/inputs/text-input'
 
 export type TextAreaInputProps = Partial<
   TextareaHTMLAttributes<HTMLTextAreaElement>
@@ -64,10 +66,8 @@ const TextAreaInput = forwardRef<HTMLTextAreaElement, TextAreaInputProps>(
           }}
         />
 
-        {helperVisible && helper ? (
-          <span className='text-xs text-gray-600'>{helper}</span>
-        ) : null}
-        {error ? <span className='text-red-500 text-xs'>{error}</span> : null}
+        {helperVisible ? <FieldHelper text={helper} /> : null}
+        <FieldError error={error} />
       </div>
     )
   },

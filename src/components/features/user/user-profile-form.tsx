@@ -11,32 +11,24 @@ import {
 } from 'react-hook-form'
 import { z } from 'zod'
 
+import { userProfileSchema } from '@/lib/db/schema/user'
+
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 import { withoutBlanks } from '@/utils/general'
 import { toastyRequest } from '@/utils/toast'
 
 import { useUserMutations } from '@/components/features/user/hooks/use-user-profile-mutations'
+import Form from '@/components/form/form'
+import PatternInput from '@/components/form/inputs/pattern-input'
+import TextInput from '@/components/form/inputs/text-input'
 import Banner from '@/components/general/banner'
 import Button from '@/components/general/button'
-import Form from '@/components/general/form'
-import PatternInput from '@/components/inputs/pattern-input'
-import TextInput from '@/components/inputs/text-input'
 import Confirmation from '@/components/layout/confirmation'
 
 import useZodForm from '@/hooks/use-zod-form'
 
-import { TableMutable } from '@/types/db'
-import { ZodObject } from '@/types/general'
-
-const schema = z.object({
-  firstName: z.string().nonempty(),
-  lastName: z.string().nonempty(),
-  email: z.string().email().nonempty(),
-  phone: z.string().optional().or(z.literal('')),
-} satisfies ZodObject<
-  Omit<TableMutable<User>, 'accountId' | 'userRole' | 'avatar'>
->)
+const schema = userProfileSchema.form
 
 type UserProfileFormData = z.infer<typeof schema>
 

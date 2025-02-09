@@ -12,9 +12,9 @@ import { toastyRequest } from '@/utils/toast'
 
 import { useOrganizationMutations } from '@/components/features/organization/hooks/use-organization-mutations'
 import Button from '@/components/general/button'
-import Form from '@/components/general/form'
-import FormActionBar from '@/components/general/form-action-bar'
-import TextInput from '@/components/inputs/text-input'
+import Form from '@/components/form/form'
+import FormActionBar from '@/components/form/form-action-bar'
+import TextInput from '@/components/form/inputs/text-input'
 
 import useZodForm from '@/hooks/use-zod-form'
 

@@ -1,3 +1,5 @@
+import { ZodFieldErrors } from '@/utils/zod'
+
 export enum FetchErrorCode {
   AUTH = 'AUTH',
   NOT_FOUND = 'NOT_FOUND',
@@ -13,7 +15,7 @@ export type FetchResponse<TData = any> = {
   status?: number
   data?: TData | null
   message?: string
-  error?: { code?: FetchErrorCode; message?: string }
+  error?: { code?: FetchErrorCode; message?: string; details?: ZodFieldErrors | null }
 }
 
 export const successful = (status?: number) => {
