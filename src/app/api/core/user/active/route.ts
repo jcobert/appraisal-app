@@ -3,12 +3,14 @@ import { User } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/lib/db/client'
+import { userProfileSchema } from '@/lib/db/schemas/user'
 import {
   updateAuthAccount,
   updateAuthEmail,
 } from '@/lib/kinde-management/queries'
 
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
+import { validatePayload } from '@/utils/zod'
 
 import { getProfileChanges } from '@/components/features/user/utils'
 
@@ -48,13 +50,6 @@ export const GET = async (_req: NextRequest) => {
 
   try {
     const res = await db.user.findUnique({ where: { accountId: user.id } })
-
-    /**
-     * @todo
-     * Identify alternate possibilities of res data structure for improved error handling/messaging.
-     * Does primsa return an error object?
-     * Would like to differentiate between db connection issue and bad payload.
-     */
 
     // Not found
     if (!res) {
@@ -96,120 +91,104 @@ export const GET = async (_req: NextRequest) => {
 // ==============
 //      POST
 // ==============
-export const POST = async (req: NextRequest) => {
-  const { getUser, isAuthenticated } = getKindeServerSession()
+// export const POST = async (req: NextRequest) => {
+//   const { getUser, isAuthenticated } = getKindeServerSession()
 
-  const user = await getUser()
-  const isLoggedIn = await isAuthenticated()
+//   const user = await getUser()
+//   const isLoggedIn = await isAuthenticated()
 
-  // No user
-  if (!isLoggedIn || !user?.id) {
-    return NextResponse.json(
-      {
-        error: {
-          code: FetchErrorCode.AUTH,
-          message: 'User not authenticated.',
-        },
-        data: null,
-      } satisfies FetchResponse<User>,
-      { status: 401 },
-    )
-  }
+//   // No user
+//   if (!isLoggedIn || !user?.id) {
+//     return NextResponse.json(
+//       {
+//         error: {
+//           code: FetchErrorCode.AUTH,
+//           message: 'User not authenticated.',
+//         },
+//         data: null,
+//       } satisfies FetchResponse<User>,
+//       { status: 401 },
+//     )
+//   }
 
-  // Not authorized
-  // if (!isAuthorized) {
-  //   return NextResponse.json(
-  //     {
-  //       error: { code: FetchErrorCode.AUTH, message: 'User not authorized.' },
-  //       data: null,
-  //     } satisfies FetchResponse<User>,
-  //     { status: 403 },
-  //   )
-  // }
+//   try {
+//     const payload = (await req.json()) as User
 
-  try {
-    const payload = (await req.json()) as User
-    const { accountId } = payload
+//     // Not authorized
+//     if (payload?.accountId !== user.id) {
+//       return NextResponse.json(
+//         {
+//           error: { code: FetchErrorCode.AUTH, message: 'User not authorized.' },
+//           data: null,
+//         } satisfies FetchResponse<User>,
+//         { status: 403 },
+//       )
+//     }
 
-    // // Bad data from client
-    if (!accountId) {
-      return NextResponse.json(
-        {
-          data: null,
-          error: {
-            code: FetchErrorCode.INVALID_DATA,
-            message: 'Missing required fields.',
-          },
-        } satisfies FetchResponse<User>,
-        { status: 400 },
-      )
-    }
+//     const validation = validatePayload(userProfileSchema.api, payload)
 
-    // Not authorized
-    if (accountId !== user.id) {
-      return NextResponse.json(
-        {
-          error: { code: FetchErrorCode.AUTH, message: 'User not authorized.' },
-          data: null,
-        } satisfies FetchResponse<User>,
-        { status: 403 },
-      )
-    }
+//     // Bad data from client
+//     if (!validation?.success) {
+//       return NextResponse.json(
+//         {
+//           data: null,
+//           error: {
+//             code: FetchErrorCode.INVALID_DATA,
+//             message: 'Invalid data provided.',
+//             details: validation?.errors,
+//           },
+//         } satisfies FetchResponse<User>,
+//         { status: 400 },
+//       )
+//     }
 
-    const res = await db.user.create({
-      data: {
-        ...payload,
-        email: payload?.email || user?.email,
-        accountId: user.id,
-        createdBy: user?.id,
-        updatedBy: user?.id,
-      },
-    })
+//     const res = await db.user.create({
+//       data: {
+//         ...payload,
+//         email: payload?.email || user?.email,
+//         accountId: user.id,
+//         createdBy: user?.id,
+//         updatedBy: user?.id,
+//       },
+//     })
 
-    /**
-     * @todo
-     * Identify alternate possibilities of res data structure for improved error handling/messaging.
-     * Does primsa return an error object?
-     * Would like to differentiate between db connection issue and bad payload.
-     */
+//     // Server/database error
+//     if (!res) {
+//       return NextResponse.json(
+//         {
+//           data: null,
+//           error: {
+//             code: FetchErrorCode.DATABASE_FAILURE,
+//             message: 'The request was not successful.',
+//           },
+//         } satisfies FetchResponse<User>,
+//         { status: 500 },
+//       )
+//     }
 
-    // Server/database error
-    if (!res) {
-      return NextResponse.json(
-        {
-          data: null,
-          error: {
-            code: FetchErrorCode.DATABASE_FAILURE,
-            message: 'The request was not successful.',
-          },
-        } satisfies FetchResponse<User>,
-        { status: 500 },
-      )
-    }
-
-    // Success
-    return NextResponse.json(
-      {
-        data: null,
-        message: 'User created successfully.',
-      } satisfies FetchResponse<User>,
-      { status: 201 },
-    )
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log('\n\nError creating user:\n', error)
-    return NextResponse.json(
-      {
-        data: null,
-        error: {
-          code: FetchErrorCode.FAILURE,
-          message: 'An unknown failure occurred.',
-        },
-      } satisfies FetchResponse<User>,
-      { status: 500 },
-    )
-  }
-}
+//     // Success
+//     return NextResponse.json(
+//       {
+//         data: null,
+//         message: 'User created successfully.',
+//       } satisfies FetchResponse<User>,
+//       { status: 201 },
+//     )
+//   } catch (error) {
+//     // eslint-disable-next-line no-console
+//     console.log('\n\nError creating user:\n', error)
+//     return NextResponse.json(
+//       {
+//         data: null,
+//         error: {
+//           code: FetchErrorCode.FAILURE,
+//           message: 'An unknown failure occurred.',
+//         },
+//       } satisfies FetchResponse<User>,
+//       { status: 500 },
+//     )
+//   }
+// }
 
 // =============
 //      PUT
@@ -235,30 +214,33 @@ export const PUT = async (req: NextRequest) => {
   }
 
   try {
-    const { accountId, ...payload } = (await req.json()) as User
-
-    // Bad data from client
-    if (!accountId) {
-      return NextResponse.json(
-        {
-          data: null,
-          error: {
-            code: FetchErrorCode.INVALID_DATA,
-            message: 'Missing required fields.',
-          },
-        } satisfies FetchResponse<User>,
-        { status: 400 },
-      )
-    }
+    const payload = (await req.json()) as User
 
     // Not authorized
-    if (accountId !== user.id) {
+    if (payload?.accountId !== user.id) {
       return NextResponse.json(
         {
           error: { code: FetchErrorCode.AUTH, message: 'User not authorized.' },
           data: null,
         } satisfies FetchResponse<User>,
         { status: 403 },
+      )
+    }
+
+    const validation = validatePayload(userProfileSchema.api, payload)
+
+    // Bad data from client
+    if (!validation?.success) {
+      return NextResponse.json(
+        {
+          data: null,
+          error: {
+            code: FetchErrorCode.INVALID_DATA,
+            message: 'Invalid data provided.',
+            details: validation?.errors,
+          },
+        } satisfies FetchResponse<User>,
+        { status: 400 },
       )
     }
 
@@ -318,13 +300,6 @@ export const PUT = async (req: NextRequest) => {
         updatedBy: user?.id,
       },
     })
-
-    /**
-     * @todo
-     * Identify alternate possibilities of res data structure for improved error handling/messaging.
-     * Does primsa return an error object?
-     * Would like to differentiate between db connection issue and bad payload.
-     */
 
     // Server/database error
     if (!res) {

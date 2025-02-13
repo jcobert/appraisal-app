@@ -3,8 +3,10 @@ import { Appraiser } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/lib/db/client'
+import { appraiserSchema } from '@/lib/db/schemas/appraiser'
 
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
+import { validatePayload } from '@/utils/zod'
 
 // =============
 //      GET
@@ -123,31 +125,27 @@ export const POST = async (req: NextRequest) => {
 
   try {
     const payload = (await req.json()) as Appraiser
-    const { firstName, lastName } = payload
+
+    const validation = validatePayload(appraiserSchema.api, payload)
 
     // Bad data from client
-    if (!firstName || !lastName)
+    if (!validation?.success) {
       return NextResponse.json(
         {
           data: null,
           error: {
             code: FetchErrorCode.INVALID_DATA,
-            message: 'Missing required fields.',
+            message: 'Invalid data provided.',
+            details: validation?.errors,
           },
         } satisfies FetchResponse<Appraiser>,
         { status: 400 },
       )
+    }
 
     const res = await db.appraiser.create({
       data: { ...payload, createdBy: user?.id, updatedBy: user?.id },
     })
-
-    /**
-     * @todo
-     * Identify alternate possibilities of res data structure for improved error handling/messaging.
-     * Does primsa return an error object?
-     * Would like to differentiate between db connection issue and bad payload.
-     */
 
     // Server/database error
     if (!res) {

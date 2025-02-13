@@ -3,7 +3,7 @@ import { User } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/lib/db/client'
-import { userProfileSchema } from '@/lib/db/schema/user'
+import { userProfileSchema } from '@/lib/db/schemas/user'
 
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 import { validatePayload } from '@/utils/zod'
@@ -44,13 +44,6 @@ export const GET = async (_req: NextRequest) => {
 
   try {
     const res = await db.user.findMany()
-
-    /**
-     * @todo
-     * Identify alternate possibilities of res data structure for improved error handling/messaging.
-     * Does primsa return an error object?
-     * Would like to differentiate between db connection issue and bad payload.
-     */
 
     // Server/database error
     if (!res) {

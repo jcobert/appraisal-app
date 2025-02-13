@@ -9,9 +9,8 @@ import {
   useFormState,
   useWatch,
 } from 'react-hook-form'
-import { z } from 'zod'
 
-import { userProfileSchema } from '@/lib/db/schema/user'
+import { UserProfileFormData, userProfileSchema } from '@/lib/db/schemas/user'
 
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
@@ -29,8 +28,6 @@ import Confirmation from '@/components/layout/confirmation'
 import useZodForm from '@/hooks/use-zod-form'
 
 const schema = userProfileSchema.form
-
-type UserProfileFormData = z.infer<typeof schema>
 
 const defaultFormValues = {
   firstName: '',
