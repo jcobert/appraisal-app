@@ -6,9 +6,11 @@ import {
   getUserOrganizations,
 } from '@/lib/db/queries/organization'
 import { getActiveUserProfile } from '@/lib/db/queries/user'
+import { organizationSchema } from '@/lib/db/schemas/organization'
 
 import { isAllowedServer } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
+import { validatePayload } from '@/utils/zod'
 
 // =============
 //      GET
@@ -120,23 +122,25 @@ export const POST = async (req: NextRequest) => {
 
   try {
     const payload = (await req.json()) as Organization
-    const { name } = payload
 
-    const userProfile = await getActiveUserProfile()
+    const validation = validatePayload(organizationSchema.api, payload)
 
     // Bad data from client
-    if (!name) {
+    if (!validation?.success) {
       return NextResponse.json(
         {
           data: null,
           error: {
             code: FetchErrorCode.INVALID_DATA,
-            message: 'Missing required fields.',
+            message: 'Invalid data provided.',
+            details: validation?.errors,
           },
         } satisfies FetchResponse<Organization>,
         { status: 400 },
       )
     }
+
+    const userProfile = await getActiveUserProfile()
 
     // No user profile to link ownership to
     if (!userProfile?.id) {
@@ -154,7 +158,7 @@ export const POST = async (req: NextRequest) => {
 
     const existingOrgs = await getUserOrganizations({
       owner: true,
-      filter: { name: { equals: name, mode: 'insensitive' } },
+      filter: { name: { equals: payload?.name, mode: 'insensitive' } },
     })
 
     // User already owns an org with the same name
@@ -180,13 +184,6 @@ export const POST = async (req: NextRequest) => {
         updatedBy: user?.id,
       },
     })
-
-    /**
-     * @todo
-     * Identify alternate possibilities of res data structure for improved error handling/messaging.
-     * Does primsa return an error object?
-     * Would like to differentiate between db connection issue and bad payload.
-     */
 
     // Server/database error
     if (!res) {

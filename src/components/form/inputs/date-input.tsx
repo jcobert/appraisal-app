@@ -7,7 +7,9 @@ import { LuCalendarDays } from 'react-icons/lu'
 
 import { cn } from '@/utils/style'
 
-import { AdditionalInputProps } from '@/components/inputs/text-input'
+import FieldError from '@/components/form/field-error'
+import FieldHelper from '@/components/form/field-helper'
+import { AdditionalInputProps } from '@/components/form/inputs/text-input'
 
 import 'react-datepicker/dist/react-datepicker.css'
 
@@ -88,10 +90,8 @@ const DateInput = forwardRef<DatePicker, DateInputProps>(
           }}
         />
 
-        {helperVisible && helper ? (
-          <span className='text-xs text-gray-600'>{helper}</span>
-        ) : null}
-        {error ? <span className='text-red-500 text-xs'>{error}</span> : null}
+        {helperVisible ? <FieldHelper text={helper} /> : null}
+        <FieldError error={error} />
       </div>
     )
   },

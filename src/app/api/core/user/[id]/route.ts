@@ -47,13 +47,6 @@ export const GET = async (
     const id = (await params)?.id
     const res = await db.user.findUnique({ where: { id } })
 
-    /**
-     * @todo
-     * Identify alternate possibilities of res data structure for improved error handling/messaging.
-     * Does primsa return an error object?
-     * Would like to differentiate between db connection issue and bad payload.
-     */
-
     // Not found
     if (!res) {
       return NextResponse.json(

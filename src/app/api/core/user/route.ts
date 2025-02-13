@@ -3,8 +3,10 @@ import { User } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/lib/db/client'
+import { userProfileSchema } from '@/lib/db/schemas/user'
 
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
+import { validatePayload } from '@/utils/zod'
 
 // =============
 //      GET
@@ -42,13 +44,6 @@ export const GET = async (_req: NextRequest) => {
 
   try {
     const res = await db.user.findMany()
-
-    /**
-     * @todo
-     * Identify alternate possibilities of res data structure for improved error handling/messaging.
-     * Does primsa return an error object?
-     * Would like to differentiate between db connection issue and bad payload.
-     */
 
     // Server/database error
     if (!res) {
@@ -123,31 +118,27 @@ export const POST = async (req: NextRequest) => {
 
   try {
     const payload = (await req.json()) as User
-    const { firstName, lastName } = payload
+
+    const validation = validatePayload(userProfileSchema.api, payload)
 
     // Bad data from client
-    if (!firstName || !lastName)
+    if (!validation?.success) {
       return NextResponse.json(
         {
           data: null,
           error: {
             code: FetchErrorCode.INVALID_DATA,
-            message: 'Missing required fields.',
+            message: 'Invalid data provided.',
+            details: validation?.errors,
           },
         } satisfies FetchResponse<User>,
         { status: 400 },
       )
+    }
 
     const res = await db.user.create({
       data: { ...payload, createdBy: user?.id, updatedBy: user?.id },
     })
-
-    /**
-     * @todo
-     * Identify alternate possibilities of res data structure for improved error handling/messaging.
-     * Does primsa return an error object?
-     * Would like to differentiate between db connection issue and bad payload.
-     */
 
     // Server/database error
     if (!res) {

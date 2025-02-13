@@ -5,10 +5,12 @@ import { PatternFormat, PatternFormatProps } from 'react-number-format'
 
 import { cn } from '@/utils/style'
 
+import FieldError from '@/components/form/field-error'
+import FieldHelper from '@/components/form/field-helper'
 import {
   AdditionalInputProps,
   inputIconMap,
-} from '@/components/inputs/text-input'
+} from '@/components/form/inputs/text-input'
 
 export type PatternInputProps = PatternFormatProps & AdditionalInputProps
 
@@ -77,10 +79,8 @@ const PatternInput = forwardRef<HTMLInputElement, PatternInputProps>(
           }}
         />
 
-        {helperVisible && helper ? (
-          <span className='text-xs text-gray-600'>{helper}</span>
-        ) : null}
-        {error ? <span className='text-red-500 text-xs'>{error}</span> : null}
+        {helperVisible ? <FieldHelper text={helper} /> : null}
+        <FieldError error={error} />
       </div>
     )
   },

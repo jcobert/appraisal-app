@@ -50,7 +50,7 @@ export const POST = async (_req: NextRequest) => {
 
     const res = await db.user.create({
       data: {
-        accountId: user.id,
+        accountId: user?.id,
         createdBy: user?.id,
         updatedBy: user?.id,
         firstName: user?.given_name || '',
@@ -60,13 +60,6 @@ export const POST = async (_req: NextRequest) => {
         phone: user?.phone_number,
       },
     })
-
-    /**
-     * @todo
-     * Identify alternate possibilities of res data structure for improved error handling/messaging.
-     * Does primsa return an error object?
-     * Would like to differentiate between db connection issue and bad payload.
-     */
 
     // Server/database error
     if (!res) {

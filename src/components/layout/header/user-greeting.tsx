@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { FC } from 'react'
 import { FaCircleUser } from 'react-icons/fa6'
 
@@ -22,12 +23,13 @@ export const UserGreeting: FC<Props> = (props) => {
   return (
     <div className='flex items-center justify-center mx-auto w-fit gap-2 group-hover:text-brand-dark transition'>
       <div className='my-auto transition-all rounded-full size-8 border'>
-        {user?.avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+        {user?.avatar?.length ? (
+          <Image
             src={user?.avatar}
             alt='user avatar'
             className='object-scale-down object-center rounded-full'
+            width={32}
+            height={32}
           />
         ) : (
           <FaCircleUser className='text-xl text-medium-gray min-w-full size-8' />

@@ -7,9 +7,11 @@ import {
   updateOrganization,
   userIsOwner,
 } from '@/lib/db/queries/organization'
+import { organizationSchema } from '@/lib/db/schemas/organization'
 
 import { isAllowedServer } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
+import { validatePayload } from '@/utils/zod'
 
 // =============
 //      GET
@@ -100,11 +102,6 @@ export const PUT = async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
-  // const { getUser, isAuthenticated } = getKindeServerSession()
-
-  // const user = await getUser()
-  // const isLoggedIn = await isAuthenticated()
-
   const { allowed, user } = await isAllowedServer()
 
   // No user
@@ -141,16 +138,18 @@ export const PUT = async (
     }
 
     const payload = (await req.json()) as Organization
-    const { name } = payload
+
+    const validation = validatePayload(organizationSchema.api, payload)
 
     // Bad data from client
-    if (!name) {
+    if (!validation?.success) {
       return NextResponse.json(
         {
           data: null,
           error: {
             code: FetchErrorCode.INVALID_DATA,
-            message: 'Missing required fields.',
+            message: 'Invalid data provided.',
+            details: validation?.errors,
           },
         } satisfies FetchResponse<Organization>,
         { status: 400 },
@@ -161,13 +160,6 @@ export const PUT = async (
       where: { id },
       data: { ...payload, updatedBy: user?.id },
     })
-
-    /**
-     * @todo
-     * Identify alternate possibilities of res data structure for improved error handling/messaging.
-     * Does primsa return an error object?
-     * Would like to differentiate between db connection issue and bad payload.
-     */
 
     // Server/database error
     if (!res) {
@@ -248,13 +240,6 @@ export const DELETE = async (
     }
 
     const res = await deleteOrganization({ where: { id } })
-
-    /**
-     * @todo
-     * Identify alternate possibilities of res data structure for improved error handling/messaging.
-     * Does primsa return an error object?
-     * Would like to differentiate between db connection issue and bad payload.
-     */
 
     // Server/database error
     if (!res) {

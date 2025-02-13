@@ -1,7 +1,7 @@
 import React, { FC, ReactNode, useState } from 'react'
 
 import Button from '@/components/general/button'
-import FormActionBar from '@/components/general/form-action-bar'
+import FormActionBar from '@/components/form/form-action-bar'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 import Modal, { ModalProps } from '@/components/layout/modal'
 

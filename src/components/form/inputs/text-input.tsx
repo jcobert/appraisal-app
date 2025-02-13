@@ -1,21 +1,40 @@
 'use client'
 
-import { forwardRef, useState } from 'react'
-import { NumericFormat, NumericFormatProps } from 'react-number-format'
+import { InputHTMLAttributes, forwardRef, useState } from 'react'
+import { IconType } from 'react-icons'
+import { FiBriefcase, FiGlobe, FiMail, FiPhone, FiUser } from 'react-icons/fi'
 
 import { cn } from '@/utils/style'
 
-import {
-  AdditionalInputProps,
-  inputIconMap,
-} from '@/components/inputs/text-input'
+import FieldError from '@/components/form/field-error'
+import FieldHelper from '@/components/form/field-helper'
 
-export type NumberInputProps = Partial<NumericFormatProps> &
+export type InputIcon = 'mail' | 'phone' | 'web' | 'person' | 'briefcase'
+
+export type AdditionalInputProps = {
+  label?: string
+  helper?: string
+  error?: string
+  icon?: InputIcon
+  labelClassName?: string
+  inputClassName?: string
+}
+
+export type TextInputProps = Partial<InputHTMLAttributes<HTMLInputElement>> &
   AdditionalInputProps
 
-const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
+export const inputIconMap: { [x in InputIcon]: IconType } = {
+  mail: FiMail,
+  phone: FiPhone,
+  web: FiGlobe,
+  person: FiUser,
+  briefcase: FiBriefcase,
+}
+
+const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   (
     {
+      type = 'text',
       id,
       name,
       label,
@@ -57,7 +76,7 @@ const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
           ) : null}
         </label>
 
-        <NumericFormat
+        <input
           aria-required={required}
           className={cn([
             'w-full h-10 px-[0.875rem] py-2 border border-gray-300 [&:not(:disabled)]:hover:border-gray-400 disabled:text-gray-500 transition rounded',
@@ -65,11 +84,12 @@ const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             error && 'border-red-500 hover:border-red-500',
             inputClassName,
           ])}
+          type={type}
           id={id || name}
           name={name}
           placeholder={placeholder}
           {...props}
-          getInputRef={ref}
+          ref={ref}
           onFocusCapture={() => {
             setHelperVisible(true)
           }}
@@ -78,13 +98,11 @@ const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
           }}
         />
 
-        {helperVisible && helper ? (
-          <span className='text-xs text-gray-600'>{helper}</span>
-        ) : null}
-        {error ? <span className='text-red-500 text-xs'>{error}</span> : null}
+        {helperVisible ? <FieldHelper text={helper} /> : null}
+        <FieldError error={error} />
       </div>
     )
   },
 )
 
-export default NumberInput
+export default TextInput

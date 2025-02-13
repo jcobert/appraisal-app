@@ -4,29 +4,25 @@ import { Organization } from '@prisma/client'
 import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
-import { z } from 'zod'
+
+import {
+  OrganizationFormData,
+  organizationSchema,
+} from '@/lib/db/schemas/organization'
 
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 import { toastyRequest } from '@/utils/toast'
 
 import { useOrganizationMutations } from '@/components/features/organization/hooks/use-organization-mutations'
+import Form from '@/components/form/form'
+import FormActionBar from '@/components/form/form-action-bar'
+import TextInput from '@/components/form/inputs/text-input'
 import Button from '@/components/general/button'
-import Form from '@/components/general/form'
-import FormActionBar from '@/components/general/form-action-bar'
-import TextInput from '@/components/inputs/text-input'
 
 import useZodForm from '@/hooks/use-zod-form'
 
-import { TableMutable } from '@/types/db'
-import { ZodObject } from '@/types/general'
-
-const schema = z.object({
-  name: z.string().nonempty(),
-  avatar: z.string().optional(),
-} satisfies ZodObject<TableMutable<Organization>>)
-
-type OrganizationFormData = z.infer<typeof schema>
+const schema = organizationSchema.form
 
 const defaultFormValues = {
   name: '',

@@ -4,7 +4,8 @@ import { Appraiser } from '@prisma/client'
 import { useRouter } from 'next-nprogress-bar'
 import { FC } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
-import { z } from 'zod'
+
+import { AppraiserFormData, appraiserSchema } from '@/lib/db/schemas/appraiser'
 
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
@@ -12,26 +13,15 @@ import { fullName } from '@/utils/string'
 import { toastyRequest } from '@/utils/toast'
 
 import { useAppraiserMutations } from '@/components/features/appraiser/hooks/use-appraiser-mutations'
+import PatternInput from '@/components/form/inputs/pattern-input'
+import TextInput from '@/components/form/inputs/text-input'
 import Button from '@/components/general/button'
-import PatternInput from '@/components/inputs/pattern-input'
-import TextInput from '@/components/inputs/text-input'
 import Alert from '@/components/layout/alert'
 import Heading from '@/components/layout/heading'
 
 import useZodForm from '@/hooks/use-zod-form'
 
-import { TableMutable } from '@/types/db'
-import { ZodObject } from '@/types/general'
-
-const schema = z.object({
-  firstName: z.string().nonempty(),
-  lastName: z.string().nonempty(),
-  email: z.string().email().optional().or(z.literal('')),
-  phone: z.string().optional().or(z.literal('')),
-  userId: z.string(),
-} satisfies ZodObject<TableMutable<Appraiser>>)
-
-type AppraiserFormData = z.infer<typeof schema>
+const schema = appraiserSchema.form
 
 const defaultFormValues = {
   firstName: '',
