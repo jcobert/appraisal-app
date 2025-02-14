@@ -94,6 +94,7 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
                 '!transition !px-1 !py-px !border !border-gray-300 [&:not(:disabled)]:hover:!border-gray-400 disabled:!text-gray-500 !rounded dark:!bg-zinc-600 !shadow-none',
                 error && 'border-red-500 hover:border-red-500',
                 props.isFocused && '!ring-2 !ring-brand-light ring-offset-2',
+                props.isDisabled && 'cursor-not-allowed',
               ]),
             placeholder: () => 'text-base text-zinc-400 dark:text-zinc-300',
             menu: () => 'dark:bg-zinc-800',

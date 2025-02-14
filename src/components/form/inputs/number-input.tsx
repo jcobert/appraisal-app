@@ -54,6 +54,7 @@ const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
               className={cn([
                 'absolute mt-[0.675rem] ml-[0.625rem] text-lg text-gray-500',
                 !label && 'mt-[1.95rem]',
+                props?.disabled && 'cursor-not-allowed',
               ])}
             />
           ) : null}
@@ -62,7 +63,7 @@ const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
         <NumericFormat
           aria-required={required}
           className={cn([
-            'w-full h-10 px-[0.875rem] py-2 border border-gray-300 [&:not(:disabled)]:hover:border-gray-400 disabled:text-gray-500 transition rounded',
+            'w-full h-10 px-[0.875rem] py-2 border border-gray-300 [&:not(:disabled)]:hover:border-gray-400 disabled:text-gray-500 transition rounded disabled:cursor-not-allowed',
             !!Icon && 'pl-9',
             error && 'border-red-500 hover:border-red-500',
             inputClassName,
