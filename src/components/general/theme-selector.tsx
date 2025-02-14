@@ -10,10 +10,10 @@ import { cn } from '@/utils/style'
 import Button from '@/components/general/button'
 
 type Props = {
-  //
+  className?: string
 }
 
-const ThemeSelector: FC<Props> = () => {
+const ThemeSelector: FC<Props> = ({ className }) => {
   const isClient = useIsClient()
   const { resolvedTheme, setTheme } = useTheme()
 
@@ -26,12 +26,14 @@ const ThemeSelector: FC<Props> = () => {
 
   return (
     <Button
+      data-dark={isDark}
       className={cn(
-        'p-2 rounded-full min-w-0',
+        'p-2 rounded-full min-w-0 max-sm:w-fit max-sm:min-h-0',
         isLight &&
           'text-neutral-600 border-neutral-400 hover:text-neutral-700 hover:border-neutral-500',
         isDark &&
           'bg-indigo-900 text-almost-white hover:text-neutral-100 border-almost-white hover:bg-indigo-950 hover:border-neutral-50',
+        className,
       )}
       variant='secondary'
       onClick={() => {

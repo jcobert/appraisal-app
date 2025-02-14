@@ -10,6 +10,7 @@ import { NavItem, isActive } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import AuthLink from '@/components/auth/auth-link'
+import ThemeSelector from '@/components/general/theme-selector'
 import Accordion from '@/components/layout/accordion'
 import Drawer from '@/components/layout/drawer'
 import UserGreeting from '@/components/layout/header/user-greeting'
@@ -99,15 +100,18 @@ const MobileNav: FC<Props> = ({
         <div className='px-8 pt-4 overflow-y-auto pb-16 h-dvh flex flex-col'>
           {/* User */}
           {profile ? (
-            <Link
-              className='w-fit mx-auto'
-              href='/user/profile'
-              onClick={() => {
-                setIsMenuOpen(false)
-              }}
-            >
-              <UserGreeting user={profile} />
-            </Link>
+            <div className='flex items-center justify-between border-b pb-4'>
+              <Link
+                className='w-fit'
+                href='/user/profile'
+                onClick={() => {
+                  setIsMenuOpen(false)
+                }}
+              >
+                <UserGreeting user={profile} />
+              </Link>
+              <ThemeSelector className='max-sm:min-w-0' />
+            </div>
           ) : (
             <div className='flex flex-col items-center gap-2 mt-4'>
               <p className='text-balance'>Ready to get started?</p>
@@ -121,14 +125,16 @@ const MobileNav: FC<Props> = ({
 
           {/* Links */}
           <div className='flex flex-col gap-6 mt-6 pb-safe flex-1'>
-            {navItems?.map((item) => {
+            {navItems?.map((item, i) => {
               const hasMenu = !!item?.menu?.links?.length
+              const isLast = i === navItems.length - 1
               return (
                 <div
                   key={item?.id}
                   className={cn([
-                    'text-right text-xl border-b border-medium-gray/15 pb-2 flex justify-end text-dark-gray',
+                    'text-right text-xl border-medium-gray/15 pb-2 flex justify-end text-dark-gray',
                     isActive(item, pathname) && 'text-brand',
+                    !isLast && 'border-b',
                   ])}
                 >
                   {!hasMenu ? (
