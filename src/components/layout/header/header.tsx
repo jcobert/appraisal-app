@@ -6,6 +6,7 @@ import { getActiveUserProfile } from '@/lib/db/queries/user'
 import { filterProtectedNavItems } from '@/utils/nav'
 
 import AuthLink from '@/components/auth/auth-link'
+import ThemeSelector from '@/components/general/theme-selector'
 import UserMenu from '@/components/layout/header/user-menu'
 import DesktopNav from '@/components/layout/nav/desktop-nav'
 import MobileNav from '@/components/layout/nav/mobile-nav'
@@ -31,7 +32,7 @@ const Header: FC = async () => {
     profile,
   } satisfies SessionData
 
-  const navClassName = 'bg-almost-white/90'
+  const navClassName = 'bg-almost-white/90 dark:bg-almost-black/90 transition'
 
   const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
 
@@ -52,6 +53,7 @@ const Header: FC = async () => {
       >
         <div className='ml-auto flex items-center gap-8'>
           {!loggedIn ? <AuthLink loggedIn={loggedIn} type='register' /> : null}
+          <ThemeSelector />
           <UserMenu sessionData={sessionData} />
         </div>
       </DesktopNav>

@@ -29,7 +29,7 @@ const DesktopNav: FC<Props> = ({
     <div
       id='desktop-navbar'
       className={cn([
-        'hidden z-50 md:block w-full border-b border-gray-200 shadow-sm py-2 sticky top-0 background-saturate-150 backdrop-blur-lg',
+        'hidden z-50 md:block w-full border-b border-gray-200 dark:border-gray-600 shadow-sm py-2 sticky top-0 background-saturate-150 backdrop-blur-lg',
         className,
       ])}
     >
