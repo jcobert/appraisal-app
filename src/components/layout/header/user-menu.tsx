@@ -28,8 +28,8 @@ const UserMenu: FC<{ sessionData: SessionData }> = ({
       }}
       contentProps={{ collisionPadding: 5 }}
     >
-      <div className='bg-white rounded border p-4 shadow flex flex-col gap-4 min-w-60'>
-        <div className='flex items-center gap-6'>
+      <div className='flex flex-col gap-4 min-w-60'>
+        <div className='flex items-center justify-between gap-6'>
           {loggedIn ? (
             <Link
               href='/user/profile'
@@ -41,13 +41,13 @@ const UserMenu: FC<{ sessionData: SessionData }> = ({
               <UserGreeting user={profile} />
             </Link>
           ) : null}
-          <ThemeSelector className='' />
+          <ThemeSelector className='ml-auto' />
         </div>
 
         <div
           className={cn(
             'flex flex-col items-center gap-1',
-            loggedIn && 'border-t pt-2',
+            loggedIn && 'border-t dark:border-gray-700 pt-2',
           )}
         >
           {!loggedIn ? (

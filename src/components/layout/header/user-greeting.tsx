@@ -22,7 +22,7 @@ export const UserGreeting: FC<Props> = (props) => {
 
   return (
     <div className='flex items-center justify-center mx-auto w-fit gap-2 group-hover:text-brand-dark transition'>
-      <div className='my-auto transition-all rounded-full size-8 border'>
+      <div className='my-auto transition-all rounded-full size-8 border dark:border-gray-400'>
         {user?.avatar?.length ? (
           <Image
             src={user?.avatar}
