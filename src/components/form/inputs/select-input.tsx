@@ -73,7 +73,7 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
           htmlFor={id || name}
           aria-label={!label ? ariaLabel || id : ariaLabel}
           className={cn([
-            'text-sm text-gray-700 w-fit',
+            'text-sm text-gray-700 dark:text-gray-100 w-fit',
             props?.required &&
               "after:content-['*'] after:ml-[0.125rem] after:text-red-400",
             error && 'text-red-500',
@@ -91,21 +91,21 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
           classNames={{
             control: (props) =>
               cn([
-                '!transition !px-1 !py-px !border !border-gray-300 [&:not(:disabled)]:hover:!border-gray-400 disabled:!text-gray-500 !rounded dark:!bg-zinc-600 !shadow-none',
+                '!transition !px-1 !py-px !border !border-gray-300 dark:!border-gray-500 [&:not(:disabled)]:hover:!border-gray-400 disabled:!text-gray-500 !rounded dark:!bg-zinc-600 !shadow-none',
                 error && 'border-red-500 hover:border-red-500',
                 props.isFocused && '!ring-2 !ring-brand-light ring-offset-2',
                 props.isDisabled && 'cursor-not-allowed',
               ]),
-            placeholder: () => 'text-base text-zinc-400 dark:text-zinc-300',
-            menu: () => 'dark:bg-zinc-800',
+            placeholder: () => 'text-base text-zinc-400 dark:!text-zinc-300',
+            menu: () => 'dark:!bg-zinc-800',
             option: (props) =>
               cn({
-                'dark:bg-zinc-700 !bg-brand-extra-light':
+                'dark:!bg-zinc-700 !bg-brand-extra-light':
                   props.isFocused && !props.isSelected,
                 '!bg-brand': props.isSelected,
               }),
-            input: () => cn('dark:text-zinc-100'),
-            singleValue: () => cn('dark:text-zinc-100'),
+            input: () => cn('dark:!text-zinc-100'),
+            singleValue: () => cn('dark:!text-zinc-100'),
             ...classNames,
           }}
           styles={{

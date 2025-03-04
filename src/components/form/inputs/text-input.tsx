@@ -58,7 +58,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
         <label
           htmlFor={id || name}
           className={cn([
-            'text-sm text-gray-700 w-fit',
+            'text-sm text-gray-700 dark:text-gray-100 w-fit',
             required &&
               "after:content-['*'] after:ml-[0.125rem] after:text-red-400",
             error && 'text-red-500',
@@ -69,7 +69,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           {Icon ? (
             <Icon
               className={cn([
-                'absolute mt-[0.675rem] ml-[0.625rem] text-lg text-gray-500',
+                'absolute mt-[0.675rem] ml-[0.625rem] text-lg text-gray-500 dark:text-gray-300',
                 !label && 'mt-[1.95rem]',
                 props?.disabled && 'cursor-not-allowed',
               ])}
@@ -80,7 +80,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
         <input
           aria-required={required}
           className={cn([
-            'w-full h-10 px-[0.875rem] py-2 border border-gray-300 [&:not(:disabled)]:hover:border-gray-400 disabled:text-gray-500 transition rounded disabled:cursor-not-allowed',
+            'w-full h-10 px-[0.875rem] py-2 border border-gray-300 dark:border-gray-500 [&:not(:disabled)]:hover:border-gray-400 disabled:text-gray-500 transition rounded disabled:cursor-not-allowed',
             !!Icon && 'pl-9',
             error && 'border-red-500 hover:border-red-500',
             inputClassName,
