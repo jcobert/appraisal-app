@@ -4,7 +4,7 @@ import { FaCircleUser } from 'react-icons/fa6'
 
 import { fullName } from '@/utils/string'
 
-import { useGetUserProfile } from '@/components/features/user/hooks/use-get-user-profile'
+import { useGetUserProfile } from '@/features/user/hooks/use-get-user-profile'
 
 import { SessionData } from '@/types/auth'
 

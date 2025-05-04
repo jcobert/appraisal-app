@@ -12,7 +12,7 @@ import {
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 import { validatePayload } from '@/utils/zod'
 
-import { getProfileChanges } from '@/components/features/user/utils'
+import { getProfileChanges } from '@/features/user/utils'
 
 // =============
 //      GET
