@@ -1,7 +1,7 @@
 'use client'
 
 import { FC } from 'react'
-import toast, { ToastBar, Toaster, resolveValue } from 'react-hot-toast'
+import toast, { ToastBar, Toaster } from 'react-hot-toast'
 
 import Button from '@/components/general/button'
 

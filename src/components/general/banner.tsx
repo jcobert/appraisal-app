@@ -27,8 +27,10 @@ const Banner: FC<Props> = ({ className, children, variant = 'info' }) => {
       className={cn(
         'flex gap-4 p-4 sm:px-6 items-center border rounded not-prose',
         {
-          'bg-blue-50 border-blue-300': variant === 'info',
-          'bg-orange-50 border-orange-300': variant === 'warning',
+          'bg-blue-50 dark:bg-blue-100 border-blue-300 dark:border-blue-500':
+            variant === 'info',
+          'bg-orange-50 dark:bg-orange-100 border-orange-300 dark:border-orange-500':
+            variant === 'warning',
           'bg-red-100 border-red-500': variant === 'error',
         },
         className,
@@ -43,7 +45,9 @@ const Banner: FC<Props> = ({ className, children, variant = 'info' }) => {
         })}
       />
       {typeof children === 'string' ? (
-        <p className='text-sm text-left text-pretty inline-block'>{children}</p>
+        <p className='text-sm text-left text-pretty inline-block dark:text-almost-black'>
+          {children}
+        </p>
       ) : (
         children
       )}

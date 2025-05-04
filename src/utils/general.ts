@@ -1,16 +1,18 @@
 import { FetchResponse } from '@/utils/fetch'
 
+import { GenericValue } from '@/types/general'
+
 /**
  * Returns whether the value is **not** one of the following: `undefined`, `null`, `''`.
  *
  * Options:
- * - allowEmptyString - If `true` empty string will be considered an existant value and `true` will be returned.
+ * - `allowEmptyString` - If `true` empty string will be considered an existant value and `true` will be returned.
  * Default is `false`.
  */
 export const exists = (
   val: unknown,
   options: { allowEmptyString?: boolean } = { allowEmptyString: false },
-) => {
+): val is Exclude<GenericValue, null | undefined> => {
   return ![
     undefined,
     null,
@@ -19,11 +21,29 @@ export const exists = (
 }
 
 /** Returns whether the value is a common object. Arrays and `Date` instances return `false`. */
-export const isObject = (val: unknown): boolean => {
+export const isObject = (val: unknown): val is object => {
   if (!val) return false
   return (
     typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date)
   )
+}
+
+/** Returns an array of object values. */
+export const objectValues = <
+  T extends Record<string, unknown> = Record<string, string | number>,
+>(
+  obj: T,
+) => {
+  return Object.values(obj) as T[keyof T][]
+}
+
+/** Returns an array of object keys. */
+export const objectKeys = <
+  T extends Record<string, unknown> = Record<string, string | number>,
+>(
+  obj: T,
+) => {
+  return Object.keys(obj) as (keyof T)[]
 }
 
 type WithoutBlanksReturn<

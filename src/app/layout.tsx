@@ -4,6 +4,7 @@ import { ReactNode } from 'react'
 import AuthProvider from '@/providers/auth-provider'
 import ProgressProvider from '@/providers/progress-provider'
 import QueryProvider from '@/providers/query-provider'
+import ThemeProvider from '@/providers/theme-provider'
 
 import Header from '@/components/layout/header/header'
 import ToasterOven from '@/components/toast/toast-container'
@@ -29,16 +30,18 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
-      <html lang='en'>
+      <html lang='en' suppressHydrationWarning>
         <body>
           <QueryProvider>
-            <ProgressProvider />
-            <ToasterOven />
-            <div className='flex flex-col h-0 min-h-dvh'>
-              <Header />
-              <div className='grow h-full'>{children}</div>
-              {/** @todo Footer here */}
-            </div>
+            <ThemeProvider>
+              <ProgressProvider />
+              <ToasterOven />
+              <div className='flex flex-col h-0 min-h-dvh'>
+                <Header />
+                <div className='grow h-full'>{children}</div>
+                {/** @todo Footer here */}
+              </div>
+            </ThemeProvider>
           </QueryProvider>
         </body>
       </html>

@@ -59,13 +59,21 @@ const DateInput = forwardRef<DatePicker, DateInputProps>(
           showYearDropdown
           dropdownMode='select'
           showIcon
-          icon={<LuCalendarDays className='mt-1 text-gray-500' width={12} />}
+          icon={
+            <LuCalendarDays
+              className={cn(
+                'mt-1 text-gray-500',
+                props?.disabled && 'cursor-not-allowed',
+              )}
+              width={12}
+            />
+          }
           placeholderText='mm/dd/yyyy'
           shouldCloseOnSelect
           customInput={
             <div
               className={cn(
-                'w-full min-w-[18ch] h-10 px-8 py-2 border bg-white border-gray-300 hover:border-gray-400 transition rounded',
+                'w-full min-w-[18ch] h-10 px-8 py-2 border bg-white border-gray-300 [&:not(:disabled)]:hover:border-gray-400 disabled:text-gray-500 transition rounded disabled:cursor-not-allowed',
                 error && 'border-red-500 hover:border-red-500',
                 [inputClassName],
               )}

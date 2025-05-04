@@ -31,7 +31,7 @@ const Header: FC = async () => {
     profile,
   } satisfies SessionData
 
-  const navClassName = 'bg-almost-white/90'
+  const navClassName = 'bg-almost-white/90 dark:bg-almost-black/90 transition'
 
   const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
 

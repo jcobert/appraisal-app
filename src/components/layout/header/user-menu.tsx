@@ -7,6 +7,7 @@ import { cn } from '@/utils/style'
 
 import AuthLink from '@/components/auth/auth-link'
 import Link from '@/components/general/link'
+import ThemeSelector from '@/components/general/theme-selector'
 import UserGreeting from '@/components/layout/header/user-greeting'
 import Popover from '@/components/layout/popover'
 
@@ -27,23 +28,27 @@ const UserMenu: FC<{ sessionData: SessionData }> = ({
       }}
       contentProps={{ collisionPadding: 5 }}
     >
-      <div className='bg-white rounded border p-4 shadow flex flex-col gap-4 min-w-60'>
-        {loggedIn ? (
-          <Link
-            href='/user/profile'
-            onClick={() => {
-              setOpen(false)
-            }}
-            className='group'
-          >
-            <UserGreeting user={profile} />
-          </Link>
-        ) : null}
+      <div className='flex flex-col gap-4 min-w-60'>
+        <div className='flex items-center justify-between gap-6'>
+          {loggedIn ? (
+            <Link
+              href='/user/profile'
+              onClick={() => {
+                setOpen(false)
+              }}
+              className='group'
+            >
+              <UserGreeting user={profile} />
+            </Link>
+          ) : null}
+        </div>
+
+        <ThemeSelector className='self-center' />
 
         <div
           className={cn(
             'flex flex-col items-center gap-1',
-            loggedIn && 'border-t pt-2',
+            loggedIn && 'border-t dark:border-gray-700 pt-2',
           )}
         >
           {!loggedIn ? (
