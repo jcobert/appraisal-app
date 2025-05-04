@@ -1,51 +1,98 @@
 'use client'
 
+import * as Toggle from '@radix-ui/react-toggle-group'
 import { useTheme } from 'next-themes'
 import { FC } from 'react'
-import { MdDarkMode, MdLightMode } from 'react-icons/md'
+import { IconType } from 'react-icons'
+import {
+  MdDarkMode,
+  MdLightMode,
+  MdOutlineAppSettingsAlt,
+} from 'react-icons/md'
 import { useIsClient } from 'usehooks-ts'
 
+import { objectKeys } from '@/utils/general'
 import { cn } from '@/utils/style'
 
-import Button from '@/components/general/button'
+enum Theme {
+  light = 'Light',
+  dark = 'Dark',
+  system = 'Auto',
+}
 
 type Props = {
   className?: string
 }
 
+const themeIcon = {
+  dark: MdDarkMode,
+  light: MdLightMode,
+  system: MdOutlineAppSettingsAlt,
+} satisfies { [key in keyof typeof Theme]: IconType }
+
+const Item = ({
+  theme,
+  className,
+}: {
+  theme: keyof typeof Theme
+  className?: string
+}) => {
+  const isDark = theme === 'dark'
+  const isLight = theme === 'light'
+  const isSystem = theme === 'system'
+
+  const Icon = themeIcon?.[theme]
+
+  if (!theme) return null
+
+  return (
+    <Toggle.Item
+      // aria-label={`${Theme?.[theme]}`}
+      value={theme}
+      className={cn(
+        'p-2 px-4 border-x border-transparent dark:bg-gray-900 hover:data-[state="off"]:dark:bg-gray-800 hover:data-[state="off"]:bg-gray-100 transition',
+        isLight &&
+          'rounded-l data-[state="on"]:bg-amber-500 data-[state="on"]:text-almost-white',
+        isDark &&
+          'data-[state="on"]:bg-indigo-900 data-[state="on"]:text-almost-white data-[state="on"]:border-gray-500',
+        isSystem &&
+          'rounded-r data-[state="on"]:bg-blue-500 data-[state="on"]:text-almost-white',
+        className,
+      )}
+    >
+      <div className='flex flex-col'>
+        <Icon aria-hidden className='mx-auto' />
+        <span className='text-xs'>{`${Theme?.[theme]}`}</span>
+      </div>
+    </Toggle.Item>
+  )
+}
+
 const ThemeSelector: FC<Props> = ({ className }) => {
   const isClient = useIsClient()
-  const { resolvedTheme, setTheme } = useTheme()
-
-  const isDark = resolvedTheme === 'dark'
-  const isLight = resolvedTheme === 'light'
-
-  const ActiveIcon = isDark ? MdDarkMode : MdLightMode
+  const { theme, setTheme } = useTheme()
 
   if (!isClient) return null
 
   return (
-    <Button
-      data-dark={isDark}
-      className={cn(
-        'p-2 rounded-full min-w-0 max-sm:w-fit max-sm:min-h-0',
-        isLight &&
-          'text-neutral-600 border-neutral-400 hover:text-neutral-700 hover:border-neutral-500',
-        isDark &&
-          'bg-indigo-900 text-almost-white hover:text-neutral-100 border-almost-white hover:bg-indigo-950 hover:border-neutral-50',
-        className,
-      )}
-      variant='secondary'
-      onClick={() => {
-        if (isLight) {
-          setTheme('dark')
-        } else setTheme('light')
-      }}
-    >
-      <ActiveIcon
-      // className={cn('', isLight && 'text-amber-500', isDark && '')}
-      />
-    </Button>
+    <div>
+      <Toggle.Root
+        aria-label='theme selector'
+        type='single'
+        value={theme}
+        onValueChange={(val) => {
+          if (val) setTheme(val)
+        }}
+        className={cn(
+          'flex w-full items-center justify-center border dark:border-gray-500 rounded-[0.3125rem]',
+          className,
+        )}
+      >
+        {objectKeys(Theme)?.map((thm) => (
+          <Item key={thm} theme={thm} className='flex-auto' />
+        ))}
+      </Toggle.Root>
+    </div>
   )
 }
 

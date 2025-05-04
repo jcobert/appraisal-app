@@ -41,8 +41,9 @@ const UserMenu: FC<{ sessionData: SessionData }> = ({
               <UserGreeting user={profile} />
             </Link>
           ) : null}
-          <ThemeSelector className='ml-auto' />
         </div>
+
+        <ThemeSelector className='self-center' />
 
         <div
           className={cn(
