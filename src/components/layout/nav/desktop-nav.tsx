@@ -4,7 +4,7 @@ import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import React, { FC, ReactNode } from 'react'
 import { FaAngleUp } from 'react-icons/fa6'
 
-import { NavItem } from '@/utils/nav'
+import { filterProtectedNavItems } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import LogoLink from '@/components/layout/nav/logo-link'
@@ -12,21 +12,25 @@ import NavLink from '@/components/layout/nav/nav-link'
 
 import { SessionData } from '@/types/auth'
 
+import { NAVIGATION_ITEMS } from '@/configuration/nav'
+
 type Props = {
   sessionData: Partial<SessionData>
-  navItems: NavItem[]
+  // navItems: NavItem[]
   className?: string
   children?: ReactNode
 }
 
 const DesktopNav: FC<Props> = ({
   sessionData: { loggedIn },
-  navItems,
+  // navItems,
   className,
   children,
 }) => {
+  const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
+
   return (
-    <div
+    <header
       id='desktop-navbar'
       className={cn([
         'hidden z-50 md:block w-full border-b border-gray-200 dark:border-gray-600 shadow-sm py-2 sticky top-0 background-saturate-150 backdrop-blur-lg',
@@ -168,7 +172,7 @@ const DesktopNav: FC<Props> = ({
         </NavigationMenu.Root>
         {children}
       </div>
-    </div>
+    </header>
   )
 }
 

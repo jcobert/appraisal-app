@@ -2,6 +2,8 @@ import { useStyledIntersection } from './use-styled-intersection'
 import { useEffect, useState } from 'react'
 import { useWindowSize } from 'usehooks-ts'
 
+import { useBreakpoint } from '@/hooks/use-breakpoint'
+
 type PageSize = {
   header: {
     /** Full height of `<header>` (in px). */
@@ -95,12 +97,16 @@ export const getOuterDimensions = (element?: Element | HTMLElement | null) => {
 export const usePageSize = (deps: unknown[] = []) => {
   const { width: windowWidth, height: windowHeight } = useWindowSize()
 
+  const isDesktop = useBreakpoint('md')
+
+  const headerId = isDesktop ? 'desktop-navbar' : 'mobile-navbar'
+
   const {
     intersectionRatio: headerIntersectionRatio,
     isIntersecting: headerVisible,
   } = useStyledIntersection({
     interceptRef: {
-      current: document.getElementsByTagName('header')?.[0] || null,
+      current: document.getElementById(headerId) || null,
     },
   })
 
@@ -122,12 +128,12 @@ export const usePageSize = (deps: unknown[] = []) => {
   })
 
   useEffect(() => {
-    const header = document.getElementsByTagName('header')?.[0]
-    const headerHeight = header?.clientHeight || 0
+    const header = document.getElementById(headerId)
+    const headerHeight = header?.offsetHeight || 0
     const visibleHeaderHeight = headerIntersectionRatio * headerHeight
 
     const footer = document.getElementsByTagName('footer')?.[0]
-    const footerHeight = footer?.clientHeight || 0
+    const footerHeight = footer?.offsetHeight || 0
     const visibleFooterHeight = footerIntersectionRatio * footerHeight
 
     const sidebar = document.getElementById('navigation-sidebar')

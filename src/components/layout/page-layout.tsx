@@ -48,12 +48,12 @@ const PageLayout: FC<PageLayoutProps> = ({
         <div
           className={cn([
             'flex flex-col gap-2 h-full',
-            defaultLayout && 'layout py-6',
+            defaultLayout && 'layout py-6 md:py-10',
             pageClassName,
           ])}
         >
           {heading ? pageHeading : null}
-          <div className={cn('h-full', className)}>{children}</div>
+          <div className={cn('h-full sm:pb-8', className)}>{children}</div>
         </div>
       </div>
     </main>

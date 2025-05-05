@@ -3,16 +3,12 @@ import { FC } from 'react'
 
 import { getActiveUserProfile } from '@/lib/db/queries/user'
 
-import { filterProtectedNavItems } from '@/utils/nav'
-
 import AuthLink from '@/components/auth/auth-link'
 import UserMenu from '@/components/layout/header/user-menu'
 import DesktopNav from '@/components/layout/nav/desktop-nav'
 import MobileNav from '@/components/layout/nav/mobile-nav'
 
 import { SessionData } from '@/types/auth'
-
-import { NAVIGATION_ITEMS } from '@/configuration/nav'
 
 const Header: FC = async () => {
   const session = getKindeServerSession()
@@ -33,7 +29,7 @@ const Header: FC = async () => {
 
   const navClassName = 'bg-almost-white/90 dark:bg-almost-black/90 transition'
 
-  const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
+  // const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
 
   return (
     <>
@@ -41,14 +37,14 @@ const Header: FC = async () => {
       <MobileNav
         className={navClassName}
         sessionData={sessionData}
-        navItems={navItems}
+        // navItems={navItems}
       />
 
       {/* Desktop */}
       <DesktopNav
         className={navClassName}
         sessionData={sessionData}
-        navItems={navItems}
+        // navItems={loggedIn ? [] : navItems}
       >
         <div className='ml-auto flex items-center gap-8'>
           {!loggedIn ? <AuthLink loggedIn={loggedIn} type='register' /> : null}

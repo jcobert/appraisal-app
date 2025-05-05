@@ -1815,6 +1815,11 @@
     aws-jwt-verify "^4.0.1"
     dotenv "^16.4.5"
 
+"@kodingdotninja/use-tailwind-breakpoint@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@kodingdotninja/use-tailwind-breakpoint/-/use-tailwind-breakpoint-1.0.0.tgz#2ccc01812fc911cf8228b264a82a2849eefe1cde"
+  integrity sha512-UVN3Au5qBg7H7tkLxInvbozpigout08AWj6wQORtvAO/F67Gb3sAayuOgppHZTjMuQPAUbVL+TWMLwivuIxWtw==
+
 "@next/env@15.1.6":
   version "15.1.6"
   resolved "https://registry.yarnpkg.com/@next/env/-/env-15.1.6.tgz#2fa863d8c568a56b1c8328a86e621b8bdd4f2a20"

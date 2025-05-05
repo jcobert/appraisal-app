@@ -6,7 +6,7 @@ import { FC, useState } from 'react'
 import { CgClose } from 'react-icons/cg'
 import { RxHamburgerMenu } from 'react-icons/rx'
 
-import { NavItem, isActive } from '@/utils/nav'
+import { filterProtectedNavItems, isActive } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import AuthLink from '@/components/auth/auth-link'
@@ -18,25 +18,29 @@ import LogoLink from '@/components/layout/nav/logo-link'
 
 import { SessionData } from '@/types/auth'
 
+import { NAVIGATION_ITEMS } from '@/configuration/nav'
+
 type Props = {
   sessionData: Partial<SessionData>
-  navItems: NavItem[]
+  // navItems: NavItem[]
   className?: string
 }
 
 const MobileNav: FC<Props> = ({
   sessionData: { loggedIn, profile },
-  navItems,
+  // navItems,
   className,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
 
+  const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
+
   return (
-    <div
+    <header
       id='mobile-navbar'
       className={cn([
-        'md:hidden',
+        'md:hidden z-50',
         'border-b border-gray-200 shadow-sm sticky top-0 bg-almost-white/50 backdrop-blur-lg pb-safe',
         className,
       ])}
@@ -198,7 +202,7 @@ const MobileNav: FC<Props> = ({
           </div>
         </div>
       </Drawer>
-    </div>
+    </header>
   )
 }
 
