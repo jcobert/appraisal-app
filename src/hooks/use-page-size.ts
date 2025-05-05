@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useWindowSize } from 'usehooks-ts'
 
 import { useBreakpoint } from '@/hooks/use-breakpoint'
+import { useStyledIntersection } from '@/hooks/use-styled-intersection'
 
 type PageSize = {
   header: {
@@ -100,23 +101,17 @@ export const usePageSize = (deps: unknown[] = []) => {
 
   const headerId = isDesktop ? 'desktop-navbar' : 'mobile-navbar'
 
-  // const {
-  //   intersectionRatio: headerIntersectionRatio,
-  //   isIntersecting: headerVisible,
-  // } = useStyledIntersection({
-  //   interceptRef: {
-  //     current: document.getElementById(headerId) || null,
-  //   },
-  // })
+  const headerIntersection = useStyledIntersection({
+    interceptRef: {
+      current: document.getElementById(headerId) || null,
+    },
+  })
 
-  // const {
-  //   intersectionRatio: footerIntersectionRatio,
-  //   isIntersecting: footerVisible,
-  // } = useStyledIntersection({
-  //   interceptRef: {
-  //     current: document.getElementsByTagName('footer')?.[0] || null,
-  //   },
-  // })
+  const footerIntersection = useStyledIntersection({
+    interceptRef: {
+      current: document.getElementsByTagName('footer')?.[0] || null,
+    },
+  })
 
   const headerIntersectionRatio = 1
   const headerVisible = true
@@ -175,6 +170,8 @@ export const usePageSize = (deps: unknown[] = []) => {
     windowHeight,
     headerIntersectionRatio,
     footerIntersectionRatio,
+    headerIntersection?.intersectionRatio,
+    footerIntersection?.intersectionRatio,
     ...deps,
   ])
 

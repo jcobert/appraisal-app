@@ -3,14 +3,16 @@
 import { Organization, User } from '@prisma/client'
 import { sortBy } from 'lodash'
 import { FC, useEffect, useMemo } from 'react'
-import { FiUserPlus } from 'react-icons/fi'
+import { IoAdd } from 'react-icons/io5'
 
 import { greeting } from '@/utils/string'
 
+import SelectInput, {
+  SelectOption,
+} from '@/components/form/inputs/select-input'
 import Banner from '@/components/general/banner'
 import Link from '@/components/general/link'
 import NoResults from '@/components/general/no-results'
-import SelectInput, { SelectOption } from '@/components/form/inputs/select-input'
 import Heading from '@/components/layout/heading'
 
 import { useStoredSettings } from '@/hooks/use-stored-settings'
@@ -59,7 +61,7 @@ const Dashboard: FC<Props> = ({ user, organizations }) => {
         {hasOrgs ? (
           <SelectInput
             id='organization'
-            // label='Organization'
+            label='Organization'
             ariaLabel='Organization'
             placeholder='Select organization...'
             className='md:w-fit md:min-w-64'
@@ -75,7 +77,7 @@ const Dashboard: FC<Props> = ({ user, organizations }) => {
           <div className='flex flex-col gap-6'>
             <NoResults
               title="You don't belong to any organizations"
-              subtitle='Get started by adding one now.'
+              subtitle='Get started by creating one now.'
               actions={
                 <div className='flex flex-col items-center gap-8'>
                   <Link
@@ -83,8 +85,8 @@ const Dashboard: FC<Props> = ({ user, organizations }) => {
                     variant='primary'
                     className='not-prose'
                   >
-                    <FiUserPlus />
-                    Add organization
+                    <IoAdd />
+                    Create organization
                   </Link>
                   <Banner className='max-w-md'>
                     Invited to an organization by someone else? Follow the link

@@ -22,10 +22,10 @@ type Props = {
 const SidebarNav: FC<Props> = ({ sessionData }) => {
   const { loggedIn } = sessionData || {}
 
+  const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
+
   const { usableHeight, header } = usePageSize()
   const { isActiveItem } = useNavigationMenu()
-
-  const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
 
   if (!loggedIn) return null
 

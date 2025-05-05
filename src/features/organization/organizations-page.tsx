@@ -2,11 +2,12 @@
 
 import { useRouter } from 'next-nprogress-bar'
 import { FC } from 'react'
-import { FiUserPlus } from 'react-icons/fi'
+import { IoAdd } from 'react-icons/io5'
+
+import Button from '@/components/general/button'
 
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 import OrganizationsList from '@/features/organization/organizations-list'
-import Button from '@/components/general/button'
 
 const OrganizationsPage: FC = () => {
   const router = useRouter()
@@ -20,8 +21,8 @@ const OrganizationsPage: FC = () => {
           variant='secondary'
           onClick={() => router.push('/organizations/create')}
         >
-          <FiUserPlus />
-          Add organization
+          <IoAdd />
+          Create organization
         </Button>
       </div>
 

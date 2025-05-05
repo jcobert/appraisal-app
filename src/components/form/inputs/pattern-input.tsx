@@ -36,7 +36,7 @@ const PatternInput = forwardRef<HTMLInputElement, PatternInputProps>(
     const [helperVisible, setHelperVisible] = useState(false)
 
     return (
-      <div className={cn(['flex flex-col', className])}>
+      <div className={cn(['flex flex-col gap-1', className])}>
         <label
           htmlFor={id || name}
           className={cn([
