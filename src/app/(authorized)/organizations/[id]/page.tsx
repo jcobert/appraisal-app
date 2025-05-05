@@ -9,13 +9,11 @@ import { protectPage } from '@/utils/auth'
 import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
-import { organizationsQueryKey } from '@/features/organization/hooks/use-get-organizations'
-import OrganizationPage from '@/features/organization/organization-page'
-import PageLayout from '@/components/layout/page-layout'
-
 import { PageParams } from '@/types/general'
 
 import { generatePageMeta } from '@/configuration/seo'
+import { organizationsQueryKey } from '@/features/organization/hooks/use-get-organizations'
+import OrganizationPage from '@/features/organization/organization-page'
 
 type Props = PageParams<{ id: string }>
 
@@ -50,9 +48,7 @@ const Page: FC<Props> = async ({ params }) => {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <PageLayout>
-        <OrganizationPage organizationId={organizationId} />
-      </PageLayout>
+      <OrganizationPage organizationId={organizationId} />
     </HydrationBoundary>
   )
 }

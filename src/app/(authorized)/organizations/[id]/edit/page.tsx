@@ -5,12 +5,10 @@ import { getOrganization } from '@/lib/db/queries/organization'
 
 import { protectPage } from '@/utils/auth'
 
-import OrganizationForm from '@/features/organization/organization-form'
-import PageLayout from '@/components/layout/page-layout'
-
 import { PageParams } from '@/types/general'
 
 import { generatePageMeta } from '@/configuration/seo'
+import OrganizationForm from '@/features/organization/organization-form'
 
 export const metadata: Metadata = generatePageMeta({
   title: 'Organizations',
@@ -25,11 +23,7 @@ const Page: FC<Props> = async ({ params }) => {
 
   const data = await getOrganization({ where: { id } })
 
-  return (
-    <PageLayout>
-      <OrganizationForm initialData={data} />
-    </PageLayout>
-  )
+  return <OrganizationForm initialData={data} />
 }
 
 export default Page

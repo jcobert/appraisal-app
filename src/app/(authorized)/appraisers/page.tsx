@@ -8,14 +8,12 @@ import { protectPage } from '@/utils/auth'
 import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
-import AppraisersPage from '@/features/appraiser/appraisers-page'
-import { appraisersQueryKey } from '@/features/appraiser/hooks/use-get-appraisers'
-import PageLayout from '@/components/layout/page-layout'
-
 import { PageParams } from '@/types/general'
 
 import { generatePageMeta } from '@/configuration/seo'
 import { canonicalUrl } from '@/configuration/site'
+import AppraisersPage from '@/features/appraiser/appraisers-page'
+import { appraisersQueryKey } from '@/features/appraiser/hooks/use-get-appraisers'
 
 export const metadata: Metadata = generatePageMeta({
   title: 'Appraisers',
@@ -39,9 +37,9 @@ const Page: FC<Props> = async () => {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <PageLayout heading='Appraisers' className='max-md:mt-4'>
+      <div className='max-md:mt-4'>
         <AppraisersPage />
-      </PageLayout>
+      </div>
     </HydrationBoundary>
   )
 }

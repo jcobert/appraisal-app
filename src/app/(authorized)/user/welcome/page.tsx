@@ -5,7 +5,7 @@ import { registerUserProfile } from '@/lib/db/queries/user'
 import Link from '@/components/general/link'
 import Logo from '@/components/general/logo'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
-import PageLayout from '@/components/layout/page-layout'
+import Heading from '@/components/layout/heading'
 
 import { PageParams } from '@/types/general'
 
@@ -17,7 +17,8 @@ const Page: FC<Props> = async () => {
   if (!profile) return <FullScreenLoader />
 
   return (
-    <PageLayout heading='Welcome'>
+    <div>
+      <Heading text='Welcome' />
       <div className='flex flex-col gap-6 md:gap-8 mt-8'>
         <Logo className='text-[25vw] h-fit max-w-48 self-center' />
         <div className='flex items-center flex-col gap-8 rounded p-6 self-center w-full max-w-prose'>
@@ -45,7 +46,7 @@ const Page: FC<Props> = async () => {
           <UserProfileForm initialData={profile} registration />
         </div> */}
       </div>
-    </PageLayout>
+    </div>
   )
 }
 

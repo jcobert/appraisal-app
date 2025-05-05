@@ -1,4 +1,3 @@
-import { useStyledIntersection } from './use-styled-intersection'
 import { useEffect, useState } from 'react'
 import { useWindowSize } from 'usehooks-ts'
 
@@ -101,23 +100,28 @@ export const usePageSize = (deps: unknown[] = []) => {
 
   const headerId = isDesktop ? 'desktop-navbar' : 'mobile-navbar'
 
-  const {
-    intersectionRatio: headerIntersectionRatio,
-    isIntersecting: headerVisible,
-  } = useStyledIntersection({
-    interceptRef: {
-      current: document.getElementById(headerId) || null,
-    },
-  })
+  // const {
+  //   intersectionRatio: headerIntersectionRatio,
+  //   isIntersecting: headerVisible,
+  // } = useStyledIntersection({
+  //   interceptRef: {
+  //     current: document.getElementById(headerId) || null,
+  //   },
+  // })
 
-  const {
-    intersectionRatio: footerIntersectionRatio,
-    isIntersecting: footerVisible,
-  } = useStyledIntersection({
-    interceptRef: {
-      current: document.getElementsByTagName('footer')?.[0] || null,
-    },
-  })
+  // const {
+  //   intersectionRatio: footerIntersectionRatio,
+  //   isIntersecting: footerVisible,
+  // } = useStyledIntersection({
+  //   interceptRef: {
+  //     current: document.getElementsByTagName('footer')?.[0] || null,
+  //   },
+  // })
+
+  const headerIntersectionRatio = 1
+  const headerVisible = true
+  const footerIntersectionRatio = 1
+  const footerVisible = true
 
   const [size, setSize] = useState<Partial<PageSize>>({
     header: { height: 0, isVisible: true, visibleHeight: 0 },

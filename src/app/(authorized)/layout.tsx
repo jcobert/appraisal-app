@@ -1,12 +1,13 @@
 import { ReactNode } from 'react'
 
 import Sidebar from '@/components/layout/nav/sidebar/sidebar'
+import PageLayout from '@/components/layout/page-layout'
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <div className='flex h-full'>
       <Sidebar />
-      <div className='flex-auto h-full'>{children}</div>
+      <PageLayout mainClassName='flex-auto'>{children}</PageLayout>
     </div>
   )
 }

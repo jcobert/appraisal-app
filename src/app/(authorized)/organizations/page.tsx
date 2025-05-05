@@ -8,14 +8,14 @@ import { protectPage } from '@/utils/auth'
 import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
-import { organizationsQueryKey } from '@/features/organization/hooks/use-get-organizations'
-import OrganizationsPage from '@/features/organization/organizations-page'
-import PageLayout from '@/components/layout/page-layout'
+import Heading from '@/components/layout/heading'
 
 import { PageParams } from '@/types/general'
 
 import { generatePageMeta } from '@/configuration/seo'
 import { canonicalUrl } from '@/configuration/site'
+import { organizationsQueryKey } from '@/features/organization/hooks/use-get-organizations'
+import OrganizationsPage from '@/features/organization/organizations-page'
 
 export const metadata: Metadata = generatePageMeta({
   title: 'Organizations',
@@ -39,9 +39,10 @@ const Page: FC<Props> = async () => {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <PageLayout heading='Organizations' className='max-md:mt-4'>
+      <div className='max-md:mt-4 flex flex-col gap-2'>
+        <Heading text='Organizations' />
         <OrganizationsPage />
-      </PageLayout>
+      </div>
     </HydrationBoundary>
   )
 }

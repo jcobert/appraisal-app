@@ -5,10 +5,9 @@ import { FC } from 'react'
 import { getUserProfile } from '@/lib/db/queries/user'
 import { getUserIdentities } from '@/lib/kinde-management/queries'
 
-import UserProfilePage from '@/features/user/user-profile-page'
-import PageLayout from '@/components/layout/page-layout'
-
 import { PageParams } from '@/types/general'
+
+import UserProfilePage from '@/features/user/user-profile-page'
 
 type Props = PageParams
 
@@ -25,13 +24,11 @@ const Page: FC<Props> = async () => {
   const identities = await getUserIdentities()
 
   return (
-    <PageLayout>
-      <UserProfilePage
-        sessionUser={user}
-        userProfile={userProfile}
-        identities={identities}
-      />
-    </PageLayout>
+    <UserProfilePage
+      sessionUser={user}
+      userProfile={userProfile}
+      identities={identities}
+    />
   )
 }
 

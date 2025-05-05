@@ -27,7 +27,9 @@ const DesktopNav: FC<Props> = ({
   className,
   children,
 }) => {
-  const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
+  const navItems = loggedIn
+    ? []
+    : filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
 
   return (
     <header
@@ -37,7 +39,7 @@ const DesktopNav: FC<Props> = ({
         className,
       ])}
     >
-      <div className='sm:flex items-center gap-6 layout max-w-none w-full px-2 sm:px-4'>
+      <div className='sm:flex items-center gap-6 layout__ mx-auto px-6 xl:px-10'>
         {/* Logo */}
         <LogoLink loggedIn={!!loggedIn} />
 

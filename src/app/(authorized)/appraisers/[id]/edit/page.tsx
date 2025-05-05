@@ -5,12 +5,10 @@ import { getAppraiser } from '@/lib/db/queries/appraiser'
 
 import { protectPage } from '@/utils/auth'
 
-import AppraiserForm from '@/features/appraiser/appraiser-form'
-import PageLayout from '@/components/layout/page-layout'
-
 import { PageParams } from '@/types/general'
 
 import { generatePageMeta } from '@/configuration/seo'
+import AppraiserForm from '@/features/appraiser/appraiser-form'
 
 export const metadata: Metadata = generatePageMeta({
   title: 'Appraisers',
@@ -25,11 +23,7 @@ const Page: FC<Props> = async ({ params }) => {
 
   const data = await getAppraiser({ where: { id } })
 
-  return (
-    <PageLayout>
-      <AppraiserForm initialData={data} />
-    </PageLayout>
-  )
+  return <AppraiserForm initialData={data} />
 }
 
 export default Page
