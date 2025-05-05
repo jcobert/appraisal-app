@@ -37,7 +37,7 @@ const DesktopNav: FC<Props> = ({
         className,
       ])}
     >
-      <div className='sm:flex items-center gap-6 layout px-2 sm:px-0'>
+      <div className='sm:flex items-center gap-6 layout max-w-none w-full px-2 sm:px-4'>
         {/* Logo */}
         <LogoLink loggedIn={!!loggedIn} />
 
