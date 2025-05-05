@@ -3,10 +3,18 @@ import { useEffect, useState } from 'react'
 
 import { NavItem } from '@/utils/nav'
 
+import { useStoredSettings } from '@/hooks/use-stored-settings'
+
 export const useNavigationMenu = () => {
   const pathname = usePathname()
+  const { settings, updateSettings } = useStoredSettings()
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  const isSidebarExpanded = settings?.sidebarExpanded
+  const setIsSidebarExpanded = (expanded: boolean) => {
+    updateSettings({ ...settings, sidebarExpanded: expanded })
+  }
 
   // Close menu when new page is loaded.
   useEffect(() => {
@@ -50,5 +58,12 @@ export const useNavigationMenu = () => {
     )
   }
 
-  return { isActiveItem, isActivePath, isMenuOpen, setIsMenuOpen }
+  return {
+    isActiveItem,
+    isActivePath,
+    isMenuOpen,
+    setIsMenuOpen,
+    isSidebarExpanded,
+    setIsSidebarExpanded,
+  }
 }

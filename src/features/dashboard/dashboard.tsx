@@ -47,7 +47,10 @@ const Dashboard: FC<Props> = ({ user, organizations }) => {
   // Update local storage with first org on load, if none exists.
   useEffect(() => {
     if (!settings?.activeOrg || !selectedOrganization) {
-      updateSettings({ activeOrg: organizationOptions?.[0]?.value })
+      updateSettings({
+        ...settings,
+        activeOrg: organizationOptions?.[0]?.value,
+      })
     }
   }, [selectedOrganization])
 
@@ -67,7 +70,9 @@ const Dashboard: FC<Props> = ({ user, organizations }) => {
             className='md:w-fit md:min-w-64'
             options={organizationOptions}
             value={selectedOrganization ?? null}
-            onChange={(opt) => updateSettings({ activeOrg: opt?.value })}
+            onChange={(opt) =>
+              updateSettings({ ...settings, activeOrg: opt?.value })
+            }
           />
         ) : null}
       </div>
