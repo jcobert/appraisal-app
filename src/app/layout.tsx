@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <ThemeProvider>
               <ProgressProvider />
               <ToasterOven />
-              <div className='flex flex-col h-0 min-h-dvh'>
+              <div className='flex flex-col h-full min-h-dvh'>
                 <Header />
                 <div className='grow h-full'>{children}</div>
                 {/** @todo Footer here */}

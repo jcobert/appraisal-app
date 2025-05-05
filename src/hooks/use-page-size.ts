@@ -1,6 +1,8 @@
-import { useStyledIntersection } from './use-styled-intersection'
 import { useEffect, useState } from 'react'
 import { useWindowSize } from 'usehooks-ts'
+
+import { useBreakpoint } from '@/hooks/use-breakpoint'
+import { useStyledIntersection } from '@/hooks/use-styled-intersection'
 
 type PageSize = {
   header: {
@@ -95,23 +97,26 @@ export const getOuterDimensions = (element?: Element | HTMLElement | null) => {
 export const usePageSize = (deps: unknown[] = []) => {
   const { width: windowWidth, height: windowHeight } = useWindowSize()
 
-  const {
-    intersectionRatio: headerIntersectionRatio,
-    isIntersecting: headerVisible,
-  } = useStyledIntersection({
+  const isDesktop = useBreakpoint('md')
+
+  const headerId = isDesktop ? 'desktop-navbar' : 'mobile-navbar'
+
+  const headerIntersection = useStyledIntersection({
     interceptRef: {
-      current: document.getElementsByTagName('header')?.[0] || null,
+      current: document.getElementById(headerId) || null,
     },
   })
 
-  const {
-    intersectionRatio: footerIntersectionRatio,
-    isIntersecting: footerVisible,
-  } = useStyledIntersection({
+  const footerIntersection = useStyledIntersection({
     interceptRef: {
       current: document.getElementsByTagName('footer')?.[0] || null,
     },
   })
+
+  const headerIntersectionRatio = 1
+  const headerVisible = true
+  const footerIntersectionRatio = 1
+  const footerVisible = true
 
   const [size, setSize] = useState<Partial<PageSize>>({
     header: { height: 0, isVisible: true, visibleHeight: 0 },
@@ -122,12 +127,12 @@ export const usePageSize = (deps: unknown[] = []) => {
   })
 
   useEffect(() => {
-    const header = document.getElementsByTagName('header')?.[0]
-    const headerHeight = header?.clientHeight || 0
+    const header = document.getElementById(headerId)
+    const headerHeight = header?.offsetHeight || 0
     const visibleHeaderHeight = headerIntersectionRatio * headerHeight
 
     const footer = document.getElementsByTagName('footer')?.[0]
-    const footerHeight = footer?.clientHeight || 0
+    const footerHeight = footer?.offsetHeight || 0
     const visibleFooterHeight = footerIntersectionRatio * footerHeight
 
     const sidebar = document.getElementById('navigation-sidebar')
@@ -165,6 +170,8 @@ export const usePageSize = (deps: unknown[] = []) => {
     windowHeight,
     headerIntersectionRatio,
     footerIntersectionRatio,
+    headerIntersection?.intersectionRatio,
+    footerIntersection?.intersectionRatio,
     ...deps,
   ])
 

@@ -1,4 +1,5 @@
 import { HTMLProps, ReactNode } from 'react'
+import { IconType } from 'react-icons'
 
 export type NavLink = {
   id: string
@@ -8,6 +9,7 @@ export type NavLink = {
   protected: boolean
   description?: string
   hidden?: boolean
+  icon?: IconType
 }
 
 export type NavMenu = {

@@ -29,7 +29,7 @@ export default {
       fontSize: {
         '2xs': ['0.625rem', '0.75rem'],
       },
-      width: { layout: '90rem' },
+      width: { layout: '103.125rem' },
       maxWidth: ({ theme }) => ({
         layout: theme('width.layout'),
       }),
