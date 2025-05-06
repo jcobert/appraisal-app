@@ -79,7 +79,7 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
           >
             {label}
           </span>
-          <div className='h-10 w-60 max-w-full bg-gray-100 border rounded animate-pulse' />
+          <div className='h-10 sm:w-60 max-w-full bg-gray-100 border rounded animate-pulse' />
         </div>
       )
 
