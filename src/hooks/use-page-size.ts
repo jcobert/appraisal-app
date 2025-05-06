@@ -103,13 +103,19 @@ export const usePageSize = (deps: unknown[] = []) => {
 
   const headerIntersection = useStyledIntersection({
     interceptRef: {
-      current: document.getElementById(headerId) || null,
+      current:
+        typeof document !== 'undefined'
+          ? document.getElementById(headerId) || null
+          : null,
     },
   })
 
   const footerIntersection = useStyledIntersection({
     interceptRef: {
-      current: document.getElementsByTagName('footer')?.[0] || null,
+      current:
+        typeof document !== 'undefined'
+          ? document.getElementsByTagName('footer')?.[0] || null
+          : null,
     },
   })
 

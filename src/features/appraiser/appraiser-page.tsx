@@ -1,14 +1,12 @@
 'use client'
 
 import { Appraiser } from '@prisma/client'
-import { useRouter } from 'next-nprogress-bar'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { FC } from 'react'
 import { FaGear } from 'react-icons/fa6'
 
 import { fullName } from '@/utils/string'
 
-import { useGetAppraisers } from '@/features/appraiser/hooks/use-get-appraisers'
 import Back from '@/components/general/back'
 import Button from '@/components/general/button'
 import DropdownMenu, {
@@ -17,6 +15,8 @@ import DropdownMenu, {
 import Heading from '@/components/layout/heading'
 
 import { useProtectPage } from '@/hooks/use-protect-page'
+
+import { useGetAppraisers } from '@/features/appraiser/hooks/use-get-appraisers'
 
 type Props = {
   appraiserId?: Appraiser['id']

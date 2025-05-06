@@ -1,15 +1,22 @@
 'use client'
 
-import { AppProgressBar as ProgressBar } from 'next-nprogress-bar'
+import { AppProgressProvider, AppProgressProviderProps } from '@bprogress/next'
 import { FC } from 'react'
 import twConfig from 'tailwind.config'
 
-const ProgressProvider: FC = () => {
+const ProgressProvider: FC<AppProgressProviderProps> = ({
+  children,
+  ...props
+}) => {
   return (
-    <ProgressBar
-      color={twConfig.theme.extend.colors.brand}
+    <AppProgressProvider
+      color={twConfig.theme.extend.colors['brand-light']}
       options={{ showSpinner: false }}
-    />
+      shallowRouting
+      {...props}
+    >
+      {children}
+    </AppProgressProvider>
   )
 }
 

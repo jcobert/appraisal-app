@@ -3,12 +3,14 @@
 import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import React, { FC } from 'react'
 import { BsArrowBarLeft, BsArrowBarRight } from 'react-icons/bs'
+import { useIsClient } from 'usehooks-ts'
 
 import { filterProtectedNavItems } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import Button from '@/components/general/button'
 import NavLink from '@/components/layout/nav/nav-link'
+import SidebarSkeleton from '@/components/layout/nav/sidebar/sidebar-skeleton'
 
 import { useNavigationMenu } from '@/hooks/use-navigation'
 import { usePageSize } from '@/hooks/use-page-size'
@@ -23,6 +25,7 @@ type Props = {
 
 const SidebarNav: FC<Props> = ({ sessionData }) => {
   const { loggedIn } = sessionData || {}
+  const isClient = useIsClient()
 
   const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
 
@@ -30,7 +33,7 @@ const SidebarNav: FC<Props> = ({ sessionData }) => {
   const { isActiveItem, isSidebarExpanded, setIsSidebarExpanded } =
     useNavigationMenu()
 
-  if (!loggedIn) return null
+  if (!loggedIn || !isClient) return <SidebarSkeleton />
 
   return (
     <div
@@ -42,11 +45,7 @@ const SidebarNav: FC<Props> = ({ sessionData }) => {
         isSidebarExpanded && 'px-2 xl:px-6',
       )}
     >
-      <NavigationMenu.Root
-      // style={{ height: usableHeight, top: header?.height }}
-      // className='sticky overflow-auto px-2'
-      // className='h-full'
-      >
+      <NavigationMenu.Root>
         <NavigationMenu.List
           className={cn(
             'flex flex-col gap-2 py-4',
@@ -95,7 +94,10 @@ const SidebarNav: FC<Props> = ({ sessionData }) => {
         // aria-label={`${isSidebarExpanded ? 'Collapse' : 'Expand'} sidebar`}
         variant='tertiary'
         color='general'
-        className={cn('mt-auto mx-auto text-xl px-2', isSidebarExpanded && 'mr-0')}
+        className={cn(
+          'mt-auto mx-auto text-xl px-2',
+          isSidebarExpanded && 'mr-0',
+        )}
         onClick={() => {
           // setIsSidebarExpanded((prev) => !prev)
           setIsSidebarExpanded(!isSidebarExpanded)
