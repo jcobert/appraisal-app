@@ -65,7 +65,23 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
       setIsMounted(true)
     }, [])
 
-    if (!isMounted) return null
+    if (!isMounted)
+      return (
+        <div className='flex flex-col gap-1'>
+          <span
+            className={cn([
+              'text-sm text-gray-700 dark:text-gray-100 w-fit',
+              props?.required &&
+                "after:content-['*'] after:ml-[0.125rem] after:text-red-400",
+              error && 'text-red-500',
+              labelClassName,
+            ])}
+          >
+            {label}
+          </span>
+          <div className='h-10 w-60 max-w-full bg-gray-100 border rounded animate-pulse' />
+        </div>
+      )
 
     return (
       <div className={cn(['flex flex-col gap-1', className])}>
