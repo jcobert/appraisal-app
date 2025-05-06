@@ -1,7 +1,7 @@
 'use client'
 
 import { User } from '@prisma/client'
-import { useRouter } from 'next-nprogress-bar'
+import { useRouter } from 'next/navigation'
 import { FC, useState } from 'react'
 import {
   Controller,
@@ -17,7 +17,6 @@ import { formDefaults } from '@/utils/form'
 import { withoutBlanks } from '@/utils/general'
 import { toastyRequest } from '@/utils/toast'
 
-import { useUserMutations } from '@/features/user/hooks/use-user-profile-mutations'
 import Form from '@/components/form/form'
 import PatternInput from '@/components/form/inputs/pattern-input'
 import TextInput from '@/components/form/inputs/text-input'
@@ -26,6 +25,8 @@ import Button from '@/components/general/button'
 import Confirmation from '@/components/layout/confirmation'
 
 import useZodForm from '@/hooks/use-zod-form'
+
+import { useUserMutations } from '@/features/user/hooks/use-user-profile-mutations'
 
 const schema = userProfileSchema.form
 

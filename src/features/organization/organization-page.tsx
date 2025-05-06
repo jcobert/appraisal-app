@@ -1,12 +1,10 @@
 'use client'
 
 import { Organization } from '@prisma/client'
-import { useRouter } from 'next-nprogress-bar'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { FC } from 'react'
 import { FaGear } from 'react-icons/fa6'
 
-import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 import Back from '@/components/general/back'
 import Button from '@/components/general/button'
 import DropdownMenu, {
@@ -15,6 +13,8 @@ import DropdownMenu, {
 import Heading from '@/components/layout/heading'
 
 import { useProtectPage } from '@/hooks/use-protect-page'
+
+import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 
 type Props = {
   organizationId?: Organization['id']

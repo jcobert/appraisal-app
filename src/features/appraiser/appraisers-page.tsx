@@ -1,12 +1,13 @@
 'use client'
 
-import { useRouter } from 'next-nprogress-bar'
+import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 import { FiUserPlus } from 'react-icons/fi'
 
+import Button from '@/components/general/button'
+
 import AppraisersList from '@/features/appraiser/appraisers-list'
 import { useGetAppraisers } from '@/features/appraiser/hooks/use-get-appraisers'
-import Button from '@/components/general/button'
 
 const AppraisersPage: FC = () => {
   const router = useRouter()

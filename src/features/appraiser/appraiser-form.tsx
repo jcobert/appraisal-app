@@ -1,7 +1,7 @@
 'use client'
 
 import { Appraiser } from '@prisma/client'
-import { useRouter } from 'next-nprogress-bar'
+import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 
@@ -12,7 +12,6 @@ import { formDefaults } from '@/utils/form'
 import { fullName } from '@/utils/string'
 import { toastyRequest } from '@/utils/toast'
 
-import { useAppraiserMutations } from '@/features/appraiser/hooks/use-appraiser-mutations'
 import PatternInput from '@/components/form/inputs/pattern-input'
 import TextInput from '@/components/form/inputs/text-input'
 import Button from '@/components/general/button'
@@ -20,6 +19,8 @@ import Alert from '@/components/layout/alert'
 import Heading from '@/components/layout/heading'
 
 import useZodForm from '@/hooks/use-zod-form'
+
+import { useAppraiserMutations } from '@/features/appraiser/hooks/use-appraiser-mutations'
 
 const schema = appraiserSchema.form
 
