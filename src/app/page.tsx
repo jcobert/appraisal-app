@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 }
 
 const Page: FC = async () => {
-  const authenticated = await isAllowedServer()
-  if (authenticated) {
+  const { allowed } = await isAllowedServer()
+  if (allowed) {
     redirect('/dashboard')
   }
 
