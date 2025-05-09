@@ -3,6 +3,8 @@ import { FC } from 'react'
 import { filterProtectedNavItems } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
+import FullScreenLoader from '@/components/layout/full-screen-loader'
+
 import { NAVIGATION_ITEMS } from '@/configuration/nav'
 
 type Props = {
@@ -18,9 +20,10 @@ const SidebarSkeleton: FC<Props> = ({ expanded }) => {
         'h-[calc(100vh-60px)] border-r max-md:hidden',
         'flex flex-col gap-2 items-center',
         'py-4',
-        expanded ? 'w-[161px]' : 'w-[53px]',
+        expanded ? 'w-[161px] xl:w-[193px]' : 'w-[53px]',
       )}
     >
+      <FullScreenLoader />
       {navItems?.map((item) => (
         <div
           key={item?.id}
