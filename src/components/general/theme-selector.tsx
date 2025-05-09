@@ -54,7 +54,7 @@ const Item = ({
         isLight &&
           'rounded-l data-[state="on"]:bg-amber-500 data-[state="on"]:text-almost-white',
         isDark &&
-          'data-[state="on"]:bg-indigo-900 data-[state="on"]:text-almost-white data-[state="on"]:border-gray-500',
+          'data-[state="on"]:bg-indigo-900 data-[state="on"]:text-almost-white data-[state="off"]:border-gray-100 data-[state="on"]:border-gray-500',
         isSystem &&
           'rounded-r data-[state="on"]:bg-blue-500 data-[state="on"]:text-almost-white',
         className,
@@ -62,7 +62,7 @@ const Item = ({
     >
       <div className='flex flex-col'>
         <Icon aria-hidden className='mx-auto' />
-        <span className='text-xs'>{`${Theme?.[theme]}`}</span>
+        <span className='text-2xs'>{`${Theme?.[theme]}`}</span>
       </div>
     </Toggle.Item>
   )

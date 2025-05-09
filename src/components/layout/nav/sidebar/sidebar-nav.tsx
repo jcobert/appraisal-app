@@ -33,7 +33,8 @@ const SidebarNav: FC<Props> = ({ sessionData }) => {
   const { isActiveItem, isSidebarExpanded, setIsSidebarExpanded } =
     useNavigationMenu()
 
-  if (!loggedIn || !isClient) return <SidebarSkeleton />
+  if (!loggedIn || !isClient)
+    return <SidebarSkeleton expanded={isSidebarExpanded} />
 
   return (
     <div

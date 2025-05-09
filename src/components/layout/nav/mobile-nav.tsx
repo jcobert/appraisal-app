@@ -1,12 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { FC, useState } from 'react'
+import { FC } from 'react'
 import { CgClose } from 'react-icons/cg'
 import { RxHamburgerMenu } from 'react-icons/rx'
 
-import { filterProtectedNavItems, isActive } from '@/utils/nav'
+import { filterProtectedNavItems } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import AuthLink from '@/components/auth/auth-link'
@@ -15,6 +14,8 @@ import Accordion from '@/components/layout/accordion'
 import Drawer from '@/components/layout/drawer'
 import UserGreeting from '@/components/layout/header/user-greeting'
 import LogoLink from '@/components/layout/nav/logo-link'
+
+import { useNavigationMenu } from '@/hooks/use-navigation'
 
 import { SessionData } from '@/types/auth'
 
@@ -31,17 +32,18 @@ const MobileNav: FC<Props> = ({
   // navItems,
   className,
 }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const pathname = usePathname()
+  const { isActiveItem, isActivePath, isMenuOpen, setIsMenuOpen } =
+    useNavigationMenu()
 
   const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
 
   return (
     <header
       id='mobile-navbar'
+      data-open={isMenuOpen}
       className={cn([
         'md:hidden z-50',
-        'border-b border-gray-200 shadow-sm sticky top-0 bg-almost-white/50 backdrop-blur-lg pb-safe',
+        'border-b border-gray-200 dark:border-gray-500 shadow-sm sticky top-0 bg-almost-white/50 backdrop-blur-lg pb-safe',
         className,
       ])}
     >
@@ -79,7 +81,7 @@ const MobileNav: FC<Props> = ({
         <div
           className={cn(
             'w-full p-4 flex items-center',
-            'border-b border-gray-200 shadow-sm py-2 sticky top-0 bg-almost-white/50 backdrop-blur-lg',
+            'border-b border-gray-200 dark:border-gray-500 shadow-sm py-2 sticky top-0 bg-almost-white/50 dark:bg-almost-black backdrop-blur-lg',
           )}
         >
           {/* Logo */}
@@ -101,43 +103,47 @@ const MobileNav: FC<Props> = ({
           </button>
         </div>
 
-        <div className='px-8 pt-4 overflow-y-auto pb-16 h-dvh flex flex-col'>
-          {/* User */}
-          {profile ? (
-            <div className='flex items-center justify-between border-b pb-4'>
-              <Link
-                className='w-fit'
-                href='/user/profile'
-                onClick={() => {
-                  setIsMenuOpen(false)
-                }}
-              >
-                <UserGreeting user={profile} />
-              </Link>
-              <ThemeSelector className='max-sm:min-w-0' />
-            </div>
-          ) : (
-            <div className='flex flex-col items-center gap-2 mt-4'>
-              <p className='text-balance'>Ready to get started?</p>
-              <AuthLink
-                loggedIn={loggedIn}
-                type='register'
-                className='self-center w-full'
-              />
-            </div>
-          )}
+        <div className='px-8 pt-4 overflow-y-auto pb-16 h-dvh flex flex-col dark:bg-almost-black'>
+          <div className='flex flex-col gap-1 pb-8'>
+            {/* User */}
+            {profile ? (
+              <div className='flex items-center justify-center pb-4'>
+                <Link
+                  className='w-fit'
+                  href='/user/profile'
+                  // onClick={() => {
+                  //   setIsMenuOpen(false)
+                  // }}
+                >
+                  <UserGreeting user={profile} />
+                </Link>
+              </div>
+            ) : (
+              <div className='flex flex-col items-center gap-2 mt-4'>
+                <p className='text-balance'>Ready to get started?</p>
+                <AuthLink
+                  loggedIn={loggedIn}
+                  type='register'
+                  className='self-center w-full'
+                />
+              </div>
+            )}
+            <ThemeSelector className='max-sm:min-w-0' />
+          </div>
 
           {/* Links */}
-          <div className='flex flex-col gap-6 mt-6 pb-safe flex-1'>
+          <div className='flex flex-col gap-6 mt-4 pb-safe flex-1'>
             {navItems?.map((item, i) => {
               const hasMenu = !!item?.menu?.links?.length
               const isLast = i === navItems.length - 1
+              const active = isActiveItem(item)
               return (
                 <div
                   key={item?.id}
                   className={cn([
-                    'text-right text-xl border-medium-gray/15 pb-2 flex justify-end text-dark-gray',
-                    isActive(item, pathname) && 'text-brand',
+                    'text-right text-xl border-medium-gray/15 pb-2 flex justify-end',
+                    active && 'text-brand',
+                    !active && 'text-dark-gray dark:text-gray-300',
                     !isLast && 'border-b',
                   ])}
                 >
@@ -145,7 +151,11 @@ const MobileNav: FC<Props> = ({
                     <Link
                       className='w-full font-semibold py-2'
                       href={item?.url}
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={() => {
+                        if (isActivePath(item?.url)) {
+                          setIsMenuOpen(false)
+                        }
+                      }}
                     >
                       {item?.name}
                     </Link>
@@ -168,7 +178,11 @@ const MobileNav: FC<Props> = ({
                                   key={`${item?.id}-menu`}
                                   className='w-full font-medium text-dark-gray pr-8'
                                   href={item?.url}
-                                  onClick={() => setIsMenuOpen(false)}
+                                  onClick={() => {
+                                    if (isActivePath(item?.url)) {
+                                      setIsMenuOpen(false)
+                                    }
+                                  }}
                                 >
                                   {`All ${item?.name}`}
                                 </Link>
@@ -178,7 +192,11 @@ const MobileNav: FC<Props> = ({
                                   key={link?.id}
                                   className='w-full font-medium text-dark-gray pr-8'
                                   href={link?.url}
-                                  onClick={() => setIsMenuOpen(false)}
+                                  onClick={() => {
+                                    if (isActivePath(item?.url)) {
+                                      setIsMenuOpen(false)
+                                    }
+                                  }}
                                 >
                                   {link?.name}
                                 </Link>
