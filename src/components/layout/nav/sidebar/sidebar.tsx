@@ -24,14 +24,7 @@ const Sidebar: FC<Props> = async () => {
     user,
   } satisfies SessionData
 
-  return (
-    // <div
-    //   id='navigation-sidebar'
-    //   className='border-r px-2 xl:px-6 max-md:hidden'
-    // >
-    <SidebarNav sessionData={sessionData} />
-    // </div>
-  )
+  return <SidebarNav sessionData={sessionData} />
 }
 
 export default Sidebar
