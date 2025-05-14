@@ -178,8 +178,14 @@ export const POST = async (req: NextRequest) => {
     const res = await createOrganization({
       data: {
         ...payload,
-        ownerId: userProfile?.id,
-        members: { connect: { id: userProfile?.id } },
+        members: {
+          create: {
+            userId: userProfile?.id,
+            roles: ['owner'],
+            createdBy: user?.id,
+            updatedBy: user?.id,
+          },
+        },
         createdBy: user?.id,
         updatedBy: user?.id,
       },

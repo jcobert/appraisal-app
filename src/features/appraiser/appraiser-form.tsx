@@ -29,7 +29,6 @@ const defaultFormValues = {
   lastName: '',
   email: '',
   phone: '',
-  userId: '',
 } satisfies AppraiserFormData
 
 type Props = {
