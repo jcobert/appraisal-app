@@ -14,7 +14,6 @@ const baseSchema = z.object(
     lastName: z.string().nonempty(),
     email: z.string().email().optional(),
     phone: z.string().optional(),
-    userId: z.string(),
   } satisfies SchemaBase,
   { errorMap: formErrorMap },
 )

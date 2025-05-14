@@ -21,13 +21,14 @@ export const getUserOrganizations = async (params?: {
   const authorized = await canQuery(authOptions)
   if (!authorized) return null
   const userId = (await getActiveUserAccount())?.id
-  const baseFilter: Prisma.OrganizationFindManyArgs['where'] = owner
-    ? {
-        owner: { accountId: userId },
-      }
-    : {
-        members: { some: { accountId: userId } },
-      }
+  const baseFilter: Prisma.OrganizationFindManyArgs['where'] = {
+    members: {
+      some: {
+        user: { accountId: userId },
+        ...(owner ? { AND: { roles: { has: 'owner' } } } : {}),
+      },
+    },
+  }
   const data = await db.organization.findMany({
     where: { ...baseFilter, ...filter },
   })
@@ -45,7 +46,7 @@ export const userIsMember = async (params?: {
   const data = await db.organization.findUnique({
     where: {
       id: organizationId,
-      members: { some: { accountId: userId } },
+      members: { some: { user: { accountId: userId } } },
     },
   })
   return !!data?.id
@@ -62,7 +63,12 @@ export const userIsOwner = async (params?: {
   const data = await db.organization.findUnique({
     where: {
       id: organizationId,
-      owner: { accountId: userId },
+      members: {
+        some: {
+          user: { accountId: userId },
+          AND: { roles: { has: 'owner' } },
+        },
+      },
     },
   })
   return !!data?.id
