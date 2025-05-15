@@ -4,7 +4,7 @@ import { cn } from '@/utils/style'
 
 type Props = {
   name?: string
-  image?: string
+  image?: string | null
   size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   className?: string
   textClassName?: string

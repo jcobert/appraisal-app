@@ -14,13 +14,14 @@ import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 import { toastyRequest } from '@/utils/toast'
 
-import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
 import Form from '@/components/form/form'
 import FormActionBar from '@/components/form/form-action-bar'
 import TextInput from '@/components/form/inputs/text-input'
 import Button from '@/components/general/button'
 
 import useZodForm from '@/hooks/use-zod-form'
+
+import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
 
 const schema = organizationSchema.form
 
@@ -49,7 +50,7 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
   })
 
   const onSubmit: SubmitHandler<OrganizationFormData> = async (data) => {
-    const payload = { ...initialData, ...data }
+    const payload = isUpdate ? data : { ...initialData, ...data }
 
     if (isUpdate) {
       const res = await toastyRequest(() =>

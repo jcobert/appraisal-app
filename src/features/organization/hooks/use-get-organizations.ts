@@ -1,4 +1,4 @@
-import { Organization } from '@prisma/client'
+import { OrgMember, Organization, User } from '@prisma/client'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
@@ -12,8 +12,12 @@ export const organizationsQueryKey = {
     filteredQueryKey(params, organizationsQueryKey.all),
 } as const
 
+export type OrganizationWithMembers = Organization & {
+  members?: (OrgMember & { user?: User })[]
+}
+
 type ResponseData<T extends Organization['id'] | undefined> = T extends string
-  ? Organization
+  ? OrganizationWithMembers
   : Organization[]
 
 type Props<T extends Organization['id'] | undefined = undefined> = {

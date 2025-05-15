@@ -21,7 +21,10 @@ const Page: FC<Props> = async ({ params }) => {
 
   const id = (await params)?.id
 
-  const data = await getOrganization({ where: { id } })
+  const data = await getOrganization({
+    where: { id },
+    include: { members: { include: { user: true } } },
+  })
 
   return <OrganizationForm initialData={data} />
 }
