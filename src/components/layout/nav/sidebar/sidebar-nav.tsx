@@ -75,6 +75,7 @@ const SidebarNav: FC<Props> = ({ sessionData }) => {
                   {Icon ? (
                     <Icon
                       className={cn(
+                        'flex-none',
                         !active && [
                           'text-gray-600 group-hover:text-almost-black',
                           'dark:text-gray-300 group-hover:dark:text-almost-white',

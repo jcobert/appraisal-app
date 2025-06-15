@@ -131,3 +131,5 @@ export const deleteOrganization = async (
   const data = await db.organization.delete(params)
   return data
 }
+
+export const inviteUser = async () => {}

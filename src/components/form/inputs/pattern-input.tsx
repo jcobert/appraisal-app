@@ -51,7 +51,7 @@ const PatternInput = forwardRef<HTMLInputElement, PatternInputProps>(
           {Icon ? (
             <Icon
               className={cn([
-                'absolute mt-[0.675rem] ml-[0.625rem] text-lg text-gray-500',
+                'absolute mt-[0.925rem] ml-[0.625rem] text-lg text-gray-500',
                 !label && 'mt-[1.95rem]',
                 props?.disabled && 'cursor-not-allowed',
               ])}

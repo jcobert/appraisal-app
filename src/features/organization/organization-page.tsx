@@ -1,7 +1,6 @@
 'use client'
 
 import { Organization } from '@prisma/client'
-import { sortBy } from 'lodash'
 import { usePathname, useRouter } from 'next/navigation'
 import { FC } from 'react'
 import { FaGear } from 'react-icons/fa6'
@@ -16,7 +15,7 @@ import Heading from '@/components/layout/heading'
 import { useProtectPage } from '@/hooks/use-protect-page'
 
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
-import UserCard from '@/features/user/user-card'
+import OrganizationMembers from '@/features/organization/organization-members'
 
 type Props = {
   organizationId?: Organization['id']
@@ -34,12 +33,6 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
   })
 
   const { name, members = [] } = response?.data || {}
-
-  const sortedMembers = sortBy(members, (m) => {
-    if (m?.roles?.includes('owner')) return 1
-    if (m?.roles?.includes('manager')) return 2
-    return 999
-  })
 
   return (
     <div className='flex flex-col gap-8 max-sm:gap-4'>
@@ -70,14 +63,7 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
         </DropdownMenu>
       </div>
 
-      <div>
-        <h2>Members</h2>
-        <div>
-          {sortedMembers?.map((m) => (
-            <UserCard key={m?.id} user={m?.user} roles={m?.roles} />
-          ))}
-        </div>
-      </div>
+      <OrganizationMembers members={members} />
     </div>
   )
 }
