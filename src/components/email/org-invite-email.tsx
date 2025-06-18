@@ -5,6 +5,7 @@ import {
   Font,
   Head,
   Heading,
+  Hr,
   Html,
   Link,
   Preview,
@@ -41,10 +42,22 @@ const OrgInviteEmail = ({
           <Font fontFamily='Helvetica' fallbackFontFamily='sans-serif' />
         </Head>
         <Preview>{`${inviterName || 'Someone'} invited you to join their organization, ${organization?.name}, on PrizmaTrack.`}</Preview>
-        <Body>
-          <Container>
-            <Heading className='text-xl font-normal text-balance'>{`Hey, ${inviteeName ? `${inviteeName},` : ''}`}</Heading>
-            <Section>
+        <Body
+          className={cn(
+            'bg-background',
+            // 'h-0 min-h-screen'
+          )}
+        >
+          <div
+            className='bg-white rounded p-2 h-fit flex flex-col gap-4'
+            style={{ border: '1px solid rgb(0,0,0,0.05)' }}
+          >
+            {/* <Heading className='text-xl font-normal text-balance'>{`Hi ${inviteeName ? `${inviteeName},` : ''}`}</Heading> */}
+            <div className='max-w-prose mx-auto'>
+              <Text className='text-pretty'>
+                {`Hi ${inviteeName ? `${inviteeName},` : ''}`}
+              </Text>
+
               <Text className='text-pretty'>
                 <span
                   className={cn('mr-1', inviterName && 'font-bold')}
@@ -57,17 +70,28 @@ const OrgInviteEmail = ({
                 ) : null}
                 <span className=''>on PrizmaTrack.</span>
               </Text>
-            </Section>
 
-            <Section className='my-12 flex flex-col items-center'>
+              <Text className='text-pretty'>
+                Follow the link below to view the invitation.
+              </Text>
+            </div>
+
+            <div className='my-8 flex flex-col items-center'>
               <Link
                 href={inviteLink}
-                className='flex min-h-[2.125rem] w-fit min-w-[6rem] cursor-pointer items-center justify-center gap-2 rounded border border-brand bg-brand px-4 py-1 text-almost-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:border-brand/25 disabled:bg-brand/70 dark:border-brand dark:disabled:border-brand-extra-dark dark:disabled:bg-brand-extra-dark/50 dark:disabled:text-brand/50 [&:not(:disabled)]:shadow [&:not(:disabled)]:hover:shadow-sm'
+                className='flex min-h-[2.125rem] sm:text-lg w-fit min-w-[6rem] cursor-pointer items-center justify-center gap-2 rounded border border-brand bg-brand px-4 py-1 text-almost-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:border-brand/25 disabled:bg-brand/70 dark:border-brand dark:disabled:border-brand-extra-dark dark:disabled:bg-brand-extra-dark/50 dark:disabled:text-brand/50 [&:not(:disabled)]:shadow [&:not(:disabled)]:hover:shadow-sm'
               >
                 View invitation
               </Link>
-            </Section>
-          </Container>
+            </div>
+
+            <div>
+              <Hr className='mb-0 !border-t-2' />
+              <div className='py-8 bg-gray-50'>
+                <div className='text-sm text-gray-900 text-center'>{`© ${new Date().getFullYear()} PrizmaTrack`}</div>
+              </div>
+            </div>
+          </div>
         </Body>
       </Tailwind>
     </Html>
