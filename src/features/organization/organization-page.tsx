@@ -63,7 +63,7 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
         </DropdownMenu>
       </div>
 
-      <OrganizationMembers members={members} />
+      <OrganizationMembers members={members} organization={response?.data} />
     </div>
   )
 }

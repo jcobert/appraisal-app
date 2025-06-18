@@ -132,4 +132,6 @@ export const deleteOrganization = async (
   return data
 }
 
-export const inviteUser = async () => {}
+export const inviteUser = async () => {
+  
+}

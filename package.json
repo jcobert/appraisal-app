@@ -23,7 +23,8 @@
     "coupling-graph": "npx madge --extensions js,jsx,ts,tsx,css,md,mdx ./ --exclude '.next|tailwind.config.ts|reset.d.ts|prettier.config.js|postcss.config.js|playwright.config.ts|next.config.js|next-env.d.ts|instrumentation.ts|.eslintrc.js' --image graph.svg",
     "prisma:generate": "dotenv -e .env.local -- npx prisma generate",
     "prisma:migrate": "dotenv -e .env.local -- npx prisma migrate dev",
-    "prisma:validate": "dotenv -e .env.local -- npx prisma validate"
+    "prisma:validate": "dotenv -e .env.local -- npx prisma validate",
+    "email:dev": "email dev --dir ./src/components/email --port 4000"
   },
   "dependencies": {
     "@bprogress/next": "3.2.12",

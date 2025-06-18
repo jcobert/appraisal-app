@@ -1,7 +1,7 @@
 import React, { FC, ReactNode, useState } from 'react'
 
-import Button from '@/components/general/button'
 import FormActionBar from '@/components/form/form-action-bar'
+import Button from '@/components/general/button'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 import Modal, { ModalProps } from '@/components/layout/modal'
 
@@ -24,7 +24,8 @@ export type ConfirmationProps = {
   }) => Promise<void> | void
   /** How to display loading indicator while `onConfirm` is running. Default is `"button"`. */
   loader?: 'fullscreen' | 'button' | 'none'
-} & Pick<ModalProps, 'open' | 'onOpenChange'>
+  primaryButtonText?: string
+} & Pick<ModalProps, 'open' | 'onOpenChange' | 'preventOutsideClose'>
 
 const Confirmation: FC<ConfirmationProps> = ({
   title,
@@ -35,6 +36,8 @@ const Confirmation: FC<ConfirmationProps> = ({
   onCancel,
   onConfirm,
   loader = 'button',
+  preventOutsideClose = true,
+  primaryButtonText = 'OK',
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isBusy, setIsBusy] = useState(false)
@@ -58,6 +61,7 @@ const Confirmation: FC<ConfirmationProps> = ({
         }}
         title={title}
         trigger={children}
+        preventOutsideClose={preventOutsideClose}
       >
         <div className='flex flex-col gap-6'>
           {description}
@@ -85,7 +89,7 @@ const Confirmation: FC<ConfirmationProps> = ({
               }}
               loading={isBusy}
             >
-              OK
+              {primaryButtonText}
             </Button>
           </FormActionBar>
         </div>
