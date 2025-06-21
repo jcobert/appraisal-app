@@ -7,12 +7,13 @@ import { isAllowedServer } from '@/utils/auth'
 import { fullName } from '@/utils/string'
 
 import AuthLink from '@/components/auth/auth-link'
-import Button from '@/components/general/button'
+import Banner from '@/components/general/banner'
 import PageLayout from '@/components/layout/page-layout'
 
 import { PageParams } from '@/types/general'
 
 import { generatePageMeta } from '@/configuration/seo'
+import OrgJoinForm from '@/features/organization/invitation/org-join-form'
 
 type Props = PageParams<{ id: string }, { inv: string }>
 
@@ -24,7 +25,7 @@ const heading = "You've been invited to join an organization."
 
 const Page: FC<Props> = async ({ params, searchParams }) => {
   const organizationId = (await params)?.id
-  const inviteToken = (await searchParams)?.inv
+  const inviteToken = (await searchParams)?.inv || ''
 
   const invitation = await getOrgInvitation(
     {
@@ -36,6 +37,17 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
   const { allowed: loggedIn } = await isAllowedServer()
 
   const postLoginRedirect = `/organization-invite/${organizationId}/join?inv=${inviteToken}`
+
+  if (!invitation) {
+    return (
+      <PageLayout>
+        <Banner variant='warning' className='w-fit mx-auto'>
+          This invitation has expired. Please contact the owner of the
+          organization.
+        </Banner>
+      </PageLayout>
+    )
+  }
 
   return (
     <PageLayout>
@@ -62,22 +74,6 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
               )}
             </span>
           </div>
-
-          <dl>
-            {/* <div className='flex items-center gap-4'>
-              <dt>Organization:</dt>
-              <dd>{invitation?.organization?.name}</dd>
-            </div> */}
-            {/* <div className='flex items-center gap-4'>
-              <dt>Invited by:</dt>
-              <dd>
-                {fullName(
-                  invitation?.invitedBy?.firstName,
-                  invitation?.invitedBy?.lastName,
-                )}
-              </dd>
-            </div> */}
-          </dl>
         </div>
 
         {!loggedIn ? (
@@ -101,9 +97,10 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
           </Confirmation> */}
           </div>
         ) : (
-          <div className='flex flex-col items-center gap-6 mx-auto'>
-            <Button>Join organization</Button>
-          </div>
+          <OrgJoinForm
+            organizationId={organizationId}
+            invitation={{ token: inviteToken, status: 'accepted' }}
+          />
         )}
       </div>
     </PageLayout>

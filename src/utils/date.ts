@@ -9,5 +9,5 @@ export const generateExpiry = (days: number) => {
 export const isExpired = (expiry: Date | null | undefined) => {
   if (!expiry || !isValid(expiry)) return true
   const now = new Date()
-  return isAfter(expiry, now)
+  return isAfter(now, expiry)
 }

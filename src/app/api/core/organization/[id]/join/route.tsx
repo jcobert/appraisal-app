@@ -1,24 +1,20 @@
-import { OrgInvitation, OrgInvitationStatus } from '@prisma/client'
+import { OrgInvitation } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
 import {
-  createOrgInvitation,
   getOrgInvitation,
-  getOrganization,
   updateOrgInvitation,
 } from '@/lib/db/queries/organization'
-import { getActiveUserProfile } from '@/lib/db/queries/user'
-import { generateUniqueToken } from '@/lib/server-utils'
+import {
+  getActiveUserProfile,
+  registerUserProfile,
+} from '@/lib/db/queries/user'
 
-import { isAllowedServer } from '@/utils/auth'
-import { generateExpiry, isExpired } from '@/utils/date'
+import { getActiveUserAccount } from '@/utils/auth'
+import { isExpired } from '@/utils/date'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 import { fullName } from '@/utils/string'
-
-import OrgInviteEmail from '@/components/email/org-invite-email'
-
-import { EmailPayload } from '@/features/organization/hooks/use-organization-invite'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -26,7 +22,7 @@ export const POST = async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
-  // const { allowed } = await isAllowedServer()
+  const userAccount = await getActiveUserAccount()
 
   const organizationId = (await params)?.id
 
@@ -92,10 +88,18 @@ export const POST = async (
       return NextResponse.json({}, { status: 200 })
     }
 
-    const activeUser = await getActiveUserProfile()
+    let userProfile:
+      | Awaited<ReturnType<typeof getActiveUserProfile>>
+      | undefined = await getActiveUserProfile()
+
+    // User account but no profile (just created acct while joining org).
+    // Register profile automatically.
+    if (userAccount && !userProfile) {
+      userProfile = await registerUserProfile({ redirectIfExists: false })
+    }
 
     // Not allowed
-    if (!activeUser) {
+    if (!userAccount || !userProfile) {
       return NextResponse.json(
         {
           error: {
@@ -118,7 +122,7 @@ export const POST = async (
             members: {
               create: [
                 {
-                  userId: activeUser?.id,
+                  userId: userProfile?.id,
                   active: true,
                   /** @todo Add roles when invitation created? */
                   // roles: ['']
@@ -143,26 +147,14 @@ export const POST = async (
     }
 
     if (invitation?.invitedBy?.email) {
-      const { error: resendError } = await resend.emails.send({
+      const { error: _resendError } = await resend.emails.send({
         from: 'PrizmaTrack <noreply@notifications.prizmatrack.com>',
         to: invitation?.invitedBy?.email,
         subject: `${fullName(invitation?.inviteeFirstName, invitation?.inviteeLastName)} accepted your invitation.`,
         /** @todo Add email template. */
-        text: '',
+        text: 'Accepted.',
       })
     }
-
-    // if (resendError) {
-    //   return NextResponse.json(
-    //     {
-    //       error: {
-    //         code: resendError?.name as FetchErrorCode,
-    //         message: resendError?.message,
-    //       },
-    //     } satisfies FetchResponse,
-    //     { status: 500 },
-    //   )
-    // }
 
     return NextResponse.json({})
   } catch (error) {

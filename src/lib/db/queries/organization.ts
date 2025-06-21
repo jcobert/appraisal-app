@@ -148,7 +148,7 @@ export const getOrgInvitation = async <
       expires: true,
       status: true,
       organization: { select: { name: true, avatar: true } },
-      invitedBy: { select: { firstName: true, lastName: true } },
+      invitedBy: { select: { firstName: true, lastName: true, email: true } },
       inviteeFirstName: true,
       inviteeLastName: true,
       inviteeEmail: true,
