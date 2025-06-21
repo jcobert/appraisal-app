@@ -5,6 +5,7 @@ import { Resend } from 'resend'
 import {
   getOrgInvitation,
   updateOrgInvitation,
+  userIsMember,
 } from '@/lib/db/queries/organization'
 import {
   getActiveUserProfile,
@@ -109,6 +110,25 @@ export const POST = async (
           data: null,
         } satisfies FetchResponse,
         { status: 401 },
+      )
+    }
+
+    // User already member of or
+    if (await userIsMember({ organizationId })) {
+      await updateOrgInvitation({
+        where: { token, organizationId },
+        data: { token: null, status: 'expired' },
+      })
+      return NextResponse.json(
+        {
+          error: {
+            code: FetchErrorCode.DUPLICATE,
+            message: 'User already member of organization.',
+          },
+          data: null,
+          status: 409,
+        } satisfies FetchResponse,
+        { status: 409 },
       )
     }
 

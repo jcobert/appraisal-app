@@ -34,7 +34,8 @@ const OrgJoinForm: FC<Props> = ({ organizationId, invitation }) => {
 
     const res = await mutateAsync({ token, status })
 
-    if (successful(res?.status)) {
+    // 409 means user is already member of org.
+    if (successful(res?.status) || res?.status === 409) {
       router.push(`/organizations/${organizationId}`)
     }
   }

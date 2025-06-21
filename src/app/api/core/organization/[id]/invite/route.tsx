@@ -15,6 +15,7 @@ import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 import OrgInviteEmail from '@/components/email/org-invite-email'
 
 import { EmailPayload } from '@/features/organization/hooks/use-organization-invite'
+import { getOrgInviteUrl } from '@/features/organization/utils'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -54,7 +55,7 @@ export const POST = async (
         { status: 400 },
       )
     }
-    
+
     const activeUser = await getActiveUserProfile()
     const org = await getOrganization({ where: { id: organizationId } })
 
@@ -86,8 +87,11 @@ export const POST = async (
       )
     }
 
-    /** @todo Figure out where to link. */
-    const inviteLink = `${process.env.NEXT_PUBLIC_SITE_BASE_URL}/organization-invite/${organizationId}/join?inv=${inviteToken}`
+    const inviteLink = getOrgInviteUrl({
+      organizationId,
+      inviteToken,
+      absolute: true,
+    })
 
     const { error: resendError } = await resend.emails.send({
       from: 'PrizmaTrack <noreply@notifications.prizmatrack.com>',

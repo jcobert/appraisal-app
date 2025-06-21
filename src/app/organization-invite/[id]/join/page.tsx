@@ -14,6 +14,7 @@ import { PageParams } from '@/types/general'
 
 import { generatePageMeta } from '@/configuration/seo'
 import OrgJoinForm from '@/features/organization/invitation/org-join-form'
+import { getOrgInviteUrl } from '@/features/organization/utils'
 
 type Props = PageParams<{ id: string }, { inv: string }>
 
@@ -23,27 +24,33 @@ export const metadata: Metadata = generatePageMeta({
 
 const heading = "You've been invited to join an organization."
 
+const errorMessage =
+  "We're sorry. This link is not valid.\nIf you were invited to join an organization, the link may have expired. Please contact the owner of the organization."
+
 const Page: FC<Props> = async ({ params, searchParams }) => {
   const organizationId = (await params)?.id
   const inviteToken = (await searchParams)?.inv || ''
 
   const invitation = await getOrgInvitation(
     {
-      where: { organizationId, token: inviteToken },
+      where: { organizationId, token: inviteToken, status: 'pending' },
     },
     { publicAccess: true },
   )
 
   const { allowed: loggedIn } = await isAllowedServer()
 
-  const postLoginRedirect = `/organization-invite/${organizationId}/join?inv=${inviteToken}`
+  const postLoginRedirect = getOrgInviteUrl({
+    organizationId,
+    inviteToken,
+    absolute: false,
+  })
 
   if (!invitation) {
     return (
       <PageLayout>
-        <Banner variant='warning' className='w-fit mx-auto'>
-          This invitation has expired. Please contact the owner of the
-          organization.
+        <Banner variant='warning' className='w-fit mx-auto max-w-prose'>
+          {errorMessage}
         </Banner>
       </PageLayout>
     )
