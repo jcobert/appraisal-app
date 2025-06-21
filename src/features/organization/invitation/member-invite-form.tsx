@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { FC, useMemo, useState } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -20,15 +20,35 @@ type Props = {
   organization: DetailedOrganization | null | undefined
 } & ModalProps
 
-const schema = z.object({
+const formSchema = z.object({
   firstName: z.string().nonempty(),
   lastName: z.string().nonempty(),
   email: z.string().email(),
 })
 
-type MemberInviteFormData = z.infer<typeof schema>
+type MemberInviteFormData = z.infer<typeof formSchema>
 
 const MemberInviteForm: FC<Props> = ({ organization }) => {
+  const schema = useMemo(
+    () =>
+      formSchema.superRefine((data, ctx) => {
+        if (
+          (organization?.members || [])?.some(
+            (mem) =>
+              data?.email?.toLowerCase() === mem?.user?.email?.toLowerCase(),
+          )
+        ) {
+          ctx.addIssue({
+            path: ['email'],
+            code: 'custom',
+            message:
+              'There is already a member of the organization with this email.',
+          })
+        }
+      }),
+    [organization?.id],
+  )
+
   const { control, handleSubmit, reset } = useZodForm<MemberInviteFormData>(
     schema,
     {
