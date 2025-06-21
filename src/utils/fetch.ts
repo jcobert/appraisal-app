@@ -15,7 +15,11 @@ export type FetchResponse<TData = any> = {
   status?: number
   data?: TData | null
   message?: string
-  error?: { code?: FetchErrorCode; message?: string; details?: ZodFieldErrors | null }
+  error?: {
+    code?: FetchErrorCode
+    message?: string
+    details?: ZodFieldErrors | null
+  }
 }
 
 export const successful = (status?: number) => {
@@ -56,7 +60,8 @@ const GET = async <TData = Record<string, unknown>>({
 
 const POST = async <
   TPayload extends Record<string, unknown> = Record<string, unknown>,
-  TResData extends Record<string, unknown> = Record<string, unknown>,
+  // TResData extends Record<string, unknown> = Record<string, unknown>,
+  TResData extends unknown = unknown,
 >({
   url,
   payload,

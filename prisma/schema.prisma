@@ -59,23 +59,33 @@ enum AppraisalType {
   refinance
 }
 
+enum OrgInvitationStatus {
+  pending
+  accepted
+  declined
+  expired
+}
+
 // ------------------
 //       TABLES
 // ------------------
 
 model User {
-  id          String      @id @default(uuid())
-  accountId   String      @unique
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  firstName   String
-  lastName    String
-  email       String?
-  phone       String?
-  avatar      String?
-  memberships OrgMember[] @relation("UserMember")
+  id                 String          @id @default(uuid())
+  accountId          String          @unique
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  createdBy          String?
+  updatedBy          String?
+  firstName          String
+  lastName           String
+  email              String?
+  phone              String?
+  avatar             String?
+  // Relations
+  memberships        OrgMember[]     @relation("UserMember")
+  orgInvitationsSent OrgInvitation[] @relation("OrgInviter")
+  // orgInvitationsReceived OrgInvitation[] @relation("OrgInvitee")
 }
 
 model OrgMember {
@@ -84,7 +94,9 @@ model OrgMember {
   updatedAt      DateTime     @updatedAt
   createdBy      String?
   updatedBy      String?
+  active         Boolean      @default(true)
   roles          MemberRole[]
+  // Relations
   userId         String
   organizationId String
   user           User         @relation("UserMember", fields: [userId], references: [id])
@@ -92,14 +104,37 @@ model OrgMember {
 }
 
 model Organization {
-  id        String      @id @default(uuid())
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  createdBy String?
-  updatedBy String?
-  name      String
-  avatar    String?
-  members   OrgMember[]
+  id          String          @id @default(uuid())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  name        String
+  avatar      String?
+  // Relations
+  members     OrgMember[]
+  invitations OrgInvitation[]
+}
+
+model OrgInvitation {
+  id               String              @id @default(uuid())
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  status           OrgInvitationStatus @default(pending)
+  token            String?             @unique
+  expires          DateTime
+  inviteeEmail     String
+  inviteeFirstName String?
+  inviteeLastName  String?
+  // Relations
+  invitedByUserId  String
+  organizationId   String
+  invitedBy        User                @relation("OrgInviter", fields: [invitedByUserId], references: [id])
+  organization     Organization        @relation(fields: [organizationId], references: [id])
+  // inviteeUserId    String
+  // invitee          User                @relation("OrgInvitee", fields: [inviteeUserId], references: [id])
 }
 
 // @TODO - Phase this table out. An appraiser is an OrgMember with the appraiser role.

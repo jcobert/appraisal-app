@@ -131,3 +131,52 @@ export const deleteOrganization = async (
   const data = await db.organization.delete(params)
   return data
 }
+
+export const getOrgInvitation = async <
+  TParams extends Prisma.OrgInvitationFindUniqueArgs,
+>(
+  params: TParams,
+  authOptions?: CanQueryOptions & { publicAccess?: boolean },
+) => {
+  const { publicAccess = false, ...opts } = authOptions || {}
+  const authorized = publicAccess || (await canQuery(opts))
+  if (!authorized) return null
+
+  const queryArgs = {
+    select: {
+      id: true,
+      expires: true,
+      status: true,
+      organization: { select: { name: true, avatar: true } },
+      invitedBy: { select: { firstName: true, lastName: true, email: true } },
+      inviteeFirstName: true,
+      inviteeLastName: true,
+      inviteeEmail: true,
+    },
+    ...params,
+  } satisfies TParams
+
+  const data = await db.orgInvitation.findUnique(queryArgs)
+  return data
+}
+
+export const createOrgInvitation = async (
+  params: Prisma.OrgInvitationCreateArgs,
+  authOptions?: CanQueryOptions,
+) => {
+  const authorized = await canQuery(authOptions)
+  if (!authorized) return null
+  const data = await db.orgInvitation.create(params)
+  return data
+}
+
+export const updateOrgInvitation = async (
+  params: Prisma.OrgInvitationUpdateArgs,
+  authOptions?: CanQueryOptions & { publicAccess?: boolean },
+) => {
+  const { publicAccess = false, ...opts } = authOptions || {}
+  const authorized = publicAccess || (await canQuery(opts))
+  if (!authorized) return null
+  const data = await db.orgInvitation.update(params)
+  return data
+}

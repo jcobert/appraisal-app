@@ -49,7 +49,10 @@ export const GET = async (
 
   try {
     const id = (await params)?.id
-    const res = await getOrganization({ where: { id } })
+    const res = await getOrganization({
+      where: { id },
+      include: { members: { include: { user: true } } },
+    })
 
     /**
      * @todo

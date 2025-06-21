@@ -6,6 +6,8 @@ import { filteredQueryKey } from '@/utils/query'
 
 import useCoreQuery, { UseCoreQueryProps } from '@/hooks/use-core-query'
 
+import { DetailedOrganization } from '@/features/organization/types'
+
 export const organizationsQueryKey = {
   all: ['organizations'],
   filtered: (params: Partial<Organization>) =>
@@ -13,7 +15,7 @@ export const organizationsQueryKey = {
 } as const
 
 type ResponseData<T extends Organization['id'] | undefined> = T extends string
-  ? Organization
+  ? DetailedOrganization
   : Organization[]
 
 type Props<T extends Organization['id'] | undefined = undefined> = {

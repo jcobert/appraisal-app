@@ -69,7 +69,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           {Icon ? (
             <Icon
               className={cn([
-                'absolute mt-[0.675rem] ml-[0.625rem] text-lg text-gray-500 dark:text-gray-300',
+                'absolute mt-[0.925rem] ml-[0.625rem] text-lg text-gray-500 dark:text-gray-300',
                 !label && 'mt-[1.95rem]',
                 props?.disabled && 'cursor-not-allowed',
               ])}

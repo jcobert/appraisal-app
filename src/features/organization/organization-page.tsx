@@ -15,6 +15,7 @@ import Heading from '@/components/layout/heading'
 import { useProtectPage } from '@/hooks/use-protect-page'
 
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
+import OrganizationMembers from '@/features/organization/organization-members'
 
 type Props = {
   organizationId?: Organization['id']
@@ -31,10 +32,10 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
     options: { enabled: true },
   })
 
-  const { name } = response?.data || {}
+  const { name, members = [] } = response?.data || {}
 
   return (
-    <div className='flex flex-col gap-4 max-sm:gap-2'>
+    <div className='flex flex-col gap-8 max-sm:gap-4'>
       <div>
         <Back href='/organizations' text='Organizations' />
       </div>
@@ -61,6 +62,8 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
           </DropdownMenuItem>
         </DropdownMenu>
       </div>
+
+      <OrganizationMembers members={members} organization={response?.data} />
     </div>
   )
 }

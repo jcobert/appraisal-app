@@ -38,7 +38,11 @@ export const getActiveUserProfile = async (authOptions?: CanQueryOptions) => {
   return data
 }
 
-export const registerUserProfile = async (authOptions?: CanQueryOptions) => {
+export const registerUserProfile = async (
+  options?: CanQueryOptions & { redirectIfExists?: boolean },
+) => {
+  const { redirectIfExists = true, ...authOptions } = options || {}
+
   const authorized = await canQuery(authOptions)
   if (!authorized) return null
   const session = getKindeServerSession()
@@ -47,8 +51,10 @@ export const registerUserProfile = async (authOptions?: CanQueryOptions) => {
 
   // User profile already exists. Redirect to landing page.
   if (!!currentProfile) {
+    if (!redirectIfExists) return
     redirect('/dashboard')
   }
+
   const res = await db.user.create({
     data: {
       accountId: user.id,
@@ -56,9 +62,9 @@ export const registerUserProfile = async (authOptions?: CanQueryOptions) => {
       updatedBy: user?.id,
       firstName: user?.given_name || '',
       lastName: user?.family_name || '',
-      avatar: user?.picture,
-      email: user?.email,
+      email: user?.email || '',
       phone: user?.phone_number,
+      avatar: user?.picture,
     },
   })
   return res
