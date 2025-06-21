@@ -64,16 +64,7 @@ const MemberInviteForm: FC<Props> = ({ organization }) => {
         }}
         title='Invite to Organization'
         preventOutsideClose
-        trigger={
-          <Button
-            variant='secondary'
-            // onClick={() => {
-            //   setFormOpen(true)
-            // }}
-          >
-            Add member
-          </Button>
-        }
+        trigger={<Button variant='secondary'>Add member</Button>}
       >
         <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-4'>
           <div className='flex gap-4 max-sm:flex-col'>

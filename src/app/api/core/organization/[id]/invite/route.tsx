@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-import { getOrganization } from '@/lib/db/queries/organization'
+import {
+  createOrgInvitation,
+  getOrganization,
+} from '@/lib/db/queries/organization'
+import { getActiveUserProfile } from '@/lib/db/queries/user'
+import { generateUniqueToken } from '@/lib/server-utils'
 
 import { isAllowedServer } from '@/utils/auth'
+import { generateExpiry } from '@/utils/date'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 
 import OrgInviteEmail from '@/components/email/org-invite-email'
@@ -16,9 +22,7 @@ export const POST = async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
-  const { allowed, user } = await isAllowedServer()
-
-  const organizationId = (await params)?.id
+  const { allowed } = await isAllowedServer()
 
   // Not allowed
   if (!allowed) {
@@ -34,6 +38,8 @@ export const POST = async (
     )
   }
 
+  const organizationId = (await params)?.id
+
   try {
     const { email, firstName, lastName } = (await req.json()) as EmailPayload
 
@@ -48,13 +54,42 @@ export const POST = async (
         { status: 400 },
       )
     }
-
+    
+    const activeUser = await getActiveUserProfile()
     const org = await getOrganization({ where: { id: organizationId } })
 
-    /** @todo Figure out where to link. */
-    const inviteLink = `${process.env.NEXT_PUBLIC_SITE_BASE_URL}/organizations/${organizationId}`
+    const inviteToken = generateUniqueToken()
+    const expires = generateExpiry(30)
 
-    const { data, error } = await resend.emails.send({
+    const invite = await createOrgInvitation({
+      data: {
+        createdBy: activeUser?.id,
+        organizationId,
+        invitedByUserId: activeUser?.id || '',
+        inviteeEmail: email,
+        inviteeFirstName: firstName,
+        inviteeLastName: lastName,
+        expires,
+        token: inviteToken,
+      },
+    })
+
+    if (!invite) {
+      return NextResponse.json(
+        {
+          error: {
+            code: FetchErrorCode.DATABASE_FAILURE,
+            message: 'Failed to create invitation.',
+          },
+        } satisfies FetchResponse,
+        { status: 500 },
+      )
+    }
+
+    /** @todo Figure out where to link. */
+    const inviteLink = `${process.env.NEXT_PUBLIC_SITE_BASE_URL}/organization-invite/${organizationId}/join?inv=${inviteToken}`
+
+    const { error: resendError } = await resend.emails.send({
       from: 'PrizmaTrack <noreply@notifications.prizmatrack.com>',
       to: email,
       subject: "You've been invited to join an organization",
@@ -62,8 +97,8 @@ export const POST = async (
         <OrgInviteEmail
           invitee={{ firstName, lastName }}
           inviter={{
-            firstName: user?.given_name || '',
-            lastName: user?.family_name || '',
+            firstName: activeUser?.firstName || '',
+            lastName: activeUser?.lastName || '',
           }}
           inviteLink={inviteLink}
           organization={org}
@@ -71,19 +106,19 @@ export const POST = async (
       ),
     })
 
-    if (error) {
+    if (resendError) {
       return NextResponse.json(
         {
           error: {
-            code: error?.name as FetchErrorCode,
-            message: error?.message,
+            code: resendError?.name as FetchErrorCode,
+            message: resendError?.message,
           },
         } satisfies FetchResponse,
         { status: 500 },
       )
     }
 
-    return NextResponse.json({ data } satisfies FetchResponse)
+    return NextResponse.json({} satisfies FetchResponse)
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error)

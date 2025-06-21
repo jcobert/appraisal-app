@@ -3,7 +3,7 @@ import {
   LogoutLink,
   RegisterLink,
 } from '@kinde-oss/kinde-auth-nextjs/components'
-import { FC, ReactNode } from 'react'
+import { ComponentPropsWithoutRef, FC, ReactNode } from 'react'
 
 import { cn } from '@/utils/style'
 
@@ -12,14 +12,13 @@ type Props = {
   loggedIn?: boolean
   type?: 'login' | 'logout' | 'register' | 'dynamic'
   children?: ReactNode
-}
-
-const postLoginRedirectURL = '/user/welcome'
+} & Pick<ComponentPropsWithoutRef<typeof LoginLink>, 'postLoginRedirectURL'>
 
 const AuthLink: FC<Props> = ({
   className,
   loggedIn = false,
   type = 'dynamic',
+  postLoginRedirectURL = '/user/welcome',
   children,
 }) => {
   const styles = 'w-full sm:w-fit px-3 py-2'

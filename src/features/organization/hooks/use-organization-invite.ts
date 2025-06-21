@@ -16,13 +16,6 @@ export type EmailPayload = Partial<
 
 type EmailResponse = Awaited<CreateEmailResponse>
 
-// type UseEmailOptions<TPayload extends EmailPayload> = UseMutationOptions<
-//   FetchResponse<EmailResponse>,
-//   DefaultError,
-//   TPayload,
-//   unknown
-// >
-
 type UseOrganizationInviteProps = {
   organization?: Organization | null
   options?: UseCoreMutationProps<EmailPayload, FetchResponse<EmailResponse>>
@@ -32,15 +25,6 @@ export const useOrganizationInvite = ({
   organization,
   options,
 }: UseOrganizationInviteProps) => {
-  // const mutation = useMutation({
-  //   mutationKey: ['email-send'],
-  //   mutationFn: (payload) =>
-  //     fetch.POST<TPayload, EmailResponse>({
-  //       url: '/api/core/organization/invite',
-  //       payload,
-  //     }),
-  //   ...options,
-  // })
   const mutation = useCoreMutation({
     url: `${CORE_API_ENDPOINTS.organization}/${organization?.id}/invite`,
     method: 'POST',
