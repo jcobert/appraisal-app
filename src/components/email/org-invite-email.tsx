@@ -4,9 +4,9 @@ import {
   Container,
   Font,
   Head,
-  Heading,
   Hr,
   Html,
+  Img,
   Link,
   Preview,
   Section,
@@ -17,6 +17,8 @@ import tailwindConfig from 'tailwind.config'
 
 import { fullName } from '@/utils/string'
 import { cn } from '@/utils/style'
+
+import { canonicalUrl, copyright } from '@/configuration/site'
 
 type Props = {
   invitee: Partial<User>
@@ -38,7 +40,7 @@ const OrgInviteEmail = ({
     <Html>
       <Tailwind config={tailwindConfig}>
         <Head>
-          <title></title>
+          {/* <title></title> */}
           <Font fontFamily='Helvetica' fallbackFontFamily='sans-serif' />
         </Head>
         <Preview>{`${inviterName || 'Someone'} invited you to join their organization, ${organization?.name}, on PrizmaTrack.`}</Preview>
@@ -48,17 +50,24 @@ const OrgInviteEmail = ({
             // 'h-0 min-h-screen'
           )}
         >
-          <div
-            className='bg-white rounded p-2 h-fit flex flex-col gap-4'
+          <Container
+            className='bg-white rounded'
             style={{ border: '1px solid rgb(0,0,0,0.05)' }}
           >
+            <Img
+              className='mx-auto my-4 w-10'
+              // src='http://localhost:3000/images/prizmatrack-logo-64.webp'
+              src={canonicalUrl('/images/prizmatrack-logo-64.webp')}
+            />
+
             {/* <Heading className='text-xl font-normal text-balance'>{`Hi ${inviteeName ? `${inviteeName},` : ''}`}</Heading> */}
-            <div className='max-w-prose mx-auto'>
-              <Text className='text-pretty'>
-                {`Hi ${inviteeName ? `${inviteeName},` : ''}`}
+
+            <Section className='max-w-prose mx-auto pt-2 px-8'>
+              <Text className='text-pretty text-lg'>
+                {inviteeName ? `Hi ${inviteeName},` : 'Hello,'}
               </Text>
 
-              <Text className='text-pretty'>
+              <Text className='text-pretty text-lg'>
                 <span
                   className={cn('mr-1', inviterName && 'font-bold')}
                 >{`${inviterName || 'Someone'}`}</span>
@@ -68,30 +77,32 @@ const OrgInviteEmail = ({
                     className={cn('mr-1', organization?.name && 'font-bold')}
                   >{`${organization?.name},`}</span>
                 ) : null}
-                <span className=''>on PrizmaTrack.</span>
+                <span>on PrizmaTrack.</span>
               </Text>
 
-              <Text className='text-pretty'>
-                Follow the link below to view the invitation.
+              <Text className='text-pretty text-lg'>
+                Follow the link below to view the invitation and join today.
               </Text>
-            </div>
+            </Section>
 
-            <div className='my-8 flex flex-col items-center'>
+            <Section className='mt-8 mb-12 w-fit mx-auto'>
               <Link
                 href={inviteLink}
-                className='flex min-h-[2.125rem] sm:text-lg w-fit min-w-[6rem] cursor-pointer items-center justify-center gap-2 rounded border border-brand bg-brand px-4 py-1 text-almost-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:border-brand/25 disabled:bg-brand/70 dark:border-brand dark:disabled:border-brand-extra-dark dark:disabled:bg-brand-extra-dark/50 dark:disabled:text-brand/50 [&:not(:disabled)]:shadow [&:not(:disabled)]:hover:shadow-sm'
+                className='min-h-[2.125rem] w-fit min-w-[6rem] rounded border border-brand bg-brand px-4 py-3 text-almost-white text-lg'
               >
                 View invitation
               </Link>
-            </div>
+            </Section>
 
-            <div>
+            <Section>
               <Hr className='mb-0 !border-t-2' />
               <div className='py-8 bg-gray-50'>
-                <div className='text-sm text-gray-900 text-center'>{`© ${new Date().getFullYear()} PrizmaTrack`}</div>
+                <Text className='text-sm text-gray-900 text-center'>
+                  {copyright()}
+                </Text>
               </div>
-            </div>
-          </div>
+            </Section>
+          </Container>
         </Body>
       </Tailwind>
     </Html>
