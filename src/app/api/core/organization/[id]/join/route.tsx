@@ -1,5 +1,6 @@
 import { OrgInvitation } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
+import { ComponentPropsWithoutRef } from 'react'
 import { Resend } from 'resend'
 
 import {
@@ -15,7 +16,10 @@ import {
 import { getActiveUserAccount } from '@/utils/auth'
 import { isExpired } from '@/utils/date'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
-import { fullName } from '@/utils/string'
+
+import OrgInviteNotifyOwnerEmail, {
+  orgInviteOwnerNotification,
+} from '@/components/email/org-invite-notify-owner-email'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -113,11 +117,11 @@ export const POST = async (
       )
     }
 
-    // User already member of or
+    // User already member of org
     if (await userIsMember({ organizationId })) {
       await updateOrgInvitation({
         where: { token, organizationId },
-        data: { token: null, status: 'expired' },
+        data: { token: null, status: 'accepted' },
       })
       return NextResponse.json(
         {
@@ -135,6 +139,7 @@ export const POST = async (
     const updatedInvitation = await updateOrgInvitation({
       where: { token, organizationId },
       data: {
+        updatedBy: userProfile?.id,
         token: null,
         status: 'accepted',
         organization: {
@@ -167,12 +172,25 @@ export const POST = async (
     }
 
     if (invitation?.invitedBy?.email) {
+      const emailProps = {
+        invitee: {
+          firstName: invitation?.inviteeFirstName || '',
+          lastName: invitation?.inviteeLastName || '',
+          email: invitation?.inviteeEmail,
+        },
+        inviter: {
+          firstName: invitation?.invitedBy?.firstName,
+          lastName: invitation?.invitedBy?.lastName,
+        },
+        organization: invitation?.organization,
+        status,
+      } satisfies ComponentPropsWithoutRef<typeof OrgInviteNotifyOwnerEmail>
+
       const { error: _resendError } = await resend.emails.send({
         from: 'PrizmaTrack <noreply@notifications.prizmatrack.com>',
         to: invitation?.invitedBy?.email,
-        subject: `${fullName(invitation?.inviteeFirstName, invitation?.inviteeLastName)} accepted your invitation.`,
-        /** @todo Add email template. */
-        text: 'Accepted.',
+        subject: orgInviteOwnerNotification({ ...emailProps, format: 'short' }),
+        react: <OrgInviteNotifyOwnerEmail {...emailProps} />,
       })
     }
 
