@@ -46,7 +46,7 @@ const MemberInviteForm: FC<Props> = ({ organization }) => {
           })
         }
       }),
-    [organization?.id],
+    [organization?.members],
   )
 
   const { control, handleSubmit, reset } = useZodForm<MemberInviteFormData>(
