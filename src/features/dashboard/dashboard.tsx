@@ -79,7 +79,7 @@ const Dashboard: FC<Props> = ({ user, organizations }) => {
 
       <section>
         {!hasOrgs ? (
-          <div className='flex flex-col gap-6'>
+          <div className='flex flex-col gap-6 mt-8'>
             <NoResults
               title="You don't belong to any organizations"
               subtitle='Get started by creating one now.'

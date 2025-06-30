@@ -10,6 +10,7 @@ export type ModalProps = {
   closeButton?: boolean
   className?: string
   title?: ReactNode
+  description?: string
   titleClassName?: string
   preventOutsideClose?: boolean
 } & Pick<Dialog.DialogProps, 'open' | 'onOpenChange'>
@@ -22,6 +23,7 @@ const Modal: FC<ModalProps> = ({
   closeButton = true,
   className = '',
   title,
+  description,
   titleClassName,
   preventOutsideClose = false,
 }) => {
@@ -60,6 +62,9 @@ const Modal: FC<ModalProps> = ({
                 </Dialog.Close>
               )}
             </Dialog.Title>
+            <Dialog.Description className='sr-only'>
+              {description}
+            </Dialog.Description>
             {children}
           </Dialog.Content>
         </Dialog.Portal>
