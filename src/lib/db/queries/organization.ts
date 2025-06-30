@@ -152,6 +152,7 @@ export const getOrgInvitation = async <
       inviteeFirstName: true,
       inviteeLastName: true,
       inviteeEmail: true,
+      roles: true,
     },
     ...params,
   } satisfies TParams

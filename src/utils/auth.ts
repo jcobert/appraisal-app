@@ -87,3 +87,8 @@ export const getActiveUserAccount = async () => {
   const user = await session.getUser()
   return user
 }
+
+/** Returns the auth login route with the provided `url` as the redirect param. */
+export const authRedirectUrl = (url: string) => {
+  return `/api/auth/login?post_login_redirect_url=${url}`
+}

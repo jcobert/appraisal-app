@@ -14,7 +14,7 @@ import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 
 import OrgInviteEmail from '@/components/email/org-invite-email'
 
-import { EmailPayload } from '@/features/organization/hooks/use-organization-invite'
+import { OrgInvitePayload } from '@/features/organization/hooks/use-organization-invite'
 import { getOrgInviteUrl } from '@/features/organization/utils'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -23,7 +23,7 @@ export const POST = async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
-  const { allowed } = await isAllowedServer()
+  const { allowed, user } = await isAllowedServer()
 
   // Not allowed
   if (!allowed) {
@@ -42,7 +42,8 @@ export const POST = async (
   const organizationId = (await params)?.id
 
   try {
-    const { email, firstName, lastName } = (await req.json()) as EmailPayload
+    const { email, firstName, lastName, roles } =
+      (await req.json()) as OrgInvitePayload
 
     if (!email || !organizationId) {
       return NextResponse.json(
@@ -64,12 +65,14 @@ export const POST = async (
 
     const invite = await createOrgInvitation({
       data: {
-        createdBy: activeUser?.id,
+        createdBy: user?.id,
+        updatedBy: user?.id,
         organizationId,
         invitedByUserId: activeUser?.id || '',
         inviteeEmail: email,
         inviteeFirstName: firstName,
         inviteeLastName: lastName,
+        roles,
         expires,
         token: inviteToken,
       },

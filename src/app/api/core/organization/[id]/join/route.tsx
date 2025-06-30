@@ -147,10 +147,11 @@ export const POST = async (
             members: {
               create: [
                 {
+                  createdBy: userAccount?.id,
+                  updatedBy: userAccount?.id,
                   userId: userProfile?.id,
                   active: true,
-                  /** @todo Add roles when invitation created? */
-                  // roles: ['']
+                  roles: invitation?.roles,
                 },
               ],
             },

@@ -5,7 +5,7 @@ import { FC } from 'react'
 
 import { getOrganization, userIsMember } from '@/lib/db/queries/organization'
 
-import { protectPage } from '@/utils/auth'
+import { authRedirectUrl, protectPage } from '@/utils/auth'
 import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
@@ -26,12 +26,15 @@ const Page: FC<Props> = async ({ params }) => {
 
   /** @TODO redirect to a generic "you must sign in to access this" page rather than directly to login? */
   await protectPage({
-    redirectUrl: `/api/auth/login?post_login_redirect_url=/organizations/${organizationId}`,
+    redirectUrl: authRedirectUrl(`/organizations/${organizationId}`),
   })
 
   const isMember = await userIsMember({ organizationId })
 
-  /** @TODO redirect to a "no permission" page? */
+  /**
+   * @TODO redirect to a "no permission" page?
+   * or maybe redirect to dashboard but also show toast.
+   */
   if (!isMember) {
     redirect('/dashboard')
   }
