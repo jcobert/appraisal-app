@@ -53,6 +53,7 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
       onChange,
       classNames,
       ariaLabel,
+      menuPortalTarget,
       ...props
     },
     ref,
@@ -107,13 +108,16 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
           classNames={{
             control: (props) =>
               cn([
-                '!transition !px-1 !py-px !border !border-gray-300 dark:!border-gray-500 [&:not(:disabled)]:hover:!border-gray-400 disabled:!text-gray-500 !rounded dark:!bg-zinc-600 !shadow-none',
+                '!transition !px-1 !py-px !border !border-gray-300 dark:!border-gray-500 [&:not(:disabled)]:hover:!border-gray-400 disabled:!text-gray-500 !rounded dark:!bg-zinc-600 !shadow-none !z-[999]',
                 error && 'border-red-500 hover:border-red-500',
                 props.isFocused && '!ring-2 !ring-brand-light ring-offset-2',
                 props.isDisabled && 'cursor-not-allowed',
               ]),
             placeholder: () => 'text-base text-zinc-400 dark:!text-zinc-300',
-            menu: () => 'dark:!bg-zinc-800',
+            menu: () => 'dark:!bg-zinc-800 !z-[999]',
+            menuList: () => 'dark:!bg-zinc-800 !z-[999]',
+            menuPortal: () => 'dark:!bg-zinc-800 !z-[999]',
+            container: () => 'dark:!bg-zinc-800 !z-[999]',
             option: (props) =>
               cn({
                 'dark:!bg-zinc-700 !bg-brand-extra-light':
@@ -150,7 +154,9 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
             }),
           }}
           onChange={onChange as Props['onChange']}
-          menuPortalTarget={isMounted ? document.body : undefined}
+          menuPortalTarget={
+            isMounted ? menuPortalTarget || document.body : undefined
+          }
           {...props}
           ref={ref}
           onFocus={() => {
