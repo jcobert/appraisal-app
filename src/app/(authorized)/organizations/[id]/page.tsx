@@ -46,7 +46,21 @@ const Page: FC<Props> = async ({ params }) => {
     queryFn: async () => {
       const data = await getOrganization({
         where: { id: organizationId },
-        include: { members: { include: { user: true } } },
+        include: {
+          members: { include: { user: true } },
+          invitations: {
+            where: { status: { in: ['expired', 'pending'] } },
+            select: {
+              id: true,
+              status: true,
+              expires: true,
+              inviteeFirstName: true,
+              inviteeLastName: true,
+              inviteeEmail: true,
+              roles: true,
+            },
+          },
+        },
       })
       return { data } satisfies FetchResponse
     },

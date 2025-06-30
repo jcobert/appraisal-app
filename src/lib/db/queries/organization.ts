@@ -161,6 +161,35 @@ export const getOrgInvitation = async <
   return data
 }
 
+export const getOrgInvitations = async <
+  TParams extends Prisma.OrgInvitationFindManyArgs,
+>(
+  params: TParams,
+  authOptions?: CanQueryOptions & { publicAccess?: boolean },
+) => {
+  const { publicAccess = false, ...opts } = authOptions || {}
+  const authorized = publicAccess || (await canQuery(opts))
+  if (!authorized) return null
+
+  const queryArgs = {
+    select: {
+      id: true,
+      expires: true,
+      status: true,
+      organization: { select: { name: true, avatar: true } },
+      invitedBy: { select: { firstName: true, lastName: true, email: true } },
+      inviteeFirstName: true,
+      inviteeLastName: true,
+      inviteeEmail: true,
+      roles: true,
+    },
+    ...params,
+  } satisfies TParams
+
+  const data = await db.orgInvitation.findMany(queryArgs)
+  return data
+}
+
 export const createOrgInvitation = async (
   params: Prisma.OrgInvitationCreateArgs,
   authOptions?: CanQueryOptions,

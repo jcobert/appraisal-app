@@ -33,3 +33,28 @@ export const useOrganizationInvite = ({
   })
   return mutation
 }
+
+// // GET
+
+// type UseGetOrganizationInvitesProps = {
+//   organizationId?: Organization['id']
+//   options?: UseCoreQueryProps
+// }
+
+// export const orgInvitesQueryKey = {
+//   all: ['org-invites'],
+//   filtered: (params: Partial<OrgInvitation>) =>
+//     filteredQueryKey(params, orgInvitesQueryKey.all),
+// } as const
+
+// export const useGetOrganizationInvites = ({
+//   organizationId,
+//   options,
+// }: UseGetOrganizationInvitesProps) => {
+//   const query = useCoreQuery({
+//     queryKey: orgInvitesQueryKey.filtered({ organizationId }),
+//     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
+//     ...options,
+//   })
+//   return query
+// }

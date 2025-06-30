@@ -32,7 +32,7 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
     options: { enabled: true },
   })
 
-  const { name, members = [] } = response?.data || {}
+  const { name, members = [], invitations } = response?.data || {}
 
   return (
     <div className='flex flex-col gap-8 max-sm:gap-4'>
@@ -63,7 +63,11 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
         </DropdownMenu>
       </div>
 
-      <OrganizationMembers members={members} organization={response?.data} />
+      <OrganizationMembers
+        members={members}
+        organization={response?.data}
+        invitations={invitations}
+      />
     </div>
   )
 }
