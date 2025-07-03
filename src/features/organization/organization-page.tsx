@@ -58,10 +58,28 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
               router.push(`${pathname}/edit`)
             }}
           >
-            Edit Organization
+            Edit Info
           </DropdownMenuItem>
+          {/* <DropdownMenuItem
+            // onSelect={() => {
+            //   router.push(`${pathname}/edit`)
+            // }}
+          >
+            Manage Members
+          </DropdownMenuItem> */}
         </DropdownMenu>
       </div>
+
+      {/* <div className='flex -space-x-2'>
+        {members?.map((member) => (
+          <Avatar
+            key={member?.id}
+            name={fullName(member?.user?.firstName, member?.user?.lastName)}
+            image={member?.user?.avatar}
+            size='2xs'
+          />
+        ))}
+      </div> */}
 
       <OrganizationMembers
         members={members}

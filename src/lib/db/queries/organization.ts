@@ -1,7 +1,7 @@
 // sort-imports-ignore
 import 'server-only'
 
-import { Organization, Prisma } from '@prisma/client'
+import { Organization, OrgMember, Prisma } from '@prisma/client'
 
 import { db } from '@/lib/db/client'
 import { canQuery, CanQueryOptions } from '@/lib/db/utils'
@@ -129,6 +129,36 @@ export const deleteOrganization = async (
     return null
   }
   const data = await db.organization.delete(params)
+  return data
+}
+
+export const getOrgMember = async (
+  orgId: OrgMember['organizationId'],
+  params: Prisma.OrgMemberFindUniqueArgs,
+  authOptions?: CanQueryOptions,
+) => {
+  const authorized = await canQuery(authOptions)
+  if (!authorized) return null
+  const isMember = await userIsMember({ organizationId: orgId })
+  if (!isMember) {
+    return null
+  }
+  const data = await db.orgMember.findUnique(params)
+  return data
+}
+
+export const deleteOrgMember = async (
+  orgId: OrgMember['organizationId'],
+  params: Prisma.OrgMemberDeleteArgs,
+  authOptions?: CanQueryOptions,
+) => {
+  const authorized = await canQuery(authOptions)
+  if (!authorized) return null
+  const isOwner = await userIsOwner({ organizationId: orgId })
+  if (!isOwner) {
+    return null
+  }
+  const data = await db.orgMember.delete(params)
   return data
 }
 

@@ -46,7 +46,7 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
   })
 
   const { createOrganization, updateOrganization } = useOrganizationMutations({
-    initialData,
+    organization: initialData,
   })
 
   const onSubmit: SubmitHandler<OrganizationFormData> = async (data) => {

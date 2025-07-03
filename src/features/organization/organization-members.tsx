@@ -1,14 +1,15 @@
 import { partition } from 'lodash'
+import Link from 'next/link'
 import { FC } from 'react'
 
 import Separator from '@/components/general/separator'
 
 import MemberInviteForm from '@/features/organization/invitation/member-invite-form'
+import OrgMemberCard from '@/features/organization/org-member-card'
 import {
   DetailedOrgMember,
   DetailedOrganization,
 } from '@/features/organization/types'
-import UserCard from '@/features/user/user-card'
 
 type Props = {
   organization: DetailedOrganization | null | undefined
@@ -34,13 +35,27 @@ const OrganizationMembers: FC<Props> = ({
         </div>
 
         <div>
-          {owners?.map((o) => (
-            <UserCard key={o?.id} user={o?.user} roles={o?.roles} />
+          {owners?.map((m) => (
+            <OrgMemberCard
+              key={m?.id}
+              member={m}
+              user={m?.user}
+              organization={organization}
+            />
           ))}
         </div>
         <div>
           {others?.map((m) => (
-            <UserCard key={m?.id} user={m?.user} roles={m?.roles} />
+            <Link
+              key={m?.id}
+              href={`/organizations/${organization?.id}/members/${m?.id}`}
+            >
+              <OrgMemberCard
+                member={m}
+                user={m?.user}
+                organization={organization}
+              />
+            </Link>
           ))}
         </div>
       </div>
@@ -52,12 +67,13 @@ const OrganizationMembers: FC<Props> = ({
             <div>
               <h3 className='text-lg font-medium'>Invited</h3>
               {invitations?.map((inv) => (
-                <UserCard
+                <OrgMemberCard
                   key={inv?.id}
                   user={{
                     firstName: inv?.inviteeFirstName || '',
                     lastName: inv?.inviteeLastName || '',
                   }}
+                  organization={organization}
                   status={inv?.status}
                 />
               ))}
