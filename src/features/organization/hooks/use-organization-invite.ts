@@ -1,5 +1,6 @@
-import { OrgMember, Organization, User } from '@prisma/client'
+import { OrgInvitation, OrgMember, Organization, User } from '@prisma/client'
 import { useQueryClient } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { CreateEmailOptions, CreateEmailResponse } from 'resend'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
@@ -21,32 +22,44 @@ export type OrgInvitePayload = Partial<
 type EmailResponse = Awaited<CreateEmailResponse>
 
 type UseOrganizationInviteProps = {
-  organization?: Organization | null
+  organizationId?: Organization['id']
+  inviteId?: OrgInvitation['id']
   options?: UseCoreMutationProps<OrgInvitePayload, FetchResponse<EmailResponse>>
 }
 
 export const useOrganizationInvite = ({
-  organization,
+  organizationId,
+  inviteId,
   options,
 }: UseOrganizationInviteProps) => {
   const queryClient = useQueryClient()
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     await queryClient.refetchQueries({
-      queryKey: organizationsQueryKey.filtered({ id: organization?.id }),
+      queryKey: organizationsQueryKey.filtered({ id: organizationId }),
       exact: true,
     })
-  }
+  }, [organizationId])
 
-  const mutation = useCoreMutation({
-    url: `${CORE_API_ENDPOINTS.organization}/${organization?.id}/invite`,
+  const createInvitation = useCoreMutation({
+    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/invite`,
     method: 'POST',
     ...options,
     onSuccess: async () => {
       await refreshData()
     },
   })
-  return mutation
+
+  const updateInvitation = useCoreMutation({
+    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/invite/${inviteId}`,
+    method: 'PUT',
+    ...options,
+    onSuccess: async () => {
+      await refreshData()
+    },
+  })
+
+  return { createInvitation, updateInvitation }
 }
 
 // // GET

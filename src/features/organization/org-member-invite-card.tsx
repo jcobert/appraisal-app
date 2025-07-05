@@ -8,6 +8,7 @@ import { cn } from '@/utils/style'
 import Confirmation from '@/components/layout/confirmation'
 
 import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
+import MemberInviteForm from '@/features/organization/invitation/member-invite-form'
 import OrgMemberCard, {
   OrgMemberCardProps,
 } from '@/features/organization/org-member-card'
@@ -20,6 +21,7 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
   const { inviteeFirstName, inviteeLastName, roles, status } = invitation || {}
 
   const [cancelOpen, setCancelOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
 
   const { deleteOrgInvitation } = useOrganizationMutations({
     organizationId: invitation?.organizationId,
@@ -40,6 +42,14 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
           }
         }}
       />
+      {editOpen ? (
+        <MemberInviteForm
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          organization={{ id: invitation?.organizationId }}
+          initialData={invitation}
+        />
+      ) : null}
 
       <div className='flex gap-4 items-center'>
         <OrgMemberCard
@@ -52,8 +62,9 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
             {
               id: 'edit',
               content: 'Edit',
-              onSelect: () => {},
-              disabled: true,
+              onSelect: () => {
+                setEditOpen(true)
+              },
             },
             {
               id: 'cancel',
@@ -62,7 +73,6 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
               onSelect: () => {
                 setCancelOpen(true)
               },
-              // disabled: true,
             },
           ]}
           {...props}

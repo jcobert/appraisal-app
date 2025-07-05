@@ -33,12 +33,12 @@ export const useOrganizationMutations = ({
 }: UseOrganizationMutationsProps = {}) => {
   const queryClient = useQueryClient()
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     await queryClient.refetchQueries({
       queryKey: organizationsQueryKey.filtered({ id: organizationId }),
       exact: true,
     })
-  }
+  }, [organizationId])
 
   const createOrganization = useCoreMutation<Payload, Organization>({
     url: CORE_API_ENDPOINTS.organization,

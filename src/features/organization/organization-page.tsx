@@ -41,11 +41,13 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
 
   return (
     <>
-      <MemberInviteForm
-        open={inviteFormOpen}
-        onOpenChange={setInviteFormOpen}
-        organization={organization}
-      />
+      {inviteFormOpen ? (
+        <MemberInviteForm
+          open={inviteFormOpen}
+          onOpenChange={setInviteFormOpen}
+          organization={organization}
+        />
+      ) : null}
 
       <div className='flex flex-col gap-8 max-sm:gap-4'>
         <div>

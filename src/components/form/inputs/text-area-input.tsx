@@ -21,6 +21,7 @@ const TextAreaInput = forwardRef<HTMLTextAreaElement, TextAreaInputProps>(
       label,
       placeholder,
       helper,
+      helperMode = 'always',
       error,
       className,
       labelClassName,
@@ -29,7 +30,9 @@ const TextAreaInput = forwardRef<HTMLTextAreaElement, TextAreaInputProps>(
     },
     ref,
   ) => {
-    const [helperVisible, setHelperVisible] = useState(false)
+    const [helperVisible, setHelperVisible] = useState(
+      helperMode === 'always' ? true : false,
+    )
 
     return (
       <div className={cn(['flex flex-col gap-1', className])}>
@@ -59,10 +62,14 @@ const TextAreaInput = forwardRef<HTMLTextAreaElement, TextAreaInputProps>(
           {...props}
           ref={ref}
           onFocusCapture={() => {
-            setHelperVisible(true)
+            if (helperMode === 'focus') {
+              setHelperVisible(true)
+            }
           }}
           onBlurCapture={() => {
-            setHelperVisible(false)
+            if (helperMode === 'focus') {
+              setHelperVisible(false)
+            }
           }}
         />
 

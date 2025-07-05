@@ -25,6 +25,7 @@ const DateInput = forwardRef<DatePicker, DateInputProps>(
       selected,
       label,
       helper,
+      helperMode = 'always',
       error,
       className,
       labelClassName,
@@ -33,7 +34,9 @@ const DateInput = forwardRef<DatePicker, DateInputProps>(
     },
     ref,
   ) => {
-    const [helperVisible, setHelperVisible] = useState(false)
+    const [helperVisible, setHelperVisible] = useState(
+      helperMode === 'always' ? true : false,
+    )
 
     return (
       <div className={cn(['flex flex-col gap-1', className])}>
@@ -91,10 +94,14 @@ const DateInput = forwardRef<DatePicker, DateInputProps>(
           {...props}
           ref={ref}
           onFocus={() => {
-            setHelperVisible(true)
+            if (helperMode === 'focus') {
+              setHelperVisible(true)
+            }
           }}
           onBlur={() => {
-            setHelperVisible(false)
+            if (helperMode === 'focus') {
+              setHelperVisible(false)
+            }
           }}
         />
 

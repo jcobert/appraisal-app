@@ -45,6 +45,7 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
     {
       label,
       helper,
+      helperMode = 'always',
       className,
       labelClassName,
       id,
@@ -60,7 +61,9 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
   ) => {
     const [isMounted, setIsMounted] = useState(false)
 
-    const [helperVisible, setHelperVisible] = useState(false)
+    const [helperVisible, setHelperVisible] = useState(
+      helperMode === 'always' ? true : false,
+    )
 
     useEffect(() => {
       setIsMounted(true)
@@ -160,10 +163,14 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
           {...props}
           ref={ref}
           onFocus={() => {
-            setHelperVisible(true)
+            if (helperMode === 'focus') {
+              setHelperVisible(true)
+            }
           }}
           onBlur={() => {
-            setHelperVisible(false)
+            if (helperMode === 'focus') {
+              setHelperVisible(false)
+            }
           }}
         />
 

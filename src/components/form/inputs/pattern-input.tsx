@@ -20,6 +20,7 @@ const PatternInput = forwardRef<HTMLInputElement, PatternInputProps>(
       label,
       placeholder,
       helper,
+      helperMode = 'always',
       error,
       className,
       labelClassName,
@@ -30,7 +31,9 @@ const PatternInput = forwardRef<HTMLInputElement, PatternInputProps>(
     },
     ref,
   ) => {
-    const [helperVisible, setHelperVisible] = useState(false)
+    const [helperVisible, setHelperVisible] = useState(
+      helperMode === 'always' ? true : false,
+    )
 
     return (
       <div className={cn(['flex flex-col gap-1', className])}>
@@ -59,10 +62,14 @@ const PatternInput = forwardRef<HTMLInputElement, PatternInputProps>(
           {...props}
           getInputRef={ref}
           onFocusCapture={() => {
-            setHelperVisible(true)
+            if (helperMode === 'focus') {
+              setHelperVisible(true)
+            }
           }}
           onBlurCapture={() => {
-            setHelperVisible(false)
+            if (helperMode === 'focus') {
+              setHelperVisible(false)
+            }
           }}
         />
 
