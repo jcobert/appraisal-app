@@ -51,7 +51,34 @@ export const GET = async (
     const id = (await params)?.id
     const res = await getOrganization({
       where: { id },
-      include: { members: { include: { user: true } } },
+      include: {
+        members: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                avatar: true,
+              },
+            },
+          },
+          omit: { createdBy: true, updatedBy: true },
+        },
+        invitations: {
+          where: { status: { in: ['expired', 'pending'] } },
+          select: {
+            id: true,
+            status: true,
+            expires: true,
+            inviteeFirstName: true,
+            inviteeLastName: true,
+            inviteeEmail: true,
+            roles: true,
+            organizationId: true,
+          },
+        },
+      },
+      omit: { createdBy: true, updatedBy: true },
     })
 
     /**

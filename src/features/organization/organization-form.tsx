@@ -59,7 +59,7 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
         updateOrganization.mutateAsync(payload),
       )
       if (successful(res.status)) {
-        router.push(prevUrl)
+        router.replace(prevUrl)
       }
     } else {
       const res = await toastyRequest(
@@ -69,13 +69,13 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
         },
       )
       if (successful(res.status)) {
-        router.push('/organizations')
+        router.replace('/organizations')
       }
     }
   }
 
   const onCancel = () => {
-    router.push(prevUrl)
+    router.replace(prevUrl)
   }
 
   return (

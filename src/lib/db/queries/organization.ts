@@ -240,3 +240,17 @@ export const updateOrgInvitation = async (
   const data = await db.orgInvitation.update(params)
   return data
 }
+
+export const deleteOrgInvitation = async (
+  orgId: OrgMember['organizationId'],
+  params: Prisma.OrgInvitationDeleteArgs,
+  authOptions?: CanQueryOptions,
+) => {
+  const { ...opts } = authOptions || {}
+  const authorized = await canQuery(opts)
+  if (!authorized) return null
+  const isOwner = await userIsOwner({ organizationId: orgId })
+  if (!isOwner) return null
+  const data = await db.orgInvitation.delete(params)
+  return data
+}

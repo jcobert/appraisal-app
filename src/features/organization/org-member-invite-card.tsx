@@ -2,10 +2,12 @@ import { OrgInvitation } from '@prisma/client'
 import { upperFirst } from 'lodash'
 import { FC, useState } from 'react'
 
+import { successful } from '@/utils/fetch'
 import { cn } from '@/utils/style'
 
 import Confirmation from '@/components/layout/confirmation'
 
+import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
 import OrgMemberCard, {
   OrgMemberCardProps,
 } from '@/features/organization/org-member-card'
@@ -19,6 +21,11 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
 
   const [cancelOpen, setCancelOpen] = useState(false)
 
+  const { deleteOrgInvitation } = useOrganizationMutations({
+    organizationId: invitation?.organizationId,
+    inviteId: invitation?.id,
+  })
+
   return (
     <>
       <Confirmation
@@ -26,6 +33,12 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
         onOpenChange={setCancelOpen}
         title='Cancel Invitation'
         description='Are you sure you want to cancel this invitation?'
+        onConfirm={async ({ closeModal }) => {
+          const res = await deleteOrgInvitation.mutateAsync({})
+          if (successful(res?.status)) {
+            closeModal()
+          }
+        }}
       />
 
       <div className='flex gap-4 items-center'>
@@ -49,7 +62,7 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
               onSelect: () => {
                 setCancelOpen(true)
               },
-              disabled: true,
+              // disabled: true,
             },
           ]}
           {...props}

@@ -20,7 +20,7 @@ const OrganizationMembers: FC<Props> = ({ organization }) => {
   )
 
   return (
-    <div className='flex flex-col gap-6 sm:w-fit'>
+    <div className='flex flex-col gap-4 sm:w-fit'>
       <div className='flex max-sm:flex-col sm:items-center gap-x-4 gap-y-2'>
         <h2 className='text-xl font-medium'>Members</h2>
       </div>
