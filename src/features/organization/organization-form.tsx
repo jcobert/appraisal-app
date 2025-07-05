@@ -36,8 +36,10 @@ type Props = {
 
 const OrganizationForm: FC<Props> = ({ initialData }) => {
   const router = useRouter()
-  const isUpdate = !!initialData?.id
-  const prevUrl = `/organizations/${initialData?.id || ''}`
+
+  const organizationId = initialData?.id
+  const isUpdate = !!organizationId
+  const prevUrl = `/organizations/${organizationId || ''}`
 
   const defaultValues = formDefaults(defaultFormValues, initialData)
 
@@ -46,7 +48,7 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
   })
 
   const { createOrganization, updateOrganization } = useOrganizationMutations({
-    organization: initialData,
+    organizationId,
   })
 
   const onSubmit: SubmitHandler<OrganizationFormData> = async (data) => {

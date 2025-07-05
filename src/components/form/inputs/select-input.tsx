@@ -106,9 +106,10 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
           menuShouldBlockScroll
           menuShouldScrollIntoView
           classNames={{
+            container: () => 'dark:!bg-zinc-800',
             control: (props) =>
               cn([
-                '!transition !px-1 !py-px !border !border-gray-300 dark:!border-gray-500 [&:not(:disabled)]:hover:!border-gray-400 disabled:!text-gray-500 !rounded dark:!bg-zinc-600 !shadow-none !z-[999]',
+                '!transition !px-1 !py-px !border !border-gray-300 dark:!border-gray-500 [&:not(:disabled)]:hover:!border-gray-400 disabled:!text-gray-500 !rounded dark:!bg-zinc-600 !shadow-none',
                 error && 'border-red-500 hover:border-red-500',
                 props.isFocused && '!ring-2 !ring-brand-light ring-offset-2',
                 props.isDisabled && 'cursor-not-allowed',
@@ -117,7 +118,6 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
             menu: () => 'dark:!bg-zinc-800 !z-[999]',
             menuList: () => 'dark:!bg-zinc-800 !z-[999]',
             menuPortal: () => 'dark:!bg-zinc-800 !z-[999]',
-            container: () => 'dark:!bg-zinc-800 !z-[999]',
             option: (props) =>
               cn({
                 'dark:!bg-zinc-700 !bg-brand-extra-light':

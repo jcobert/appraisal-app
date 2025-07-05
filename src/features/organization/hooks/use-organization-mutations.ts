@@ -11,7 +11,7 @@ import { DetailedOrganization } from '@/features/organization/types'
 type Payload = Partial<DetailedOrganization>
 
 type UseOrganizationMutationsProps = {
-  organization?: Organization | null
+  organizationId?: Organization['id'] | null
   memberId?: OrgMember['id']
   options?: Omit<
     UseCoreMutationProps<Payload | {}, Organization>,
@@ -20,7 +20,7 @@ type UseOrganizationMutationsProps = {
 }
 
 export const useOrganizationMutations = ({
-  organization,
+  organizationId,
   memberId,
   options,
 }: UseOrganizationMutationsProps = {}) => {
@@ -31,19 +31,19 @@ export const useOrganizationMutations = ({
   })
 
   const updateOrganization = useCoreMutation<Payload, Organization>({
-    url: `${CORE_API_ENDPOINTS.organization}/${organization?.id}`,
+    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
     method: 'PUT',
     ...options,
   })
 
   const deleteOrganization = useCoreMutation<{}, Organization>({
-    url: `${CORE_API_ENDPOINTS.organization}/${organization?.id}`,
+    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
     method: 'DELETE',
     ...options,
   })
 
   const deleteOrgMember = useCoreMutation<{}, OrgMember>({
-    url: `${CORE_API_ENDPOINTS.organization}/${organization?.id}/members/${memberId}`,
+    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/members/${memberId}`,
     method: 'DELETE',
     ...(options as Omit<
       UseCoreMutationProps<Partial<OrgMember> | {}, OrgMember>,

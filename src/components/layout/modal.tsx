@@ -30,7 +30,7 @@ const Modal: FC<ModalProps> = ({
   return (
     <>
       <Dialog.Root open={open} onOpenChange={onOpenChange} modal>
-        {!!trigger && <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>}
+        {trigger ? <Dialog.Trigger asChild>{trigger}</Dialog.Trigger> : null}
         <Dialog.Portal>
           <Dialog.Overlay className='fixed inset-0 bg-black/60' />
           <Dialog.Content

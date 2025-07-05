@@ -22,7 +22,8 @@ import { ORG_MEMBER_ROLES } from '@/features/organization/utils'
 
 type Props = {
   organization: DetailedOrganization | null | undefined
-} & ModalProps
+} & Required<Pick<ModalProps, 'open' | 'onOpenChange'>> &
+  Partial<Omit<ModalProps, 'open' | 'onOpenChange'>>
 
 const formSchema = z.object({
   firstName: z.string().nonempty(),
@@ -33,7 +34,12 @@ const formSchema = z.object({
 
 type MemberInviteFormData = z.infer<typeof formSchema>
 
-const MemberInviteForm: FC<Props> = ({ organization }) => {
+const MemberInviteForm: FC<Props> = ({
+  organization,
+  open,
+  onOpenChange,
+  ...modalProps
+}) => {
   const schema = useMemo(
     () =>
       formSchema.superRefine((data, ctx) => {
@@ -67,12 +73,17 @@ const MemberInviteForm: FC<Props> = ({ organization }) => {
     setIsBusy(true)
     const res = await mutateAsync(data)
     if (successful(res?.status)) {
-      setFormOpen(false)
+      onOpenChange(false)
     }
     setIsBusy(false)
   }
 
-  const [formOpen, setFormOpen] = useState(false)
+  const onClose = () => {
+    reset()
+    setIsBusy(false)
+  }
+
+  // const [formOpen, setFormOpen] = useState(false)
   const [isBusy, setIsBusy] = useState(false)
 
   useDisableInteraction({ disable: isBusy })
@@ -81,16 +92,18 @@ const MemberInviteForm: FC<Props> = ({ organization }) => {
     <>
       {isBusy ? <FullScreenLoader /> : null}
       <Modal
-        open={formOpen}
+        // open={formOpen}
+        open={open}
         onOpenChange={(newOpen) => {
-          setFormOpen(newOpen)
-          reset()
-          setIsBusy(false)
+          // setFormOpen(newOpen)
+          onOpenChange(newOpen)
+          onClose()
         }}
         title='Invite to Organization'
         description='A form for inviting a new member to this organization.'
         preventOutsideClose
-        trigger={<Button variant='secondary'>Add member</Button>}
+        // trigger={<Button variant='secondary'>Add member</Button>}
+        {...modalProps}
       >
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -206,7 +219,8 @@ const MemberInviteForm: FC<Props> = ({ organization }) => {
             <Button
               variant='secondary'
               onClick={() => {
-                setFormOpen(false)
+                onOpenChange(false)
+                onClose()
               }}
             >
               Cancel
