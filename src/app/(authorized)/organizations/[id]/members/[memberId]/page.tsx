@@ -13,7 +13,7 @@ import { PageParams } from '@/types/general'
 
 import { generatePageMeta } from '@/configuration/seo'
 import { orgMemberQueryKey } from '@/features/organization/hooks/use-get-org-member'
-import OrgMemberPage from '@/features/organization/org-member-page'
+import OrgMemberPage from '@/features/organization/member/org-member-page'
 
 type Props = PageParams<{ id: string; memberId: string }>
 

@@ -1,5 +1,5 @@
 import { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu'
-import { FC, ReactNode } from 'react'
+import { ReactNode } from 'react'
 import { HiDotsVertical } from 'react-icons/hi'
 
 import { fullName } from '@/utils/string'
@@ -15,8 +15,10 @@ import { DeepPartial } from '@/types/general'
 
 import { DetailedOrgMember } from '@/features/organization/types'
 
-export type OrgMemberCardProps = {
-  member?: DeepPartial<DetailedOrgMember> | null
+export type OrgMemberCardBaseProps<TInvite extends boolean = false> = {
+  member: TInvite extends true
+    ? DeepPartial<DetailedOrgMember> | null
+    : DetailedOrgMember
   className?: string
   children?: ReactNode
   actions?: ({ id: string; content: ReactNode } & Pick<
@@ -25,23 +27,18 @@ export type OrgMemberCardProps = {
   >)[]
 }
 
-const OrgMemberCard: FC<OrgMemberCardProps> = ({
+const OrgMemberCardBase = <TInvite extends boolean = false>({
   member,
   className,
   children,
   actions,
-}) => {
+}: OrgMemberCardBaseProps<TInvite>) => {
   const { user, roles } = member || {}
   const { firstName, lastName, avatar } = user || {}
 
   const name = fullName(firstName, lastName)
 
   const userRoles = roles?.join(', ')
-
-  // const { deleteOrgMember } = useOrganizationMutations({
-  //   organizationId,
-  //   memberId: member?.id,
-  // })
 
   return (
     <div
@@ -89,4 +86,4 @@ const OrgMemberCard: FC<OrgMemberCardProps> = ({
   )
 }
 
-export default OrgMemberCard
+export default OrgMemberCardBase

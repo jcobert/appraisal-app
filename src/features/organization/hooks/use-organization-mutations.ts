@@ -47,12 +47,31 @@ export const useOrganizationMutations = ({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
     method: 'PUT',
     ...options,
+    onSuccess: async ({ status }) => {
+      if (successful(status)) {
+        await refreshData()
+      }
+    },
   })
 
   const deleteOrganization = useCoreMutation<{}, Organization>({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
     method: 'DELETE',
     ...options,
+  })
+
+  const updateOrgMember = useCoreMutation<{}, OrgMember>({
+    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/members/${memberId}`,
+    method: 'PUT',
+    ...(options as Omit<
+      UseCoreMutationProps<Partial<OrgMember>, OrgMember>,
+      'url' | 'method'
+    >),
+    onSuccess: async ({ status }) => {
+      if (successful(status)) {
+        await refreshData()
+      }
+    },
   })
 
   const deleteOrgMember = useCoreMutation<{}, OrgMember>({
@@ -62,6 +81,11 @@ export const useOrganizationMutations = ({
       UseCoreMutationProps<Partial<OrgMember> | {}, OrgMember>,
       'url' | 'method'
     >),
+    onSuccess: async ({ status }) => {
+      if (successful(status)) {
+        await refreshData()
+      }
+    },
   })
 
   const deleteOrgInvitation = useCoreMutation<{}, OrgInvitation>({
@@ -103,6 +127,7 @@ export const useOrganizationMutations = ({
     createOrganization,
     updateOrganization,
     deleteOrganization,
+    updateOrgMember,
     deleteOrgMember,
     deleteOrgInvitation,
   }

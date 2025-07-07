@@ -208,6 +208,32 @@ export const getOrgMember = async (params: {
   return data
 }
 
+export const updateOrgMember = async (params: {
+  organizationId: OrgMember['organizationId']
+  memberId: OrgMember['id']
+  payload: Prisma.OrgMemberUpdateArgs['data']
+  queryOptions?: Omit<Prisma.OrgMemberUpdateArgs, 'data' | 'where'>
+  authOptions?: CanQueryOptions
+}) => {
+  const { organizationId, memberId, payload, queryOptions, authOptions } =
+    params
+  const authorized = await canQuery(authOptions)
+  if (!authorized) return null
+  const isOwner = await userIsOwner({ organizationId })
+  if (!isOwner) {
+    return null
+  }
+
+  const queryArgs = {
+    where: { id: memberId, organizationId },
+    data: payload,
+    ...queryOptions,
+  } satisfies Prisma.OrgMemberUpdateArgs
+
+  const data = await db.orgMember.update(queryArgs)
+  return data
+}
+
 export const deleteOrgMember = async (params: {
   organizationId: OrgMember['organizationId']
   memberId: OrgMember['id']

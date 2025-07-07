@@ -11,11 +11,11 @@ import Confirmation from '@/components/layout/confirmation'
 
 import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
 import MemberInviteForm from '@/features/organization/invitation/member-invite-form'
-import OrgMemberCard, {
-  OrgMemberCardProps,
-} from '@/features/organization/org-member-card'
+import OrgMemberCardBase, {
+  OrgMemberCardBaseProps,
+} from '@/features/organization/member/org-member-card-base'
 
-type Props = Omit<OrgMemberCardProps, 'member'> & {
+type Props = Omit<OrgMemberCardBaseProps, 'member'> & {
   invitation: Partial<OrgInvitation> | null | undefined
 }
 
@@ -59,7 +59,7 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
       ) : null}
 
       <div className='flex gap-4 items-center'>
-        <OrgMemberCard
+        <OrgMemberCardBase<true>
           className='w-full'
           member={{
             user: { firstName: inviteeFirstName, lastName: inviteeLastName },
@@ -94,7 +94,7 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
               {`(${upperFirst(status)})`}
             </span>
           ) : null}
-        </OrgMemberCard>
+        </OrgMemberCardBase>
       </div>
     </>
   )

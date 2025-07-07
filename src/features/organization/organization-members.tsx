@@ -1,11 +1,10 @@
 import { partition } from 'lodash'
-import Link from 'next/link'
 import { FC } from 'react'
 
 import Separator from '@/components/general/separator'
 
-import OrgMemberCard from '@/features/organization/org-member-card'
-import OrgMemberInviteCard from '@/features/organization/org-member-invite-card'
+import OrgMemberCard from '@/features/organization/member/org-member-card'
+import OrgMemberInviteCard from '@/features/organization/member/org-member-invite-card'
 import { DetailedOrganization } from '@/features/organization/types'
 
 type Props = {
@@ -28,23 +27,23 @@ const OrganizationMembers: FC<Props> = ({ organization }) => {
       <div className='flex flex-col gap-2'>
         <div className='flex flex-col gap-2'>
           {owners?.map((m) => (
-            <Link
-              key={m?.id}
-              href={`/organizations/${organization?.id}/members/${m?.id}`}
-            >
-              <OrgMemberCard key={m?.id} member={m} />
-            </Link>
+            // <Link
+            //   key={m?.id}
+            //   href={`/organizations/${organization?.id}/members/${m?.id}`}
+            // >
+            <OrgMemberCard key={m?.id} member={m} />
+            // </Link>
           ))}
         </div>
 
         <div className='flex flex-col gap-2'>
           {others?.map((m) => (
-            <Link
-              key={m?.id}
-              href={`/organizations/${organization?.id}/members/${m?.id}`}
-            >
-              <OrgMemberCard member={m} />
-            </Link>
+            // <Link
+            //   key={m?.id}
+            //   href={`/organizations/${organization?.id}/members/${m?.id}`}
+            // >
+            <OrgMemberCard key={m?.id} member={m} />
+            // </Link>
           ))}
         </div>
       </div>

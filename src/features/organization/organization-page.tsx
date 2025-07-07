@@ -16,7 +16,7 @@ import { useProtectPage } from '@/hooks/use-protect-page'
 
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 import MemberInviteForm from '@/features/organization/invitation/member-invite-form'
-import OrganizationMembers from '@/features/organization/organization-members'
+import OrganizationSettings from '@/features/organization/organization-settings'
 
 type Props = {
   organizationId?: Organization['id']
@@ -84,7 +84,7 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
           </DropdownMenu>
         </div>
 
-        <OrganizationMembers organization={organization} />
+        <OrganizationSettings organization={organization} />
       </div>
     </>
   )
