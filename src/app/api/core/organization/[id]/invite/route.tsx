@@ -58,7 +58,7 @@ export const POST = async (
     }
 
     const activeUser = await getActiveUserProfile()
-    const org = await getOrganization({ where: { id: organizationId } })
+    const org = await getOrganization({ organizationId })
 
     const inviteToken = generateUniqueToken()
     const expires = generateExpiry(30)

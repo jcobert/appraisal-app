@@ -61,9 +61,7 @@ export const DELETE = async (
       )
     }
 
-    const res = await deleteOrgInvitation(organizationId, {
-      where: { id: inviteId, organizationId },
-    })
+    const res = await deleteOrgInvitation({ inviteId, organizationId })
 
     if (!res) {
       return NextResponse.json(

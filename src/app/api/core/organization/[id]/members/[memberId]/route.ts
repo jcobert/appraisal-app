@@ -61,10 +61,7 @@ export const GET = async (
       )
     }
 
-    const res = await getOrgMember(organizationId, {
-      where: { id: memberId, organizationId },
-      include: { user: true },
-    })
+    const res = await getOrgMember({ organizationId, memberId })
 
     if (!res) {
       return NextResponse.json(
@@ -140,9 +137,7 @@ export const DELETE = async (
       )
     }
 
-    const res = await deleteOrgMember(organizationId, {
-      where: { id: memberId, organizationId },
-    })
+    const res = await deleteOrgMember({ memberId, organizationId })
 
     if (!res) {
       return NextResponse.json(
