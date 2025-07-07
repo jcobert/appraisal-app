@@ -3,7 +3,9 @@ import { upperFirst } from 'lodash'
 import { FC, useState } from 'react'
 
 import { successful } from '@/utils/fetch'
+import { fullName } from '@/utils/string'
 import { cn } from '@/utils/style'
+import { toastyRequest } from '@/utils/toast'
 
 import Confirmation from '@/components/layout/confirmation'
 
@@ -36,7 +38,12 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
         title='Cancel Invitation'
         description='Are you sure you want to cancel this invitation?'
         onConfirm={async ({ closeModal }) => {
-          const res = await deleteOrgInvitation.mutateAsync({})
+          const res = await toastyRequest(
+            () => deleteOrgInvitation.mutateAsync({}),
+            {
+              success: `Invitation for ${fullName(inviteeFirstName, inviteeLastName)} has been canceled.`,
+            },
+          )
           if (successful(res?.status)) {
             closeModal()
           }

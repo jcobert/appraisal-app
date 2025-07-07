@@ -49,6 +49,11 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
 
   const { createOrganization, updateOrganization } = useOrganizationMutations({
     organizationId,
+    options: {
+      transform: (payload) => {
+        return { ...payload, name: payload?.name?.trim() }
+      },
+    },
   })
 
   const onSubmit: SubmitHandler<OrganizationFormData> = async (data) => {

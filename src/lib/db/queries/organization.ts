@@ -100,6 +100,7 @@ export const getOrganization = async (params: {
               firstName: true,
               lastName: true,
               avatar: true,
+              email: true,
             },
           },
         },

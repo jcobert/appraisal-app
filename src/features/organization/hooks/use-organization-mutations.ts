@@ -19,10 +19,7 @@ type UseOrganizationMutationsProps = {
   organizationId?: Organization['id']
   memberId?: OrgMember['id']
   inviteId?: OrgInvitation['id']
-  options?: Omit<
-    UseCoreMutationProps<Payload | {}, Organization>,
-    'url' | 'method'
-  >
+  options?: Omit<UseCoreMutationProps<Payload, Organization>, 'url' | 'method'>
 }
 
 export const useOrganizationMutations = ({
