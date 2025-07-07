@@ -41,3 +41,21 @@ export type GenericValue = PrimitiveValue | PrimitiveValue[] | null | undefined
 export type FormMode = 'create' | 'update' | 'delete' | 'search'
 
 export type IsArray<T> = T extends any[] ? true : false
+
+/**
+ * Recursively sets object properties and any nested object properties to optional or null.
+ */
+export type DeepPartial<T> =
+  T extends Record<string, unknown>
+    ? {
+        [K in keyof T]?: DeepPartial<T[K]>
+      }
+    : T | null
+
+/** */
+export type DeepRequired<T> =
+  T extends Record<string, unknown>
+    ? {
+        [K in keyof T]-?: NonNullable<DeepRequired<T[K]>>
+      }
+    : NonNullable<T>

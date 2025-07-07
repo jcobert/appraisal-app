@@ -1,9 +1,12 @@
+import { OrgInvitation } from '@prisma/client'
 import { upperFirst } from 'lodash'
 import { FC, useMemo, useState } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 import { z } from 'zod'
 
 import { successful } from '@/utils/fetch'
+import { formDefaults } from '@/utils/form'
+import { toastyRequest } from '@/utils/toast'
 
 import FieldError from '@/components/form/field-error'
 import FieldLabel from '@/components/form/field-label'
@@ -21,8 +24,10 @@ import { DetailedOrganization } from '@/features/organization/types'
 import { ORG_MEMBER_ROLES } from '@/features/organization/utils'
 
 type Props = {
-  organization: DetailedOrganization | null | undefined
-} & ModalProps
+  organization: Partial<DetailedOrganization> | null | undefined
+  initialData?: Partial<OrgInvitation> | null
+} & Required<Pick<ModalProps, 'open' | 'onOpenChange'>> &
+  Partial<Omit<ModalProps, 'open' | 'onOpenChange'>>
 
 const formSchema = z.object({
   firstName: z.string().nonempty(),
@@ -33,7 +38,22 @@ const formSchema = z.object({
 
 type MemberInviteFormData = z.infer<typeof formSchema>
 
-const MemberInviteForm: FC<Props> = ({ organization }) => {
+const DEFAULT_FORM_VALUES = {
+  email: '',
+  firstName: '',
+  lastName: '',
+  roles: [],
+} satisfies MemberInviteFormData
+
+const MemberInviteForm: FC<Props> = ({
+  organization,
+  initialData,
+  open,
+  onOpenChange,
+  ...modalProps
+}) => {
+  const isUpdate = !!initialData?.id
+
   const schema = useMemo(
     () =>
       formSchema.superRefine((data, ctx) => {
@@ -57,22 +77,50 @@ const MemberInviteForm: FC<Props> = ({ organization }) => {
   const { control, handleSubmit, reset } = useZodForm<MemberInviteFormData>(
     schema,
     {
-      defaultValues: { email: '', firstName: '', lastName: '', roles: [] },
+      defaultValues: formDefaults(DEFAULT_FORM_VALUES, {
+        email: initialData?.inviteeEmail || DEFAULT_FORM_VALUES.email,
+        firstName:
+          initialData?.inviteeFirstName || DEFAULT_FORM_VALUES.firstName,
+        lastName: initialData?.inviteeLastName || DEFAULT_FORM_VALUES.lastName,
+        roles: initialData?.roles || DEFAULT_FORM_VALUES.roles,
+      } as Partial<MemberInviteFormData>),
     },
   )
 
-  const { mutateAsync } = useOrganizationInvite({ organization })
+  const { createInvitation, updateInvitation } = useOrganizationInvite({
+    organizationId: organization?.id,
+    inviteId: initialData?.id,
+  })
 
   const onSubmit: SubmitHandler<MemberInviteFormData> = async (data) => {
     setIsBusy(true)
-    const res = await mutateAsync(data)
-    if (successful(res?.status)) {
-      setFormOpen(false)
+    // const res = await toastyRequest(() => {
+    //   if (isUpdate) return updateInvitation.mutateAsync(data)
+    //   return createInvitation.mutateAsync(data)
+    // })
+    if (isUpdate) {
+      const res = await toastyRequest(() => updateInvitation.mutateAsync(data))
+      if (successful(res?.status)) {
+        onOpenChange(false)
+      }
+    } else {
+      const res = await toastyRequest(
+        () => createInvitation.mutateAsync(data),
+        { success: 'Invitation sent!' },
+      )
+      if (successful(res?.status)) {
+        onOpenChange(false)
+      }
     }
     setIsBusy(false)
   }
 
-  const [formOpen, setFormOpen] = useState(false)
+  const onClose = () => {
+    reset()
+    setIsBusy(false)
+  }
+
+  // const [formOpen, setFormOpen] = useState(false)
   const [isBusy, setIsBusy] = useState(false)
 
   useDisableInteraction({ disable: isBusy })
@@ -81,16 +129,18 @@ const MemberInviteForm: FC<Props> = ({ organization }) => {
     <>
       {isBusy ? <FullScreenLoader /> : null}
       <Modal
-        open={formOpen}
+        // open={formOpen}
+        open={open}
         onOpenChange={(newOpen) => {
-          setFormOpen(newOpen)
-          reset()
-          setIsBusy(false)
+          // setFormOpen(newOpen)
+          onOpenChange(newOpen)
+          onClose()
         }}
         title='Invite to Organization'
         description='A form for inviting a new member to this organization.'
         preventOutsideClose
-        trigger={<Button variant='secondary'>Add member</Button>}
+        // trigger={<Button variant='secondary'>Add member</Button>}
+        {...modalProps}
       >
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -143,6 +193,12 @@ const MemberInviteForm: FC<Props> = ({ organization }) => {
                 icon='mail'
                 placeholder='johnsmith@example.com'
                 required
+                disabled={isUpdate}
+                helper={
+                  isUpdate
+                    ? 'If you need to change the email, cancel this invitation and create a new one.'
+                    : undefined
+                }
               />
             )}
           />
@@ -167,6 +223,7 @@ const MemberInviteForm: FC<Props> = ({ organization }) => {
                   <div className='flex flex-col gap-2 max-sm:gap-6 border border-gray-300 dark:border-gray-500 rounded w-full sm:w-[calc(50%-0.5rem)] p-2 max-sm:p-4'>
                     {ORG_MEMBER_ROLES?.map((role, i) => {
                       const id = `${name}-${role}`
+                      const isChecked = value?.includes(role)
                       return (
                         <div
                           key={role}
@@ -184,6 +241,7 @@ const MemberInviteForm: FC<Props> = ({ organization }) => {
                             type='checkbox'
                             className='size-4 max-sm:size-5'
                             value={role}
+                            checked={isChecked}
                             onChange={(e) => {
                               const remove = !e.target.checked
                               const newVal = remove
@@ -206,7 +264,8 @@ const MemberInviteForm: FC<Props> = ({ organization }) => {
             <Button
               variant='secondary'
               onClick={() => {
-                setFormOpen(false)
+                onOpenChange(false)
+                onClose()
               }}
             >
               Cancel

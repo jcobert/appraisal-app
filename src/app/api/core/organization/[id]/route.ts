@@ -48,11 +48,8 @@ export const GET = async (
   // }
 
   try {
-    const id = (await params)?.id
-    const res = await getOrganization({
-      where: { id },
-      include: { members: { include: { user: true } } },
-    })
+    const organizationId = (await params)?.id
+    const res = await getOrganization({ organizationId })
 
     /**
      * @todo
@@ -160,8 +157,8 @@ export const PUT = async (
     }
 
     const res = await updateOrganization({
-      where: { id },
-      data: { ...payload, updatedBy: user?.id },
+      organizationId: id,
+      payload: { ...payload, updatedBy: user?.id },
     })
 
     // Server/database error
@@ -242,7 +239,7 @@ export const DELETE = async (
       )
     }
 
-    const res = await deleteOrganization({ where: { id } })
+    const res = await deleteOrganization({ organizationId: id })
 
     // Server/database error
     if (!res) {

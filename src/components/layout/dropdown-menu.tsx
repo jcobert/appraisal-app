@@ -14,7 +14,8 @@ export const DropdownMenuItem: FC<Dropdown.DropdownMenuItemProps> = ({
   return (
     <Dropdown.Item
       className={cn(
-        'text-brand cursor-default font-medium rounded pl-4 pr-2 py-px data-[highlighted]:text-almost-white flex items-center gap-2 select-none data-[highlighted]:bg-brand outline-none',
+        'cursor-default font-medium rounded pl-4 pr-2 py-2 sm:py-px data-[highlighted]:text-almost-white flex items-center gap-2 select-none data-[highlighted]:bg-brand outline-none',
+        'aria-disabled:text-gray-400 aria-disabled:cursor-not-allowed',
         className,
       )}
       {...props}
@@ -40,6 +41,7 @@ const DropdownMenu: FC<Props> = ({ children, trigger }) => {
       <Dropdown.Portal>
         <Dropdown.Content
           sideOffset={2}
+          side='right'
           collisionPadding={5}
           className='border bg-almost-white shadow rounded min-h-4 min-w-48 p-1'
         >

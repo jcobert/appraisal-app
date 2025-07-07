@@ -1,4 +1,6 @@
-import { OrgMember, Organization, User } from '@prisma/client'
+import { OrgInvitation, OrgMember, Organization, User } from '@prisma/client'
+import { useQueryClient } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { CreateEmailOptions, CreateEmailResponse } from 'resend'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
@@ -9,6 +11,8 @@ import useCoreMutation, {
   UseCoreMutationProps,
 } from '@/hooks/use-core-mutation'
 
+import { organizationsQueryKey } from '@/features/organization/hooks/use-get-organizations'
+
 export type OrgInvitePayload = Partial<
   Omit<CreateEmailOptions, 'text' | 'html' | 'react' | 'from' | 'to'>
 > &
@@ -18,18 +22,67 @@ export type OrgInvitePayload = Partial<
 type EmailResponse = Awaited<CreateEmailResponse>
 
 type UseOrganizationInviteProps = {
-  organization?: Organization | null
+  organizationId?: Organization['id']
+  inviteId?: OrgInvitation['id']
   options?: UseCoreMutationProps<OrgInvitePayload, FetchResponse<EmailResponse>>
 }
 
 export const useOrganizationInvite = ({
-  organization,
+  organizationId,
+  inviteId,
   options,
 }: UseOrganizationInviteProps) => {
-  const mutation = useCoreMutation({
-    url: `${CORE_API_ENDPOINTS.organization}/${organization?.id}/invite`,
+  const queryClient = useQueryClient()
+
+  const refreshData = useCallback(async () => {
+    await queryClient.refetchQueries({
+      queryKey: organizationsQueryKey.filtered({ id: organizationId }),
+      exact: true,
+    })
+  }, [organizationId])
+
+  const createInvitation = useCoreMutation({
+    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/invite`,
     method: 'POST',
     ...options,
+    onSuccess: async () => {
+      await refreshData()
+    },
   })
-  return mutation
+
+  const updateInvitation = useCoreMutation({
+    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/invite/${inviteId}`,
+    method: 'PUT',
+    ...options,
+    onSuccess: async () => {
+      await refreshData()
+    },
+  })
+
+  return { createInvitation, updateInvitation }
 }
+
+// // GET
+
+// type UseGetOrganizationInvitesProps = {
+//   organizationId?: Organization['id']
+//   options?: UseCoreQueryProps
+// }
+
+// export const orgInvitesQueryKey = {
+//   all: ['org-invites'],
+//   filtered: (params: Partial<OrgInvitation>) =>
+//     filteredQueryKey(params, orgInvitesQueryKey.all),
+// } as const
+
+// export const useGetOrganizationInvites = ({
+//   organizationId,
+//   options,
+// }: UseGetOrganizationInvitesProps) => {
+//   const query = useCoreQuery({
+//     queryKey: orgInvitesQueryKey.filtered({ organizationId }),
+//     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
+//     ...options,
+//   })
+//   return query
+// }

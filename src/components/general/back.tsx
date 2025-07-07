@@ -9,7 +9,7 @@ type Props = {
   className?: string
 } & LinkProps
 
-const Back: FC<Props> = ({ text = '', className = '', ...props }) => {
+const Back: FC<Props> = ({ text = 'Back', className = '', ...props }) => {
   return (
     <Link
       className={cn(

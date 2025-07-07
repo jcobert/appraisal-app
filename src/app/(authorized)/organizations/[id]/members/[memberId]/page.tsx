@@ -3,7 +3,7 @@ import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { FC } from 'react'
 
-import { getOrganization, userIsMember } from '@/lib/db/queries/organization'
+import { getOrgMember, userIsMember } from '@/lib/db/queries/organization'
 
 import { authRedirectUrl, protectPage } from '@/utils/auth'
 import { FetchResponse } from '@/utils/fetch'
@@ -12,21 +12,23 @@ import { createQueryClient } from '@/utils/query'
 import { PageParams } from '@/types/general'
 
 import { generatePageMeta } from '@/configuration/seo'
-import { organizationsQueryKey } from '@/features/organization/hooks/use-get-organizations'
-import OrganizationPage from '@/features/organization/organization-page'
+import { orgMemberQueryKey } from '@/features/organization/hooks/use-get-org-member'
+import OrgMemberPage from '@/features/organization/member/org-member-page'
 
-type Props = PageParams<{ id: string }>
+type Props = PageParams<{ id: string; memberId: string }>
 
 export const metadata: Metadata = generatePageMeta({
-  title: 'Organizations',
+  title: 'Members',
 })
 
 const Page: FC<Props> = async ({ params }) => {
-  const organizationId = (await params)?.id
+  const { id: organizationId, memberId } = await params
 
   /** @TODO redirect to a generic "you must sign in to access this" page rather than directly to login? */
   await protectPage({
-    redirectUrl: authRedirectUrl(`/organizations/${organizationId}`),
+    redirectUrl: authRedirectUrl(
+      `/organizations/${organizationId}/members/${memberId}`,
+    ),
   })
 
   const isMember = await userIsMember({ organizationId })
@@ -42,16 +44,16 @@ const Page: FC<Props> = async ({ params }) => {
   const queryClient = createQueryClient()
 
   await queryClient.prefetchQuery({
-    queryKey: organizationsQueryKey.filtered({ id: organizationId }),
+    queryKey: orgMemberQueryKey.filtered({ organizationId, id: memberId }),
     queryFn: async () => {
-      const data = await getOrganization({ organizationId })
+      const data = await getOrgMember({ organizationId, memberId })
       return { data } satisfies FetchResponse
     },
   })
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <OrganizationPage organizationId={organizationId} />
+      <OrgMemberPage organizationId={organizationId} memberId={memberId} />
     </HydrationBoundary>
   )
 }

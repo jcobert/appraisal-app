@@ -36,8 +36,10 @@ type Props = {
 
 const OrganizationForm: FC<Props> = ({ initialData }) => {
   const router = useRouter()
-  const isUpdate = !!initialData?.id
-  const prevUrl = `/organizations/${initialData?.id || ''}`
+
+  const organizationId = initialData?.id
+  const isUpdate = !!organizationId
+  const prevUrl = `/organizations/${organizationId || ''}`
 
   const defaultValues = formDefaults(defaultFormValues, initialData)
 
@@ -46,7 +48,12 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
   })
 
   const { createOrganization, updateOrganization } = useOrganizationMutations({
-    initialData,
+    organizationId,
+    options: {
+      transform: (payload) => {
+        return { ...payload, name: payload?.name?.trim() }
+      },
+    },
   })
 
   const onSubmit: SubmitHandler<OrganizationFormData> = async (data) => {
@@ -57,7 +64,7 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
         updateOrganization.mutateAsync(payload),
       )
       if (successful(res.status)) {
-        router.push(prevUrl)
+        router.replace(prevUrl)
       }
     } else {
       const res = await toastyRequest(
@@ -67,13 +74,13 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
         },
       )
       if (successful(res.status)) {
-        router.push('/organizations')
+        router.replace('/organizations')
       }
     }
   }
 
   const onCancel = () => {
-    router.push(prevUrl)
+    router.replace(prevUrl)
   }
 
   return (

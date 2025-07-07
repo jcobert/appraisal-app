@@ -31,6 +31,12 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
   const organizationId = (await params)?.id
   const inviteToken = (await searchParams)?.inv || ''
 
+  /**
+   * @todo
+   * Log out user or require acct confirmation before invite can be accepted?
+   * Want to make sure not joining with an unintended user acct that's already logged in.
+   */
+
   const invitation = await getOrgInvitation(
     {
       where: { organizationId, token: inviteToken, status: 'pending' },

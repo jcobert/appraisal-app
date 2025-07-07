@@ -14,17 +14,14 @@ export const metadata: Metadata = generatePageMeta({
   title: 'Organizations',
 })
 
-type Props = PageParams<{ id?: string }>
+type Props = PageParams<{ id: string }>
 
 const Page: FC<Props> = async ({ params }) => {
   await protectPage()
 
-  const id = (await params)?.id
+  const organizationId = (await params)?.id
 
-  const data = await getOrganization({
-    where: { id },
-    include: { members: { include: { user: true } } },
-  })
+  const data = await getOrganization({ organizationId })
 
   return <OrganizationForm initialData={data} />
 }
