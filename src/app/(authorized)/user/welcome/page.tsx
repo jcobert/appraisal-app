@@ -1,8 +1,8 @@
+import Link from 'next/link'
 import { FC } from 'react'
 
 import { registerUserProfile } from '@/lib/db/queries/user'
 
-import Link from '@/components/general/link'
 import Logo from '@/components/general/logo'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 import Heading from '@/components/layout/heading'
