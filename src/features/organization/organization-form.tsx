@@ -17,7 +17,7 @@ import { toastyRequest } from '@/utils/toast'
 import Form from '@/components/form/form'
 import FormActionBar from '@/components/form/form-action-bar'
 import TextInput from '@/components/form/inputs/text-input'
-import Button from '@/components/general/button'
+import { Button } from '@/components/ui/button'
 
 import useZodForm from '@/hooks/use-zod-form'
 
@@ -102,7 +102,7 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
       </div>
 
       <FormActionBar>
-        <Button variant='secondary' onClick={onCancel}>
+        <Button variant='outline' onClick={onCancel}>
           Cancel
         </Button>
         <Button type='submit'>{isUpdate ? 'Save' : 'Create'}</Button>

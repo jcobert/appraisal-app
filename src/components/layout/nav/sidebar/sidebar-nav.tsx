@@ -8,9 +8,9 @@ import { useIsClient } from 'usehooks-ts'
 import { filterProtectedNavItems } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
-import Button from '@/components/general/button'
 import NavLink from '@/components/layout/nav/nav-link'
 import SidebarSkeleton from '@/components/layout/nav/sidebar/sidebar-skeleton'
+import { Button } from '@/components/ui/button'
 
 import { useNavigationMenu } from '@/hooks/use-navigation'
 import { usePageSize } from '@/hooks/use-page-size'
@@ -94,12 +94,9 @@ const SidebarNav: FC<Props> = ({ sessionData }) => {
 
       <Button
         // aria-label={`${isSidebarExpanded ? 'Collapse' : 'Expand'} sidebar`}
-        variant='tertiary'
-        color='general'
-        className={cn(
-          'mt-auto mx-auto text-xl px-2',
-          isSidebarExpanded && 'mr-0',
-        )}
+        variant='ghost'
+        size='icon'
+        className={cn('mt-auto mx-auto text-xl', isSidebarExpanded && 'mr-0')}
         onClick={() => {
           // setIsSidebarExpanded((prev) => !prev)
           setIsSidebarExpanded(!isSidebarExpanded)

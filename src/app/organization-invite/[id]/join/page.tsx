@@ -101,8 +101,7 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
 
             {/* <Confirmation>
             <Button
-              variant='tertiary'
-              color='general'
+              variant='ghost'
               className='max-sm:w-full'
             >
               Decline

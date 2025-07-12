@@ -7,51 +7,96 @@ import { ComponentPropsWithoutRef, FC, ReactNode } from 'react'
 
 import { cn } from '@/utils/style'
 
+import { Button } from '@/components/ui/button'
+
 type Props = {
   className?: string
   loggedIn?: boolean
   type?: 'login' | 'logout' | 'register' | 'dynamic'
   children?: ReactNode
-} & Pick<ComponentPropsWithoutRef<typeof LoginLink>, 'postLoginRedirectURL'>
+} & Pick<ComponentPropsWithoutRef<typeof LoginLink>, 'postLoginRedirectURL'> &
+  Pick<ComponentPropsWithoutRef<typeof LogoutLink>, 'postLogoutRedirectURL'>
+
+const Register: FC<
+  Pick<Props, 'className' | 'children' | 'postLoginRedirectURL'>
+> = ({ children, ...props }) => {
+  return (
+    <Button asChild>
+      <RegisterLink {...props}>{children ?? 'Sign up'}</RegisterLink>
+    </Button>
+  )
+}
+
+const Login: FC<
+  Pick<Props, 'className' | 'children' | 'postLoginRedirectURL'>
+> = ({ children, ...props }) => {
+  return (
+    <Button asChild variant='ghost'>
+      <LoginLink {...props}>{children ?? 'Sign in'}</LoginLink>
+    </Button>
+  )
+}
+
+const Logout: FC<
+  Pick<Props, 'className' | 'children' | 'postLogoutRedirectURL'>
+> = ({ children, ...props }) => {
+  return (
+    <Button asChild variant='ghost'>
+      <LogoutLink {...props}>{children ?? 'Sign out'}</LogoutLink>
+    </Button>
+  )
+}
 
 const AuthLink: FC<Props> = ({
   className,
   loggedIn = false,
   type = 'dynamic',
   postLoginRedirectURL = '/user/welcome',
-  children,
+  postLogoutRedirectURL,
+  ...props
 }) => {
-  const styles = 'w-full sm:w-fit px-3 py-2'
+  const styles = cn('max-sm:w-full max-sm:py-6', className)
 
-  const Login = (
-    <LoginLink
-      className={cn([styles, 'btn-text', className])}
+  if (type === 'register')
+    return !loggedIn ? (
+      <Register
+        postLoginRedirectURL={postLoginRedirectURL}
+        className={styles}
+        {...props}
+      />
+    ) : null
+
+  if (type === 'login')
+    return !loggedIn ? (
+      <Login
+        postLoginRedirectURL={postLoginRedirectURL}
+        className={styles}
+        {...props}
+      />
+    ) : null
+
+  if (type === 'logout')
+    return loggedIn ? (
+      <Logout
+        postLogoutRedirectURL={postLogoutRedirectURL}
+        className={styles}
+        {...props}
+      />
+    ) : null
+
+  return loggedIn ? (
+    <Logout
+      postLogoutRedirectURL={postLogoutRedirectURL}
+      className={styles}
+      {...props}
+    />
+  ) : (
+    <Login
       postLoginRedirectURL={postLoginRedirectURL}
-    >
-      {children ?? 'Sign in'}
-    </LoginLink>
+      className={styles}
+      {...props}
+    />
   )
-
-  const Logout = (
-    <LogoutLink className={cn([styles, 'btn-text', className])}>
-      {children ?? 'Sign out'}
-    </LogoutLink>
-  )
-
-  const Register = (
-    <RegisterLink
-      className={cn([styles, 'btn', className])}
-      postLoginRedirectURL={postLoginRedirectURL}
-    >
-      {children ?? 'Sign up'}
-    </RegisterLink>
-  )
-
-  if (type === 'register') return !loggedIn ? Register : null
-  if (type === 'login') return !loggedIn ? Login : null
-  if (type === 'logout') return loggedIn ? Logout : null
-
-  return loggedIn ? Logout : Login
 }
 
 export default AuthLink

@@ -6,11 +6,11 @@ import { FC, useState } from 'react'
 import { FaGear } from 'react-icons/fa6'
 
 import Back from '@/components/general/back'
-import Button from '@/components/general/button'
 import DropdownMenu, {
   DropdownMenuItem,
 } from '@/components/layout/dropdown-menu'
 import Heading from '@/components/layout/heading'
+import { Button } from '@/components/ui/button'
 
 import { useProtectPage } from '@/hooks/use-protect-page'
 
@@ -59,10 +59,7 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
           </div>
           <DropdownMenu
             trigger={
-              <Button
-                variant='secondary'
-                className='p-2 min-w-0 max-w-16 size-fit aspect-square max-md:ml-auto'
-              >
+              <Button variant='outline' size='icon' className='max-md:ml-auto'>
                 <FaGear className='text-2xl sm:text-lg' />
               </Button>
             }

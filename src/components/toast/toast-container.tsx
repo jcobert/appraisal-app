@@ -3,7 +3,7 @@
 import { FC } from 'react'
 import toast, { ToastBar, Toaster } from 'react-hot-toast'
 
-import Button from '@/components/general/button'
+import { Button } from '@/components/ui/button'
 
 const ToasterOven: FC = () => {
   return (
@@ -26,8 +26,7 @@ const ToasterOven: FC = () => {
                 {t.type !== 'loading' ? (
                   <div className='border-l border-gray-200 pl-2 h-full'>
                     <Button
-                      variant='tertiary'
-                      color='general'
+                      variant='ghost'
                       className='max-sm:px-1 min-w-0 flex-none h-full'
                       onClick={() => toast.dismiss(t.id)}
                     >

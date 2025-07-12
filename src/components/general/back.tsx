@@ -4,6 +4,8 @@ import { IoIosArrowBack } from 'react-icons/io'
 
 import { cn } from '@/utils/style'
 
+import { Button } from '@/components/ui/button'
+
 type Props = {
   text?: string
   className?: string
@@ -11,16 +13,20 @@ type Props = {
 
 const Back: FC<Props> = ({ text = 'Back', className = '', ...props }) => {
   return (
-    <Link
+    <Button
+      asChild
+      variant='ghost'
       className={cn(
+        'px-1',
         'flex items-center gap-1 w-fit group font-medium self-start print:hidden',
         className,
       )}
-      {...props}
     >
-      <IoIosArrowBack className='group-hover:text-dark-gray transition' />
-      <span className='group-hover:text-dark-gray transition'>{text}</span>
-    </Link>
+      <Link {...props}>
+        <IoIosArrowBack className='transition' />
+        <span className='transition'>{text}</span>
+      </Link>
+    </Button>
   )
 }
 

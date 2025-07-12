@@ -21,8 +21,8 @@ import Form from '@/components/form/form'
 import PatternInput from '@/components/form/inputs/pattern-input'
 import TextInput from '@/components/form/inputs/text-input'
 import Banner from '@/components/general/banner'
-import Button from '@/components/general/button'
 import Confirmation from '@/components/layout/confirmation'
+import { Button } from '@/components/ui/button'
 
 import useZodForm from '@/hooks/use-zod-form'
 
@@ -217,7 +217,7 @@ const UserProfileForm: FC<Props> = ({
         {!readOnly ? (
           <div className='flex max-sm:flex-col justify-end items-center gap-6 mt-auto'>
             <Button
-              variant={registration ? 'tertiary' : 'secondary'}
+              variant={registration ? 'ghost' : 'outline'}
               onClick={onCancel}
             >
               {registration ? 'Set up later' : 'Cancel'}

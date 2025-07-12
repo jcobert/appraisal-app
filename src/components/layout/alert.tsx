@@ -1,7 +1,7 @@
 import * as AlertDialog from '@radix-ui/react-alert-dialog'
 import { FC, ReactNode, useState } from 'react'
 
-import Button from '@/components/general/button'
+import { Button } from '@/components/ui/button'
 
 type Props = {
   title?: ReactNode
@@ -68,7 +68,7 @@ const Alert: FC<Props> = ({
 
           <div className='flex max-sm:flex-col items-end justify-end gap-8'>
             <AlertDialog.Cancel asChild>
-              <Button className='btn-outline' onClick={() => onCancel?.()}>
+              <Button variant='outline' onClick={() => onCancel?.()}>
                 {cancel}
               </Button>
             </AlertDialog.Cancel>

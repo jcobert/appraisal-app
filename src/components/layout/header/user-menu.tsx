@@ -1,12 +1,12 @@
 'use client'
 
+import Link from 'next/link'
 import { FC, useState } from 'react'
 import { FaRegCircleUser } from 'react-icons/fa6'
 
 import { cn } from '@/utils/style'
 
 import AuthLink from '@/components/auth/auth-link'
-import Link from '@/components/general/link'
 import ThemeSelector from '@/components/general/theme-selector'
 import UserGreeting from '@/components/layout/header/user-greeting'
 import Popover from '@/components/layout/popover'

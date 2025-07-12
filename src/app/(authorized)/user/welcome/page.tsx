@@ -6,6 +6,7 @@ import Link from '@/components/general/link'
 import Logo from '@/components/general/logo'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 import Heading from '@/components/layout/heading'
+import { Button } from '@/components/ui/button'
 
 import { PageParams } from '@/types/general'
 
@@ -32,13 +33,9 @@ const Page: FC<Props> = async () => {
               return to your profile and make changes at any time.
             </p>
           </div> */}
-          <Link
-            href='/dashboard'
-            variant='primary'
-            className='py-4 px-6 text-lg'
-          >
-            Go to my dashboard
-          </Link>
+          <Button asChild size='lg' className='text-lg'>
+            <Link href='/dashboard'>Go to my dashboard</Link>
+          </Button>
         </div>
 
         {/* <div className='flex flex-col gap-2'>

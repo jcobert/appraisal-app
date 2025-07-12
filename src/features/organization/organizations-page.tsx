@@ -1,9 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { FC } from 'react'
 import { IoAdd } from 'react-icons/io5'
 
-import Link from '@/components/general/link'
+import { Button } from '@/components/ui/button'
 
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 import OrganizationsList from '@/features/organization/organizations-list'
@@ -15,10 +16,12 @@ const OrganizationsPage: FC = () => {
     <div className='flex flex-col gap-8 pb-8'>
       {/* Toolbar */}
       <div className='flex justify-end'>
-        <Link variant='secondary' href='/organizations/create'>
-          <IoAdd />
-          Create organization
-        </Link>
+        <Button asChild variant='outline'>
+          <Link href='/organizations/create'>
+            <IoAdd />
+            Create organization
+          </Link>
+        </Button>
       </div>
 
       <OrganizationsList organizations={response?.data} />

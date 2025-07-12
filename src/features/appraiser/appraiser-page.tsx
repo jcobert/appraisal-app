@@ -8,11 +8,11 @@ import { FaGear } from 'react-icons/fa6'
 import { fullName } from '@/utils/string'
 
 import Back from '@/components/general/back'
-import Button from '@/components/general/button'
 import DropdownMenu, {
   DropdownMenuItem,
 } from '@/components/layout/dropdown-menu'
 import Heading from '@/components/layout/heading'
+import { Button } from '@/components/ui/button'
 
 import { useProtectPage } from '@/hooks/use-protect-page'
 
@@ -53,7 +53,8 @@ const AppraiserPage: FC<Props> = ({ appraiserId }) => {
         <DropdownMenu
           trigger={
             <Button
-              variant='secondary'
+              variant='outline'
+              size='icon'
               className='p-2 min-w-0 size-fit max-md:ml-auto'
             >
               <FaGear className='text-lg' />

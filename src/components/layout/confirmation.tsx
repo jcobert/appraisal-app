@@ -3,9 +3,9 @@
 import React, { FC, ReactNode, useState } from 'react'
 
 import FormActionBar from '@/components/form/form-action-bar'
-import Button from '@/components/general/button'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 import Modal, { ModalProps } from '@/components/layout/modal'
+import { Button } from '@/components/ui/button'
 
 import { useDisableInteraction } from '@/hooks/use-disable-interaction'
 
@@ -69,7 +69,7 @@ const Confirmation: FC<ConfirmationProps> = ({
           {description}
           <FormActionBar>
             <Button
-              variant='secondary'
+              variant='outline'
               onClick={() => {
                 if (isBusy) return
                 onCancel?.()

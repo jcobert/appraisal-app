@@ -2,6 +2,7 @@
 
 import { Organization, User } from '@prisma/client'
 import { sortBy } from 'lodash'
+import Link from 'next/link'
 import { FC, useEffect, useMemo } from 'react'
 import { IoAdd } from 'react-icons/io5'
 
@@ -11,9 +12,9 @@ import SelectInput, {
   SelectOption,
 } from '@/components/form/inputs/select-input'
 import Banner from '@/components/general/banner'
-import Link from '@/components/general/link'
 import NoResults from '@/components/general/no-results'
 import Heading from '@/components/layout/heading'
+import { Button } from '@/components/ui/button'
 
 import { useStoredSettings } from '@/hooks/use-stored-settings'
 
@@ -85,14 +86,12 @@ const Dashboard: FC<Props> = ({ user, organizations }) => {
               subtitle='Get started by creating one now.'
               actions={
                 <div className='flex flex-col items-center gap-8'>
-                  <Link
-                    href='/organizations/create'
-                    variant='primary'
-                    className='not-prose'
-                  >
-                    <IoAdd />
-                    Create organization
-                  </Link>
+                  <Button asChild className='not-prose'>
+                    <Link href='/organizations/create'>
+                      <IoAdd />
+                      Create organization
+                    </Link>
+                  </Button>
                   <Banner className='max-w-md'>
                     Invited to an organization by someone else? Follow the link
                     in the invitation email to get started.

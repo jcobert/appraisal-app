@@ -6,8 +6,8 @@ import { FC } from 'react'
 
 import { successful } from '@/utils/fetch'
 
-import Button from '@/components/general/button'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
+import { Button } from '@/components/ui/button'
 
 import { useDisableInteraction } from '@/hooks/use-disable-interaction'
 

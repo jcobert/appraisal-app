@@ -4,7 +4,7 @@ import plugin from 'tailwindcss/plugin'
 
 export default {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
-  darkMode: 'selector',
+  darkMode: ['selector', 'class'],
   future: { hoverOnlyWhenSupported: true },
   theme: {
     extend: {
@@ -13,26 +13,63 @@ export default {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
       },
       colors: {
-        // Brand
         brand: '#0D9B8A',
         'brand-light': '#12A594',
         'brand-extra-light': '#d8edea',
         'brand-dark': '#008573',
         'brand-extra-dark': '#0D3D38',
-        // Generic
         'medium-gray': '#696A72',
         'dark-gray': '#5B5D6B',
         'almost-black': '#1F2023',
         'almost-white': '#FDFDFF',
-        background: '#FAFBFF',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        chart: {
+          '1': 'hsl(var(--chart-1))',
+          '2': 'hsl(var(--chart-2))',
+          '3': 'hsl(var(--chart-3))',
+          '4': 'hsl(var(--chart-4))',
+          '5': 'hsl(var(--chart-5))',
+        },
       },
       fontSize: {
         '2xs': ['0.625rem', '0.75rem'],
       },
-      width: { layout: '103.125rem' },
-      maxWidth: ({ theme }) => ({
-        layout: theme('width.layout'),
-      }),
+      width: {
+        layout: '103.125rem',
+      },
+      maxWidth: ({ theme }) => ({ layout: theme('width.layout') }),
       screens: {
         '2xl': '1440px',
       },
@@ -40,23 +77,15 @@ export default {
         DEFAULT: {
           css: {
             color: theme('colors.gray.950'),
-            strong: {
-              color: theme('colors.gray.950'),
-            },
-            blockquote: {
-              color: theme('colors.gray.700'),
-            },
+            strong: { color: theme('colors.gray.950') },
+            blockquote: { color: theme('colors.gray.700') },
             li: {
               color: theme('colors.gray.950'),
-              '&::marker': {
-                color: theme('colors.gray.800'),
-              },
+              '&::marker': { color: theme('colors.gray.800') },
             },
             a: {
               color: theme('colors.blue.700'),
-              '&:hover': {
-                color: theme('colors.blue.600'),
-              },
+              '&:hover': { color: theme('colors.blue.600') },
             },
             h1: {
               fontSize: theme('fontSize.4xl'),
@@ -106,60 +135,129 @@ export default {
           },
         },
         blink: {
-          '0%': { opacity: '0.2' },
-          '20%': { opacity: '1' },
-          '100%': { opacity: '0.2' },
+          '0%': {
+            opacity: '0.2',
+          },
+          '20%': {
+            opacity: '1',
+          },
+          '100%': {
+            opacity: '0.2',
+          },
         },
         slowPing: {
-          '75%, 100%': { transform: 'scale(2)', opacity: '0' },
+          '75%, 100%': {
+            transform: 'scale(2)',
+            opacity: '0',
+          },
         },
         collapseDown: {
-          from: { height: '0' },
-          to: { height: 'var(--radix-collapsible-content-height)' },
+          from: {
+            height: '0',
+          },
+          to: {
+            height: 'var(--radix-collapsible-content-height)',
+          },
         },
         collapseUp: {
-          from: { height: 'var(--radix-collapsible-content-height)' },
-          to: { height: '0' },
+          from: {
+            height: 'var(--radix-collapsible-content-height)',
+          },
+          to: {
+            height: '0',
+          },
         },
         accordionDown: {
-          from: { height: '0' },
-          to: { height: 'var(--radix-collapsible-content-height)' },
+          from: {
+            height: '0',
+          },
+          to: {
+            height: 'var(--radix-collapsible-content-height)',
+          },
         },
         accordionUp: {
-          from: { height: 'var(--radix-collapsible-content-height)' },
-          to: { height: '0' },
+          from: {
+            height: 'var(--radix-collapsible-content-height)',
+          },
+          to: {
+            height: '0',
+          },
         },
         enterFromRight: {
-          from: { opacity: '0', transform: 'translateX(200px)' },
-          to: { opacity: '1', transform: 'translateX(0)' },
+          from: {
+            opacity: '0',
+            transform: 'translateX(200px)',
+          },
+          to: {
+            opacity: '1',
+            transform: 'translateX(0)',
+          },
         },
         enterFromLeft: {
-          from: { opacity: '0', transform: 'translateX(-200px)' },
-          to: { opacity: '1', transform: 'translateX(0)' },
+          from: {
+            opacity: '0',
+            transform: 'translateX(-200px)',
+          },
+          to: {
+            opacity: '1',
+            transform: 'translateX(0)',
+          },
         },
         exitToRight: {
-          from: { opacity: '1', transform: 'translateX(0)' },
-          to: { opacity: '0', transform: 'translateX(200px)' },
+          from: {
+            opacity: '1',
+            transform: 'translateX(0)',
+          },
+          to: {
+            opacity: '0',
+            transform: 'translateX(200px)',
+          },
         },
         exitToLeft: {
-          from: { opacity: '1', transform: 'translateX(0)' },
-          to: { opacity: '0', transform: 'translateX(-200px)' },
+          from: {
+            opacity: '1',
+            transform: 'translateX(0)',
+          },
+          to: {
+            opacity: '0',
+            transform: 'translateX(-200px)',
+          },
         },
         scaleIn: {
-          from: { opacity: '0', transform: 'rotateX(-10deg) scale(0.9)' },
-          to: { opacity: '1', transform: 'rotateX(0deg) scale(1)' },
+          from: {
+            opacity: '0',
+            transform: 'rotateX(-10deg) scale(0.9)',
+          },
+          to: {
+            opacity: '1',
+            transform: 'rotateX(0deg) scale(1)',
+          },
         },
         scaleOut: {
-          from: { opacity: '1', transform: 'rotateX(0deg) scale(1)' },
-          to: { opacity: '0', transform: 'rotateX(-10deg) scale(0.95)' },
+          from: {
+            opacity: '1',
+            transform: 'rotateX(0deg) scale(1)',
+          },
+          to: {
+            opacity: '0',
+            transform: 'rotateX(-10deg) scale(0.95)',
+          },
         },
         fadeIn: {
-          from: { opacity: '0' },
-          to: { opacity: '1' },
+          from: {
+            opacity: '0',
+          },
+          to: {
+            opacity: '1',
+          },
         },
         fadeOut: {
-          from: { opacity: '1' },
-          to: { opacity: '0' },
+          from: {
+            opacity: '1',
+          },
+          to: {
+            opacity: '0',
+          },
         },
       },
       animation: {
@@ -179,6 +277,11 @@ export default {
         exitToLeft: 'exitToLeft 250ms ease',
         exitToRight: 'exitToRight 250ms ease',
       },
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+      },
     },
   },
   plugins: [
@@ -190,5 +293,6 @@ export default {
         }),
       })
     }),
+    require('tailwindcss-animate'),
   ],
 } satisfies Config

@@ -4,7 +4,7 @@ import { SlOptionsVertical } from 'react-icons/sl'
 
 import { cn } from '@/utils/style'
 
-import Button from '@/components/general/button'
+import { Button } from '@/components/ui/button'
 
 export const DropdownMenuItem: FC<Dropdown.DropdownMenuItemProps> = ({
   children,
@@ -32,7 +32,7 @@ const DropdownMenu: FC<Props> = ({ children, trigger }) => {
     <Dropdown.Root>
       <Dropdown.Trigger asChild>
         {trigger ?? (
-          <Button variant='tertiary' className='p-2 min-w-0 w-fit'>
+          <Button variant='ghost' size='icon'>
             <SlOptionsVertical className='text-lg' />
           </Button>
         )}
