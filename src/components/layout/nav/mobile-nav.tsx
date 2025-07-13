@@ -9,10 +9,15 @@ import { cn } from '@/utils/style'
 
 import AuthLink from '@/components/auth/auth-link'
 import ThemeSelector from '@/components/general/theme-selector'
-import Accordion from '@/components/layout/accordion'
 import Drawer from '@/components/layout/drawer'
 import UserGreeting from '@/components/layout/header/user-greeting'
 import LogoLink from '@/components/layout/nav/logo-link'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 
 import { useNavigationMenu } from '@/hooks/use-navigation'
 
@@ -150,52 +155,54 @@ const MobileNav: FC<Props> = ({
                     {item?.name}
                   </Link>
                 ) : (
-                  <Accordion
-                    collapsible
-                    className='border-none pr-0 w-full'
-                    triggerClassName={cn([
-                      '!justify-end font-semibold text-dark-gray',
-                      isMenuOpen && 'text-brand',
-                    ])}
-                    itemClassName='!p-0'
-                    items={[
-                      {
-                        header: item?.name,
-                        content: (
-                          <div className='flex flex-col gap-8 py-4 rounded'>
-                            {!!item?.url && (
-                              <Link
-                                key={`${item?.id}-menu`}
-                                className='w-full font-medium text-dark-gray pr-8'
-                                href={item?.url}
-                                onClick={() => {
-                                  if (isActivePath(item?.url)) {
-                                    setIsMenuOpen(false)
-                                  }
-                                }}
-                              >
-                                {`All ${item?.name}`}
-                              </Link>
-                            )}
-                            {item?.menu?.links?.map((link) => (
-                              <Link
-                                key={link?.id}
-                                className='w-full font-medium text-dark-gray pr-8'
-                                href={link?.url}
-                                onClick={() => {
-                                  if (isActivePath(item?.url)) {
-                                    setIsMenuOpen(false)
-                                  }
-                                }}
-                              >
-                                {link?.name}
-                              </Link>
-                            ))}
-                          </div>
-                        ),
-                      },
-                    ]}
-                  />
+                  <>
+                    <Accordion type='single' collapsible className='w-full'>
+                      <AccordionItem value='1'>
+                        <AccordionTrigger
+                          className={cn(
+                            'text-right justify-end font-semibold text-xl text-dark-gray',
+                            'gap-2',
+                            isActiveItem(item) && 'text-brand',
+                          )}
+                        >
+                          {item?.name}
+                        </AccordionTrigger>
+                        <AccordionContent className='flex flex-col gap-8 p-4 rounded'>
+                          {!!item?.url ? (
+                            <Link
+                              key={`${item?.id}-menu`}
+                              className='w-full font-medium text-lg text-dark-gray'
+                              href={item?.url}
+                              onClick={() => {
+                                if (isActivePath(item?.url)) {
+                                  setIsMenuOpen(false)
+                                }
+                              }}
+                            >
+                              {item?.name}
+                            </Link>
+                          ) : null}
+                          {item?.menu?.links?.map((link) => (
+                            <Link
+                              key={link?.id}
+                              className={cn(
+                                'w-full font-medium text-lg text-dark-gray',
+                                isActivePath(link?.url) && 'text-brand',
+                              )}
+                              href={link?.url}
+                              onClick={() => {
+                                if (isActivePath(item?.url)) {
+                                  setIsMenuOpen(false)
+                                }
+                              }}
+                            >
+                              {link?.name}
+                            </Link>
+                          ))}
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </>
                 )}
               </div>
             )

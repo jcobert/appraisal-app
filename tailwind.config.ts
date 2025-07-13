@@ -167,17 +167,17 @@ export default {
             height: '0',
           },
         },
-        accordionDown: {
+        'accordion-down': {
           from: {
             height: '0',
           },
           to: {
-            height: 'var(--radix-collapsible-content-height)',
+            height: 'var(--radix-accordion-content-height)',
           },
         },
-        accordionUp: {
+        'accordion-up': {
           from: {
-            height: 'var(--radix-collapsible-content-height)',
+            height: 'var(--radix-accordion-content-height)',
           },
           to: {
             height: '0',
@@ -266,8 +266,8 @@ export default {
         ping: 'slowPing 3s cubic-bezier(0, 0, 0.2, 1) infinite',
         collapseDown: 'collapseDown 200ms cubic-bezier(0.87, 0, 0.13, 1)',
         collapseUp: 'collapseUp 200ms cubic-bezier(0.87, 0, 0.13, 1)',
-        accordionDown: 'accordionDown 150ms ease-in-out',
-        accordionUp: 'accordionUp 150ms ease-in-out',
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
         scaleIn: 'scaleIn 200ms ease',
         scaleOut: 'scaleOut 200ms ease',
         fadeIn: 'fadeIn 200ms ease',
