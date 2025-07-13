@@ -53,7 +53,7 @@ const OrgMemberCardBase = <TInvite extends boolean = false>({
     >
       <div className='flex gap-4 items-center'>
         <div className='flex gap-2 items-center'>
-          <Avatar name={name} image={avatar} size='xs' />
+          <Avatar name={name} image={avatar} />
           <div className='flex flex-col gap-1'>
             <span className='leading-none transition'>{name}</span>
             {userRoles ? (
