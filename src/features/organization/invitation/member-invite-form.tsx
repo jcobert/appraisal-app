@@ -120,7 +120,6 @@ const MemberInviteForm: FC<Props> = ({
     setIsBusy(false)
   }
 
-  // const [formOpen, setFormOpen] = useState(false)
   const [isBusy, setIsBusy] = useState(false)
 
   useDisableInteraction({ disable: isBusy })
@@ -129,17 +128,14 @@ const MemberInviteForm: FC<Props> = ({
     <>
       {isBusy ? <FullScreenLoader /> : null}
       <Modal
-        // open={formOpen}
         open={open}
         onOpenChange={(newOpen) => {
-          // setFormOpen(newOpen)
           onOpenChange(newOpen)
           onClose()
         }}
         title='Invite to Organization'
         description='A form for inviting a new member to this organization.'
         preventOutsideClose
-        // trigger={<Button variant='outline'>Add member</Button>}
         {...modalProps}
       >
         <form

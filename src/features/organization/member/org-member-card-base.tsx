@@ -1,13 +1,18 @@
 import { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu'
 import { ReactNode } from 'react'
+import { SlOptionsVertical } from 'react-icons/sl'
 
 import { fullName } from '@/utils/string'
 import { cn } from '@/utils/style'
 
 import Avatar from '@/components/general/avatar'
-import DropdownMenu, {
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
-} from '@/components/layout/dropdown-menu'
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 import { DeepPartial } from '@/types/general'
 
@@ -63,21 +68,19 @@ const OrgMemberCardBase = <TInvite extends boolean = false>({
       </div>
 
       {actions?.length ? (
-        <DropdownMenu
-        // trigger={
-        //   <Button
-        //     variant='ghost'
-        //     className='p-2 min-w-0 max-w-16 size-fit rounded-full aspect-square'
-        //   >
-        //     <HiDotsVertical className='text-2xl sm:text-lg' />
-        //   </Button>
-        // }
-        >
-          {actions?.map(({ id, content, ...itemProps }) => (
-            <DropdownMenuItem key={id} {...itemProps}>
-              {content}
-            </DropdownMenuItem>
-          ))}
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant='ghost' size='icon'>
+              <SlOptionsVertical />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {actions?.map(({ id, content, ...itemProps }) => (
+              <DropdownMenuItem key={id} {...itemProps}>
+                {content}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
         </DropdownMenu>
       ) : null}
     </div>

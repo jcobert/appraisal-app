@@ -8,6 +8,7 @@ import { ModalProps } from '@/components/layout/modal'
 
 type Props = ModalProps & {
   overlay?: boolean
+  closeButton?: boolean
 }
 
 const Drawer: FC<Props> = ({

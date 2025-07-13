@@ -6,11 +6,14 @@ import { FC, useState } from 'react'
 import { FaGear } from 'react-icons/fa6'
 
 import Back from '@/components/general/back'
-import DropdownMenu, {
-  DropdownMenuItem,
-} from '@/components/layout/dropdown-menu'
 import Heading from '@/components/layout/heading'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 import { useProtectPage } from '@/hooks/use-protect-page'
 
@@ -57,27 +60,28 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
           <div className='flex flex-col gap-2 border-b-2__ pb-2 md:pr-12 md:pl-0 border-brand-extra-light sm:px-4 sm:w-fit w-full max-md:mx-auto'>
             <Heading text={name} className='font-normal' />
           </div>
-          <DropdownMenu
-            trigger={
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
               <Button variant='outline' size='icon' className='max-md:ml-auto'>
                 <FaGear className='text-2xl sm:text-lg' />
               </Button>
-            }
-          >
-            <DropdownMenuItem
-              onSelect={() => {
-                router.push(`${pathname}/edit`)
-              }}
-            >
-              Edit Info
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() => {
-                setInviteFormOpen(true)
-              }}
-            >
-              Add Member
-            </DropdownMenuItem>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onSelect={() => {
+                  router.push(`${pathname}/edit`)
+                }}
+              >
+                Edit Info
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => {
+                  setInviteFormOpen(true)
+                }}
+              >
+                Add Member
+              </DropdownMenuItem>
+            </DropdownMenuContent>
           </DropdownMenu>
         </div>
 

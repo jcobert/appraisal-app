@@ -52,6 +52,7 @@ const OrgMemberCard: FC<Props> = (props) => {
               onSelect: () => {
                 setEditOpen(true)
               },
+              disabled: true,
             },
             // {
             //   id: 'delete',
