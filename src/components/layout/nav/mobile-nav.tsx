@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { FC } from 'react'
-import { CgClose } from 'react-icons/cg'
 import { RxHamburgerMenu } from 'react-icons/rx'
 
 import { filterProtectedNavItems } from '@/utils/nav'
@@ -75,149 +74,139 @@ const MobileNav: FC<Props> = ({
       <Drawer
         open={isMenuOpen}
         onOpenChange={setIsMenuOpen}
-        overlay={false}
-        closeButton={false}
+        className='px-8 pt-4 pb-16 flex flex-col w-10/12'
       >
-        <div
+        {/* <SheetHeader
           className={cn(
             'w-full p-4 flex items-center',
-            'border-b border-gray-200 dark:border-gray-500 shadow-sm py-2 sticky top-0 bg-almost-white/50 dark:bg-almost-black backdrop-blur-lg',
+            // 'border-b border-gray-200 dark:border-gray-500 shadow-sm py-2 sticky top-0 bg-almost-white/50 dark:bg-almost-black backdrop-blur-lg',
+            'border-b',
           )}
         >
-          {/* Logo */}
           <LogoLink
-            className='relative left-[calc(50%-1rem)]'
+            // className='relative left-[calc(50%-1rem)] -top-6'
             loggedIn={!!loggedIn}
             onClickCapture={() => {
               setIsMenuOpen(false)
             }}
           />
-          {/* Hamburger */}
-          <button
-            className='w-fit ml-auto'
-            onClick={() => {
-              setIsMenuOpen((prev) => !prev)
-            }}
-          >
-            <CgClose className='text-3xl rounded' />
-          </button>
+        </SheetHeader> */}
+
+        <div className='flex flex-col gap-1 pb-8'>
+          {/* User */}
+          {profile ? (
+            <div className='flex items-center justify-center pb-4'>
+              <Link
+                className='w-fit'
+                href='/user/profile'
+                onClick={() => {
+                  if (isActivePath('/user/profile')) {
+                    setIsMenuOpen(false)
+                  }
+                }}
+              >
+                <UserGreeting user={profile} />
+              </Link>
+            </div>
+          ) : (
+            <div className='flex flex-col items-center gap-2 mt-4'>
+              <p className='text-balance'>Ready to get started?</p>
+              <AuthLink
+                loggedIn={loggedIn}
+                type='register'
+                className='self-center w-full'
+              />
+            </div>
+          )}
+          <ThemeSelector className='max-sm:min-w-0' />
         </div>
 
-        <div className='px-8 pt-4 overflow-y-auto pb-16 h-dvh flex flex-col dark:bg-almost-black'>
-          <div className='flex flex-col gap-1 pb-8'>
-            {/* User */}
-            {profile ? (
-              <div className='flex items-center justify-center pb-4'>
-                <Link
-                  className='w-fit'
-                  href='/user/profile'
-                  // onClick={() => {
-                  //   setIsMenuOpen(false)
-                  // }}
-                >
-                  <UserGreeting user={profile} />
-                </Link>
+        {/* Links */}
+        <div className='flex flex-col gap-6 my-4 pb-safe flex-1'>
+          {navItems?.map((item, i) => {
+            const hasMenu = !!item?.menu?.links?.length
+            const isLast = i === navItems.length - 1
+            const active = isActiveItem(item)
+            return (
+              <div
+                key={item?.id}
+                className={cn([
+                  'text-right text-xl border-medium-gray/15 pb-2 flex justify-end',
+                  active && 'text-brand',
+                  !active && 'text-dark-gray dark:text-gray-300',
+                  !isLast && 'border-b',
+                ])}
+              >
+                {!hasMenu ? (
+                  <Link
+                    className='w-full font-semibold py-2'
+                    href={item?.url}
+                    onClick={() => {
+                      if (isActivePath(item?.url)) {
+                        setIsMenuOpen(false)
+                      }
+                    }}
+                  >
+                    {item?.name}
+                  </Link>
+                ) : (
+                  <Accordion
+                    collapsible
+                    className='border-none pr-0 w-full'
+                    triggerClassName={cn([
+                      '!justify-end font-semibold text-dark-gray',
+                      isMenuOpen && 'text-brand',
+                    ])}
+                    itemClassName='!p-0'
+                    items={[
+                      {
+                        header: item?.name,
+                        content: (
+                          <div className='flex flex-col gap-8 py-4 rounded'>
+                            {!!item?.url && (
+                              <Link
+                                key={`${item?.id}-menu`}
+                                className='w-full font-medium text-dark-gray pr-8'
+                                href={item?.url}
+                                onClick={() => {
+                                  if (isActivePath(item?.url)) {
+                                    setIsMenuOpen(false)
+                                  }
+                                }}
+                              >
+                                {`All ${item?.name}`}
+                              </Link>
+                            )}
+                            {item?.menu?.links?.map((link) => (
+                              <Link
+                                key={link?.id}
+                                className='w-full font-medium text-dark-gray pr-8'
+                                href={link?.url}
+                                onClick={() => {
+                                  if (isActivePath(item?.url)) {
+                                    setIsMenuOpen(false)
+                                  }
+                                }}
+                              >
+                                {link?.name}
+                              </Link>
+                            ))}
+                          </div>
+                        ),
+                      },
+                    ]}
+                  />
+                )}
               </div>
-            ) : (
-              <div className='flex flex-col items-center gap-2 mt-4'>
-                <p className='text-balance'>Ready to get started?</p>
-                <AuthLink
-                  loggedIn={loggedIn}
-                  type='register'
-                  className='self-center w-full'
-                />
-              </div>
-            )}
-            <ThemeSelector className='max-sm:min-w-0' />
-          </div>
+            )
+          })}
+        </div>
 
-          {/* Links */}
-          <div className='flex flex-col gap-6 mt-4 pb-safe flex-1'>
-            {navItems?.map((item, i) => {
-              const hasMenu = !!item?.menu?.links?.length
-              const isLast = i === navItems.length - 1
-              const active = isActiveItem(item)
-              return (
-                <div
-                  key={item?.id}
-                  className={cn([
-                    'text-right text-xl border-medium-gray/15 pb-2 flex justify-end',
-                    active && 'text-brand',
-                    !active && 'text-dark-gray dark:text-gray-300',
-                    !isLast && 'border-b',
-                  ])}
-                >
-                  {!hasMenu ? (
-                    <Link
-                      className='w-full font-semibold py-2'
-                      href={item?.url}
-                      onClick={() => {
-                        if (isActivePath(item?.url)) {
-                          setIsMenuOpen(false)
-                        }
-                      }}
-                    >
-                      {item?.name}
-                    </Link>
-                  ) : (
-                    <Accordion
-                      collapsible
-                      className='border-none pr-0 w-full'
-                      triggerClassName={cn([
-                        '!justify-end font-semibold text-dark-gray',
-                        isMenuOpen && 'text-brand',
-                      ])}
-                      itemClassName='!p-0'
-                      items={[
-                        {
-                          header: item?.name,
-                          content: (
-                            <div className='flex flex-col gap-8 py-4 rounded'>
-                              {!!item?.url && (
-                                <Link
-                                  key={`${item?.id}-menu`}
-                                  className='w-full font-medium text-dark-gray pr-8'
-                                  href={item?.url}
-                                  onClick={() => {
-                                    if (isActivePath(item?.url)) {
-                                      setIsMenuOpen(false)
-                                    }
-                                  }}
-                                >
-                                  {`All ${item?.name}`}
-                                </Link>
-                              )}
-                              {item?.menu?.links?.map((link) => (
-                                <Link
-                                  key={link?.id}
-                                  className='w-full font-medium text-dark-gray pr-8'
-                                  href={link?.url}
-                                  onClick={() => {
-                                    if (isActivePath(item?.url)) {
-                                      setIsMenuOpen(false)
-                                    }
-                                  }}
-                                >
-                                  {link?.name}
-                                </Link>
-                              ))}
-                            </div>
-                          ),
-                        },
-                      ]}
-                    />
-                  )}
-                </div>
-              )
-            })}
-          </div>
-
-          <div className='mt-auto__ flex flex-col items-center gap-2'>
-            {!loggedIn ? (
-              <p className='text-balance'>Already have an account?</p>
-            ) : null}
-            <AuthLink loggedIn={loggedIn} />
-          </div>
+        <div className='mt-auto__ flex flex-col items-center gap-2'>
+          {!loggedIn ? (
+            <p className='text-balance'>Already have an account?</p>
+          ) : null}
+          <AuthLink loggedIn={loggedIn} />
         </div>
       </Drawer>
     </header>

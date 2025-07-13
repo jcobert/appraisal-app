@@ -25,11 +25,11 @@ const Modal: FC<ModalProps> = ({
   title,
   description,
   preventOutsideClose = false,
-  ...props
+  ...rootProps
 }) => {
   return (
     <>
-      <Dialog {...props}>
+      <Dialog {...rootProps}>
         {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
         <DialogContent
           onInteractOutside={(e) => {
