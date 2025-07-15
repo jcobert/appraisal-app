@@ -17,11 +17,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar'
 
-import { usePageSize } from '@/hooks/use-page-size'
+import { useNavigationMenu } from '@/hooks/use-navigation'
 
 import { SessionData } from '@/types/auth'
 
@@ -36,16 +35,21 @@ const AppSidebarCore: FC<Props> = ({
 }) => {
   const navItems = filterProtectedNavItems(APP_NAVIGATION_ITEMS, loggedIn)
 
-  const { usableHeight, header } = usePageSize()
   const { open } = useSidebar()
+  const { isActiveItem } = useNavigationMenu()
+  // const { usableHeight, header } = usePageSize()
 
   return (
     <Sidebar
-      style={{ height: usableHeight, top: header?.height }}
+      // style={{ height: usableHeight, top: header?.height }}
       collapsible='icon'
     >
       <SidebarHeader>
-        <OrganizationSelector organizations={organizations} compact={!open} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <OrganizationSelector organizations={organizations} />
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
 
       <SidebarContent>
@@ -57,7 +61,11 @@ const AppSidebarCore: FC<Props> = ({
                 const Icon = item?.icon
                 return (
                   <SidebarMenuItem key={item?.id}>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item?.name}
+                      isActive={isActiveItem(item)}
+                    >
                       <Link href={item?.url}>
                         {Icon ? <Icon /> : null}
                         {open ? item?.name : null}
@@ -72,7 +80,7 @@ const AppSidebarCore: FC<Props> = ({
       </SidebarContent>
 
       <SidebarFooter></SidebarFooter>
-      <SidebarRail />
+      {/* <SidebarRail /> */}
     </Sidebar>
   )
 }

@@ -2,17 +2,23 @@
 
 import { Organization } from '@prisma/client'
 import { sortBy } from 'lodash'
-import { ChevronsUpDown } from 'lucide-react'
+import { ChevronsUpDown, Plus } from 'lucide-react'
+import Link from 'next/link'
 import { FC, ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { useIsClient } from 'usehooks-ts'
+
+import { cn } from '@/lib/utils'
 
 import Avatar from '@/components/general/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import { useStoredSettings } from '@/hooks/use-stored-settings'
@@ -21,15 +27,12 @@ type Props = {
   organizations?: Organization[] | null
   className?: string
   children?: ReactNode
-  compact?: boolean
 }
 
-const OrganizationSelector: FC<Props> = ({
-  organizations,
-  compact = false,
-}) => {
+const OrganizationSelector: FC<Props> = ({ organizations }) => {
   const { settings, updateSettings } = useStoredSettings()
   const isClient = useIsClient()
+  const { isMobile, open } = useSidebar()
 
   const organizationOptions = useMemo(() => {
     if (!organizations?.length) return []
@@ -58,40 +61,80 @@ const OrganizationSelector: FC<Props> = ({
 
   if (!isClient)
     return (
-      <div className='rounded flex items-center gap-2'>
+      <div
+        aria-hidden
+        className={cn('rounded flex items-center gap-2', open && 'p-2')}
+      >
         <Skeleton className='size-8 rounded-full flex-none' />
-        {!compact ? <Skeleton className='w-full h-6' /> : null}
-        {!compact ? (
-          <ChevronsUpDown className='ml-auto size-4 flex-none' />
-        ) : null}
+        {open ? <Skeleton className='w-full h-6' /> : null}
       </div>
     )
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <div className='flex items-center gap-2 truncate'>
-          <Avatar
-            image={selectedOrganization?.avatar}
-            name={selectedOrganization?.name}
-            size='sm'
-          />
-          {!compact ? <span>{selectedOrganization?.name}</span> : null}
-          {!compact ? <ChevronsUpDown className='ml-auto size-4' /> : null}
-        </div>
+      <DropdownMenuTrigger asChild>
+        <SidebarMenuButton
+          size='lg'
+          className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+        >
+          <div
+            className='flex aspect-square object-contain items-center justify-center rounded-full'
+            //
+          >
+            <Avatar
+              image={selectedOrganization?.avatar}
+              name={selectedOrganization?.name}
+              size='sm'
+              className='border'
+            />
+          </div>
+          <div className='grid flex-1 text-left text-sm leading-tight'>
+            <span className='truncate font-medium'>
+              {selectedOrganization?.name}
+            </span>
+          </div>
+          <ChevronsUpDown className='ml-auto' />
+        </SidebarMenuButton>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className='w-[--radix-popper-anchor-width]'>
+      <DropdownMenuContent
+        className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
+        align='start'
+        side={isMobile ? 'bottom' : 'right'}
+        sideOffset={4}
+      >
+        <DropdownMenuLabel className='text-muted-foreground text-xs'>
+          Organizations
+        </DropdownMenuLabel>
         {organizationOptions?.map((org) => (
           <DropdownMenuItem
             key={org?.id}
+            className='gap-2 p-2'
             onSelect={() => {
               selectOrg(org)
             }}
           >
-            <Avatar image={org?.avatar} name={org?.name} size='xs' />
+            <Avatar
+              image={org?.avatar}
+              name={org?.name}
+              size='xs'
+              className='border'
+            />
             <span>{org?.name}</span>
           </DropdownMenuItem>
         ))}
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem className='gap-2 p-2' asChild>
+          <Link href='/organizations/create'>
+            <div className='flex size-6 items-center justify-center rounded-full border bg-transparent'>
+              <Plus className='size-4' />
+            </div>
+            <div className='text-muted-foreground font-medium'>
+              Add organization
+            </div>
+          </Link>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

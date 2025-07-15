@@ -5,13 +5,13 @@ import { cn } from '@/utils/style'
 
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 
-import { NAVIGATION_ITEMS } from '@/configuration/app-nav'
+import { APP_NAVIGATION_ITEMS } from '@/configuration/app-nav'
 
 type Props = {
   expanded?: boolean
 }
 
-const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, true)
+const navItems = filterProtectedNavItems(APP_NAVIGATION_ITEMS, true)
 
 const SidebarSkeleton: FC<Props> = ({ expanded }) => {
   return (
