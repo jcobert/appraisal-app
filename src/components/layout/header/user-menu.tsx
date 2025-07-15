@@ -26,7 +26,7 @@ const UserMenu: FC<{ sessionData: SessionData }> = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant='minimal' size='icon' className='rounded-full'>
+        <Button variant='minimal' size='icon' className='rounded-full__'>
           <FaRegCircleUser className='text-2xl' />
         </Button>
       </PopoverTrigger>

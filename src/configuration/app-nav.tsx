@@ -3,7 +3,8 @@ import { RiOrganizationChart } from 'react-icons/ri'
 
 import { NavItem } from '@/utils/nav'
 
-export const NAVIGATION_ITEMS: NavItem[] = [
+/** Navigation menu items for the authenticated app. */
+export const APP_NAVIGATION_ITEMS: NavItem[] = [
   {
     id: 'dashboard',
     name: 'Dashboard',

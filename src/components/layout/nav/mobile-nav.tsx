@@ -23,7 +23,7 @@ import { useNavigationMenu } from '@/hooks/use-navigation'
 
 import { SessionData } from '@/types/auth'
 
-import { NAVIGATION_ITEMS } from '@/configuration/nav'
+import { SITE_NAVIGATION_ITEMS } from '@/configuration/site-nav'
 
 type Props = {
   sessionData: Partial<SessionData>
@@ -39,7 +39,7 @@ const MobileNav: FC<Props> = ({
   const { isActiveItem, isActivePath, isMenuOpen, setIsMenuOpen } =
     useNavigationMenu()
 
-  const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
+  const navItems = filterProtectedNavItems(SITE_NAVIGATION_ITEMS, loggedIn)
 
   return (
     <header

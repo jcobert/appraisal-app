@@ -5,7 +5,7 @@ import { cn } from '@/utils/style'
 
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 
-import { NAVIGATION_ITEMS } from '@/configuration/nav'
+import { NAVIGATION_ITEMS } from '@/configuration/app-nav'
 
 type Props = {
   expanded?: boolean

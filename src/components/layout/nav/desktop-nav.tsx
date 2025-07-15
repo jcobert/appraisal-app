@@ -12,7 +12,7 @@ import NavLink from '@/components/layout/nav/nav-link'
 
 import { SessionData } from '@/types/auth'
 
-import { NAVIGATION_ITEMS } from '@/configuration/nav'
+import { SITE_NAVIGATION_ITEMS } from '@/configuration/site-nav'
 
 type Props = {
   sessionData: Partial<SessionData>
@@ -29,7 +29,7 @@ const DesktopNav: FC<Props> = ({
 }) => {
   const navItems = loggedIn
     ? []
-    : filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
+    : filterProtectedNavItems(SITE_NAVIGATION_ITEMS, loggedIn)
 
   return (
     <header

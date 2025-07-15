@@ -6,7 +6,6 @@ import ProgressProvider from '@/providers/progress-provider'
 import QueryProvider from '@/providers/query-provider'
 import ThemeProvider from '@/providers/theme-provider'
 
-import Header from '@/components/layout/header/header'
 import ToasterOven from '@/components/toast/toast-container'
 
 import { baseOpenGraph, baseTwitter } from '@/configuration/seo'
@@ -36,11 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <ThemeProvider>
               <ProgressProvider />
               <ToasterOven />
-              <div className='flex flex-col h-full min-h-dvh'>
-                <Header />
-                <div className='grow h-full'>{children}</div>
-                {/** @todo Footer here */}
-              </div>
+              {children}
             </ThemeProvider>
           </QueryProvider>
         </body>

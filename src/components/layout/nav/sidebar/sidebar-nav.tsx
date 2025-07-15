@@ -17,7 +17,7 @@ import { usePageSize } from '@/hooks/use-page-size'
 
 import { SessionData } from '@/types/auth'
 
-import { NAVIGATION_ITEMS } from '@/configuration/nav'
+import { APP_NAVIGATION_ITEMS } from '@/configuration/app-nav'
 
 type Props = {
   sessionData: Partial<SessionData>
@@ -27,7 +27,7 @@ const SidebarNav: FC<Props> = ({ sessionData }) => {
   const { loggedIn } = sessionData || {}
   const isClient = useIsClient()
 
-  const navItems = filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
+  const navItems = filterProtectedNavItems(APP_NAVIGATION_ITEMS, loggedIn)
 
   const { usableHeight, header } = usePageSize()
   const { isActiveItem, isSidebarExpanded, setIsSidebarExpanded } =
