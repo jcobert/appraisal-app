@@ -25,14 +25,13 @@ import { useStoredSettings } from '@/hooks/use-stored-settings'
 
 type Props = {
   organizations?: Organization[] | null
-  className?: string
   children?: ReactNode
 }
 
 const OrganizationSelector: FC<Props> = ({ organizations }) => {
   const { settings, updateSettings } = useStoredSettings()
   const isClient = useIsClient()
-  const { isMobile, open } = useSidebar()
+  const { isMobile, open, openMobile } = useSidebar()
 
   const organizationOptions = useMemo(() => {
     if (!organizations?.length) return []
@@ -71,21 +70,27 @@ const OrganizationSelector: FC<Props> = ({ organizations }) => {
     )
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={isMobile ? false : true}>
       <DropdownMenuTrigger asChild>
         <SidebarMenuButton
           size='lg'
-          className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+          className={cn(
+            'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
+            'group/org-selector',
+            !open && !openMobile && 'rounded-full',
+          )}
         >
-          <div
-            className='flex aspect-square object-contain items-center justify-center rounded-full'
-            //
-          >
+          <div className='flex aspect-square object-contain items-center justify-center rounded-full'>
             <Avatar
               image={selectedOrganization?.avatar}
               name={selectedOrganization?.name}
               size='sm'
               className='border'
+              fallbackClassName={cn(
+                !open &&
+                  !openMobile &&
+                  'group-hover/org-selector:bg-background/50 transition',
+              )}
             />
           </div>
           <div className='grid flex-1 text-left text-sm leading-tight'>
@@ -118,6 +123,7 @@ const OrganizationSelector: FC<Props> = ({ organizations }) => {
               name={org?.name}
               size='xs'
               className='border'
+              // fallbackClassName='bg-transparent'
             />
             <span>{org?.name}</span>
           </DropdownMenuItem>

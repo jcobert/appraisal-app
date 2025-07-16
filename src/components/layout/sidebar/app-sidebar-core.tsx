@@ -37,13 +37,9 @@ const AppSidebarCore: FC<Props> = ({
 
   const { open } = useSidebar()
   const { isActiveItem } = useNavigationMenu()
-  // const { usableHeight, header } = usePageSize()
 
   return (
-    <Sidebar
-      // style={{ height: usableHeight, top: header?.height }}
-      collapsible='icon'
-    >
+    <Sidebar collapsible='icon'>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

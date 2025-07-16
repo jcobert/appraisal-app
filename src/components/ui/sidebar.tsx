@@ -210,7 +210,12 @@ const Sidebar = React.forwardRef<
 
     if (isMobile) {
       return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+        <Sheet
+          open={openMobile}
+          onOpenChange={setOpenMobile}
+          modal={false}
+          {...props}
+        >
           <SheetContent
             data-sidebar='sidebar'
             data-mobile='true'
@@ -291,14 +296,14 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar='trigger'
       variant='ghost'
       size='icon'
-      className={cn('size-7', className)}
+      className={cn('size-8 md:size-7', className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
       }}
       {...props}
     >
-      <PanelLeft className='size-4' />
+      <PanelLeft className='size-6 md:size-4' />
       <span className='sr-only'>Toggle Sidebar</span>
     </Button>
   )

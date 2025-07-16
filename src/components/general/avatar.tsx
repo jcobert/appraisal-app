@@ -16,25 +16,29 @@ type Props = {
   name?: string
   image?: string | null
   alt?: string
-  size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   className?: string
-  textClassName?: string
+  fallbackClassName?: string
 }
 
-const Avatar: FC<Props> = (props) => {
-  const { name, image, alt, size = 'md', className } = props
-
+const Avatar: FC<Props> = ({
+  name,
+  image,
+  alt,
+  size = 'md',
+  className,
+  fallbackClassName,
+}) => {
   const isClient = useIsClient()
 
   const [first, second] = (name || '')?.split(' ')
   const fallback =
-    `${first ? first?.[0] : ''}${second ? second?.[0] : ''}`?.toUpperCase()
+    `${first ? first?.[0] : ''}${second && size !== 'xs' ? second?.[0] : ''}`?.toUpperCase()
 
   return (
     <AvatarRoot
       className={cn([
         // 'rounded-md',
-        size === '2xs' && 'size-4',
         size === 'xs' && 'size-6',
         size === 'sm' && 'size-8',
         size === 'md' && 'size-10',
@@ -50,13 +54,12 @@ const Avatar: FC<Props> = (props) => {
             className={cn([
               // 'rounded-md',
               'bg-white',
-              size === '2xs' && 'text-2xs',
-              size === 'xs' && 'text-xs',
+              size === 'xs' && 'text-sm',
               size === 'sm' && 'text-sm',
               size === 'md' && 'text-base',
               size === 'lg' && 'text-lg',
               size === 'xl' && 'text-xl',
-              // className,
+              fallbackClassName,
             ])}
           >
             {fallback}
@@ -66,7 +69,6 @@ const Avatar: FC<Props> = (props) => {
         <Skeleton
           className={cn([
             // 'rounded-md',
-            size === '2xs' && 'size-4',
             size === 'xs' && 'size-6',
             size === 'sm' && 'size-8',
             size === 'md' && 'size-10',
