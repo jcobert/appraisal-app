@@ -35,7 +35,7 @@ const AppSidebarCore: FC<Props> = ({
 }) => {
   const navItems = filterProtectedNavItems(APP_NAVIGATION_ITEMS, loggedIn)
 
-  const { open } = useSidebar()
+  const { open, openMobile } = useSidebar()
   const { isActiveItem } = useNavigationMenu()
 
   return (
@@ -64,7 +64,7 @@ const AppSidebarCore: FC<Props> = ({
                     >
                       <Link href={item?.url}>
                         {Icon ? <Icon /> : null}
-                        {open ? item?.name : null}
+                        {open || openMobile ? item?.name : null}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

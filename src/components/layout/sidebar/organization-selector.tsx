@@ -31,7 +31,7 @@ type Props = {
 const OrganizationSelector: FC<Props> = ({ organizations }) => {
   const { settings, updateSettings } = useStoredSettings()
   const isClient = useIsClient()
-  const { isMobile, open, openMobile } = useSidebar()
+  const { isMobile, open, openMobile, setOpenMobile } = useSidebar()
 
   const organizationOptions = useMemo(() => {
     if (!organizations?.length) return []
@@ -131,7 +131,13 @@ const OrganizationSelector: FC<Props> = ({ organizations }) => {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem className='gap-2 p-2' asChild>
+        <DropdownMenuItem
+          asChild
+          className='gap-2 p-2'
+          onSelect={() => {
+            setOpenMobile(false)
+          }}
+        >
           <Link href='/organizations/create'>
             <div className='flex size-6 items-center justify-center rounded-full border bg-transparent'>
               <Plus className='size-4' />

@@ -3,6 +3,7 @@
 import { Slot } from '@radix-ui/react-slot'
 import { VariantProps, cva } from 'class-variance-authority'
 import { PanelLeft } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
@@ -192,6 +193,13 @@ const Sidebar = React.forwardRef<
     ref,
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+
+    const pathname = usePathname()
+
+    // Close sidebar when new page is loaded.
+    React.useEffect(() => {
+      setOpenMobile(false)
+    }, [pathname])
 
     if (collapsible === 'none') {
       return (
