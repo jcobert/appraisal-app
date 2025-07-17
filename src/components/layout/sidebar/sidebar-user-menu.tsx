@@ -4,6 +4,7 @@ import { FC } from 'react'
 import { fullName } from '@/utils/string'
 import { cn } from '@/utils/style'
 
+import AuthLink from '@/components/auth/auth-link'
 import Avatar from '@/components/general/avatar'
 import {
   DropdownMenu,
@@ -23,7 +24,7 @@ type Props = {
 }
 
 const SidebarUserMenu: FC<Props> = ({ sessionData }) => {
-  const { profile } = sessionData || {}
+  const { profile, loggedIn } = sessionData || {}
   const { avatar, email } = profile || {}
 
   const name = fullName(profile?.firstName, profile?.lastName)
@@ -38,7 +39,7 @@ const SidebarUserMenu: FC<Props> = ({ sessionData }) => {
           className={cn(
             'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
             'group/user-menu-trigger',
-            // !open && !openMobile && 'rounded-full',
+            !open && !openMobile && 'rounded-lg',
           )}
         >
           <Avatar
@@ -93,7 +94,7 @@ const SidebarUserMenu: FC<Props> = ({ sessionData }) => {
           </div>
         </DropdownMenuLabel>
 
-        <DropdownMenuSeparator />
+        {/* <DropdownMenuSeparator /> */}
 
         {/* <DropdownMenuGroup>
           <DropdownMenuItem>
@@ -119,11 +120,13 @@ const SidebarUserMenu: FC<Props> = ({ sessionData }) => {
           </DropdownMenuItem>
         </DropdownMenuGroup> */}
 
-        {/* <DropdownMenuSeparator /> */}
+        <DropdownMenuSeparator />
 
-        <DropdownMenuItem>
-          <LogOut />
-          Log out
+        <DropdownMenuItem asChild>
+          <AuthLink loggedIn={loggedIn} type='logout'>
+            <LogOut />
+            Sign out
+          </AuthLink>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

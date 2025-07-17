@@ -7,8 +7,6 @@ import { ComponentPropsWithoutRef, FC, ReactNode } from 'react'
 
 import { cn } from '@/utils/style'
 
-import { Button } from '@/components/ui/button'
-
 type Props = {
   className?: string
   loggedIn?: boolean
@@ -21,9 +19,9 @@ const Register: FC<
   Pick<Props, 'className' | 'children' | 'postLoginRedirectURL'>
 > = ({ children, ...props }) => {
   return (
-    <Button asChild>
-      <RegisterLink {...props}>{children ?? 'Sign up'}</RegisterLink>
-    </Button>
+    // <Button asChild>
+    <RegisterLink {...props}>{children ?? 'Sign up'}</RegisterLink>
+    // </Button>
   )
 }
 
@@ -31,9 +29,9 @@ const Login: FC<
   Pick<Props, 'className' | 'children' | 'postLoginRedirectURL'>
 > = ({ children, ...props }) => {
   return (
-    <Button asChild variant='ghost'>
-      <LoginLink {...props}>{children ?? 'Sign in'}</LoginLink>
-    </Button>
+    // <Button asChild variant='ghost'>
+    <LoginLink {...props}>{children ?? 'Sign in'}</LoginLink>
+    // </Button>
   )
 }
 
@@ -41,9 +39,9 @@ const Logout: FC<
   Pick<Props, 'className' | 'children' | 'postLogoutRedirectURL'>
 > = ({ children, ...props }) => {
   return (
-    <Button asChild variant='ghost'>
-      <LogoutLink {...props}>{children ?? 'Sign out'}</LogoutLink>
-    </Button>
+    // <Button asChild variant='ghost'>
+    <LogoutLink {...props}>{children ?? 'Sign out'}</LogoutLink>
+    // </Button>
   )
 }
 

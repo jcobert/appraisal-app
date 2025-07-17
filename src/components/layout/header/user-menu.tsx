@@ -58,21 +58,29 @@ const UserMenu: FC<{ sessionData: SessionData }> = ({
               <div className='flex flex-col gap-12'>
                 <div className='flex flex-col items-center gap-2'>
                   <p className='text-balance'>Ready to get started?</p>
-                  <AuthLink
-                    loggedIn={loggedIn}
-                    type='register'
-                    className='self-center w-full'
-                  />
+                  <Button>
+                    <AuthLink
+                      loggedIn={loggedIn}
+                      type='register'
+                      className='self-center w-full'
+                    />
+                  </Button>
                 </div>
                 <div className='flex flex-col items-center'>
                   <p className='text-balance text-sm'>
                     Already have an account?
                   </p>
-                  <AuthLink loggedIn={loggedIn} type='login' />
+                  <Button asChild variant='ghost'>
+                    <AuthLink loggedIn={loggedIn} type='login' />
+                  </Button>
                 </div>
               </div>
             ) : null}
-            {loggedIn ? <AuthLink loggedIn={loggedIn} type='logout' /> : null}
+            {loggedIn ? (
+              <Button asChild variant='ghost'>
+                <AuthLink loggedIn={loggedIn} type='logout' />
+              </Button>
+            ) : null}
           </div>
         </div>
       </PopoverContent>
