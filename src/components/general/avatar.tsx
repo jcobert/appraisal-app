@@ -38,7 +38,7 @@ const Avatar: FC<Props> = ({
   return (
     <AvatarRoot
       className={cn([
-        // 'rounded-md',
+        // 'rounded-lg',
         size === 'xs' && 'size-6',
         size === 'sm' && 'size-8',
         size === 'md' && 'size-10',
@@ -49,10 +49,10 @@ const Avatar: FC<Props> = ({
     >
       {isClient ? (
         <>
-          <AvatarImage src={image || ''} alt={alt || name} />
+          <AvatarImage src={image || undefined} alt={alt || name} />
           <AvatarFallback
             className={cn([
-              // 'rounded-md',
+              // 'rounded-lg',
               'bg-white',
               size === 'xs' && 'text-sm',
               size === 'sm' && 'text-sm',
@@ -68,7 +68,7 @@ const Avatar: FC<Props> = ({
       ) : (
         <Skeleton
           className={cn([
-            // 'rounded-md',
+            // 'rounded-lg',
             size === 'xs' && 'size-6',
             size === 'sm' && 'size-8',
             size === 'md' && 'size-10',

@@ -6,6 +6,7 @@ import { FC } from 'react'
 import { filterProtectedNavItems } from '@/utils/nav'
 
 import OrganizationSelector from '@/components/layout/sidebar/organization-selector'
+import SidebarUserMenu from '@/components/layout/sidebar/sidebar-user-menu'
 import {
   Sidebar,
   SidebarContent,
@@ -30,9 +31,9 @@ type Props = {
   sessionData: Partial<SessionData>
 }
 
-const AppSidebarCore: FC<Props> = ({
-  sessionData: { loggedIn, organizations },
-}) => {
+const AppSidebarCore: FC<Props> = ({ sessionData }) => {
+  const { loggedIn, organizations } = sessionData || {}
+
   const navItems = filterProtectedNavItems(APP_NAVIGATION_ITEMS, loggedIn)
 
   const { open, openMobile } = useSidebar()
@@ -75,7 +76,14 @@ const AppSidebarCore: FC<Props> = ({
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter></SidebarFooter>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarUserMenu sessionData={sessionData} />
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+
       {/* <SidebarRail /> */}
     </Sidebar>
   )

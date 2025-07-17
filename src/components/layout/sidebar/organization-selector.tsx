@@ -5,6 +5,7 @@ import { sortBy } from 'lodash'
 import { ChevronsUpDown, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { FC, ReactNode, useCallback, useEffect, useMemo } from 'react'
+import { FaBuilding } from 'react-icons/fa6'
 import { useIsClient } from 'usehooks-ts'
 
 import { cn } from '@/lib/utils'
@@ -31,7 +32,7 @@ type Props = {
 const OrganizationSelector: FC<Props> = ({ organizations }) => {
   const { settings, updateSettings } = useStoredSettings()
   const isClient = useIsClient()
-  const { isMobile, open, openMobile, setOpenMobile } = useSidebar()
+  const { isMobile, open, setOpenMobile } = useSidebar()
 
   const organizationOptions = useMemo(() => {
     if (!organizations?.length) return []
@@ -70,29 +71,31 @@ const OrganizationSelector: FC<Props> = ({ organizations }) => {
     )
 
   return (
-    <DropdownMenu modal={isMobile ? false : true}>
+    <DropdownMenu
+    // modal={isMobile ? false : true}
+    >
       <DropdownMenuTrigger asChild>
         <SidebarMenuButton
           size='lg'
           className={cn(
             'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
             'group/org-selector',
-            !open && !openMobile && 'rounded-full',
           )}
         >
-          <div className='flex aspect-square object-contain items-center justify-center rounded-full'>
-            <Avatar
-              image={selectedOrganization?.avatar}
-              name={selectedOrganization?.name}
-              size='sm'
-              className='border'
-              fallbackClassName={cn(
-                !open &&
-                  !openMobile &&
-                  'group-hover/org-selector:bg-background/50 transition',
+          <div
+            className={cn(
+              'size-8 flex items-center justify-center rounded-lg shrink-0',
+              // 'bg-sidebar-primary',
+            )}
+          >
+            <FaBuilding
+              className={cn(
+                'text-xl',
+                // 'text-sidebar-primary-foreground',
               )}
             />
           </div>
+
           <div className='grid flex-1 text-left text-sm leading-tight'>
             <span className='truncate font-medium'>
               {selectedOrganization?.name}
