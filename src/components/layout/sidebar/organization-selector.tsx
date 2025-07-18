@@ -2,7 +2,7 @@
 
 import { Organization } from '@prisma/client'
 import { sortBy } from 'lodash'
-import { ChevronsUpDown, Plus } from 'lucide-react'
+import { Check, ChevronsUpDown, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { FC, ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { FaBuilding } from 'react-icons/fa6'
@@ -30,7 +30,10 @@ type Props = {
 }
 
 const OrganizationSelector: FC<Props> = ({ organizations }) => {
-  const { settings, updateSettings } = useStoredSettings()
+  const {
+    settings: { activeOrg },
+    updateSettings,
+  } = useStoredSettings()
   const isClient = useIsClient()
   const { isMobile, open, setOpenMobile } = useSidebar()
 
@@ -41,23 +44,23 @@ const OrganizationSelector: FC<Props> = ({ organizations }) => {
 
   const selectedOrganization = useMemo(() => {
     if (!organizationOptions?.length) return undefined
-    return organizationOptions?.find((org) => org?.id === settings?.activeOrg)
-  }, [settings?.activeOrg, organizationOptions])
+    return organizationOptions?.find((org) => org?.id === activeOrg)
+  }, [activeOrg, organizationOptions])
 
   const selectOrg = useCallback(
     (org?: typeof selectedOrganization) => {
       const newOrg = org || organizationOptions?.[0]
-      updateSettings({ ...settings, activeOrg: newOrg?.id })
+      updateSettings({ activeOrg: newOrg?.id })
     },
-    [updateSettings, settings, organizationOptions],
+    [updateSettings, organizationOptions],
   )
 
   // Update local storage with first org on load, if none exists.
   useEffect(() => {
-    if (!settings?.activeOrg || !selectedOrganization) {
+    if (!activeOrg || !selectedOrganization) {
       selectOrg()
     }
-  }, [selectedOrganization])
+  }, [selectedOrganization, activeOrg])
 
   if (!isClient)
     return (
@@ -105,7 +108,7 @@ const OrganizationSelector: FC<Props> = ({ organizations }) => {
         </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
+        className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg max-w-prose'
         align='start'
         side={isMobile ? 'bottom' : 'right'}
         sideOffset={4}
@@ -113,24 +116,35 @@ const OrganizationSelector: FC<Props> = ({ organizations }) => {
         <DropdownMenuLabel className='text-muted-foreground text-xs'>
           Organizations
         </DropdownMenuLabel>
-        {organizationOptions?.map((org) => (
-          <DropdownMenuItem
-            key={org?.id}
-            className='gap-2 p-2'
-            onSelect={() => {
-              selectOrg(org)
-            }}
-          >
-            <Avatar
-              image={org?.avatar}
-              name={org?.name}
-              size='xs'
-              className='border'
-              // fallbackClassName='bg-transparent'
-            />
-            <span>{org?.name}</span>
-          </DropdownMenuItem>
-        ))}
+        {organizationOptions?.map((org) => {
+          const isActive = org?.id === activeOrg
+          return (
+            <DropdownMenuItem
+              key={org?.id}
+              className={cn('gap-2 p-2', isActive && 'bg-sidebar-accent/50')}
+              onSelect={() => {
+                selectOrg(org)
+              }}
+            >
+              <Avatar
+                image={org?.avatar}
+                name={org?.name}
+                size='xs'
+                className='border'
+                // fallbackClassName='bg-transparent'
+              />
+              <span
+                className={cn(
+                  'flex-1',
+                  isActive && 'text-primary__ font-medium',
+                )}
+              >
+                {org?.name}
+              </span>
+              {isActive ? <Check className='text-primary' /> : null}
+            </DropdownMenuItem>
+          )
+        })}
 
         <DropdownMenuSeparator />
 
