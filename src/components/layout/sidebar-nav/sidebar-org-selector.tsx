@@ -29,7 +29,7 @@ type Props = {
   children?: ReactNode
 }
 
-const OrganizationSelector: FC<Props> = ({ organizations }) => {
+const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
   const {
     settings: { activeOrg },
     updateSettings,
@@ -169,4 +169,4 @@ const OrganizationSelector: FC<Props> = ({ organizations }) => {
   )
 }
 
-export default OrganizationSelector
+export default SidebarOrgSelector

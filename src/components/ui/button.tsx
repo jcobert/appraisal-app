@@ -22,9 +22,9 @@ const buttonVariants = cva(
         minimal: 'text-primary hover:text-primary/90',
       },
       size: {
-        default: 'h-9 px-4 py-2',
-        sm: 'h-8 rounded-md px-3 text-xs',
-        lg: 'h-10 rounded-md px-8',
+        default: 'h-9 px-4 py-2 min-w-32__',
+        sm: 'h-8 rounded-md px-3 text-xs min-w-24__',
+        lg: 'h-10 rounded-md px-8 min-w-32__',
         icon: 'h-9 w-9',
       },
     },

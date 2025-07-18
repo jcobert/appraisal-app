@@ -1,7 +1,7 @@
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import React, { FC } from 'react'
 
-import SidebarNav from '@/components/layout/nav/sidebar/sidebar-nav'
+import SidebarNav from '@/components/layout/nav/__sidebar/sidebar-nav'
 
 import { SessionData } from '@/types/auth'
 

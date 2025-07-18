@@ -8,7 +8,6 @@ import { filterProtectedNavItems } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import AuthLink from '@/components/auth/auth-link'
-import ThemeSelector from '@/components/general/theme-selector'
 import Drawer from '@/components/layout/drawer'
 import UserGreeting from '@/components/layout/header/user-greeting'
 import LogoLink from '@/components/layout/nav/logo-link'
@@ -18,6 +17,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { Button } from '@/components/ui/button'
 
 import { useNavigationMenu } from '@/hooks/use-navigation'
 
@@ -97,7 +97,7 @@ const MobileNav: FC<Props> = ({
           />
         </SheetHeader> */}
 
-        <div className='flex flex-col gap-1 pb-8'>
+        <div className='flex flex-col gap-4 pb-8'>
           {/* User */}
           {profile ? (
             <div className='flex items-center justify-center pb-4'>
@@ -114,16 +114,14 @@ const MobileNav: FC<Props> = ({
               </Link>
             </div>
           ) : (
-            <div className='flex flex-col items-center gap-2 mt-4'>
-              <p className='text-balance'>Ready to get started?</p>
-              <AuthLink
-                loggedIn={loggedIn}
-                type='register'
-                className='self-center w-full'
-              />
+            <div className='flex flex-col items-center gap-4 mt-4'>
+              <p className='text-balance leading-none'>Ready to get started?</p>
+              <Button asChild size='lg'>
+                <AuthLink loggedIn={loggedIn} type='register' />
+              </Button>
             </div>
           )}
-          <ThemeSelector className='max-sm:min-w-0' />
+          {/* <ThemeSelector className='max-sm:min-w-0' /> */}
         </div>
 
         {/* Links */}
@@ -209,11 +207,13 @@ const MobileNav: FC<Props> = ({
           })}
         </div>
 
-        <div className='mt-auto__ flex flex-col items-center gap-2'>
+        <div className='flex flex-col items-center gap-4'>
           {!loggedIn ? (
             <p className='text-balance'>Already have an account?</p>
           ) : null}
-          <AuthLink loggedIn={loggedIn} />
+          <Button asChild variant='outline'>
+            <AuthLink loggedIn={loggedIn} />
+          </Button>
         </div>
       </Drawer>
     </header>

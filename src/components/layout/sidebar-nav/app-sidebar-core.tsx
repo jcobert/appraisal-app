@@ -3,10 +3,12 @@
 import Link from 'next/link'
 import { FC } from 'react'
 
+import { cn } from '@/lib/utils'
+
 import { filterProtectedNavItems } from '@/utils/nav'
 
-import OrganizationSelector from '@/components/layout/sidebar/organization-selector'
-import SidebarUserMenu from '@/components/layout/sidebar/sidebar-user-menu'
+import SidebarOrgSelector from '@/components/layout/sidebar-nav/sidebar-org-selector'
+import SidebarUserMenu from '@/components/layout/sidebar-nav/sidebar-user-menu'
 import {
   Sidebar,
   SidebarContent,
@@ -18,6 +20,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
   useSidebar,
 } from '@/components/ui/sidebar'
 
@@ -40,17 +43,22 @@ const AppSidebarCore: FC<Props> = ({ sessionData }) => {
   const { isActiveItem } = useNavigationMenu()
 
   return (
-    <Sidebar collapsible='icon'>
+    <Sidebar
+      collapsible='icon'
+      className='top-[var(--header-height)] h-full overflow-y-auto max-h-[calc(100svh-var(--header-height))]'
+    >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <OrganizationSelector organizations={organizations} />
+            <SidebarOrgSelector organizations={organizations} />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarGroup>
+      <SidebarContent className='h-full overflow-y-auto min-h-28'>
+        <SidebarGroup
+          className={cn('h-full overflow-y-auto', 'overflow-x-hidden')}
+        >
           <SidebarGroupLabel>Organization</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -75,6 +83,8 @@ const AppSidebarCore: FC<Props> = ({ sessionData }) => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarSeparator />
 
       <SidebarFooter>
         <SidebarMenu>

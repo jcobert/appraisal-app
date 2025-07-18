@@ -53,7 +53,7 @@ const AuthLink: FC<Props> = ({
   postLogoutRedirectURL,
   ...props
 }) => {
-  const styles = cn('max-sm:w-full max-sm:py-6', className)
+  const styles = cn(className)
 
   if (type === 'register')
     return !loggedIn ? (

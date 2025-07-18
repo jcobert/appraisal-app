@@ -30,7 +30,7 @@ const PageLayout: FC<PageLayoutProps> = ({
     typeof heading === 'string' ? <Heading text={heading} /> : heading
 
   return (
-    <main className={cn(['h-full', mainClassName])}>
+    <main className={cn('h-full', mainClassName)}>
       {backgroundImage ? (
         <BackgroundImage
           backgroundImage={backgroundImage}

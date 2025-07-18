@@ -9,7 +9,7 @@ import { filterProtectedNavItems } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import NavLink from '@/components/layout/nav/nav-link'
-import SidebarSkeleton from '@/components/layout/nav/sidebar/sidebar-skeleton'
+import SidebarSkeleton from '@/components/layout/nav/__sidebar/sidebar-skeleton'
 import { Button } from '@/components/ui/button'
 
 import { useNavigationMenu } from '@/hooks/use-navigation'
