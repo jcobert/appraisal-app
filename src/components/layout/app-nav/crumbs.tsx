@@ -34,7 +34,7 @@ const Crumbs: FC<Props> = ({ crumbs, hidden = false }) => {
       setCrumbs([])
       setHidden(false)
     }
-  }, [])
+  }, [path, crumbs, hidden, setCrumbs, setHidden])
 
   return null
 }

@@ -39,5 +39,6 @@ module.exports = {
       { props: 'never', children: 'never' },
     ],
     'no-console': 'warn',
+    'react-hooks/exhaustive-deps': 'warn',
   },
 }

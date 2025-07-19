@@ -60,7 +60,7 @@ const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
     if (!activeOrg || !selectedOrganization) {
       selectOrg()
     }
-  }, [selectedOrganization, activeOrg])
+  }, [selectedOrganization, activeOrg, selectOrg])
 
   if (!isClient)
     return (

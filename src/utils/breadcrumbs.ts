@@ -13,6 +13,7 @@ export const buildCrumbsFromSegments = (
   segments: string[],
   overrides?: Omit<CrumbMeta, 'path'>[],
 ) => {
+  if (!segments) return []
   return segments?.reduce((prev, segment, i, arr) => {
     const parentPath = arr?.slice(0, i)?.join('/')
     const fullPath = `${i > 0 ? '/' : ''}${parentPath}/${segment}`
