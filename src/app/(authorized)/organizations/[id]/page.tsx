@@ -9,7 +9,7 @@ import { authRedirectUrl, protectPage } from '@/utils/auth'
 import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
-import Crumb from '@/components/layout/sidebar-nav/crumb'
+import Crumb from '@/components/layout/app-nav/crumb'
 
 import { PageParams } from '@/types/general'
 

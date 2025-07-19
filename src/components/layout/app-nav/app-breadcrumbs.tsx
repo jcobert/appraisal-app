@@ -48,12 +48,14 @@ const AppBreadcrumbs: FC<AppBreadcrumbsProps> = ({ segments }) => {
           const custom = customCrumbs?.find((c) => c?.path === crumb?.path)
           const { name, path, segment } = custom || crumb || {}
 
+          const label = decodeURI(name || segment)
+
           if (i === segments.length - 1) {
             return (
               <BreadcrumbItem key={path}>
                 {isClient ? (
                   <BreadcrumbPage className='capitalize'>
-                    {name || segment}
+                    {label}
                   </BreadcrumbPage>
                 ) : (
                   <Skeleton className='w-24 h-5' />
@@ -67,7 +69,7 @@ const AppBreadcrumbs: FC<AppBreadcrumbsProps> = ({ segments }) => {
                 {isClient ? (
                   <BreadcrumbLink asChild>
                     <Link href={path} className='capitalize'>
-                      {name || segment}
+                      {label}
                     </Link>
                   </BreadcrumbLink>
                 ) : (

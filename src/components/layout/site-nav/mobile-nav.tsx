@@ -8,9 +8,9 @@ import { filterProtectedNavItems } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import AuthLink from '@/components/auth/auth-link'
+import LogoLink from '@/components/general/logo-link'
 import Drawer from '@/components/layout/drawer'
 import UserGreeting from '@/components/layout/header/user-greeting'
-import LogoLink from '@/components/layout/nav/logo-link'
 import {
   Accordion,
   AccordionContent,

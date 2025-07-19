@@ -2,7 +2,7 @@ import { FC, ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
 
-import LogoLink from '@/components/layout/nav/logo-link'
+import LogoLink from '@/components/general/logo-link'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 

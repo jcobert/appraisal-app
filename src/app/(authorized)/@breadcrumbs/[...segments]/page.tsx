@@ -2,7 +2,7 @@ import { FC } from 'react'
 
 import AppBreadcrumbs, {
   AppBreadcrumbsProps,
-} from '@/components/layout/sidebar-nav/app-breadcrumbs'
+} from '@/components/layout/app-nav/app-breadcrumbs'
 
 import { PageParams } from '@/types/general'
 

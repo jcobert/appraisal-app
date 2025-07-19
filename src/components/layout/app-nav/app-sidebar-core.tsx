@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils'
 
 import { filterProtectedNavItems } from '@/utils/nav'
 
-import SidebarOrgSelector from '@/components/layout/sidebar-nav/sidebar-org-selector'
-import SidebarUserMenu from '@/components/layout/sidebar-nav/sidebar-user-menu'
+import SidebarOrgSelector from '@/components/layout/app-nav/sidebar-org-selector'
+import SidebarUserMenu from '@/components/layout/app-nav/sidebar-user-menu'
 import {
   Sidebar,
   SidebarContent,

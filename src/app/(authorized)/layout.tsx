@@ -4,8 +4,8 @@ import { ReactNode } from 'react'
 import BreadcrumbProvider from '@/providers/breadcrumbs/breadcrumb-provider'
 
 import PageLayout from '@/components/layout/page-layout'
-import AppHeader from '@/components/layout/sidebar-nav/app-header'
-import AppSidebar from '@/components/layout/sidebar-nav/app-sidebar'
+import AppHeader from '@/components/layout/app-nav/app-header'
+import AppSidebar from '@/components/layout/app-nav/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 
 const Layout = async ({

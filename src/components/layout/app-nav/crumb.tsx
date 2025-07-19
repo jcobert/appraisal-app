@@ -9,10 +9,7 @@ import {
   useBreadcrumbContext,
 } from '@/providers/breadcrumbs/breadcrumb-context'
 
-type Props = {
-  name: CrumbMeta['name']
-  segment: CrumbMeta['segment']
-}
+type Props = Pick<CrumbMeta, 'name' | 'segment'>
 
 const Crumb: FC<Props> = ({ name, segment }) => {
   const { setCrumbs } = useBreadcrumbContext()

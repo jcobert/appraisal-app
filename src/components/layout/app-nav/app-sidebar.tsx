@@ -4,7 +4,7 @@ import { ComponentPropsWithoutRef, FC } from 'react'
 import { getUserOrganizations } from '@/lib/db/queries/organization'
 import { getActiveUserProfile } from '@/lib/db/queries/user'
 
-import AppSidebarCore from '@/components/layout/sidebar-nav/app-sidebar-core'
+import AppSidebarCore from '@/components/layout/app-nav/app-sidebar-core'
 
 const AppSidebar: FC = async () => {
   const session = getKindeServerSession()

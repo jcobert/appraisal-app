@@ -7,8 +7,8 @@ import { FaAngleUp } from 'react-icons/fa6'
 import { filterProtectedNavItems } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
-import LogoLink from '@/components/layout/nav/logo-link'
-import NavLink from '@/components/layout/nav/nav-link'
+import LogoLink from '@/components/general/logo-link'
+import NavLink from '@/components/layout/site-nav/nav-link'
 
 import { SessionData } from '@/types/auth'
 
