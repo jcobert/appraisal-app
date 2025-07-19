@@ -6,6 +6,8 @@ import { getUserIdentities } from '@/lib/kinde-management/queries'
 
 import { getActiveUserAccount } from '@/utils/auth'
 
+import Crumbs from '@/components/layout/app-nav/crumbs'
+
 import { PageParams } from '@/types/general'
 
 import UserProfilePage from '@/features/user/user-profile-page'
@@ -24,11 +26,14 @@ const Page: FC<Props> = async () => {
   const identities = await getUserIdentities()
 
   return (
-    <UserProfilePage
-      sessionUser={user}
-      userProfile={userProfile}
-      identities={identities}
-    />
+    <>
+      <Crumbs hidden />
+      <UserProfilePage
+        sessionUser={user}
+        userProfile={userProfile}
+        identities={identities}
+      />
+    </>
   )
 }
 

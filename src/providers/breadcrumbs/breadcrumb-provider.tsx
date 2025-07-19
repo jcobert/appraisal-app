@@ -11,10 +11,11 @@ type Props = { children: ReactNode }
 
 const BreadcrumbProvider: FC<Props> = ({ children }) => {
   const [crumbs, setCrumbs] = useState<BreadcrumbContextType['crumbs']>([])
+  const [hidden, setHidden] = useState<BreadcrumbContextType['hidden']>(false)
 
   const context = useMemo<BreadcrumbContextType>(() => {
-    return { crumbs, setCrumbs }
-  }, [crumbs, setCrumbs])
+    return { crumbs, setCrumbs, hidden, setHidden }
+  }, [crumbs, setCrumbs, hidden, setHidden])
 
   return (
     <BreadcrumbContext.Provider value={context}>

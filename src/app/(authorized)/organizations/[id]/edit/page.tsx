@@ -5,6 +5,8 @@ import { getOrganization } from '@/lib/db/queries/organization'
 
 import { protectPage } from '@/utils/auth'
 
+import Crumbs from '@/components/layout/app-nav/crumbs'
+
 import { PageParams } from '@/types/general'
 
 import { generatePageMeta } from '@/configuration/seo'
@@ -23,7 +25,12 @@ const Page: FC<Props> = async ({ params }) => {
 
   const data = await getOrganization({ organizationId })
 
-  return <OrganizationForm initialData={data} />
+  return (
+    <>
+      <Crumbs crumbs={[{ segment: organizationId, name: data?.name }]} />
+      <OrganizationForm initialData={data} />
+    </>
+  )
 }
 
 export default Page

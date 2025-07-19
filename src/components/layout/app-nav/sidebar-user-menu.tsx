@@ -1,4 +1,5 @@
 import { ChevronsUpDown, LogOut } from 'lucide-react'
+import Link from 'next/link'
 import { FC } from 'react'
 
 import { fullName } from '@/utils/string'
@@ -9,6 +10,7 @@ import Avatar from '@/components/general/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -96,12 +98,11 @@ const SidebarUserMenu: FC<Props> = ({ sessionData }) => {
 
         {/* <DropdownMenuSeparator /> */}
 
-        {/* <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <Sparkles />
-            Upgrade to Pro
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link href='/user/profile'>My Profile</Link>
           </DropdownMenuItem>
-        </DropdownMenuGroup> */}
+        </DropdownMenuGroup>
 
         {/* <DropdownMenuSeparator /> */}
 

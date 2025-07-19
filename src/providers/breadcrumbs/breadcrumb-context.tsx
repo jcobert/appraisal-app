@@ -2,16 +2,20 @@
 
 import { Dispatch, SetStateAction, createContext, useContext } from 'react'
 
-export type CrumbMeta = { segment: string; name: string; path: string }
+import { CrumbMeta } from '@/utils/breadcrumbs'
 
 export type BreadcrumbContextType = {
   crumbs: CrumbMeta[]
   setCrumbs: Dispatch<SetStateAction<CrumbMeta[]>>
+  hidden: boolean
+  setHidden: Dispatch<SetStateAction<boolean>>
 }
 
 export const BreadcrumbContext = createContext<BreadcrumbContextType>({
   crumbs: [],
   setCrumbs: () => {},
+  hidden: false,
+  setHidden: () => {},
 })
 
 export const useBreadcrumbContext = () => {

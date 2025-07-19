@@ -9,7 +9,7 @@ import { authRedirectUrl, protectPage } from '@/utils/auth'
 import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
-import Crumb from '@/components/layout/app-nav/crumb'
+import Crumbs from '@/components/layout/app-nav/crumbs'
 
 import { PageParams } from '@/types/general'
 
@@ -43,7 +43,7 @@ const Page: FC<Props> = async ({ params }) => {
 
   const queryClient = createQueryClient()
 
-  const org = await queryClient.fetchQuery({
+  const res = await queryClient.fetchQuery({
     queryKey: organizationsQueryKey.filtered({ id: organizationId }),
     queryFn: async () => {
       const data = await getOrganization({ organizationId })
@@ -53,7 +53,7 @@ const Page: FC<Props> = async ({ params }) => {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Crumb segment={organizationId} name={org?.data?.name || ''} />
+      <Crumbs crumbs={[{ segment: organizationId, name: res?.data?.name }]} />
       <OrganizationPage organizationId={organizationId} />
     </HydrationBoundary>
   )

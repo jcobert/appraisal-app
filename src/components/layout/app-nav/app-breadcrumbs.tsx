@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { FC, useMemo } from 'react'
 import { useIsClient } from 'usehooks-ts'
 
+import { buildCrumbsFromSegments } from '@/utils/breadcrumbs'
+
 import { useBreadcrumbContext } from '@/providers/breadcrumbs/breadcrumb-context'
 
 import {
@@ -16,41 +18,33 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Skeleton } from '@/components/ui/skeleton'
 
-type CrumbMeta = { segment: string; name: string; path: string }
-
 export type AppBreadcrumbsProps = {
   segments: string[]
 }
 
-const buildCrumbs = (segments: string[]) => {
-  return segments?.reduce((prev, curr, i, arr) => {
-    const parentPath = arr?.slice(0, i)?.join('/')
-    const fullPath = `${i ? '/' : ''}${parentPath}/${curr}`
-    const crumb = {
-      segment: curr,
-      path: fullPath,
-      name: '',
-    } satisfies (typeof prev)[number]
-    const crumbs = prev.concat(crumb)
-    return crumbs
-  }, [] as CrumbMeta[])
-}
-
 const AppBreadcrumbs: FC<AppBreadcrumbsProps> = ({ segments }) => {
-  const crumbs = useMemo(() => buildCrumbs(segments), [segments])
-  const { crumbs: customCrumbs } = useBreadcrumbContext()
+  const { crumbs, hidden: hideAll } = useBreadcrumbContext()
   const isClient = useIsClient()
+
+  const breadcrumbs = useMemo(() => {
+    return (
+      crumbs?.length ? crumbs : buildCrumbsFromSegments(segments)
+    )?.filter((c) => !c?.hidden)
+  }, [crumbs, segments])
+
+  if (hideAll || !breadcrumbs?.length) return null
 
   return (
     <Breadcrumb className='max-md:hidden'>
       <BreadcrumbList>
-        {crumbs?.map((crumb, i) => {
-          const custom = customCrumbs?.find((c) => c?.path === crumb?.path)
-          const { name, path, segment } = custom || crumb || {}
+        {breadcrumbs?.map((crumb, i) => {
+          const { name, path, hidden, segment } = crumb
 
           const label = decodeURI(name || segment)
 
-          if (i === segments.length - 1) {
+          if (hidden) return null
+
+          if (i === breadcrumbs.length - 1) {
             return (
               <BreadcrumbItem key={path}>
                 {isClient ? (
