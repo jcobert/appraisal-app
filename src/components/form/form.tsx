@@ -87,13 +87,10 @@ const Form: FC<FormProps> = ({
         ref={formRef}
         onSubmit={onSubmitHandler}
         {...formProps}
-        className={cn(
-          { 'flex flex-col gap-8 max-sm:h-full': !unstyled },
-          className,
-        )}
+        className={cn({ 'flex flex-col gap-8': !unstyled }, className)}
       >
         {!unstyled ? (
-          <div className='flex flex-col gap-16 max-w-3xl self-center size-full border dark:border-gray-500 rounded bg-almost-white dark:bg-zinc-800 p-4 sm:p-6'>
+          <div className='flex flex-col gap-16 max-w-3xl self-center size-full border dark:border-gray-500 rounded bg-almost-white dark:bg-zinc-800 p-6'>
             {children}
           </div>
         ) : null}

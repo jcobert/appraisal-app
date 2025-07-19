@@ -270,7 +270,7 @@ const MemberInviteForm: FC<Props> = ({
               type='submit'
               // loading={isBusy}
             >
-              Send invitation
+              {isUpdate ? 'Save' : 'Send invitation'}
             </Button>
           </FormActionBar>
         </form>

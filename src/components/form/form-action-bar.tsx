@@ -41,8 +41,7 @@ const FormActionBar: FC<FormActionBarProps> = ({
   const positioned = position !== 'normal'
   const Comp = positioned ? StickyContainer : Fragment
 
-  const wrapperClassName =
-    'flex items-center justify-end w-full gap-6 max-sm:flex-col'
+  const wrapperClassName = 'flex items-center justify-end w-full gap-6'
 
   const actionBarProps = {
     ...(positioned

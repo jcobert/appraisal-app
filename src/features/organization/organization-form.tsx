@@ -102,10 +102,12 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
       </div>
 
       <FormActionBar>
-        <Button variant='outline' onClick={onCancel}>
+        <Button variant='outline' onClick={onCancel} className='max-sm:w-full'>
           Cancel
         </Button>
-        <Button type='submit'>{isUpdate ? 'Save' : 'Create'}</Button>
+        <Button type='submit' className='max-sm:w-full'>
+          {isUpdate ? 'Save' : 'Create'}
+        </Button>
       </FormActionBar>
     </Form>
   )
