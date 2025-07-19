@@ -93,7 +93,9 @@ describe('AppBreadcrumbs', () => {
       <AppBreadcrumbs segments={[]} />,
     )
 
-    expect(queryByRole('navigation')).not.toBeInTheDocument()
+    expect(
+      queryByRole('navigation', { name: 'breadcrumb' }),
+    ).not.toBeInTheDocument()
   })
 
   it('filters out hidden crumbs', () => {
@@ -125,5 +127,16 @@ describe('AppBreadcrumbs', () => {
     )
 
     expect(getByText('John Doe')).toBeInTheDocument()
+  })
+
+  it('hides breadcrumbs when only one segment is present', () => {
+    const singleSegment = ['dashboard']
+    const { queryByRole } = renderWithBreadcrumbContext(
+      <AppBreadcrumbs segments={singleSegment} />,
+    )
+
+    expect(
+      queryByRole('navigation', { name: 'breadcrumb' }),
+    ).not.toBeInTheDocument()
   })
 })

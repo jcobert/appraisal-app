@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { FC, useMemo } from 'react'
 import { useIsClient } from 'usehooks-ts'
 
+import { cn } from '@/lib/utils'
+
 import { buildCrumbsFromSegments } from '@/utils/breadcrumbs'
 
 import { useBreadcrumbContext } from '@/providers/breadcrumbs/breadcrumb-context'
@@ -32,10 +34,15 @@ const AppBreadcrumbs: FC<AppBreadcrumbsProps> = ({ segments }) => {
     )?.filter((c) => !c?.hidden)
   }, [crumbs, segments])
 
-  if (hideAll || !breadcrumbs?.length) return null
+  if (hideAll || !breadcrumbs?.length || breadcrumbs?.length < 2) return null
 
   return (
-    <Breadcrumb className='max-md:hidden'>
+    <Breadcrumb
+      className={cn(
+        'max-md:hidden',
+        'px-2 py-1 border rounded-md bg-sidebar/25 border-accent',
+      )}
+    >
       <BreadcrumbList>
         {breadcrumbs?.map((crumb, i) => {
           const { name, path, hidden, segment } = crumb
