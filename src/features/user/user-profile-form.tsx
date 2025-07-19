@@ -18,11 +18,12 @@ import { withoutBlanks } from '@/utils/general'
 import { toastyRequest } from '@/utils/toast'
 
 import Form from '@/components/form/form'
+import FormActionBar from '@/components/form/form-action-bar'
 import PatternInput from '@/components/form/inputs/pattern-input'
 import TextInput from '@/components/form/inputs/text-input'
 import Banner from '@/components/general/banner'
-import Button from '@/components/general/button'
 import Confirmation from '@/components/layout/confirmation'
+import { Button } from '@/components/ui/button'
 
 import useZodForm from '@/hooks/use-zod-form'
 
@@ -215,9 +216,9 @@ const UserProfileForm: FC<Props> = ({
         </div>
 
         {!readOnly ? (
-          <div className='flex max-sm:flex-col justify-end items-center gap-6 mt-auto'>
+          <FormActionBar>
             <Button
-              variant={registration ? 'tertiary' : 'secondary'}
+              variant={registration ? 'ghost' : 'outline'}
               onClick={onCancel}
             >
               {registration ? 'Set up later' : 'Cancel'}
@@ -225,11 +226,11 @@ const UserProfileForm: FC<Props> = ({
             <Button type='submit' loading={isPending} disabled={readOnly}>
               {isUpdate ? 'Save' : 'Create'}
             </Button>
-          </div>
+          </FormActionBar>
         ) : (
-          <div className='flex max-sm:flex-col justify-end items-center gap-6 mt-auto'>
+          <FormActionBar>
             <Button onClick={onCancel}>Done</Button>
-          </div>
+          </FormActionBar>
         )}
       </div>
 

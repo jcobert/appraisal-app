@@ -9,7 +9,7 @@ type Props = {
 }
 
 const OrganizationCard: FC<Props> = ({ organization }) => {
-  const { name, id } = organization || {}
+  const { name, id, avatar } = organization || {}
 
   return (
     <Link
@@ -18,11 +18,12 @@ const OrganizationCard: FC<Props> = ({ organization }) => {
     >
       <div className='flex gap-4 items-center'>
         <Avatar
+          image={avatar}
           name={name}
-          size='sm'
           // className='group-hover:border-brand-dark transition'
-          textClassName='group-hover:text-brand-dark transition'
+          // textClassName='group-hover:text-brand-dark transition'
         />
+
         <span className='group-hover:text-brand-dark group-hover:dark:text-brand-extra-light transition text-lg'>
           {name}
         </span>

@@ -14,9 +14,9 @@ import { toastyRequest } from '@/utils/toast'
 
 import PatternInput from '@/components/form/inputs/pattern-input'
 import TextInput from '@/components/form/inputs/text-input'
-import Button from '@/components/general/button'
 import Alert from '@/components/layout/alert'
 import Heading from '@/components/layout/heading'
+import { Button } from '@/components/ui/button'
 
 import useZodForm from '@/hooks/use-zod-form'
 
@@ -187,8 +187,7 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
               description={`${fullName(initialData?.firstName, initialData?.lastName)} will be permanently deleted.`}
               trigger={
                 <Button
-                  variant='tertiary'
-                  color='danger'
+                  variant='destructive'
                   inert={isPending || deleteAppraiser.isSuccess}
                 >
                   Delete
@@ -200,7 +199,7 @@ const AppraiserForm: FC<Props> = ({ initialData }) => {
               triggerWrapperClassName='sm:mr-auto'
             />
           ) : null}
-          <Button variant='secondary' onClick={onCancel}>
+          <Button variant='outline' onClick={onCancel}>
             Cancel
           </Button>
           <Button

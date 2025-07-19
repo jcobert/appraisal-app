@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 import { FiUserPlus } from 'react-icons/fi'
 
-import Button from '@/components/general/button'
+import { Button } from '@/components/ui/button'
 
 import AppraisersList from '@/features/appraiser/appraisers-list'
 import { useGetAppraisers } from '@/features/appraiser/hooks/use-get-appraisers'
@@ -18,7 +18,7 @@ const AppraisersPage: FC = () => {
       {/* Toolbar */}
       <div className='flex justify-end'>
         <Button
-          variant='secondary'
+          variant='outline'
           onClick={() => router.push('/appraisers/create')}
         >
           <FiUserPlus />

@@ -1,21 +1,16 @@
 'use client'
 
 import { Organization, User } from '@prisma/client'
-import { sortBy } from 'lodash'
-import { FC, useEffect, useMemo } from 'react'
+import Link from 'next/link'
+import { FC } from 'react'
 import { IoAdd } from 'react-icons/io5'
 
 import { greeting } from '@/utils/string'
 
-import SelectInput, {
-  SelectOption,
-} from '@/components/form/inputs/select-input'
 import Banner from '@/components/general/banner'
-import Link from '@/components/general/link'
 import NoResults from '@/components/general/no-results'
 import Heading from '@/components/layout/heading'
-
-import { useStoredSettings } from '@/hooks/use-stored-settings'
+import { Button } from '@/components/ui/button'
 
 type Props = {
   user: User | null
@@ -25,35 +20,6 @@ type Props = {
 const Dashboard: FC<Props> = ({ user, organizations }) => {
   const hasOrgs = !!organizations?.length
 
-  const { settings, updateSettings } = useStoredSettings()
-
-  const organizationOptions = useMemo(() => {
-    if (!hasOrgs) return []
-    return sortBy(
-      organizations?.map(
-        (org) => ({ label: org?.name, value: org?.id }) satisfies SelectOption,
-      ),
-      (opt) => opt?.label,
-    )
-  }, [organizations])
-
-  const selectedOrganization = useMemo(() => {
-    if (!organizationOptions?.length) return undefined
-    return organizationOptions?.find(
-      (opt) => opt?.value === settings?.activeOrg,
-    )
-  }, [settings?.activeOrg, organizationOptions])
-
-  // Update local storage with first org on load, if none exists.
-  useEffect(() => {
-    if (!settings?.activeOrg || !selectedOrganization) {
-      updateSettings({
-        ...settings,
-        activeOrg: organizationOptions?.[0]?.value,
-      })
-    }
-  }, [selectedOrganization])
-
   return (
     <div>
       <div className='flex md:items-start md:justify-between max-md:flex-col gap-6 flex-wrap'>
@@ -61,20 +27,6 @@ const Dashboard: FC<Props> = ({ user, organizations }) => {
           className='max-md:mx-auto flex-none'
           text={greeting(user?.firstName)}
         />
-        {hasOrgs ? (
-          <SelectInput
-            id='organization'
-            label='Organization'
-            ariaLabel='Organization'
-            placeholder='Select organization...'
-            className='md:w-fit md:min-w-64'
-            options={organizationOptions}
-            value={selectedOrganization ?? null}
-            onChange={(opt) =>
-              updateSettings({ ...settings, activeOrg: opt?.value })
-            }
-          />
-        ) : null}
       </div>
 
       <section>
@@ -85,14 +37,12 @@ const Dashboard: FC<Props> = ({ user, organizations }) => {
               subtitle='Get started by creating one now.'
               actions={
                 <div className='flex flex-col items-center gap-8'>
-                  <Link
-                    href='/organizations/create'
-                    variant='primary'
-                    className='not-prose'
-                  >
-                    <IoAdd />
-                    Create organization
-                  </Link>
+                  <Button asChild className='not-prose'>
+                    <Link href='/organizations/create'>
+                      <IoAdd />
+                      Create organization
+                    </Link>
+                  </Button>
                   <Banner className='max-w-md'>
                     Invited to an organization by someone else? Follow the link
                     in the invitation email to get started.

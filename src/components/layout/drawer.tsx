@@ -1,51 +1,61 @@
-import * as Dialog from '@radix-ui/react-dialog'
-import { FC } from 'react'
-import { CgClose } from 'react-icons/cg'
+import { ComponentPropsWithoutRef, FC, ReactNode } from 'react'
 
-import { cn } from '@/utils/style'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 
-import { ModalProps } from '@/components/layout/modal'
+export type DrawerProps = {
+  children?: ReactNode
+  trigger?: ReactNode
+  className?: string
+  title?: ReactNode
+  description?: string
+  preventOutsideClose?: boolean
+} & Omit<ComponentPropsWithoutRef<typeof Sheet>, 'children'> &
+  Pick<ComponentPropsWithoutRef<typeof SheetContent>, 'side'>
 
-type Props = ModalProps & {
-  overlay?: boolean
-}
-
-const Drawer: FC<Props> = ({
+const Drawer: FC<DrawerProps> = ({
   children,
   trigger,
-  open,
-  onOpenChange,
-  closeButton = true,
-  className = '',
-  overlay = true,
+  className,
+  title,
+  description,
+  preventOutsideClose = false,
+  side,
+  ...rootProps
 }) => {
   return (
     <>
-      <Dialog.Root open={open} onOpenChange={onOpenChange} modal>
-        {!!trigger && <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>}
-        <Dialog.Portal>
-          {overlay ? (
-            <Dialog.Overlay className='fixed inset-0 bg-black/60' />
-          ) : null}
-          <Dialog.Content
-            className={cn([
-              'fixed top-0 left-0 overflow-auto w-full shadow sm:rounded-md bg-background z-50',
-              className,
-            ])}
-          >
-            <Dialog.Title></Dialog.Title>
-            {closeButton && (
-              <Dialog.Close
-                className='absolute top-2 right-2 p-2'
-                aria-label='Close'
-              >
-                <CgClose className='text-2xl rounded outline__ outline-2 outline-almost-black' />
-              </Dialog.Close>
-            )}
-            {children}
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+      <Sheet {...rootProps}>
+        {trigger ? <SheetTrigger asChild>{trigger}</SheetTrigger> : null}
+        <SheetContent
+          onInteractOutside={(e) => {
+            if (preventOutsideClose) {
+              e.preventDefault()
+            }
+          }}
+          onEscapeKeyDown={(e) => {
+            if (preventOutsideClose) {
+              e.preventDefault()
+            }
+          }}
+          side={side}
+          className={className}
+        >
+          <SheetHeader>
+            <SheetTitle>{title}</SheetTitle>
+            <SheetDescription className='sr-only'>
+              {description}
+            </SheetDescription>
+          </SheetHeader>
+          {children}
+        </SheetContent>
+      </Sheet>
     </>
   )
 }

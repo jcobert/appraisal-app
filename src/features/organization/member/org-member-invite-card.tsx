@@ -48,6 +48,8 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
             closeModal()
           }
         }}
+        primaryButtonText='Yes, continue'
+        cancelButtonText='Never mind'
       />
       {editOpen ? (
         <MemberInviteForm

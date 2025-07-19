@@ -12,9 +12,9 @@ import FieldError from '@/components/form/field-error'
 import FieldLabel from '@/components/form/field-label'
 import FormActionBar from '@/components/form/form-action-bar'
 import TextInput from '@/components/form/inputs/text-input'
-import Button from '@/components/general/button'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 import Modal, { ModalProps } from '@/components/layout/modal'
+import { Button } from '@/components/ui/button'
 
 import { useDisableInteraction } from '@/hooks/use-disable-interaction'
 import useZodForm from '@/hooks/use-zod-form'
@@ -120,7 +120,6 @@ const MemberInviteForm: FC<Props> = ({
     setIsBusy(false)
   }
 
-  // const [formOpen, setFormOpen] = useState(false)
   const [isBusy, setIsBusy] = useState(false)
 
   useDisableInteraction({ disable: isBusy })
@@ -129,17 +128,14 @@ const MemberInviteForm: FC<Props> = ({
     <>
       {isBusy ? <FullScreenLoader /> : null}
       <Modal
-        // open={formOpen}
         open={open}
         onOpenChange={(newOpen) => {
-          // setFormOpen(newOpen)
           onOpenChange(newOpen)
           onClose()
         }}
         title='Invite to Organization'
         description='A form for inviting a new member to this organization.'
         preventOutsideClose
-        // trigger={<Button variant='secondary'>Add member</Button>}
         {...modalProps}
       >
         <form
@@ -262,7 +258,7 @@ const MemberInviteForm: FC<Props> = ({
 
           <FormActionBar className='mt-4'>
             <Button
-              variant='secondary'
+              variant='outline'
               onClick={() => {
                 onOpenChange(false)
                 onClose()
@@ -274,7 +270,7 @@ const MemberInviteForm: FC<Props> = ({
               type='submit'
               // loading={isBusy}
             >
-              Send invitation
+              {isUpdate ? 'Save' : 'Send invitation'}
             </Button>
           </FormActionBar>
         </form>

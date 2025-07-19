@@ -8,11 +8,14 @@ import { FaGear } from 'react-icons/fa6'
 import { fullName } from '@/utils/string'
 
 import Back from '@/components/general/back'
-import Button from '@/components/general/button'
-import DropdownMenu, {
-  DropdownMenuItem,
-} from '@/components/layout/dropdown-menu'
 import Heading from '@/components/layout/heading'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 import { useProtectPage } from '@/hooks/use-protect-page'
 
@@ -50,23 +53,21 @@ const AppraiserPage: FC<Props> = ({ appraiserId }) => {
             className='h-px w-1/2 border-b-2 border-brand-extra-light max-md:hidden'
           />
         </div>
-        <DropdownMenu
-          trigger={
-            <Button
-              variant='secondary'
-              className='p-2 min-w-0 size-fit max-md:ml-auto'
-            >
-              <FaGear className='text-lg' />
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant='outline' size='icon' className='max-md:ml-auto'>
+              <FaGear className='text-2xl sm:text-lg' />
             </Button>
-          }
-        >
-          <DropdownMenuItem
-            onSelect={() => {
-              router.push(`${pathname}/edit`)
-            }}
-          >
-            Edit Appraiser
-          </DropdownMenuItem>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              onSelect={() => {
+                router.push(`${pathname}/edit`)
+              }}
+            >
+              Edit Appraiser
+            </DropdownMenuItem>
+          </DropdownMenuContent>
         </DropdownMenu>
       </div>
     </div>

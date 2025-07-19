@@ -5,8 +5,9 @@ import { getActiveUserProfile } from '@/lib/db/queries/user'
 
 import AuthLink from '@/components/auth/auth-link'
 import UserMenu from '@/components/layout/header/user-menu'
-import DesktopNav from '@/components/layout/nav/desktop-nav'
-import MobileNav from '@/components/layout/nav/mobile-nav'
+import DesktopNav from '@/components/layout/site-nav/desktop-nav'
+import MobileNav from '@/components/layout/site-nav/mobile-nav'
+import { Button } from '@/components/ui/button'
 
 import { SessionData } from '@/types/auth'
 
@@ -47,7 +48,11 @@ const Header: FC = async () => {
         // navItems={loggedIn ? [] : navItems}
       >
         <div className='ml-auto flex items-center gap-8'>
-          {!loggedIn ? <AuthLink loggedIn={loggedIn} type='register' /> : null}
+          {!loggedIn ? (
+            <Button asChild>
+              <AuthLink loggedIn={loggedIn} type='register' />
+            </Button>
+          ) : null}
           <UserMenu sessionData={sessionData} />
         </div>
       </DesktopNav>

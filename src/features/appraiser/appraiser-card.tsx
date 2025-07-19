@@ -22,9 +22,8 @@ const AppraiserCard: FC<Props> = ({ appraiser }) => {
       <div className='flex gap-4 items-center'>
         <Avatar
           name={name}
-          size='sm'
           // className='group-hover:border-brand-dark transition'
-          textClassName='group-hover:text-brand-dark transition'
+          // textClassName='group-hover:text-brand-dark transition'
         />
         <span className='group-hover:text-brand-dark transition text-lg'>
           {name}

@@ -39,7 +39,7 @@ const Page: FC<Props> = async () => {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className='max-md:mt-4 flex flex-col gap-2'>
+      <div className='flex flex-col gap-4'>
         <Heading text='Organizations' />
         <OrganizationsPage />
       </div>

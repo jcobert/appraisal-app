@@ -7,12 +7,12 @@ import { FaAngleUp } from 'react-icons/fa6'
 import { filterProtectedNavItems } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
-import LogoLink from '@/components/layout/nav/logo-link'
-import NavLink from '@/components/layout/nav/nav-link'
+import LogoLink from '@/components/general/logo-link'
+import NavLink from '@/components/layout/site-nav/nav-link'
 
 import { SessionData } from '@/types/auth'
 
-import { NAVIGATION_ITEMS } from '@/configuration/nav'
+import { SITE_NAVIGATION_ITEMS } from '@/configuration/site-nav'
 
 type Props = {
   sessionData: Partial<SessionData>
@@ -29,7 +29,7 @@ const DesktopNav: FC<Props> = ({
 }) => {
   const navItems = loggedIn
     ? []
-    : filterProtectedNavItems(NAVIGATION_ITEMS, loggedIn)
+    : filterProtectedNavItems(SITE_NAVIGATION_ITEMS, loggedIn)
 
   return (
     <header

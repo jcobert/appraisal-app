@@ -3,9 +3,9 @@
 import React, { FC, ReactNode, useState } from 'react'
 
 import FormActionBar from '@/components/form/form-action-bar'
-import Button from '@/components/general/button'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 import Modal, { ModalProps } from '@/components/layout/modal'
+import { Button } from '@/components/ui/button'
 
 import { useDisableInteraction } from '@/hooks/use-disable-interaction'
 
@@ -27,6 +27,7 @@ export type ConfirmationProps = {
   /** How to display loading indicator while `onConfirm` is running. Default is `"button"`. */
   loader?: 'fullscreen' | 'button' | 'none'
   primaryButtonText?: string
+  cancelButtonText?: string
 } & Pick<ModalProps, 'open' | 'onOpenChange' | 'preventOutsideClose'>
 
 const Confirmation: FC<ConfirmationProps> = ({
@@ -40,6 +41,7 @@ const Confirmation: FC<ConfirmationProps> = ({
   loader = 'button',
   preventOutsideClose = true,
   primaryButtonText = 'OK',
+  cancelButtonText = 'Cancel',
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isBusy, setIsBusy] = useState(false)
@@ -69,7 +71,7 @@ const Confirmation: FC<ConfirmationProps> = ({
           {description}
           <FormActionBar>
             <Button
-              variant='secondary'
+              variant='outline'
               onClick={() => {
                 if (isBusy) return
                 onCancel?.()
@@ -77,7 +79,7 @@ const Confirmation: FC<ConfirmationProps> = ({
               }}
               disabled={isBusy}
             >
-              Cancel
+              {cancelButtonText}
             </Button>
             <Button
               onClick={async () => {
@@ -90,6 +92,7 @@ const Confirmation: FC<ConfirmationProps> = ({
                 setIsBusy(false)
               }}
               loading={isBusy}
+              disabled={isBusy}
             >
               {primaryButtonText}
             </Button>

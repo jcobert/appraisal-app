@@ -23,12 +23,6 @@ export const useNavigationMenu = () => {
     setIsMenuOpen(false)
   }, [pathname])
 
-  /**
-   * Returns whether provided path is the active path.
-   * Dynamic routes are treated as a match.
-   *
-   * E.g. `"/shop/pants"` (provided path) will match `"/shop/[item]"` (router pathname)
-   */
   const isActivePath = (path?: string) => {
     if (path === '/') return path === pathname
 
@@ -52,7 +46,6 @@ export const useNavigationMenu = () => {
     return (!!path && staticPath?.startsWith(path)) || isDynamicMatch
   }
 
-  /** Returns whether nav item (or one of it's inner menu links) contains the active path. */
   const isActiveItem = (item: NavItem) => {
     return (
       isActivePath(item?.url) ||
@@ -61,7 +54,14 @@ export const useNavigationMenu = () => {
   }
 
   return {
+    /** Returns whether nav item (or one of it's inner menu links) contains the active path. */
     isActiveItem,
+    /**
+     * Returns whether provided path is the active path.
+     * Dynamic routes are treated as a match.
+     *
+     * E.g. `"/shop/pants"` (provided path) will match `"/shop/[item]"` (router pathname)
+     */
     isActivePath,
     isMenuOpen,
     setIsMenuOpen,

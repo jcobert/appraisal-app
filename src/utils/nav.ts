@@ -1,9 +1,9 @@
-import { HTMLProps, ReactNode } from 'react'
+import { HTMLProps } from 'react'
 import { IconType } from 'react-icons'
 
 export type NavLink = {
   id: string
-  name: ReactNode
+  name: string
   url: string
   /** Whether route is protected by authentication. */
   protected: boolean
