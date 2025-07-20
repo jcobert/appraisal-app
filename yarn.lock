@@ -2344,7 +2344,7 @@
   resolved "https://registry.yarnpkg.com/@js-sdsl/ordered-map/-/ordered-map-4.4.2.tgz#9299f82874bab9e4c7f9c48d865becbfe8d6907c"
   integrity sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==
 
-"@kinde-oss/kinde-auth-nextjs@^2.8.3":
+"@kinde-oss/kinde-auth-nextjs@2.8.3":
   version "2.8.3"
   resolved "https://registry.yarnpkg.com/@kinde-oss/kinde-auth-nextjs/-/kinde-auth-nextjs-2.8.3.tgz#855d8b60ded1d3e3cb613589f47de4c094576e58"
   integrity sha512-+L1rSoF+OXW0KyeHuV4N7dPy0UmkqqMyugAwls4MgckbIJfElrdSuKXkU7ziPHZ2ZpB7d7/Y3vZVkZQi/gxNRA==

@@ -47,7 +47,7 @@ const AppBreadcrumbs: FC<AppBreadcrumbsProps> = ({ segments }) => {
         {breadcrumbs?.map((crumb, i) => {
           const { name, path, hidden, segment } = crumb
 
-          const label = decodeURI(name || segment)
+          const label = decodeURIComponent(name || segment)
 
           if (hidden) return null
 

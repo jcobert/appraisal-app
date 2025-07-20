@@ -1,5 +1,6 @@
 import { isAfter, isValid } from 'date-fns'
 
+/** Returns an ISO date string, the specified number of days in the future. */
 export const generateExpiry = (days: number) => {
   const now = new Date()
   const expiryDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000)

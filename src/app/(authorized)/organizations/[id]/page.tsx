@@ -5,7 +5,7 @@ import { FC } from 'react'
 
 import { getOrganization, userIsMember } from '@/lib/db/queries/organization'
 
-import { authRedirectUrl, protectPage } from '@/utils/auth'
+import { authUrl, protectPage } from '@/utils/auth'
 import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
@@ -28,7 +28,10 @@ const Page: FC<Props> = async ({ params }) => {
 
   /** @TODO redirect to a generic "you must sign in to access this" page rather than directly to login? */
   await protectPage({
-    redirectUrl: authRedirectUrl(`/organizations/${organizationId}`),
+    redirectUrl: authUrl({
+      type: 'login',
+      redirectTo: `/organizations/${organizationId}`,
+    }),
   })
 
   const isMember = await userIsMember({ organizationId })
