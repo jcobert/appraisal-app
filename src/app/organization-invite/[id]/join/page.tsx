@@ -1,14 +1,20 @@
 import { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import { FC } from 'react'
 
 import { getOrgInvitation } from '@/lib/db/queries/organization'
+import {
+  addLogoutRedirectUrls,
+  deleteLogoutRedirectUrl,
+} from '@/lib/kinde-management/queries'
 
-import { isAllowedServer } from '@/utils/auth'
+import { authUrl, isAllowedServer } from '@/utils/auth'
 import { fullName } from '@/utils/string'
 
 import AuthLink from '@/components/auth/auth-link'
 import Banner from '@/components/general/banner'
 import PageLayout from '@/components/layout/page-layout'
+import { Button } from '@/components/ui/button'
 
 import { PageParams } from '@/types/general'
 
@@ -16,7 +22,7 @@ import { generatePageMeta } from '@/configuration/seo'
 import OrgJoinForm from '@/features/organization/invitation/org-join-form'
 import { getOrgInviteUrl } from '@/features/organization/utils'
 
-type Props = PageParams<{ id: string }, { inv: string }>
+type Props = PageParams<{ id: string }, { inv: string; redirect: string }>
 
 export const metadata: Metadata = generatePageMeta({
   title: 'Organizations',
@@ -28,14 +34,17 @@ const errorMessage =
   "We're sorry. This link is not valid.\nIf you were invited to join an organization, the link may have expired. Please contact the owner of the organization."
 
 const Page: FC<Props> = async ({ params, searchParams }) => {
-  const organizationId = (await params)?.id
-  const inviteToken = (await searchParams)?.inv || ''
+  const organizationId = decodeURIComponent((await params)?.id)
+  const query = await searchParams
+  const inviteToken = decodeURIComponent(query?.inv || '')
+  const isRedirect = !!query?.redirect
 
-  /**
-   * @todo
-   * Log out user or require acct confirmation before invite can be accepted?
-   * Want to make sure not joining with an unintended user acct that's already logged in.
-   */
+  const { allowed: loggedIn } = await isAllowedServer()
+
+  const postLoginRedirect = getOrgInviteUrl({
+    organizationId,
+    inviteToken,
+  })
 
   const invitation = await getOrgInvitation(
     {
@@ -44,13 +53,27 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
     { publicAccess: true },
   )
 
-  const { allowed: loggedIn } = await isAllowedServer()
-
-  const postLoginRedirect = getOrgInviteUrl({
-    organizationId,
-    inviteToken,
-    absolute: false,
-  })
+  // Log out user before invite can be accepted.
+  // Want to make sure not joining with an unintended user account that's already logged in.
+  if (invitation) {
+    const redirectUrl = `${postLoginRedirect?.absolute}&redirect=true`
+    if (loggedIn) {
+      // Add this url to Kinde whitelist.
+      const res = await addLogoutRedirectUrls([redirectUrl])
+      // Logout and redirect back to this page.
+      if (res) {
+        redirect(
+          authUrl({
+            type: 'logout',
+            redirectTo: redirectUrl,
+          }),
+        )
+      }
+    } else if (isRedirect) {
+      // After redirect, clean up by deleting url from Kinde.
+      await deleteLogoutRedirectUrl(redirectUrl)
+    }
+  }
 
   if (!invitation) {
     return (
@@ -95,9 +118,14 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
               Before you can join you will need an account. Click continue to
               register or sign in.
             </p>
-            <AuthLink type='register' postLoginRedirectURL={postLoginRedirect}>
-              Continue
-            </AuthLink>
+            <Button asChild>
+              <AuthLink
+                type='register'
+                postLoginRedirectURL={postLoginRedirect?.local}
+              >
+                Continue
+              </AuthLink>
+            </Button>
 
             {/* <Confirmation>
             <Button

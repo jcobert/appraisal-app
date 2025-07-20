@@ -93,8 +93,7 @@ export const POST = async (
     const inviteLink = getOrgInviteUrl({
       organizationId,
       inviteToken,
-      absolute: true,
-    })
+    })?.absolute
 
     const { error: resendError } = await resend.emails.send({
       from: 'PrizmaTrack <noreply@notifications.prizmatrack.com>',

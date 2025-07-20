@@ -5,6 +5,7 @@ import {
   Identities,
   UpdateUserData,
   Users,
+  Callbacks,
   init,
 } from '@kinde/management-api-js'
 
@@ -12,6 +13,44 @@ import { kindeManagementConfig } from '@/lib/kinde-management/config'
 import { KindeIdentityType } from '@/lib/kinde-management/types'
 
 import { getActiveUserAccount } from '@/utils/auth'
+
+export const addLogoutRedirectUrls = async (urls: string[]) => {
+  if (!process.env.KINDE_CLIENT_ID) {
+    throw new Error('Missing environment variable: KINDE_CLIENT_ID')
+  }
+  if (!urls?.length) return null
+  try {
+    init(kindeManagementConfig)
+    const res = await Callbacks.addLogoutRedirectUrLs({
+      appId: process.env.KINDE_CLIENT_ID,
+      requestBody: { urls },
+    })
+    return res
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(err)
+    return null
+  }
+}
+
+export const deleteLogoutRedirectUrl = async (url: string) => {
+  if (!process.env.KINDE_CLIENT_ID) {
+    throw new Error('Missing environment variable: KINDE_CLIENT_ID')
+  }
+  if (!url) return null
+  try {
+    init(kindeManagementConfig)
+    const res = await Callbacks.deleteLogoutUrLs({
+      appId: process.env.KINDE_CLIENT_ID,
+      urls: url,
+    })
+    return res
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(err)
+    return null
+  }
+}
 
 export const getUserIdentities = async (options?: {
   type?: KindeIdentityType

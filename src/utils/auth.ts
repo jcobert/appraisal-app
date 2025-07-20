@@ -107,7 +107,20 @@ export const getSessionData = async (): Promise<SessionData> => {
   return { user, loggedIn, permissions, profile, organizations }
 }
 
-/** Returns the auth login route with the provided `url` as the redirect param. */
-export const authRedirectUrl = (url: string) => {
-  return `/api/auth/login?post_login_redirect_url=${url}`
+/** Returns the auth login/logout route with the optional `redirect` query param. */
+export const authUrl = ({
+  type = 'login',
+  redirectTo,
+  absolute = false,
+}: {
+  type: 'login' | 'logout'
+  redirectTo?: string
+  absolute?: boolean
+}) => {
+  if (!type) throw new Error('Missing auth type ("login" or "logout").')
+  const basePath = `${absolute ? process.env.NEXT_PUBLIC_SITE_BASE_URL : ''}/api/auth/${type}`
+  const query = redirectTo
+    ? `?post_${type}_redirect_url=${encodeURIComponent(redirectTo)}`
+    : ''
+  return `${basePath}${query}`
 }

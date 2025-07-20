@@ -3,14 +3,16 @@ import { MemberRole } from '@prisma/client'
 export const getOrgInviteUrl = ({
   organizationId,
   inviteToken,
-  absolute = true,
 }: {
   organizationId: string
   inviteToken: string
-  absolute?: boolean
-}) => {
-  if (!organizationId || !inviteToken) return ''
-  return `${absolute ? process.env.NEXT_PUBLIC_SITE_BASE_URL : ''}/organization-invite/${organizationId}/join?inv=${inviteToken}`
+}): { local: string; absolute: string } => {
+  if (!organizationId || !inviteToken) return { local: '', absolute: '' }
+  const path = `/organization-invite/${organizationId}/join?inv=${inviteToken}`
+  return {
+    local: path,
+    absolute: `${process.env.NEXT_PUBLIC_SITE_BASE_URL}${path}`,
+  }
 }
 
 export const ORG_MEMBER_ROLES = [

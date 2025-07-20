@@ -26,9 +26,10 @@ const Page: FC<Props> = async ({ params }) => {
 
   /** @TODO redirect to a generic "you must sign in to access this" page rather than directly to login? */
   await protectPage({
-    redirectUrl: authRedirectUrl(
-      `/organizations/${organizationId}/members/${memberId}`,
-    ),
+    redirectUrl: authRedirectUrl({
+      type: 'login',
+      redirectTo: `/organizations/${organizationId}/members/${memberId}`,
+    }),
   })
 
   const isMember = await userIsMember({ organizationId })
