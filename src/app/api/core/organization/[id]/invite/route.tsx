@@ -61,7 +61,7 @@ export const POST = async (
     const org = await getOrganization({ organizationId })
 
     const inviteToken = generateUniqueToken()
-    const expires = generateExpiry(30)
+    const expires = generateExpiry(7)
 
     const invite = await createOrgInvitation({
       data: {
