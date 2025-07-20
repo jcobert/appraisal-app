@@ -49,6 +49,8 @@ export const registerUserProfile = async (
   const user = await session.getUser()
   const currentProfile = await getActiveUserProfile()
 
+  if (!user) return null
+
   // User profile already exists. Redirect to landing page.
   if (!!currentProfile) {
     if (!redirectIfExists) return
@@ -57,7 +59,7 @@ export const registerUserProfile = async (
 
   const res = await db.user.create({
     data: {
-      accountId: user.id,
+      accountId: user?.id,
       createdBy: user?.id,
       updatedBy: user?.id,
       firstName: user?.given_name || '',

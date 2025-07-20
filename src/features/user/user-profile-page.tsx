@@ -1,19 +1,20 @@
-import { identity } from '@kinde/management-api-js'
+import { type identity } from '@kinde/management-api-js'
 import { User } from '@prisma/client'
 import { FC } from 'react'
 
 import { KindeIdentityType } from '@/lib/kinde-management/types'
 import { getUserIdentityComposition } from '@/lib/kinde-management/utils'
 
-import UserProfileForm from '@/features/user/user-profile-form'
 import Heading from '@/components/layout/heading'
 
 import { SessionUser } from '@/types/auth'
 
+import UserProfileForm from '@/features/user/user-profile-form'
+
 type Props = {
   sessionUser: SessionUser
   userProfile: User | null
-  identities?: identity[]
+  identities?: identity[] | null
 }
 
 const UserProfilePage: FC<Props> = ({

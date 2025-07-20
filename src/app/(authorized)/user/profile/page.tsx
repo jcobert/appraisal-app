@@ -19,7 +19,7 @@ const Page: FC<Props> = async () => {
 
   const userProfile = await getUserProfile({ where: { accountId: user?.id } })
 
-  if (!userProfile) {
+  if (!user || !userProfile) {
     redirect('/dashboard')
   }
 

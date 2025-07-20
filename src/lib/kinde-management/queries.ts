@@ -19,6 +19,7 @@ export const getUserIdentities = async (options?: {
   init(kindeManagementConfig)
   const { type } = options || {}
   const userId = (await getActiveUserAccount())?.id
+  if (!userId) return null
   const res = await Users.getUserIdentities({ userId })
   if (!type) return res?.identities || []
   const identities = res?.identities?.filter((id) => id?.type === type)
@@ -35,10 +36,12 @@ export const getUserIdentities = async (options?: {
 export const updateAuthEmail = async (newEmail: string) => {
   init(kindeManagementConfig)
   const identities = await getUserIdentities()
-  const { email, id: userId } = await getActiveUserAccount()
+  const userAccount = await getActiveUserAccount()
 
   // If no active user account info, abort.
-  if (!identities?.length) return null
+  if (!identities?.length || !userAccount) return null
+
+  const { email, id: userId } = userAccount || {}
 
   // Find current email identity.
   const currentIdentity = identities?.find(
@@ -77,7 +80,7 @@ export const updateAuthAccount = async (
   newUser: UpdateUserData['requestBody'],
 ) => {
   init(kindeManagementConfig)
-  const { id } = await getActiveUserAccount()
+  const { id } = (await getActiveUserAccount()) || {}
   if (!id || !newUser || typeof newUser !== 'object') return null
   const res = await Users.updateUser({ id, requestBody: newUser })
   await Users.refreshUserClaims({ userId: id })

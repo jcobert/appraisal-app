@@ -1,6 +1,11 @@
-import { KindePermissions } from '@kinde-oss/kinde-auth-nextjs/dist/types'
+import { KindePermissions } from '@kinde-oss/kinde-auth-nextjs'
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { redirect } from 'next/navigation'
+
+import { getUserOrganizations } from '@/lib/db/queries/organization'
+import { getActiveUserProfile } from '@/lib/db/queries/user'
+
+import { SessionData } from '@/types/auth'
 
 export enum Permission {
   read = 'Read',
@@ -86,6 +91,20 @@ export const getActiveUserAccount = async () => {
   const session = getKindeServerSession()
   const user = await session.getUser()
   return user
+}
+
+/** Returns user session data, both from Kinde auth and DB. */
+export const getSessionData = async (): Promise<SessionData> => {
+  const session = getKindeServerSession()
+  const { getUser, isAuthenticated, getPermissions } = session
+  // From Kinde DB
+  const user = await getUser()
+  const loggedIn = !!(await isAuthenticated())
+  const permissions = await getPermissions()
+  // From core DB
+  const profile = await getActiveUserProfile()
+  const organizations = await getUserOrganizations()
+  return { user, loggedIn, permissions, profile, organizations }
 }
 
 /** Returns the auth login route with the provided `url` as the redirect param. */
