@@ -1,7 +1,4 @@
-import {
-  KindePermissions,
-  KindeUser,
-} from '@kinde-oss/kinde-auth-nextjs/dist/types'
+import { KindePermissions, KindeUser } from '@kinde-oss/kinde-auth-nextjs'
 import { Organization, User } from '@prisma/client'
 
 /** Session user data provided by Kinde. */

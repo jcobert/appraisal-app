@@ -37,7 +37,7 @@ type Props = {
 const AppSidebarCore: FC<Props> = ({ sessionData }) => {
   const { loggedIn, organizations } = sessionData || {}
 
-  const navItems = filterProtectedNavItems(APP_NAVIGATION_ITEMS, loggedIn)
+  const navItems = filterProtectedNavItems(APP_NAVIGATION_ITEMS, !!loggedIn)
 
   const { open, openMobile } = useSidebar()
   const { isActiveItem } = useNavigationMenu()
