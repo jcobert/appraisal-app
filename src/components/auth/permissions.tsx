@@ -1,4 +1,4 @@
-import { KindePermissions } from '@kinde-oss/kinde-auth-nextjs'
+import { KindePermissions } from '@kinde-oss/kinde-auth-nextjs/types'
 import { FC } from 'react'
 import { FaCircleCheck, FaRegCircleXmark } from 'react-icons/fa6'
 

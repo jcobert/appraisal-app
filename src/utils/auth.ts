@@ -1,5 +1,5 @@
-import { KindePermissions } from '@kinde-oss/kinde-auth-nextjs'
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
+import { KindePermissions } from '@kinde-oss/kinde-auth-nextjs/types'
 import { redirect } from 'next/navigation'
 
 import { getUserOrganizations } from '@/lib/db/queries/organization'
