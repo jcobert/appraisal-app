@@ -50,7 +50,9 @@ const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
   const selectOrg = useCallback(
     (org?: typeof selectedOrganization) => {
       const newOrg = org || organizationOptions?.[0]
-      updateSettings({ activeOrg: newOrg?.id })
+      if (newOrg) {
+        updateSettings({ activeOrg: newOrg?.id })
+      }
     },
     [updateSettings, organizationOptions],
   )
