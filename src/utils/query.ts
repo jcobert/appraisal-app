@@ -1,14 +1,19 @@
-import { QueryClient, QueryKey } from '@tanstack/react-query'
+import { QueryClient, QueryClientConfig, QueryKey } from '@tanstack/react-query'
 
-export const createQueryClient = () => {
+export const createQueryClient = (config?: QueryClientConfig) => {
+  const { defaultOptions, ...conf } = config || {}
+  const { queries, ...options } = defaultOptions || {}
   return new QueryClient({
     defaultOptions: {
       queries: {
         refetchOnWindowFocus: false,
         staleTime: 5 * 60 * 1000,
         enabled: false,
+        ...queries,
       },
+      ...options,
     },
+    ...conf,
   })
 }
 

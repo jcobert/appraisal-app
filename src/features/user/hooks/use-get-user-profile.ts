@@ -2,12 +2,14 @@ import { User } from '@prisma/client'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
+import { exists } from '@/utils/general'
 import { filteredQueryKey } from '@/utils/query'
 
 import useCoreQuery, { UseCoreQueryProps } from '@/hooks/use-core-query'
 
 export const usersQueryKey = {
   all: ['users'],
+  active: ['users', 'active'],
   filtered: (params: Partial<User>) =>
     filteredQueryKey(params, usersQueryKey.all),
 } as const
@@ -28,7 +30,9 @@ export const useGetUserProfile = <
   const url = id ? `${endpoint}/${id}` : `${endpoint}/active`
   return useCoreQuery<User>({
     url,
-    queryKey: usersQueryKey.filtered({ id }),
+    queryKey: !exists(id)
+      ? usersQueryKey.active
+      : usersQueryKey.filtered({ id }),
     ...options,
   })
 }
