@@ -1,87 +1,46 @@
-import { KindePermissions } from '@kinde-oss/kinde-auth-nextjs'
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
+import { Organization } from '@prisma/client'
+import { intersection } from 'lodash'
 import { redirect } from 'next/navigation'
 
-import { getUserOrganizations } from '@/lib/db/queries/organization'
+import {
+  getOrgMemberRoles,
+  getUserOrganizations,
+} from '@/lib/db/queries/organization'
 import { getActiveUserProfile } from '@/lib/db/queries/user'
+
+import { objectEntries, objectKeys } from '@/utils/general'
 
 import { SessionData } from '@/types/auth'
 
-export enum Permission {
-  read = 'Read',
-  write = 'Write',
-}
+import {
+  APP_PERMISSIONS,
+  PermissionAction,
+  PermissionArea,
+} from '@/configuration/permissions'
 
-export type PermissionKey = keyof typeof Permission
-
-export type UserPermission = {
-  key: PermissionKey
-  name: Permission
-  allowed: boolean
-}
-
-export const getUserPermissions = (
-  kindePermissions: KindePermissions | null,
-  options: { all?: boolean } = { all: false },
-) => {
-  const permissions = (kindePermissions?.permissions as PermissionKey[]) || []
-
-  const permissionsMap = (Object.keys(Permission) as PermissionKey[])?.map(
-    (perm) => {
-      return {
-        key: perm,
-        name: Permission[perm],
-        allowed: permissions?.includes(perm),
-      } as UserPermission
-    },
-  )
-
-  return options?.all
-    ? permissionsMap
-    : permissionsMap?.filter((perm) => perm?.allowed)
-}
-
-export const hasPermission = (
-  userPermissions: KindePermissions | null,
-  permission: PermissionKey,
-) => {
-  const userPermission = getUserPermissions(userPermissions)?.find(
-    (perm) => perm?.key === permission,
-  )
-  return !!userPermission?.allowed
-}
-
-export const isAllowedServer = async (permission?: PermissionKey) => {
+/** Returns user authentication status. For use server-side.  */
+export const isAuthenticated = async () => {
   const session = getKindeServerSession()
   const isAuthenticated = await session.isAuthenticated()
   const user = await session.getUser()
   if (!isAuthenticated || !user) {
     return { allowed: false, user }
   }
-  const allowed = !!permission
-    ? hasPermission(await session?.getPermissions(), permission)
-    : true
-  return { allowed, user }
-}
-
-export type ProtectOptions = {
-  permission?: PermissionKey
-  redirectUrl?: string
-  redirect?: boolean
+  return { allowed: true, user }
 }
 
 /** Protects page server side by redirecting if user not authenticated. */
-export const protectPage = async (options: ProtectOptions = {}) => {
-  const {
-    permission,
-    redirectUrl = '/',
-    redirect: shouldRedirect = true,
-  } = options
-  const { allowed } = await isAllowedServer(permission)
-  if (!allowed) {
-    if (shouldRedirect) {
-      redirect(redirectUrl)
-    }
+export const protectPage = async (
+  options: {
+    redirectUrl?: string
+    redirect?: boolean
+  } = {},
+) => {
+  const { redirectUrl = '/', redirect: shouldRedirect = true } = options
+  const { allowed } = await isAuthenticated()
+  if (!allowed && shouldRedirect) {
+    redirect(redirectUrl)
   }
   return allowed
 }
@@ -123,4 +82,58 @@ export const authUrl = ({
     ? `?post_${type}_redirect_url=${encodeURIComponent(redirectTo)}`
     : ''
   return `${basePath}${query}`
+}
+
+/**
+ * Get all permissions for a user in an organization based on their roles
+ */
+export const getUserPermissions = async (
+  organizationId: Organization['id'],
+): Promise<{ [Area in PermissionArea]: PermissionAction[Area][] }> => {
+  const userRoles = await getOrgMemberRoles({ organizationId })
+
+  const permsByArea = objectEntries(APP_PERMISSIONS)?.map(([area, actions]) => {
+    const userAllowedActions = !userRoles?.length
+      ? []
+      : objectKeys(actions)?.filter((action) => {
+          const allowedRoles = actions[action]
+          return !!intersection(allowedRoles, userRoles)?.length
+        })
+    return [area, userAllowedActions]
+  })
+  return Object.fromEntries(permsByArea)
+}
+
+/**
+ * Checks if a user has permission to perform a specific action in an organization.
+ */
+export const userCan = async <Area extends PermissionArea>({
+  area,
+  action,
+  organizationId,
+}: {
+  area: Area
+  action: PermissionAction[Area]
+  organizationId: Organization['id']
+}): Promise<boolean> => {
+  const userRoles = await getOrgMemberRoles({ organizationId })
+  if (!userRoles?.length) return false
+
+  const allowedRoles = APP_PERMISSIONS[area][action]
+  return !!intersection(allowedRoles, userRoles)?.length
+}
+
+/**
+ * Higher-order function that wraps an async function with permission checking.
+ */
+export const withPermission = <Area extends PermissionArea, T>(
+  area: Area,
+  action: PermissionAction[Area],
+  fn: (organizationId: Organization['id']) => Promise<T>,
+) => {
+  return async (organizationId: string): Promise<T | null> => {
+    const hasPermission = await userCan({ area, action, organizationId })
+    if (!hasPermission) return null
+    return fn(organizationId)
+  }
 }

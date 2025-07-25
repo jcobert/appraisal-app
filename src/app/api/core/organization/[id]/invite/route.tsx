@@ -8,7 +8,7 @@ import {
 import { getActiveUserProfile } from '@/lib/db/queries/user'
 import { generateUniqueToken } from '@/lib/server-utils'
 
-import { isAllowedServer } from '@/utils/auth'
+import { isAuthenticated } from '@/utils/auth'
 import { generateExpiry } from '@/utils/date'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 
@@ -23,7 +23,7 @@ export const POST = async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
-  const { allowed, user } = await isAllowedServer()
+  const { allowed, user } = await isAuthenticated()
 
   // Not allowed
   if (!allowed) {

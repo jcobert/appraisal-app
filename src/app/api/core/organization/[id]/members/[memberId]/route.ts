@@ -9,14 +9,14 @@ import {
   userIsOwner,
 } from '@/lib/db/queries/organization'
 
-import { isAllowedServer } from '@/utils/auth'
+import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 
 export const GET = async (
   _req: NextRequest,
   { params }: { params: Promise<{ id: string; memberId: string }> },
 ) => {
-  const { allowed } = await isAllowedServer()
+  const { allowed } = await isAuthenticated()
 
   // Not allowed
   if (!allowed) {
@@ -92,7 +92,7 @@ export const PUT = async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string; memberId: string }> },
 ) => {
-  const { allowed, user } = await isAllowedServer()
+  const { allowed, user } = await isAuthenticated()
 
   // Not allowed
   if (!allowed) {
@@ -191,7 +191,7 @@ export const DELETE = async (
   _req: NextRequest,
   { params }: { params: Promise<{ id: string; memberId: string }> },
 ) => {
-  const { allowed } = await isAllowedServer()
+  const { allowed } = await isAuthenticated()
 
   // Not allowed
   if (!allowed) {

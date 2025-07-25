@@ -7,7 +7,7 @@ import {
   userIsOwner,
 } from '@/lib/db/queries/organization'
 
-import { isAllowedServer } from '@/utils/auth'
+import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 
 import { OrgInvitePayload } from '@/features/organization/hooks/use-organization-invite'
@@ -16,7 +16,7 @@ export const DELETE = async (
   _req: NextRequest,
   { params }: { params: Promise<{ id: string; inviteId: string }> },
 ) => {
-  const { allowed } = await isAllowedServer()
+  const { allowed } = await isAuthenticated()
 
   if (!allowed) {
     return NextResponse.json(
@@ -92,7 +92,7 @@ export const PUT = async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string; inviteId: string }> },
 ) => {
-  const { allowed, user } = await isAllowedServer()
+  const { allowed, user } = await isAuthenticated()
 
   // Not allowed
   if (!allowed) {

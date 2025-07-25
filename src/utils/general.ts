@@ -29,21 +29,18 @@ export const isObject = (val: unknown): val is object => {
 }
 
 /** Returns an array of object values. */
-export const objectValues = <
-  T extends Record<string, unknown> = Record<string, string | number>,
->(
-  obj: T,
-) => {
+export const objectValues = <T extends Record<string, unknown>>(obj: T) => {
   return Object.values(obj) as T[keyof T][]
 }
 
 /** Returns an array of object keys. */
-export const objectKeys = <
-  T extends Record<string, unknown> = Record<string, string | number>,
->(
-  obj: T,
-) => {
+export const objectKeys = <T extends Record<string, unknown>>(obj: T) => {
   return Object.keys(obj) as (keyof T)[]
+}
+
+/** Returns an array of object entries. */
+export const objectEntries = <T extends Record<string, unknown>>(obj: T) => {
+  return Object.entries(obj) as [keyof T, T[keyof T]][]
 }
 
 type WithoutBlanksReturn<

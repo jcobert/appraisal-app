@@ -128,6 +128,34 @@ export const getOrganization = async (params: {
   return data
 }
 
+export const getOrgMemberRoles = async (params: {
+  organizationId: Organization['id']
+}) => {
+  try {
+    const { organizationId } = params || {}
+    const [authorized, user] = await Promise.all([
+      canQuery(),
+      getActiveUserAccount(),
+    ])
+    if (!authorized || !user?.id) return []
+    const member = (
+      await db.orgMember.findMany({
+        where: {
+          organizationId: organizationId,
+          user: { accountId: user?.id },
+        },
+        select: { active: true, roles: true },
+      })
+    )?.[0]
+    if (!member?.active) return []
+    return member?.roles
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(error)
+    return []
+  }
+}
+
 export const createOrganization = async (
   params: Prisma.OrganizationCreateArgs,
   authOptions?: CanQueryOptions,
