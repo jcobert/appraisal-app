@@ -20,13 +20,18 @@ import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar'
 
 import { SessionData } from '@/types/auth'
 
+import { useGetUserProfile } from '@/features/user/hooks/use-get-user-profile'
+
 type Props = {
   sessionData: Partial<SessionData>
   className?: string
 }
 
 const SidebarUserMenu: FC<Props> = ({ sessionData }) => {
-  const { profile, loggedIn } = sessionData || {}
+  const { loggedIn } = sessionData || {}
+  const { response } = useGetUserProfile()
+
+  const profile = response?.data || sessionData?.profile
   const { avatar, email } = profile || {}
 
   const name = fullName(profile?.firstName, profile?.lastName)

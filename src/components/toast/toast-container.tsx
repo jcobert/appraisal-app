@@ -9,6 +9,7 @@ const ToasterOven: FC = () => {
   return (
     <Toaster
       position='top-right'
+      containerStyle={{ zIndex: 10987654321 }}
       toastOptions={{ success: { duration: 4000 } }}
     >
       {(t) => (
