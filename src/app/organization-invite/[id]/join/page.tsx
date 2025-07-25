@@ -22,10 +22,13 @@ import { generatePageMeta } from '@/configuration/seo'
 import OrgJoinForm from '@/features/organization/invitation/org-join-form'
 import { getOrgInviteUrl } from '@/features/organization/utils'
 
-type Props = PageParams<{ id: string }, { inv: string; redirect: string }>
+type Props = PageParams<
+  { id: string },
+  { inv: string; redirect?: string; registered?: string }
+>
 
 export const metadata: Metadata = generatePageMeta({
-  title: 'Organizations',
+  title: 'Join Organization',
 })
 
 const heading = "You've been invited to join an organization."
@@ -34,17 +37,16 @@ const errorMessage =
   "We're sorry. This link is not valid.\nIf you were invited to join an organization, the link may have expired. Please contact the owner of the organization."
 
 const Page: FC<Props> = async ({ params, searchParams }) => {
-  const organizationId = decodeURIComponent((await params)?.id)
-  const query = await searchParams
+  const [routeParams, query, { allowed: loggedIn }] = await Promise.all([
+    params,
+    searchParams,
+    isAllowedServer(),
+  ])
+
+  const organizationId = decodeURIComponent(routeParams?.id)
   const inviteToken = decodeURIComponent(query?.inv || '')
   const isRedirect = !!query?.redirect
-
-  const { allowed: loggedIn } = await isAllowedServer()
-
-  const postLoginRedirect = getOrgInviteUrl({
-    organizationId,
-    inviteToken,
-  })
+  const isJustRegistered = !!query?.registered
 
   const invitation = await getOrgInvitation(
     {
@@ -53,11 +55,16 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
     { publicAccess: true },
   )
 
+  const postLoginRedirect = getOrgInviteUrl({
+    organizationId,
+    inviteToken,
+  })
+
   // Log out user before invite can be accepted.
   // Want to make sure not joining with an unintended user account that's already logged in.
   if (invitation) {
     const redirectUrl = `${postLoginRedirect?.absolute}&redirect=true`
-    if (loggedIn) {
+    if (loggedIn && !isJustRegistered) {
       // Add this url to Kinde whitelist.
       const res = await addLogoutRedirectUrls([redirectUrl])
       // Logout and redirect back to this page.
@@ -72,6 +79,7 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
     } else if (isRedirect) {
       // After redirect, clean up by deleting url from Kinde.
       await deleteLogoutRedirectUrl(redirectUrl)
+    } else {
     }
   }
 
@@ -121,7 +129,7 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
             <Button asChild>
               <AuthLink
                 type='register'
-                postLoginRedirectURL={postLoginRedirect?.local}
+                postLoginRedirectURL={`${postLoginRedirect?.local}&registered=true`}
               >
                 Continue
               </AuthLink>
