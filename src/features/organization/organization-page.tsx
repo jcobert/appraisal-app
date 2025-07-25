@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+import { usePermissions } from '@/hooks/use-permissions'
 import { useProtectPage } from '@/hooks/use-protect-page'
 
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
@@ -20,7 +21,7 @@ import MemberInviteForm from '@/features/organization/invitation/member-invite-f
 import OrganizationSettings from '@/features/organization/organization-settings'
 
 type Props = {
-  organizationId?: Organization['id']
+  organizationId: Organization['id']
 }
 
 const OrganizationPage: FC<Props> = ({ organizationId }) => {
@@ -28,6 +29,14 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
 
   const router = useRouter()
   const pathname = usePathname()
+
+  const { can } = usePermissions({
+    area: 'organization',
+    organizationId,
+  })
+
+  const userCanEditOrg = can('edit_org_info')
+  const userCanAddMembers = can('edit_org_members')
 
   const { response } = useGetOrganizations({
     id: organizationId,
@@ -64,6 +73,7 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
                 onSelect={() => {
                   router.push(`${pathname}/edit`)
                 }}
+                disabled={!userCanEditOrg}
               >
                 Edit Info
               </DropdownMenuItem>
@@ -71,6 +81,7 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
                 onSelect={() => {
                   setInviteFormOpen(true)
                 }}
+                disabled={!userCanAddMembers}
               >
                 Add Member
               </DropdownMenuItem>

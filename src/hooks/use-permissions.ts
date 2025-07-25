@@ -39,9 +39,12 @@ export function usePermissions<Area extends PermissionArea>({
   organizationId,
   options,
 }: Props<Area>): UsePermissionsResult<Area> {
-  const { response, isLoading, error } = useCoreQuery<PermissionsResponse['data']>({
+  const { response, isLoading, error } = useCoreQuery<
+    PermissionsResponse['data']
+  >({
     url: `/api/core/organization/${organizationId}/permissions`,
     queryKey: permissionsQueryKey.filtered({ organizationId, area }),
+    enabled: true,
     ...options,
   })
 
