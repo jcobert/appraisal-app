@@ -24,6 +24,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 import { useStoredSettings } from '@/hooks/use-stored-settings'
 
+import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
+
 type Props = {
   organizations?: Organization[] | null
   children?: ReactNode
@@ -37,10 +39,14 @@ const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
   const isClient = useIsClient()
   const { isMobile, open, setOpenMobile } = useSidebar()
 
+  const { response } = useGetOrganizations()
+
+  const orgs = response?.data || organizations
+
   const organizationOptions = useMemo(() => {
-    if (!organizations?.length) return []
-    return sortBy(organizations, (org) => org?.name)
-  }, [organizations])
+    if (!orgs?.length) return []
+    return sortBy(orgs, (org) => org?.name?.toLowerCase())
+  }, [orgs])
 
   const selectedOrganization = useMemo(() => {
     if (!organizationOptions?.length) return undefined
@@ -102,9 +108,15 @@ const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
           </div>
 
           <div className='grid flex-1 text-left text-sm leading-tight'>
-            <span className='truncate font-medium'>
-              {selectedOrganization?.name}
-            </span>
+            {selectedOrganization ? (
+              <span className='truncate font-medium'>
+                {selectedOrganization?.name}
+              </span>
+            ) : (
+              <span className='text-xs text-muted-foreground whitespace-nowrap'>
+                Select an organization...
+              </span>
+            )}
           </div>
           <ChevronsUpDown className='ml-auto' />
         </SidebarMenuButton>
