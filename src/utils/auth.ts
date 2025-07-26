@@ -10,6 +10,7 @@ import {
 import { getActiveUserProfile } from '@/lib/db/queries/user'
 
 import { objectEntries, objectKeys } from '@/utils/general'
+import { homeUrl } from '@/utils/nav'
 
 import { SessionData } from '@/types/auth'
 
@@ -19,6 +20,7 @@ import {
   PermissionArea,
 } from '@/configuration/permissions'
 
+/** @todo Rename allowed to loggedIn if we're only checking session and not permissions. */
 /** Returns user authentication status. For use server-side.  */
 export const isAuthenticated = async () => {
   const session = getKindeServerSession()
@@ -30,21 +32,6 @@ export const isAuthenticated = async () => {
   return { allowed: true, user }
 }
 
-/** Protects page server side by redirecting if user not authenticated. */
-export const protectPage = async (
-  options: {
-    redirectUrl?: string
-    redirect?: boolean
-  } = {},
-) => {
-  const { redirectUrl = '/', redirect: shouldRedirect = true } = options
-  const { allowed } = await isAuthenticated()
-  if (!allowed && shouldRedirect) {
-    redirect(redirectUrl)
-  }
-  return allowed
-}
-
 /** Returns the server session user. */
 export const getActiveUserAccount = async () => {
   const session = getKindeServerSession()
@@ -52,18 +39,17 @@ export const getActiveUserAccount = async () => {
   return user
 }
 
-/** Returns user session data, both from Kinde auth and DB. */
+/** Returns user session data, both from Kinde auth and core DB. */
 export const getSessionData = async (): Promise<SessionData> => {
   const session = getKindeServerSession()
-  const { getUser, isAuthenticated, getPermissions } = session
-  // From Kinde DB
+  const { getUser, isAuthenticated } = session
+  // Auth (from Kinde DB)
   const user = await getUser()
   const loggedIn = !!(await isAuthenticated())
-  const permissions = await getPermissions()
-  // From core DB
+  // User data (from core DB)
   const profile = await getActiveUserProfile()
   const organizations = await getUserOrganizations()
-  return { user, loggedIn, permissions, profile, organizations }
+  return { user, loggedIn, profile, organizations }
 }
 
 /** Returns the auth login/logout route with the optional `redirect` query param. */
@@ -85,7 +71,7 @@ export const authUrl = ({
 }
 
 /**
- * Get all permissions for a user in an organization based on their roles
+ * Get all permissions for a user in an organization based on their roles.
  */
 export const getUserPermissions = async (
   organizationId: Organization['id'],
@@ -121,6 +107,23 @@ export const userCan = async <Area extends PermissionArea>({
 
   const allowedRoles = APP_PERMISSIONS[area][action]
   return !!intersection(allowedRoles, userRoles)?.length
+}
+
+/** Protects page server side by redirecting if user not authenticated. */
+export const protectPage = async <Area extends PermissionArea>(options?: {
+  /** By default, redirects home. Provide alternate path for redirect. */
+  redirect?: boolean | string
+  /** Specific permission that user must have to access page. */
+  permission?: Parameters<typeof userCan<Area>>['0']
+}) => {
+  const { redirect: redir, permission } = options || {}
+  const { allowed } = await isAuthenticated()
+  const hasPermission = permission ? await userCan(permission) : true
+  const can = allowed && hasPermission
+  if (!can && !!redir) {
+    redirect(typeof redir === 'string' ? redir : homeUrl(allowed))
+  }
+  return { can, loggedIn: allowed, hasPermission }
 }
 
 /**

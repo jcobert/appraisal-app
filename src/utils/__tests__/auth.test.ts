@@ -10,6 +10,8 @@ import {
   withPermission,
 } from '@/utils/auth'
 
+import { PermissionAction } from '@/configuration/permissions'
+
 // Mock the DB queries
 const mockGetOrgMemberRoles = jest.fn()
 const mockGetActiveUserProfile = jest.fn()
@@ -45,9 +47,6 @@ jest.mock('@kinde-oss/kinde-auth-nextjs/server', () => ({
       email: 'test@example.com',
       given_name: 'Test',
       family_name: 'User',
-    }),
-    getPermissions: async () => ({
-      permissions: [],
     }),
   })),
 }))
@@ -108,8 +107,8 @@ describe('auth utils', () => {
         getUser: jest.fn().mockResolvedValue(mockUser),
       }))
 
-      const result = await protectPage()
-      expect(result).toBe(true)
+      const { can } = await protectPage()
+      expect(can).toBe(true)
       expect(redirect).not.toHaveBeenCalled()
     })
 
@@ -123,7 +122,7 @@ describe('auth utils', () => {
       }))
 
       const redirectUrl = '/custom-login'
-      await protectPage({ redirectUrl })
+      await protectPage({ redirect: redirectUrl })
       expect(redirect).toHaveBeenCalledWith(redirectUrl)
     })
 
@@ -136,15 +135,14 @@ describe('auth utils', () => {
         getUser: jest.fn().mockResolvedValue(null),
       }))
 
-      const result = await protectPage({ redirect: false })
-      expect(result).toBe(false)
+      const { can } = await protectPage({ redirect: false })
+      expect(can).toBe(false)
       expect(redirect).not.toHaveBeenCalled()
     })
   })
 
   describe('getSessionData', () => {
     it('should return complete session data', async () => {
-      const mockPermissions = ['read:users']
       const mockProfile = { id: 'profile_123', userId: 'user_123' }
       const mockOrgs = [{ id: 'org_123', name: 'Test Org' }]
 
@@ -154,7 +152,6 @@ describe('auth utils', () => {
       getKindeServerSession.mockImplementation(() => ({
         isAuthenticated: jest.fn().mockResolvedValue(true),
         getUser: jest.fn().mockResolvedValue(mockUser),
-        getPermissions: jest.fn().mockResolvedValue(mockPermissions),
       }))
 
       mockGetActiveUserProfile.mockResolvedValue(mockProfile)
@@ -164,7 +161,6 @@ describe('auth utils', () => {
       expect(result).toEqual({
         user: mockUser,
         loggedIn: true,
-        permissions: mockPermissions,
         profile: mockProfile,
         organizations: mockOrgs,
       })
@@ -189,11 +185,24 @@ describe('auth utils', () => {
       const result = await getUserPermissions(mockOrgId)
 
       // Manager should have these permissions based on APP_PERMISSIONS
-      expect(result.organization).toContain('edit_org_members')
-      expect(result.orders).toContain('create_order')
-      expect(result.orders).toContain('edit_order')
-      expect(result.orders).toContain('delete_order')
-      expect(result.orders).toContain('view_orders')
+      expect(result.organization).toContain(
+        'view_org_member_details' satisfies PermissionAction['organization'],
+      )
+      expect(result.organization).not.toContain(
+        'delete_org' satisfies PermissionAction['organization'],
+      )
+      expect(result.orders).toContain(
+        'create_order' satisfies PermissionAction['orders'],
+      )
+      expect(result.orders).toContain(
+        'edit_order' satisfies PermissionAction['orders'],
+      )
+      expect(result.orders).toContain(
+        'delete_order' satisfies PermissionAction['orders'],
+      )
+      expect(result.orders).toContain(
+        'view_orders' satisfies PermissionAction['orders'],
+      )
 
       // Manager should not have these permissions
       expect(result.organization).not.toContain('delete_org')
@@ -219,7 +228,7 @@ describe('auth utils', () => {
 
       const result = await userCan({
         area: 'organization',
-        action: 'edit_org_members',
+        action: 'view_org_member_details',
         organizationId: mockOrgId,
       })
 

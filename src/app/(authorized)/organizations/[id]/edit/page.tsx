@@ -1,10 +1,9 @@
 import { Metadata } from 'next'
-import { redirect } from 'next/navigation'
 import { FC } from 'react'
 
 import { getOrganization } from '@/lib/db/queries/organization'
 
-import { userCan } from '@/utils/auth'
+import { protectPage } from '@/utils/auth'
 
 import Crumbs from '@/components/layout/app-nav/crumbs'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
@@ -23,15 +22,13 @@ type Props = PageParams<{ id: string }>
 const Page: FC<Props> = async ({ params }) => {
   const organizationId = (await params)?.id
 
-  const can = await userCan({
-    action: 'edit_org_info',
-    area: 'organization',
-    organizationId,
+  const { can } = await protectPage({
+    permission: {
+      area: 'organization',
+      action: 'edit_org_info',
+      organizationId,
+    },
   })
-
-  if (!can) {
-    redirect('/')
-  }
 
   if (!can) return <FullScreenLoader />
 

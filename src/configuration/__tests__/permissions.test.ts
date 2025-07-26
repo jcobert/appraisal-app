@@ -12,8 +12,8 @@ describe('APP_PERMISSIONS configuration', () => {
       expect(APP_PERMISSIONS.organization.edit_org_info).toEqual(['owner'])
     })
 
-    it('should allow both owner and manager to edit members', () => {
-      expect(APP_PERMISSIONS.organization.edit_org_members).toEqual(['owner', 'manager'])
+    it('should allow only owner to edit members', () => {
+      expect(APP_PERMISSIONS.organization.edit_org_members).toEqual(['owner'])
     })
 
     it('should restrict delete_org to owner only', () => {
@@ -23,11 +23,19 @@ describe('APP_PERMISSIONS configuration', () => {
 
   describe('orders permissions', () => {
     it('should allow all roles to create orders', () => {
-      expect(APP_PERMISSIONS.orders.create_order).toEqual(['owner', 'manager', 'appraiser'])
+      expect(APP_PERMISSIONS.orders.create_order).toEqual([
+        'owner',
+        'manager',
+        'appraiser',
+      ])
     })
 
     it('should allow all roles to edit orders', () => {
-      expect(APP_PERMISSIONS.orders.edit_order).toEqual(['owner', 'manager', 'appraiser'])
+      expect(APP_PERMISSIONS.orders.edit_order).toEqual([
+        'owner',
+        'manager',
+        'appraiser',
+      ])
     })
 
     it('should restrict delete_order to owner and manager', () => {
@@ -35,7 +43,11 @@ describe('APP_PERMISSIONS configuration', () => {
     })
 
     it('should allow all roles to view orders', () => {
-      expect(APP_PERMISSIONS.orders.view_orders).toEqual(['owner', 'manager', 'appraiser'])
+      expect(APP_PERMISSIONS.orders.view_orders).toEqual([
+        'owner',
+        'manager',
+        'appraiser',
+      ])
     })
   })
 
