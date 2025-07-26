@@ -47,13 +47,13 @@ const DesktopNav: FC<Props> = ({
               return (
                 <NavigationMenu.Item
                   key={item?.id}
-                  className='[&:has([data-active])]:border-brand mt-px border-b-2 border-transparent transition'
+                  className='[&:has([data-active])]:border-primary mt-px border-b-2 border-transparent transition'
                 >
                   {!hasMenu ? (
                     <NavLink href={item?.url}>{item?.name}</NavLink>
                   ) : (
                     <>
-                      <NavigationMenu.Trigger className='text-brand-gray-dark hover:border-y-brand/10 group flex select-none items-center justify-between gap-1 rounded-[4px] px-3 py-2 text-[15px] font-medium leading-none data-[state=open]:text-brand__ group'>
+                      <NavigationMenu.Trigger className='text-brand-gray-dark hover:border-y-primary/10 group flex select-none items-center justify-between gap-1 rounded-[4px] px-3 py-2 text-[15px] font-medium leading-none data-[state=open]:text-primary__ group'>
                         <span>{item?.name}</span>
                         <FaAngleUp className='text-xs group-data-[state=open]:rotate-180 transition duration-75' />
                       </NavigationMenu.Trigger>
@@ -134,7 +134,7 @@ const DesktopNav: FC<Props> = ({
                               >
                                 <NavLink
                                   href={subItem?.url}
-                                  className='text-brand-gray-dark h-full transition hover:bg-brand/10 block select-none rounded-[4px] px-3 py-2 text-[15px] font-medium leading-none no-underline'
+                                  className='text-brand-gray-dark h-full transition hover:bg-primary/10 block select-none rounded-[4px] px-3 py-2 text-[15px] font-medium leading-none no-underline'
                                 >
                                   <div className='flex flex-col gap-2'>
                                     <span
@@ -165,7 +165,7 @@ const DesktopNav: FC<Props> = ({
             })}
 
             <NavigationMenu.Indicator className='data-[state=visible]:animate-fadeIn data-[state=hidden]:animate-fadeOut top-full z-[1] flex h-[10px] items-end justify-center overflow-hidden transition-[width,transform_250ms_ease]'>
-              <div className='relative h-[2px] w-10 rounded bg-brand/20' />
+              <div className='relative h-[2px] w-10 rounded bg-primary/20' />
             </NavigationMenu.Indicator>
           </NavigationMenu.List>
         </NavigationMenu.Root>

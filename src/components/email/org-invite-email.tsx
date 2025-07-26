@@ -88,7 +88,7 @@ const OrgInviteEmail = ({
             <Section className='mt-8 mb-12 w-fit mx-auto'>
               <Link
                 href={inviteLink}
-                className='min-h-[2.125rem] w-fit min-w-[6rem] rounded border border-brand bg-brand px-4 py-3 text-almost-white text-lg'
+                className='min-h-[2.125rem] w-fit min-w-[6rem] rounded border border-primary bg-primary px-4 py-3 text-almost-white text-lg'
               >
                 View invitation
               </Link>

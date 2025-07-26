@@ -9,7 +9,7 @@ type Props = {
 
 const Spinner: FC<Props> = ({ className }) => {
   return (
-    <ImSpinner2 className={cn('size-6 animate-spin fill-brand', className)} />
+    <ImSpinner2 className={cn('size-6 animate-spin fill-primary', className)} />
   )
 }
 

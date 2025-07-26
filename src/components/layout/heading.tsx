@@ -16,7 +16,7 @@ const Heading: FC<HeadingProps> = ({
   return (
     <h1
       className={cn([
-        'text-3xl sm:text-4xl font-semibold text-balance text-brand dark:text-brand-light',
+        'text-3xl sm:text-4xl font-semibold text-balance text-primary',
         {
           'text-left': alignment === 'left',
           'text-center': alignment === 'center',

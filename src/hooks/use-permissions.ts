@@ -45,13 +45,14 @@ export function usePermissions<Area extends PermissionArea>({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/permissions`,
     queryKey: permissionsQueryKey.filtered({ organizationId, area }),
     enabled: true,
+    staleTime: 1000 * 60 * 60,
     ...options,
   })
 
   const can = useCallback(
     (action: PermissionAction[Area]): boolean => {
-      // Return false while loading or if there's an error
-      // This ensures UI elements requiring permissions stay hidden until we're certain
+      // Return false while loading or if there's an error.
+      // This ensures UI elements requiring permissions stay hidden until we're certain.
       if (isLoading || error) return false
       return response?.data?.[area]?.includes(action) ?? false
     },

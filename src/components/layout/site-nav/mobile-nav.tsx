@@ -134,7 +134,7 @@ const MobileNav: FC<Props> = ({
                 key={item?.id}
                 className={cn([
                   'text-right text-xl border-medium-gray/15 pb-2 flex justify-end',
-                  active && 'text-brand',
+                  active && 'text-primary',
                   !active && 'text-dark-gray dark:text-gray-300',
                   !isLast && 'border-b',
                 ])}
@@ -159,7 +159,7 @@ const MobileNav: FC<Props> = ({
                           className={cn(
                             'text-right justify-end font-semibold text-xl text-dark-gray',
                             'gap-2',
-                            isActiveItem(item) && 'text-brand',
+                            isActiveItem(item) && 'text-primary',
                           )}
                         >
                           {item?.name}
@@ -184,7 +184,7 @@ const MobileNav: FC<Props> = ({
                               key={link?.id}
                               className={cn(
                                 'w-full font-medium text-lg text-dark-gray',
-                                isActivePath(link?.url) && 'text-brand',
+                                isActivePath(link?.url) && 'text-primary',
                               )}
                               href={link?.url}
                               onClick={() => {

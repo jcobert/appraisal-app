@@ -53,7 +53,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     //     <Spinner
     //       className={cn({
     //         'fill-almost-white': variant === 'primary',
-    //         'fill-brand':
+    //         'fill-primary':
     //           (variant === 'secondary' || variant === 'tertiary') &&
     //           color === 'brand',
     //         'fill-rose-600':
