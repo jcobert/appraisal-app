@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { FC } from 'react'
 import { RxHamburgerMenu } from 'react-icons/rx'
 
-import { filterProtectedNavItems } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import AuthLink from '@/components/auth/auth-link'
@@ -39,7 +38,7 @@ const MobileNav: FC<Props> = ({
   const { isActiveItem, isActivePath, isMenuOpen, setIsMenuOpen } =
     useNavigationMenu()
 
-  const navItems = filterProtectedNavItems(SITE_NAVIGATION_ITEMS, loggedIn)
+  const navItems = SITE_NAVIGATION_ITEMS
 
   return (
     <header

@@ -1,4 +1,4 @@
-import { MdOutlineSpaceDashboard } from 'react-icons/md'
+import { LayoutDashboard } from 'lucide-react'
 import { RiOrganizationChart } from 'react-icons/ri'
 
 import { NavItem } from '@/utils/nav'
@@ -9,7 +9,7 @@ export const APP_NAVIGATION_ITEMS: NavItem[] = [
     id: 'dashboard',
     name: 'Dashboard',
     url: '/dashboard',
-    icon: MdOutlineSpaceDashboard,
+    icon: LayoutDashboard,
     protected: true,
   },
   {
@@ -19,5 +19,4 @@ export const APP_NAVIGATION_ITEMS: NavItem[] = [
     icon: RiOrganizationChart,
     protected: true,
   },
-  // { id: 'appraisers', name: 'Appraisers', url: '/appraisers', protected: true },
 ]

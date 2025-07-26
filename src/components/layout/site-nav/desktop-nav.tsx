@@ -4,7 +4,6 @@ import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import React, { FC, ReactNode } from 'react'
 import { FaAngleUp } from 'react-icons/fa6'
 
-import { filterProtectedNavItems } from '@/utils/nav'
 import { cn } from '@/utils/style'
 
 import LogoLink from '@/components/general/logo-link'
@@ -27,9 +26,7 @@ const DesktopNav: FC<Props> = ({
   className,
   children,
 }) => {
-  const navItems = loggedIn
-    ? []
-    : filterProtectedNavItems(SITE_NAVIGATION_ITEMS, loggedIn)
+  const navItems = SITE_NAVIGATION_ITEMS
 
   return (
     <header
