@@ -8,7 +8,7 @@ import {
 import { getActiveUserProfile } from '@/lib/db/queries/user'
 import { organizationSchema } from '@/lib/db/schemas/organization'
 
-import { isAllowedServer } from '@/utils/auth'
+import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 import { validatePayload } from '@/utils/zod'
 
@@ -16,7 +16,7 @@ import { validatePayload } from '@/utils/zod'
 //      GET
 // =============
 export const GET = async (_req: NextRequest) => {
-  const { allowed } = await isAllowedServer()
+  const { allowed } = await isAuthenticated()
 
   // No user
   if (!allowed) {
@@ -93,7 +93,7 @@ export const GET = async (_req: NextRequest) => {
 //      POST
 // ==============
 export const POST = async (req: NextRequest) => {
-  const { allowed, user } = await isAllowedServer()
+  const { allowed, user } = await isAuthenticated()
 
   // No user
   if (!allowed) {

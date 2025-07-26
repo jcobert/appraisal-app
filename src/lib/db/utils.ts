@@ -1,6 +1,6 @@
-import { PermissionKey, isAllowedServer } from '@/utils/auth'
+import { isAuthenticated } from '@/utils/auth'
 
-export type CanQueryOptions = { permission?: PermissionKey }
+export type CanQueryOptions = {}
 
 /**
  * Returns whether user is authorized to query the core db.
@@ -8,8 +8,7 @@ export type CanQueryOptions = { permission?: PermissionKey }
  *
  * Provide optional `permission` to check against the user's permissions.
  */
-export const canQuery = async (options: CanQueryOptions = {}) => {
-  const { permission } = options
-  const { allowed } = await isAllowedServer(permission)
+export const canQuery = async (_options: CanQueryOptions = {}) => {
+  const { allowed } = await isAuthenticated()
   return allowed
 }

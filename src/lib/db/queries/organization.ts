@@ -25,7 +25,7 @@ export const getUserOrganizations = async (params?: {
     members: {
       some: {
         user: { accountId: userId },
-        ...(owner ? { AND: { roles: { has: 'owner' } } } : {}),
+        ...(owner ? { roles: { has: 'owner' } } : {}),
       },
     },
   }
@@ -66,7 +66,7 @@ export const userIsOwner = async (params: {
       members: {
         some: {
           user: { accountId: userId },
-          AND: { roles: { has: 'owner' } },
+          roles: { has: 'owner' },
         },
       },
     },
@@ -126,6 +126,32 @@ export const getOrganization = async (params: {
 
   const data = await db.organization.findUnique(queryArgs)
   return data
+}
+
+export const getOrgMemberRoles = async (params: {
+  organizationId: Organization['id']
+}) => {
+  try {
+    const { organizationId } = params || {}
+    const authorized = await canQuery()
+    const user = await getActiveUserAccount()
+    if (!authorized || !user?.id) return []
+    const member = (
+      await db.orgMember.findMany({
+        where: {
+          organizationId: organizationId,
+          user: { accountId: user?.id },
+        },
+        select: { active: true, roles: true },
+      })
+    )?.[0]
+    if (!member || !member?.active || !member?.roles?.length) return []
+    return member?.roles
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(error)
+    return []
+  }
 }
 
 export const createOrganization = async (

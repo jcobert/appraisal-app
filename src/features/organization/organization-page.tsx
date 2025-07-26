@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+import { usePermissions } from '@/hooks/use-permissions'
 import { useProtectPage } from '@/hooks/use-protect-page'
 
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
@@ -20,7 +21,7 @@ import MemberInviteForm from '@/features/organization/invitation/member-invite-f
 import OrganizationSettings from '@/features/organization/organization-settings'
 
 type Props = {
-  organizationId?: Organization['id']
+  organizationId: Organization['id']
 }
 
 const OrganizationPage: FC<Props> = ({ organizationId }) => {
@@ -28,6 +29,14 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
 
   const router = useRouter()
   const pathname = usePathname()
+
+  const { can } = usePermissions({
+    area: 'organization',
+    organizationId,
+  })
+
+  const userCanEditOrg = can('edit_org_info')
+  const userCanAddMembers = can('edit_org_members')
 
   const { response } = useGetOrganizations({
     id: organizationId,
@@ -49,34 +58,39 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
       ) : null}
 
       <div className='flex flex-col gap-8 max-sm:gap-4'>
-        <div className='flex max-md:flex-col md:items-center max-md:gap-4 gap-6'>
-          {/* <div className='flex flex-col gap-2 border-b-2__ pb-2 md:pr-12 md:pl-0 border-brand-extra-light sm:px-4 sm:w-fit w-full max-md:mx-auto'>
-            <Heading text={name} className='font-normal' />
-          </div> */}
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant='outline' size='icon' className='max-md:ml-auto'>
-                <FaGear className='text-2xl sm:text-lg' />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                onSelect={() => {
-                  router.push(`${pathname}/edit`)
-                }}
-              >
-                Edit Info
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() => {
-                  setInviteFormOpen(true)
-                }}
-              >
-                Add Member
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {userCanEditOrg ? (
+          <div className='flex max-md:flex-col md:items-center max-md:gap-4 gap-6'>
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant='outline'
+                  size='icon'
+                  className='max-md:ml-auto'
+                >
+                  <FaGear className='text-2xl sm:text-lg' />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    router.push(`${pathname}/edit`)
+                  }}
+                  disabled={!userCanEditOrg}
+                >
+                  Edit Info
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    setInviteFormOpen(true)
+                  }}
+                  disabled={!userCanAddMembers}
+                >
+                  Add Member
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ) : null}
 
         <OrganizationSettings organization={organization} />
       </div>

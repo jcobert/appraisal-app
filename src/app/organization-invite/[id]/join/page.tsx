@@ -8,7 +8,7 @@ import {
   deleteLogoutRedirectUrl,
 } from '@/lib/kinde-management/queries'
 
-import { authUrl, isAllowedServer } from '@/utils/auth'
+import { authUrl, isAuthenticated } from '@/utils/auth'
 import { fullName } from '@/utils/string'
 
 import AuthLink from '@/components/auth/auth-link'
@@ -40,7 +40,7 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
   const [routeParams, query, { allowed: loggedIn }] = await Promise.all([
     params,
     searchParams,
-    isAllowedServer(),
+    isAuthenticated(),
   ])
 
   const organizationId = decodeURIComponent(routeParams?.id)

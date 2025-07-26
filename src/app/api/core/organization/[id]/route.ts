@@ -9,7 +9,7 @@ import {
 } from '@/lib/db/queries/organization'
 import { organizationSchema } from '@/lib/db/schemas/organization'
 
-import { isAllowedServer } from '@/utils/auth'
+import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 import { validatePayload } from '@/utils/zod'
 
@@ -20,7 +20,7 @@ export const GET = async (
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
-  const { allowed } = await isAllowedServer()
+  const { allowed } = await isAuthenticated()
 
   // No user
   if (!allowed) {
@@ -102,7 +102,7 @@ export const PUT = async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
-  const { allowed, user } = await isAllowedServer()
+  const { allowed, user } = await isAuthenticated()
 
   // No user
   if (!allowed) {
@@ -206,7 +206,7 @@ export const DELETE = async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
-  const { allowed } = await isAllowedServer()
+  const { allowed } = await isAuthenticated()
 
   // No user
   if (!allowed) {

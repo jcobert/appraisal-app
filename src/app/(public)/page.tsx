@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { FC } from 'react'
 
-import { isAllowedServer } from '@/utils/auth'
+import { isAuthenticated } from '@/utils/auth'
 
 import PageLayout from '@/components/layout/page-layout'
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 }
 
 const Page: FC = async () => {
-  const { allowed } = await isAllowedServer()
+  const { allowed } = await isAuthenticated()
   if (allowed) {
     redirect('/dashboard')
   }

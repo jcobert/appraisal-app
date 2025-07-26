@@ -6,6 +6,7 @@ import { getOrganization } from '@/lib/db/queries/organization'
 import { protectPage } from '@/utils/auth'
 
 import Crumbs from '@/components/layout/app-nav/crumbs'
+import FullScreenLoader from '@/components/layout/full-screen-loader'
 
 import { PageParams } from '@/types/general'
 
@@ -19,9 +20,17 @@ export const metadata: Metadata = generatePageMeta({
 type Props = PageParams<{ id: string }>
 
 const Page: FC<Props> = async ({ params }) => {
-  await protectPage()
-
   const organizationId = (await params)?.id
+
+  const { can } = await protectPage({
+    permission: {
+      area: 'organization',
+      action: 'edit_org_info',
+      organizationId,
+    },
+  })
+
+  if (!can) return <FullScreenLoader />
 
   const data = await getOrganization({ organizationId })
 
