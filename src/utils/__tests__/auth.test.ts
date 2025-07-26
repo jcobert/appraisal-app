@@ -126,18 +126,16 @@ describe('auth utils', () => {
       expect(redirect).toHaveBeenCalledWith(redirectUrl)
     })
 
-    it('should not redirect when redirect=false option is set', async () => {
+    it('it should redirect by default when user is not authenticated and path not provided', async () => {
       const getKindeServerSession = jest.requireMock(
         '@kinde-oss/kinde-auth-nextjs/server',
       ).getKindeServerSession
       getKindeServerSession.mockImplementation(() => ({
         isAuthenticated: jest.fn().mockResolvedValue(false),
-        getUser: jest.fn().mockResolvedValue(null),
+        getUser: jest.fn().mockResolvedValue({}),
       }))
-
-      const { can } = await protectPage({ redirect: false })
-      expect(can).toBe(false)
-      expect(redirect).not.toHaveBeenCalled()
+      await protectPage()
+      expect(redirect).toHaveBeenCalledWith('/')
     })
   })
 

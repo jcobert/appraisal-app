@@ -104,7 +104,6 @@ export const userCan = async <Area extends PermissionArea>({
 }): Promise<boolean> => {
   const userRoles = await getOrgMemberRoles({ organizationId })
   if (!userRoles?.length) return false
-
   const allowedRoles = APP_PERMISSIONS[area][action]
   return !!intersection(allowedRoles, userRoles)?.length
 }
@@ -112,7 +111,7 @@ export const userCan = async <Area extends PermissionArea>({
 /** Protects page server side by redirecting if user not authenticated. */
 export const protectPage = async <Area extends PermissionArea>(options?: {
   /** By default, redirects home. Provide alternate path for redirect. */
-  redirect?: boolean | string
+  redirect?: string
   /** Specific permission that user must have to access page. */
   permission?: Parameters<typeof userCan<Area>>['0']
 }) => {
@@ -120,8 +119,8 @@ export const protectPage = async <Area extends PermissionArea>(options?: {
   const { allowed } = await isAuthenticated()
   const hasPermission = permission ? await userCan(permission) : true
   const can = allowed && hasPermission
-  if (!can && !!redir) {
-    redirect(typeof redir === 'string' ? redir : homeUrl(allowed))
+  if (!can) {
+    redirect(redir || homeUrl(allowed))
   }
   return { can, loggedIn: allowed, hasPermission }
 }
