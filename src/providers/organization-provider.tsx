@@ -2,11 +2,18 @@
 
 import { Organization } from '@prisma/client'
 import { useQueryClient } from '@tanstack/react-query'
-import React, { createContext, useCallback, useContext, useEffect, useMemo } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react'
 
 import { permissionsQueryKey, usePermissions } from '@/hooks/use-permissions'
 import { useStoredSettings } from '@/hooks/use-stored-settings'
 
+import { PermissionAction } from '@/configuration/permissions'
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 
 type OrganizationContextValue = {
@@ -20,7 +27,7 @@ type OrganizationContextValue = {
   isLoadingOrganizations: boolean
   /** Current user's permissions for the active organization */
   permissions: {
-    can: (action: 'edit_org_info' | 'edit_org_members' | 'delete_org' | 'view_org' | 'view_org_member_details') => boolean
+    can: (action: PermissionAction['organization']) => boolean
     isLoading: boolean
     error: Error | null
   }
@@ -47,7 +54,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({
     updateSettings,
   } = useStoredSettings()
   const queryClient = useQueryClient()
-  
+
   const { response, isLoading: isLoadingOrganizations } = useGetOrganizations()
   const organizations = response?.data || initialOrganizations
 
@@ -141,25 +148,27 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({
 export const useOrganizationContext = (): OrganizationContextValue => {
   const context = useContext(OrganizationContext)
   if (!context) {
-    throw new Error('useOrganizationContext must be used within an OrganizationProvider')
+    throw new Error(
+      'useOrganizationContext must be used within an OrganizationProvider',
+    )
   }
   return context
 }
 
 /**
  * Hook to get permissions for the currently active organization.
- * 
+ *
  * ⚠️ SECURITY NOTE: This hook returns permissions for the active organization
  * (the one selected in the sidebar), NOT necessarily the organization being
  * viewed on the current page.
- * 
+ *
  * Use this for:
  * - Navigation menus and sidebars
  * - Global actions that apply to the active org
  * - UI elements that should reflect the user's current working context
- * 
+ *
  * For page-specific permissions, use `usePermissions({ organizationId })` instead.
- * 
+ *
  * @example
  * ```tsx
  * // ✅ Good: Navigation component
@@ -167,13 +176,13 @@ export const useOrganizationContext = (): OrganizationContextValue => {
  *   const { can } = useActiveOrgPermissions()
  *   return <nav>{can('edit_org_info') && <CreateButton />}</nav>
  * }
- * 
+ *
  * // ❌ Bad: Organization page component
  * const OrgPage = ({ orgId }) => {
  *   const { can } = useActiveOrgPermissions() // WRONG! Could be different org
  *   return <div>{can('edit_org_info') && <EditButton />}</div>
  * }
- * 
+ *
  * // ✅ Good: Organization page component
  * const OrgPage = ({ orgId }) => {
  *   const { can } = usePermissions({ area: 'organization', organizationId: orgId })

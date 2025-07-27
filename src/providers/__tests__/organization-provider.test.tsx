@@ -1,44 +1,54 @@
-import { renderHook } from '@testing-library/react'
+import {
+  OrganizationProvider,
+  useActiveOrgPermissions,
+  useOrganizationContext,
+} from '../organization-provider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import React from 'react'
+import { renderHook } from '@testing-library/react'
 
-import { OrganizationProvider, useOrganizationContext, useActiveOrgPermissions } from '../organization-provider'
-import { useStoredSettings } from '@/hooks/use-stored-settings'
-import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 import { usePermissions } from '@/hooks/use-permissions'
+import { useStoredSettings } from '@/hooks/use-stored-settings'
+
+import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 
 // Mock dependencies
 jest.mock('@/hooks/use-stored-settings')
 jest.mock('@/features/organization/hooks/use-get-organizations')
 jest.mock('@/hooks/use-permissions')
 
-const mockUseStoredSettings = useStoredSettings as jest.MockedFunction<typeof useStoredSettings>
-const mockUseGetOrganizations = useGetOrganizations as jest.MockedFunction<typeof useGetOrganizations>
-const mockUsePermissions = usePermissions as jest.MockedFunction<typeof usePermissions>
+const mockUseStoredSettings = useStoredSettings as jest.MockedFunction<
+  typeof useStoredSettings
+>
+const mockUseGetOrganizations = useGetOrganizations as jest.MockedFunction<
+  typeof useGetOrganizations
+>
+const mockUsePermissions = usePermissions as jest.MockedFunction<
+  typeof usePermissions
+>
 
 // Test data with proper Organization type
 const mockOrganizations = [
-  { 
-    id: 'org-1', 
-    name: 'Organization 1', 
+  {
+    id: 'org-1',
+    name: 'Organization 1',
     avatar: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     createdBy: 'user-1',
     updatedBy: 'user-1',
   },
-  { 
-    id: 'org-2', 
-    name: 'Organization 2', 
+  {
+    id: 'org-2',
+    name: 'Organization 2',
     avatar: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     createdBy: 'user-1',
     updatedBy: 'user-1',
   },
-  { 
-    id: 'org-3', 
-    name: 'Organization 3', 
+  {
+    id: 'org-3',
+    name: 'Organization 3',
     avatar: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -50,7 +60,13 @@ const mockOrganizations = [
 const mockPermissionsOrg1 = {
   can: jest.fn((action: string) => {
     // User has full permissions for org-1
-    return ['edit_org_info', 'edit_org_members', 'delete_org', 'view_org', 'view_org_member_details'].includes(action)
+    return [
+      'edit_org_info',
+      'edit_org_members',
+      'delete_org',
+      'view_org',
+      'view_org_member_details',
+    ].includes(action)
   }),
   isLoading: false,
   error: null,
@@ -127,7 +143,9 @@ describe('OrganizationProvider Security Tests', () => {
   describe('Active Organization Context', () => {
     it('should provide permissions for the active organization only', () => {
       const wrapper = createWrapper()
-      const { result } = renderHook(() => useActiveOrgPermissions(), { wrapper })
+      const { result } = renderHook(() => useActiveOrgPermissions(), {
+        wrapper,
+      })
 
       // Should have permissions for org-1 (active org)
       expect(result.current.can('edit_org_info')).toBe(true)
@@ -144,13 +162,15 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       const wrapper = createWrapper()
-      const { result } = renderHook(() => useActiveOrgPermissions(), { wrapper })
+      const { result } = renderHook(() => useActiveOrgPermissions(), {
+        wrapper,
+      })
 
       // Should NOT have edit permissions for org-2
       expect(result.current.can('edit_org_info')).toBe(false)
       expect(result.current.can('edit_org_members')).toBe(false)
       expect(result.current.can('delete_org')).toBe(false)
-      
+
       // Should only have view permission
       expect(result.current.can('view_org')).toBe(true)
     })
@@ -163,7 +183,9 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       const wrapper = createWrapper()
-      const { result } = renderHook(() => useActiveOrgPermissions(), { wrapper })
+      const { result } = renderHook(() => useActiveOrgPermissions(), {
+        wrapper,
+      })
 
       // Should deny all permissions when no active org
       expect(result.current.can('edit_org_info')).toBe(false)
@@ -192,7 +214,7 @@ describe('OrganizationProvider Security Tests', () => {
           exact: true,
           type: 'all',
           refetchType: 'all',
-        })
+        }),
       )
     })
 
@@ -208,7 +230,9 @@ describe('OrganizationProvider Security Tests', () => {
 
     it('should properly update permissions after organization switch', async () => {
       const wrapper = createWrapper()
-      const { result, rerender } = renderHook(() => useActiveOrgPermissions(), { wrapper })
+      const { result, rerender } = renderHook(() => useActiveOrgPermissions(), {
+        wrapper,
+      })
 
       // Initially org-1 permissions
       expect(result.current.can('edit_org_info')).toBe(true)
@@ -237,7 +261,9 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       const wrapper = createWrapper()
-      const { result } = renderHook(() => useActiveOrgPermissions(), { wrapper })
+      const { result } = renderHook(() => useActiveOrgPermissions(), {
+        wrapper,
+      })
 
       // Should deny all permissions for invalid org
       expect(result.current.can('edit_org_info')).toBe(false)
@@ -252,7 +278,9 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       const wrapper = createWrapper()
-      const { result } = renderHook(() => useActiveOrgPermissions(), { wrapper })
+      const { result } = renderHook(() => useActiveOrgPermissions(), {
+        wrapper,
+      })
 
       // Should deny permissions while loading
       expect(result.current.can('edit_org_info')).toBe(false)
@@ -267,7 +295,9 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       const wrapper = createWrapper()
-      const { result } = renderHook(() => useActiveOrgPermissions(), { wrapper })
+      const { result } = renderHook(() => useActiveOrgPermissions(), {
+        wrapper,
+      })
 
       // Should deny permissions on error
       expect(result.current.can('edit_org_info')).toBe(false)
@@ -280,7 +310,9 @@ describe('OrganizationProvider Security Tests', () => {
 
       expect(() => {
         renderHook(() => useOrganizationContext())
-      }).toThrow('useOrganizationContext must be used within an OrganizationProvider')
+      }).toThrow(
+        'useOrganizationContext must be used within an OrganizationProvider',
+      )
 
       consoleSpy.mockRestore()
     })
@@ -298,7 +330,9 @@ describe('OrganizationProvider Security Tests', () => {
         clearSettings: jest.fn(),
       })
 
-      const { result: result1 } = renderHook(() => useActiveOrgPermissions(), { wrapper })
+      const { result: result1 } = renderHook(() => useActiveOrgPermissions(), {
+        wrapper,
+      })
       expect(result1.current.can('delete_org')).toBe(true)
 
       // Test org-3 permissions (no permissions)
@@ -308,19 +342,23 @@ describe('OrganizationProvider Security Tests', () => {
         clearSettings: jest.fn(),
       })
 
-      const { result: result3 } = renderHook(() => useActiveOrgPermissions(), { wrapper })
+      const { result: result3 } = renderHook(() => useActiveOrgPermissions(), {
+        wrapper,
+      })
       expect(result3.current.can('delete_org')).toBe(false)
       expect(result3.current.can('view_org')).toBe(false)
     })
 
     it('should verify permission actions are type-safe', () => {
       const wrapper = createWrapper()
-      const { result } = renderHook(() => useActiveOrgPermissions(), { wrapper })
+      const { result } = renderHook(() => useActiveOrgPermissions(), {
+        wrapper,
+      })
 
       // Valid permission actions should work
       expect(() => result.current.can('edit_org_info')).not.toThrow()
       expect(() => result.current.can('view_org')).not.toThrow()
-      
+
       // The TypeScript compiler should prevent invalid actions at compile time
       // This test verifies the types are properly defined
       expect(typeof result.current.can).toBe('function')

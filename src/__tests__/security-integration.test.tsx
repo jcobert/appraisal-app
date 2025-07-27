@@ -1,11 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook } from '@testing-library/react'
-import React from 'react'
 
 import {
   OrganizationProvider,
-  useOrganizationContext,
   useActiveOrgPermissions,
+  useOrganizationContext,
 } from '@/providers/organization-provider'
 
 import { usePermissions } from '@/hooks/use-permissions'
