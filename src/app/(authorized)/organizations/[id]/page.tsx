@@ -46,6 +46,7 @@ const Page: FC<Props> = async ({ params }) => {
           { segment: 'organizations', link: false },
           { segment: organizationId, name: res?.data?.name },
         ]}
+        hidden
       />
       <OrganizationPage organizationId={organizationId} />
     </HydrationBoundary>
