@@ -22,7 +22,7 @@ import {
 import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { useStoredSettings } from '@/hooks/use-stored-settings'
+import { useOrganizationContext } from '@/providers/organization-provider'
 
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 
@@ -32,43 +32,42 @@ type Props = {
 }
 
 const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
-  const {
-    settings: { activeOrg },
-    updateSettings,
-  } = useStoredSettings()
   const isClient = useIsClient()
   const { isMobile, open, setOpenMobile } = useSidebar()
-
+  
   const { response } = useGetOrganizations()
-
   const orgs = response?.data || organizations
 
-  const organizationOptions = useMemo(() => {
-    if (!orgs?.length) return []
-    return sortBy(orgs, (org) => org?.name?.toLowerCase())
-  }, [orgs])
+  const {
+    activeOrgId,
+    selectedOrganization,
+    switchOrganization,
+    organizations: contextOrganizations,
+  } = useOrganizationContext()
 
-  const selectedOrganization = useMemo(() => {
-    if (!organizationOptions?.length) return undefined
-    return organizationOptions?.find((org) => org?.id === activeOrg)
-  }, [activeOrg, organizationOptions])
+  // Use organizations from context if available, otherwise fall back to props/query
+  const organizationOptions = useMemo(() => {
+    const orgList = contextOrganizations.length > 0 ? contextOrganizations : orgs
+    if (!orgList?.length) return []
+    return sortBy(orgList, (org) => org?.name?.toLowerCase())
+  }, [contextOrganizations, orgs])
 
   const selectOrg = useCallback(
-    (org?: typeof selectedOrganization) => {
+    async (org?: typeof selectedOrganization) => {
       const newOrg = org || organizationOptions?.[0]
-      if (newOrg) {
-        updateSettings({ activeOrg: newOrg?.id })
+      if (newOrg && newOrg.id !== activeOrgId) {
+        await switchOrganization(newOrg.id)
       }
     },
-    [updateSettings, organizationOptions],
+    [organizationOptions, activeOrgId, switchOrganization],
   )
 
-  // Update local storage with first org on load, if none exists.
+  // Auto-select first org if none is selected
   useEffect(() => {
-    if (!activeOrg || !selectedOrganization) {
+    if (!activeOrgId && organizationOptions.length > 0) {
       selectOrg()
     }
-  }, [selectedOrganization, activeOrg, selectOrg])
+  }, [activeOrgId, organizationOptions, selectOrg])
 
   if (!isClient)
     return (
@@ -131,7 +130,7 @@ const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
           Organizations
         </DropdownMenuLabel>
         {organizationOptions?.map((org) => {
-          const isActive = org?.id === activeOrg
+          const isActive = org?.id === activeOrgId
           return (
             <DropdownMenuItem
               key={org?.id}

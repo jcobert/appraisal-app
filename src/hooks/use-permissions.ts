@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
+import { exists } from '@/utils/general'
 import { filteredQueryKey } from '@/utils/query'
 
 import useCoreQuery, { UseCoreQueryProps } from '@/hooks/use-core-query'
@@ -44,7 +45,7 @@ export function usePermissions<Area extends PermissionArea>({
   const { response, isLoading, error } = useCoreQuery<PermissionsResponse>({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/permissions`,
     queryKey: permissionsQueryKey.filtered({ organizationId, area }),
-    enabled: true,
+    enabled: exists(organizationId),
     staleTime: 1000 * 60 * 60,
     ...options,
   })

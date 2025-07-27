@@ -107,24 +107,24 @@ const SidebarUserMenu: FC<Props> = ({ sessionData }) => {
           <DropdownMenuItem asChild>
             <Link href='/user/profile'>My Profile</Link>
           </DropdownMenuItem>
+          {/* <DropdownMenuItem asChild>
+            <Link href='/user/settings'>Settings</Link>
+          </DropdownMenuItem> */}
         </DropdownMenuGroup>
 
-        {/* <DropdownMenuSeparator /> */}
+        {/* <DropdownMenuSeparator />
 
-        {/* <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <BadgeCheck />
-            Account
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <CreditCard />
-            Billing
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Bell />
-            Notifications
-          </DropdownMenuItem>
-        </DropdownMenuGroup> */}
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem>Email</DropdownMenuItem>
+              <DropdownMenuItem>Message</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>More...</DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub> */}
 
         <DropdownMenuSeparator />
 

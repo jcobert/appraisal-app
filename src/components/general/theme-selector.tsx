@@ -1,98 +1,77 @@
 'use client'
 
-import * as Toggle from '@radix-ui/react-toggle-group'
+import { Check, Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { FC } from 'react'
-import { IconType } from 'react-icons'
-import {
-  MdDarkMode,
-  MdLightMode,
-  MdOutlineAppSettingsAlt,
-} from 'react-icons/md'
 import { useIsClient } from 'usehooks-ts'
 
+import { cn } from '@/lib/utils'
+
 import { objectKeys } from '@/utils/general'
-import { cn } from '@/utils/style'
 
-enum Theme {
-  light = 'Light',
-  dark = 'Dark',
-  system = 'Auto',
-}
+import { Theme } from '@/providers/theme-provider'
 
-type Props = {
-  className?: string
-}
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar'
+import { Skeleton } from '@/components/ui/skeleton'
 
-const themeIcon = {
-  dark: MdDarkMode,
-  light: MdLightMode,
-  system: MdOutlineAppSettingsAlt,
-} satisfies { [key in keyof typeof Theme]: IconType }
-
-const Item = ({
-  theme,
-  className,
-}: {
-  theme: keyof typeof Theme
-  className?: string
-}) => {
-  const isDark = theme === 'dark'
-  const isLight = theme === 'light'
-  const isSystem = theme === 'system'
-
-  const Icon = themeIcon?.[theme]
-
-  if (!theme) return null
-
-  return (
-    <Toggle.Item
-      // aria-label={`${Theme?.[theme]}`}
-      value={theme}
-      className={cn(
-        'p-2 px-4 border-x border-transparent dark:bg-gray-900 hover:data-[state="off"]:dark:bg-gray-800 hover:data-[state="off"]:bg-gray-100 transition',
-        isLight &&
-          'rounded-l data-[state="on"]:bg-amber-500 data-[state="on"]:text-almost-white',
-        isDark &&
-          'data-[state="on"]:bg-indigo-900 data-[state="on"]:text-almost-white data-[state="off"]:border-gray-100 data-[state="on"]:border-gray-500',
-        isSystem &&
-          'rounded-r data-[state="on"]:bg-blue-500 data-[state="on"]:text-almost-white',
-        className,
-      )}
-    >
-      <div className='flex flex-col'>
-        <Icon aria-hidden className='mx-auto' />
-        <span className='text-2xs'>{`${Theme?.[theme]}`}</span>
-      </div>
-    </Toggle.Item>
-  )
-}
-
-const ThemeSelector: FC<Props> = ({ className }) => {
+const ThemeSelector: FC = () => {
   const isClient = useIsClient()
-  const { theme, setTheme } = useTheme()
+  const { setTheme, theme } = useTheme()
+  const { isMobile, open, openMobile } = useSidebar()
 
-  if (!isClient) return null
+  if (!isClient)
+    return (
+      <Skeleton
+        className={cn(
+          'size-8 rounded-md',
+          !open && 'mx-auto',
+          open && 'ml-2 mb-2',
+        )}
+      />
+    )
 
   return (
-    <div>
-      <Toggle.Root
-        aria-label='theme selector'
-        type='single'
-        value={theme}
-        onValueChange={(val) => {
-          if (val) setTheme(val)
-        }}
-        className={cn(
-          'flex w-full items-center justify-center border dark:border-gray-500 rounded-[0.3125rem]',
-          className,
-        )}
-      >
-        {objectKeys(Theme)?.map((thm) => (
-          <Item key={thm} theme={thm} className='flex-auto' />
-        ))}
-      </Toggle.Root>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <SidebarMenuButton
+          className={cn(
+            'size-fit',
+            (open || openMobile) && 'ml-2 transition-all',
+            (open || isMobile) && 'mb-2',
+          )}
+          variant='outline'
+        >
+          <Sun className='h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90' />
+          <Moon className='absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0' />
+          <span className='sr-only'>Toggle theme</span>
+        </SidebarMenuButton>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuLabel className='text-muted-foreground text-xs'>
+          Theme
+        </DropdownMenuLabel>
+        {objectKeys(Theme)?.map((t) => {
+          const isActive = t === theme
+          return (
+            <DropdownMenuItem
+              key={t}
+              onClick={() => setTheme(t)}
+              className='flex items-center'
+            >
+              <span className='flex-1 capitalize'>{t}</span>
+              {isActive ? <Check className='text-primary' /> : null}
+            </DropdownMenuItem>
+          )
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

@@ -4,7 +4,7 @@ import plugin from 'tailwindcss/plugin'
 
 export default {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
-  darkMode: ['selector', 'class'],
+  darkMode: ['class'],
   future: { hoverOnlyWhenSupported: true },
   theme: {
     extend: {
