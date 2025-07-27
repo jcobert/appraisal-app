@@ -1,3 +1,4 @@
+import { Organization } from '@prisma/client'
 import { useCallback } from 'react'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
@@ -27,7 +28,7 @@ export const permissionsQueryKey = {
 
 type Props<Area extends PermissionArea> = {
   area: Area
-  organizationId: string
+  organizationId: Organization['id']
   options?: Partial<UseCoreQueryProps<PermissionsResponse>>
 }
 

@@ -12,6 +12,7 @@ import {
 
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
+import { homeUrl } from '@/utils/nav'
 import { toastyRequest } from '@/utils/toast'
 
 import Form from '@/components/form/form'
@@ -74,13 +75,13 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
         },
       )
       if (successful(res.status)) {
-        router.replace('/organizations')
+        router.replace(homeUrl(true))
       }
     }
   }
 
   const onCancel = () => {
-    router.replace(prevUrl)
+    router.replace(homeUrl(true))
   }
 
   return (

@@ -17,23 +17,23 @@ import { PermissionAction } from '@/configuration/permissions'
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 
 type OrganizationContextValue = {
-  /** The currently active organization ID */
+  /** The currently active organization ID. */
   activeOrgId: string | undefined
-  /** The currently active organization object */
+  /** The currently active organization object. */
   selectedOrganization: Organization | undefined
-  /** All available organizations */
+  /** All available organizations. */
   organizations: Organization[]
-  /** Loading state for organizations */
+  /** Loading state for organizations. */
   isLoadingOrganizations: boolean
-  /** Current user's permissions for the active organization */
+  /** Current user's permissions for the active organization. */
   permissions: {
     can: (action: PermissionAction['organization']) => boolean
     isLoading: boolean
     error: Error | null
   }
-  /** Switch to a different organization */
+  /** Switch to a different organization. */
   switchOrganization: (orgId: string) => Promise<void>
-  /** Refresh permissions for the current organization */
+  /** Refresh permissions for the current organization. */
   refreshPermissions: () => Promise<void>
 }
 
@@ -41,7 +41,7 @@ const OrganizationContext = createContext<OrganizationContextValue | null>(null)
 
 type OrganizationProviderProps = {
   children: React.ReactNode
-  /** Optional initial organizations data */
+  /** Optional initial organizations data. */
   initialOrganizations?: Organization[]
 }
 

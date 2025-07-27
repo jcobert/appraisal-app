@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+import { useOrgPageRedirect } from '@/hooks/use-org-page-redirect'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useProtectPage } from '@/hooks/use-protect-page'
 
@@ -25,27 +26,34 @@ type Props = {
 }
 
 const OrganizationPage: FC<Props> = ({ organizationId }) => {
-  useProtectPage()
-
   const router = useRouter()
   const pathname = usePathname()
 
-  const { can } = usePermissions({
+  const {
+    session: { isLoading: isCheckingAuth },
+  } = useProtectPage()
+
+  const { can, isLoading: isCheckingPermissions } = usePermissions({
     area: 'organization',
     organizationId,
   })
+
+  useOrgPageRedirect(organizationId)
 
   const userCanEditOrg = can('edit_org_info')
   const userCanAddMembers = can('edit_org_members')
 
   const { response } = useGetOrganizations({
     id: organizationId,
-    options: { enabled: true },
+    options: { enabled: !isCheckingAuth && !isCheckingPermissions },
   })
 
   const organization = response?.data
 
   const [inviteFormOpen, setInviteFormOpen] = useState(false)
+
+  /** @todo Return org page skeleton. */
+  if (isCheckingAuth || isCheckingPermissions) return null
 
   return (
     <>
