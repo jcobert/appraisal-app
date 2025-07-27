@@ -12,9 +12,9 @@ type SchemaBase = ZodObject<TableMutable<OrgMember>>
 
 const formSchema = z.object(
   {
-    firstName: z.string().nonempty(),
-    lastName: z.string().nonempty(),
-    email: z.string().email(),
+    firstName: z.string().trim().nonempty(),
+    lastName: z.string().trim().nonempty(),
+    email: z.string().trim().email(),
     roles: z.array(z.enum(ORG_MEMBER_ROLES)).min(1, 'Select at least one role'),
   },
   { errorMap: formErrorMap },

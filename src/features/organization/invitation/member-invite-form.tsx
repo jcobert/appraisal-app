@@ -4,6 +4,8 @@ import { FC, useMemo, useState } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 import { z } from 'zod'
 
+import { orgMemberSchema } from '@/lib/db/schemas/org-member'
+
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 import { toastyRequest } from '@/utils/toast'
@@ -29,12 +31,7 @@ type Props = {
 } & Required<Pick<ModalProps, 'open' | 'onOpenChange'>> &
   Partial<Omit<ModalProps, 'open' | 'onOpenChange'>>
 
-const formSchema = z.object({
-  firstName: z.string().nonempty(),
-  lastName: z.string().nonempty(),
-  email: z.string().email(),
-  roles: z.array(z.enum(ORG_MEMBER_ROLES)).min(1, 'Select at least one role'),
-})
+const formSchema = orgMemberSchema.form
 
 type MemberInviteFormData = z.infer<typeof formSchema>
 

@@ -12,10 +12,10 @@ type SchemaBase = ZodObject<
 
 const baseSchema = z.object(
   {
-    firstName: z.string().nonempty(),
-    lastName: z.string().nonempty(),
-    email: z.string().email().nonempty(),
-    phone: z.string().optional(),
+    firstName: z.string().trim().nonempty(),
+    lastName: z.string().trim().nonempty(),
+    email: z.string().trim().email().nonempty(),
+    phone: z.string().trim().optional(),
   } satisfies SchemaBase,
   { errorMap: formErrorMap },
 )
