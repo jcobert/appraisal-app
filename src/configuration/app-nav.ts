@@ -13,8 +13,8 @@ export const APP_NAVIGATION_ITEMS: NavItem[] = [
     protected: true,
   },
   {
-    id: 'organizations',
-    name: 'Organizations',
+    id: 'organization',
+    name: 'Organization',
     url: '/organizations',
     icon: RiOrganizationChart,
     protected: true,

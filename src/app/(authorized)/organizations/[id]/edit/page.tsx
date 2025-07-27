@@ -36,7 +36,12 @@ const Page: FC<Props> = async ({ params }) => {
 
   return (
     <>
-      <Crumbs crumbs={[{ segment: organizationId, name: data?.name }]} />
+      <Crumbs
+        crumbs={[
+          { segment: 'organizations', link: false },
+          { segment: organizationId, name: data?.name },
+        ]}
+      />
       <OrganizationForm initialData={data} />
     </>
   )

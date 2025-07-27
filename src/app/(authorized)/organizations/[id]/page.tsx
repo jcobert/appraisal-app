@@ -41,7 +41,12 @@ const Page: FC<Props> = async ({ params }) => {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Crumbs crumbs={[{ segment: organizationId, name: res?.data?.name }]} />
+      <Crumbs
+        crumbs={[
+          { segment: 'organizations', link: false },
+          { segment: organizationId, name: res?.data?.name },
+        ]}
+      />
       <OrganizationPage organizationId={organizationId} />
     </HydrationBoundary>
   )

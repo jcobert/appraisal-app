@@ -47,12 +47,14 @@ describe('Crumbs', () => {
         path: '/dashboard',
         name: 'dashboard',
         hidden: false,
+        link: true,
       },
       {
         segment: 'settings',
         path: '/dashboard/settings',
         name: 'settings',
         hidden: false,
+        link: true,
       },
     ])
   })
@@ -61,7 +63,7 @@ describe('Crumbs', () => {
     ;(usePathname as jest.Mock).mockReturnValue('/org/123/members')
 
     const customCrumbs = [
-      { segment: 'org', name: 'Organization' },
+      { segment: 'org', name: 'Organization', link: false },
       { segment: '123', name: 'Acme Corp', hidden: true },
       { segment: 'members', name: 'Team Members' },
     ]
@@ -74,18 +76,21 @@ describe('Crumbs', () => {
         path: '/org',
         name: 'Organization',
         hidden: false,
+        link: false,
       },
       {
         segment: '123',
         path: '/org/123',
         name: 'Acme Corp',
         hidden: true,
+        link: true,
       },
       {
         segment: 'members',
         path: '/org/123/members',
         name: 'Team Members',
         hidden: false,
+        link: true,
       },
     ])
   })
