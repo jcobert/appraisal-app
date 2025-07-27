@@ -92,6 +92,7 @@ const OrganizationPage: FC<Props> = ({ organizationId }) => {
           </div>
         ) : null}
 
+        {/** @todo Skeleton here when fetching? */}
         <OrganizationSettings organization={organization} />
       </div>
     </>

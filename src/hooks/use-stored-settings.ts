@@ -4,7 +4,7 @@ import { siteConfig } from '@/configuration/site'
 
 export type StoredSettings = {
   /** The currently selected organization. */
-  activeOrg?: string
+  activeOrgId?: string
   /** Whether sidebar navigation is expanded. */
   sidebarExpanded?: boolean
 }
@@ -13,7 +13,7 @@ const storedSettingsKey =
   `${siteConfig.title?.toLowerCase()?.trim()?.replace(' ', '-')}-prefs` as const
 
 const defaultSettings = {
-  activeOrg: '',
+  activeOrgId: '',
   sidebarExpanded: true,
 } satisfies StoredSettings
 

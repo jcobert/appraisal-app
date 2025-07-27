@@ -11,7 +11,7 @@ const Separator: FC<Props> = ({ className }) => {
     <div
       aria-hidden
       className={cn(
-        'h-px bg-gradient-to-r from-brand-extra-light/20 via-brand/15 to-brand-extra-light/20',
+        'h-px bg-gradient-to-r from-brand-extra-light/20 via-primary/15 to-brand-extra-light/20',
         className,
       )}
     />

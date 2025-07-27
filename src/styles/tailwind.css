@@ -21,7 +21,7 @@
   select:focus-visible,
   button:focus-visible,
   a:focus-visible {
-    @apply outline-offset-4 outline-brand;
+    @apply outline-offset-4 outline-primary;
   } */
 
   .layout {
@@ -95,20 +95,6 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-}
-
-@layer components {
-  .btn {
-    @apply flex min-h-[2.125rem] w-fit min-w-[6rem] cursor-pointer items-center justify-center gap-2 rounded border border-brand bg-brand px-8 py-3 text-almost-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:border-brand/25 disabled:bg-brand/70 max-sm:min-h-[3.375rem] max-sm:w-full max-sm:text-lg sm:px-4 sm:py-1 dark:border-brand dark:disabled:border-brand-extra-dark dark:disabled:bg-brand-extra-dark/50 dark:disabled:text-brand/50 [&:not(:disabled)]:shadow [&:not(:disabled)]:hover:shadow-sm;
-  }
-
-  .btn-outline {
-    @apply btn border border-brand bg-almost-white text-brand hover:border-brand-dark hover:bg-brand-light/5 hover:text-brand-dark disabled:border-brand/25 disabled:bg-almost-white/60 disabled:text-brand/60 hover:dark:bg-brand-extra-light dark:disabled:bg-neutral-500 dark:disabled:text-brand-extra-dark/80;
-  }
-
-  .btn-text {
-    @apply flex w-fit cursor-pointer items-center justify-center gap-2 rounded border border-transparent p-1 px-8 py-3 text-brand transition hover:text-brand-dark disabled:cursor-not-allowed disabled:text-brand/60 max-sm:text-lg sm:px-4 sm:py-1 dark:text-brand-light dark:disabled:border-brand/10 dark:disabled:text-brand-dark/60 [&:not(:disabled)]:hover:bg-brand/5 [&:not(:disabled)]:dark:hover:text-brand;
   }
 }
 

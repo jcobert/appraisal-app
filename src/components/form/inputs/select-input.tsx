@@ -125,7 +125,7 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
               cn({
                 'dark:!bg-zinc-700 !bg-brand-extra-light':
                   props.isFocused && !props.isSelected,
-                '!bg-brand': props.isSelected,
+                '!bg-primary': props.isSelected,
               }),
             input: () => cn('dark:!text-zinc-100'),
             singleValue: () => cn('dark:!text-zinc-100'),

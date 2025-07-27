@@ -121,6 +121,13 @@ const SidebarProvider = React.forwardRef<
       return () => window.removeEventListener('keydown', handleKeyDown)
     }, [toggleSidebar])
 
+    // Closes mobile menu when not mobile anymore.
+    React.useEffect(() => {
+      if (!isMobile) {
+        setOpenMobile(false)
+      }
+    }, [isMobile])
+
     // We add a state so that we can do data-state="expanded" or "collapsed".
     // This makes it easier to style the sidebar with Tailwind classes.
     const state = open ? 'expanded' : 'collapsed'
@@ -199,7 +206,7 @@ const Sidebar = React.forwardRef<
     // Close sidebar when new page is loaded.
     React.useEffect(() => {
       setOpenMobile(false)
-    }, [pathname])
+    }, [pathname, setOpenMobile])
 
     if (collapsible === 'none') {
       return (
