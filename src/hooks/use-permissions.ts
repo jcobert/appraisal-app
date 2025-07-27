@@ -10,7 +10,7 @@ import useCoreQuery, { UseCoreQueryProps } from '@/hooks/use-core-query'
 
 import { PermissionAction, PermissionArea } from '@/configuration/permissions'
 
-type UsePermissionsResult<Area extends PermissionArea> = {
+type UsePermissionsReturn<Area extends PermissionArea> = {
   can: (action: PermissionAction[Area]) => boolean
   isLoading: boolean
   error: Error | null
@@ -42,7 +42,7 @@ export function usePermissions<Area extends PermissionArea>({
   area,
   organizationId,
   options,
-}: Props<Area>): UsePermissionsResult<Area> {
+}: Props<Area>): UsePermissionsReturn<Area> {
   const { response, isLoading, error } = useCoreQuery<PermissionsResponse>({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/permissions`,
     queryKey: permissionsQueryKey.filtered({ organizationId, area }),

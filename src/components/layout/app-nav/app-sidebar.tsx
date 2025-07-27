@@ -3,8 +3,8 @@ import { FC } from 'react'
 
 import { getUserOrganizations } from '@/lib/db/queries/organization'
 import { getActiveUserProfile } from '@/lib/db/queries/user'
+import { getSessionData } from '@/lib/db/utils'
 
-import { getSessionData } from '@/utils/auth'
 import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 

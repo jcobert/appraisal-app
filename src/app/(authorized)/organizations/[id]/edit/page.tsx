@@ -2,8 +2,7 @@ import { Metadata } from 'next'
 import { FC } from 'react'
 
 import { getOrganization } from '@/lib/db/queries/organization'
-
-import { protectPage } from '@/utils/auth'
+import { protectPage } from '@/lib/db/utils'
 
 import Crumbs from '@/components/layout/app-nav/crumbs'
 import FullScreenLoader from '@/components/layout/full-screen-loader'

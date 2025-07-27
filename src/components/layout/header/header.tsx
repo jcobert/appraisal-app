@@ -1,6 +1,6 @@
 import { FC } from 'react'
 
-import { getSessionData } from '@/utils/auth'
+import { getSessionData } from '@/lib/db/utils'
 
 import AuthLink from '@/components/auth/auth-link'
 import UserMenu from '@/components/layout/header/user-menu'

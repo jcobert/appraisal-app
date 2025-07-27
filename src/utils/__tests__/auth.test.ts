@@ -1,14 +1,14 @@
 import { redirect } from 'next/navigation'
 
 import {
-  authUrl,
   getSessionData,
   getUserPermissions,
-  isAuthenticated,
   protectPage,
   userCan,
   withPermission,
-} from '@/utils/auth'
+} from '@/lib/db/utils'
+
+import { authUrl, isAuthenticated } from '@/utils/auth'
 
 import { PermissionAction } from '@/configuration/permissions'
 

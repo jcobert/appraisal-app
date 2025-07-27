@@ -3,8 +3,8 @@ import { Metadata } from 'next'
 import { FC } from 'react'
 
 import { getUserOrganizations } from '@/lib/db/queries/organization'
+import { protectPage } from '@/lib/db/utils'
 
-import { protectPage } from '@/utils/auth'
 import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 

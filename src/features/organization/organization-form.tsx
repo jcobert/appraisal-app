@@ -2,7 +2,7 @@
 
 import { Organization } from '@prisma/client'
 import { useRouter } from 'next/navigation'
-import { FC } from 'react'
+import { FC, useEffect } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 
 import {
@@ -20,6 +20,9 @@ import FormActionBar from '@/components/form/form-action-bar'
 import TextInput from '@/components/form/inputs/text-input'
 import { Button } from '@/components/ui/button'
 
+import { useOrgPageRedirect } from '@/hooks/use-org-page-redirect'
+import { usePermissions } from '@/hooks/use-permissions'
+import { useProtectPage } from '@/hooks/use-protect-page'
 import useZodForm from '@/hooks/use-zod-form'
 
 import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
@@ -38,9 +41,23 @@ type Props = {
 const OrganizationForm: FC<Props> = ({ initialData }) => {
   const router = useRouter()
 
-  const organizationId = initialData?.id
+  const organizationId = initialData?.id || ''
+
+  useProtectPage()
+
+  const { can } = usePermissions({
+    area: 'organization',
+    organizationId,
+  })
+
+  useOrgPageRedirect(organizationId, { enabled: !!organizationId })
+
+  const userCanEditOrg = can('edit_org_info')
+
   const isUpdate = !!organizationId
-  const prevUrl = `/organizations/${organizationId || ''}`
+  const prevUrl = organizationId
+    ? `/organizations/${organizationId || ''}`
+    : homeUrl(true)
 
   const defaultValues = formDefaults(defaultFormValues, initialData)
 
@@ -56,6 +73,14 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
       },
     },
   })
+
+  // As extra security, redirect if user doesn't have permissions.
+  // Could happen if user's rights were changed by admin while user is here.
+  useEffect(() => {
+    if (isUpdate && !userCanEditOrg) {
+      router.push(homeUrl(true))
+    }
+  }, [isUpdate, userCanEditOrg, router])
 
   const onSubmit: SubmitHandler<OrganizationFormData> = async (data) => {
     const payload = isUpdate ? data : { ...initialData, ...data }
@@ -75,13 +100,13 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
         },
       )
       if (successful(res.status)) {
-        router.replace(homeUrl(true))
+        router.replace(prevUrl)
       }
     }
   }
 
   const onCancel = () => {
-    router.replace(homeUrl(true))
+    router.replace(prevUrl)
   }
 
   return (
