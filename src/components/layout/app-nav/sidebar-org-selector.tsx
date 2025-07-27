@@ -10,6 +10,8 @@ import { useIsClient } from 'usehooks-ts'
 
 import { cn } from '@/lib/utils'
 
+import { useOrganizationContext } from '@/providers/organization-provider'
+
 import Avatar from '@/components/general/avatar'
 import {
   DropdownMenu,
@@ -22,8 +24,6 @@ import {
 import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { useOrganizationContext } from '@/providers/organization-provider'
-
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 
 type Props = {
@@ -34,7 +34,7 @@ type Props = {
 const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
   const isClient = useIsClient()
   const { isMobile, open, setOpenMobile } = useSidebar()
-  
+
   const { response } = useGetOrganizations()
   const orgs = response?.data || organizations
 
@@ -47,7 +47,8 @@ const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
 
   // Use organizations from context if available, otherwise fall back to props/query
   const organizationOptions = useMemo(() => {
-    const orgList = contextOrganizations.length > 0 ? contextOrganizations : orgs
+    const orgList =
+      contextOrganizations.length > 0 ? contextOrganizations : orgs
     if (!orgList?.length) return []
     return sortBy(orgList, (org) => org?.name?.toLowerCase())
   }, [contextOrganizations, orgs])
@@ -169,7 +170,7 @@ const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
           }}
         >
           <Link href='/organizations/create'>
-            <div className='flex size-6 items-center justify-center rounded-full border bg-transparent'>
+            <div className='flex size-6 items-center justify-center bg-transparent'>
               <Plus className='size-4' />
             </div>
             <div className='text-muted-foreground font-medium'>
