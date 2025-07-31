@@ -57,7 +57,7 @@ const AppSidebarCore: FC<Props> = ({ sessionData }) => {
       {
         id: 'organization',
         name: 'Organization',
-        url: `/organizations/${activeOrgId}`,
+        url: `/organizations/${activeOrgId}/settings`,
         icon: RiOrganizationChart,
       },
       // {

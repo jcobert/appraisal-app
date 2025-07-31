@@ -35,7 +35,8 @@ export const useOrganizationMutations = ({
       queryKey: organizationsQueryKey.filtered({ id: organizationId }),
       exact: true,
     })
-  }, [organizationId])
+    queryClient.invalidateQueries({ queryKey: organizationsQueryKey.all })
+  }, [organizationId, queryClient])
 
   const createOrganization = useCoreMutation<Payload, Organization>({
     url: CORE_API_ENDPOINTS.organization,

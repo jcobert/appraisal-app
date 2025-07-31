@@ -55,9 +55,8 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
   const userCanEditOrg = can('edit_org_info')
 
   const isUpdate = !!organizationId
-  const prevUrl = organizationId
-    ? `/organizations/${organizationId || ''}`
-    : homeUrl(true)
+
+  const prevUrl = homeUrl(true)
 
   const defaultValues = formDefaults(defaultFormValues, initialData)
 
@@ -128,9 +127,9 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
       </div>
 
       <FormActionBar>
-        <Button variant='outline' onClick={onCancel} className='max-sm:w-full'>
+        {/* <Button variant='outline' onClick={onCancel} className='max-sm:w-full'>
           Cancel
-        </Button>
+        </Button> */}
         <Button type='submit' className='max-sm:w-full'>
           {isUpdate ? 'Save' : 'Create'}
         </Button>
