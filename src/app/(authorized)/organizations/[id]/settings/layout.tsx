@@ -14,10 +14,12 @@ const Layout = async ({
   const orgId = (await params)?.id
 
   return (
-    <div className='flex flex-col gap-6'>
-      <Heading text='Settings' />
-      <SettingsNavigation organizationId={orgId} />
-      <div className='pt-6'>{children}</div>
+    <div className='flex flex-col gap-2'>
+      <div className='flex flex-col gap-6'>
+        <Heading text='Settings' />
+        <SettingsNavigation organizationId={orgId} />
+      </div>
+      <div>{children}</div>
     </div>
   )
 }

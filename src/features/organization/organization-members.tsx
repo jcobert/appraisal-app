@@ -20,31 +20,13 @@ const OrganizationMembers: FC<Props> = ({ organization }) => {
 
   return (
     <div className='flex flex-col gap-4 sm:w-fit'>
-      <div className='flex max-sm:flex-col sm:items-center gap-x-4 gap-y-2'>
-        <h2 className='text-xl font-medium'>Members</h2>
-      </div>
-
       <div className='flex flex-col gap-2'>
         <div className='flex flex-col gap-2'>
-          {owners?.map((m) => (
-            // <Link
-            //   key={m?.id}
-            //   href={`/organizations/${organization?.id}/members/${m?.id}`}
-            // >
-            <OrgMemberCard key={m?.id} member={m} />
-            // </Link>
-          ))}
+          {owners?.map((m) => <OrgMemberCard key={m?.id} member={m} />)}
         </div>
 
         <div className='flex flex-col gap-2'>
-          {others?.map((m) => (
-            // <Link
-            //   key={m?.id}
-            //   href={`/organizations/${organization?.id}/members/${m?.id}`}
-            // >
-            <OrgMemberCard key={m?.id} member={m} />
-            // </Link>
-          ))}
+          {others?.map((m) => <OrgMemberCard key={m?.id} member={m} />)}
         </div>
       </div>
 

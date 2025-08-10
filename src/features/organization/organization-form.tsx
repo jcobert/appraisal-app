@@ -26,6 +26,7 @@ import { useProtectPage } from '@/hooks/use-protect-page'
 import useZodForm from '@/hooks/use-zod-form'
 
 import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
+import SectionHeading from '@/features/organization/settings/section-heading'
 
 const schema = organizationSchema.form
 
@@ -45,7 +46,7 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
 
   useProtectPage()
 
-  const { can } = usePermissions({
+  const { can, isLoading: isLoadingPermissions } = usePermissions({
     area: 'organization',
     organizationId,
   })
@@ -76,10 +77,10 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
   // As extra security, redirect if user doesn't have permissions.
   // Could happen if user's rights were changed by admin while user is here.
   useEffect(() => {
-    if (isUpdate && !userCanEditOrg) {
+    if (isUpdate && !userCanEditOrg && !isLoadingPermissions) {
       router.push(homeUrl(true))
     }
-  }, [isUpdate, userCanEditOrg, router])
+  }, [isUpdate, userCanEditOrg, isLoadingPermissions, router])
 
   const onSubmit: SubmitHandler<OrganizationFormData> = async (data) => {
     const payload = isUpdate ? data : { ...initialData, ...data }
@@ -104,33 +105,50 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
     }
   }
 
-  const onCancel = () => {
-    router.replace(prevUrl)
-  }
+  // const onCancel = () => {
+  //   router.replace(prevUrl)
+  // }
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)}>
-      <div>
-        <Controller
-          control={control}
-          name='name'
-          render={({ field, fieldState: { error } }) => (
-            <TextInput
-              {...field}
-              id={field.name}
-              label='Name'
-              error={error?.message}
-              required
-            />
-          )}
+    <Form
+      onSubmit={handleSubmit(onSubmit)}
+      containerClassName='self-start border__ px-2'
+    >
+      <div className='grid grid-cols-1 gap-x-14 gap-y-8 md:grid-cols-3'>
+        <SectionHeading
+          title='Basic information'
+          subtitle='Update general organization info.'
         />
-      </div>
 
+        <div className='md:col-span-2'>
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-6'>
+            <Controller
+              control={control}
+              name='name'
+              render={({ field, fieldState: { error } }) => (
+                <TextInput
+                  {...field}
+                  id={field.name}
+                  label='Name'
+                  error={error?.message}
+                  required
+                  className='col-span-full'
+                  disabled={isLoadingPermissions}
+                />
+              )}
+            />
+          </div>
+        </div>
+      </div>
       <FormActionBar>
         {/* <Button variant='outline' onClick={onCancel} className='max-sm:w-full'>
           Cancel
         </Button> */}
-        <Button type='submit' className='max-sm:w-full'>
+        <Button
+          type='submit'
+          // className='max-sm:w-full'
+          disabled={isLoadingPermissions}
+        >
           {isUpdate ? 'Save' : 'Create'}
         </Button>
       </FormActionBar>

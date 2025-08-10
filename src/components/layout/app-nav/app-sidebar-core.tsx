@@ -1,9 +1,8 @@
 'use client'
 
-import { LayoutDashboard } from 'lucide-react'
+import { LayoutDashboard, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { FC, useMemo } from 'react'
-import { RiOrganizationChart } from 'react-icons/ri'
 import { useIsClient } from 'usehooks-ts'
 
 import { cn } from '@/lib/utils'
@@ -55,10 +54,10 @@ const AppSidebarCore: FC<Props> = ({ sessionData }) => {
         icon: LayoutDashboard,
       },
       {
-        id: 'organization',
-        name: 'Organization',
+        id: 'orgSettings',
+        name: 'Settings',
         url: `/organizations/${activeOrgId}/settings`,
-        icon: RiOrganizationChart,
+        icon: Settings,
       },
       // {
       //   id: 'orders',

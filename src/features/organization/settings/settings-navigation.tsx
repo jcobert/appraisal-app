@@ -26,9 +26,9 @@ const SettingsNavigation: FC<Props> = ({ organizationId }) => {
         url: `/organizations/${organizationId}/settings`,
       },
       {
-        id: 'users',
-        name: 'Users',
-        url: `/organizations/${organizationId}/settings/users`,
+        id: 'members',
+        name: 'Members',
+        url: `/organizations/${organizationId}/settings/members`,
       },
     ],
     [organizationId],
