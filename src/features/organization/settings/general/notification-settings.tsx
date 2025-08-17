@@ -26,7 +26,7 @@ const NotificationSettings: FC<Props> = ({
   disabled = true,
   className,
 }) => {
-  const defaultValues = formDefaults(defaultFormValues, initialData)
+  // const defaultValues = formDefaults(defaultFormValues, initialData)
 
   // const { control, handleSubmit } = useZodForm(schema, {
   //   defaultValues,
@@ -43,7 +43,7 @@ const NotificationSettings: FC<Props> = ({
       <div className='grid grid-cols-1 gap-x-14 gap-y-8 md:grid-cols-3'>
         <SectionHeading
           title='Notification Settings'
-          subtitle='Configure the types of notification you want to receive.'
+          subtitle='Configure the types of notifications you want to receive.'
         />
 
         <div className='md:col-span-2'>

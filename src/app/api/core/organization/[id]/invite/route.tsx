@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
+import { ORG_INVITE_EXPIRY } from '@/lib/db/config'
 import {
   createOrgInvitation,
   getOrganization,
@@ -61,7 +62,7 @@ export const POST = async (
     const org = await getOrganization({ organizationId })
 
     const inviteToken = generateUniqueToken()
-    const expires = generateExpiry(7)
+    const expires = generateExpiry(ORG_INVITE_EXPIRY)
 
     const invite = await createOrgInvitation({
       data: {

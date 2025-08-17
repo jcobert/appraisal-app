@@ -4,7 +4,9 @@ import { Organization } from '@prisma/client'
 import { FC, useState } from 'react'
 import { useIsClient } from 'usehooks-ts'
 
-import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+
+import { Button, ButtonProps } from '@/components/ui/button'
 
 import { useOrgPageRedirect } from '@/hooks/use-org-page-redirect'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -18,6 +20,20 @@ import SectionHeading from '@/features/organization/settings/section-heading'
 
 type Props = {
   organizationId: Organization['id']
+}
+
+const AddMemberButton: FC<{ hidden: boolean } & ButtonProps> = ({
+  skeleton,
+  hidden,
+  className,
+  ...props
+}) => {
+  if (!skeleton && hidden) return null
+  return (
+    <Button className={cn('w-fit', className)} skeleton={skeleton} {...props}>
+      Add member
+    </Button>
+  )
 }
 
 const MembersSettings: FC<Props> = ({ organizationId }) => {
@@ -61,16 +77,13 @@ const MembersSettings: FC<Props> = ({ organizationId }) => {
             title='Members'
             subtitle='Manage members of your organization.'
           />
-          {userCanAddMembers ? (
-            <Button
-              className='w-fit'
-              onClick={() => {
-                setInviteFormOpen(true)
-              }}
-            >
-              Add member
-            </Button>
-          ) : null}
+          <AddMemberButton
+            onClick={() => {
+              setInviteFormOpen(true)
+            }}
+            skeleton={!isClient || isCheckingPermissions}
+            hidden={!userCanAddMembers}
+          />
         </div>
 
         {!isClient ? (

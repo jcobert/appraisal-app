@@ -106,7 +106,7 @@ const OrganizationForm: FC<Props> = ({
     >
       <div className='grid grid-cols-1 gap-x-14 gap-y-8 md:grid-cols-3'>
         <SectionHeading
-          title='Basic information'
+          title='Basic Information'
           subtitle={
             isUpdate
               ? 'Update general organization info.'

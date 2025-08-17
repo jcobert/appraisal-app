@@ -3,12 +3,14 @@ import { Metadata } from 'next'
 import { FC } from 'react'
 
 import { getOrganization } from '@/lib/db/queries/organization'
-import { protectPage } from '@/lib/db/utils'
+import { getUserPermissions, protectPage } from '@/lib/db/utils'
 
 import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
 import FullScreenLoader from '@/components/layout/full-screen-loader'
+
+import { permissionsQueryKey } from '@/hooks/use-permissions'
 
 import { PageParams } from '@/types/general'
 
@@ -35,13 +37,25 @@ const Page: FC<Props> = async ({ params }) => {
 
   const queryClient = createQueryClient()
 
-  await queryClient.prefetchQuery({
-    queryKey: organizationsQueryKey.filtered({ id: organizationId }),
-    queryFn: async () => {
-      const data = await getOrganization({ organizationId })
-      return { data } satisfies FetchResponse
-    },
-  })
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: organizationsQueryKey.filtered({ id: organizationId }),
+      queryFn: async () => {
+        const data = await getOrganization({ organizationId })
+        return { data } satisfies FetchResponse
+      },
+    }),
+    queryClient.prefetchQuery({
+      queryKey: permissionsQueryKey.filtered({
+        area: 'organization',
+        organizationId,
+      }),
+      queryFn: async () => {
+        const data = await getUserPermissions(organizationId)
+        return { data } satisfies FetchResponse
+      },
+    }),
+  ])
 
   if (!can) return <FullScreenLoader />
 
