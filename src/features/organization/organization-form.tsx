@@ -37,16 +37,21 @@ type Props = {
   organization?: Organization | null
   disabled?: boolean
   className?: string
+
+  isUpdate?: boolean
 }
 
-const OrganizationForm: FC<Props> = ({ organization, disabled, className }) => {
+const OrganizationForm: FC<Props> = ({
+  organization,
+  disabled,
+  className,
+  isUpdate = false,
+}) => {
   const router = useRouter()
 
   const organizationId = organization?.id || ''
 
   useProtectPage()
-
-  const isUpdate = !!organizationId
 
   const prevUrl = homeUrl(true)
 

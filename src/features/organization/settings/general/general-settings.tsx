@@ -2,6 +2,7 @@
 
 import { Organization } from '@prisma/client'
 import { FC } from 'react'
+import { useIsClient } from 'usehooks-ts'
 
 import Spinner from '@/components/general/spinner'
 import { Separator } from '@/components/ui/separator'
@@ -26,11 +27,14 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
   const { can, isLoading: isCheckingPermissions } = usePermissions({
     area: 'organization',
     organizationId,
+    // options: { enabled: false },
   })
 
   useOrgPageRedirect(organizationId)
 
   const userCanEditInfo = can('edit_org_info')
+
+  const isClient = useIsClient()
 
   const { response, isLoading: isFetchingOrg } = useGetOrganizations({
     id: organizationId,
@@ -47,21 +51,21 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
   //   }
   // }, [userCanEditInfo, isCheckingPermissions, router])
 
-  if (isFetchingOrg || !organization || isCheckingPermissions)
-    return (
-      <div className='absolute top-1/2 left-1/2 -translate-x-6'>
-        <Spinner className=' size-12' />
-      </div>
-    )
+  // if (isFetchingOrg || !organization || isCheckingPermissions)
+  //   return (
+  //     <div className='absolute top-1/2 left-1/2 -translate-x-6'>
+  //       <Spinner className=' size-12' />
+  //     </div>
+  //   )
 
   return (
     <section className='flex flex-col gap-4 px-2'>
-      {isFetchingOrg || !organization || isCheckingPermissions ? null : (
-        <OrganizationForm
-          organization={organization}
-          disabled={isCheckingPermissions || !userCanEditInfo}
-        />
-      )}
+      <OrganizationForm
+        organization={organization}
+        disabled={!isClient || !userCanEditInfo}
+        // disabled={isCheckingPermissions || !userCanEditInfo}
+        isUpdate
+      />
 
       <Separator />
 

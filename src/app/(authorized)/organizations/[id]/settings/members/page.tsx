@@ -1,3 +1,4 @@
+import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { Metadata } from 'next'
 import { FC } from 'react'
 
@@ -34,7 +35,7 @@ const Page: FC<Props> = async ({ params }) => {
 
   const queryClient = createQueryClient()
 
-  await queryClient.fetchQuery({
+  await queryClient.prefetchQuery({
     queryKey: organizationsQueryKey.filtered({ id: organizationId }),
     queryFn: async () => {
       const data = await getOrganization({ organizationId })
@@ -44,7 +45,11 @@ const Page: FC<Props> = async ({ params }) => {
 
   if (!can) return <FullScreenLoader />
 
-  return <MembersSettings organizationId={organizationId} />
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <MembersSettings organizationId={organizationId} />
+    </HydrationBoundary>
+  )
 }
 
 export default Page

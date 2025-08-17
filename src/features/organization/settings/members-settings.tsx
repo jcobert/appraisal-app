@@ -2,6 +2,7 @@
 
 import { Organization } from '@prisma/client'
 import { FC, useState } from 'react'
+import { useIsClient } from 'usehooks-ts'
 
 import { Button } from '@/components/ui/button'
 
@@ -12,7 +13,7 @@ import { useProtectPage } from '@/hooks/use-protect-page'
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 import MemberInviteForm from '@/features/organization/invitation/member-invite-form'
 import OrgMembersSkeleton from '@/features/organization/member/org-members-skeleton'
-import OrganizationMembers from '@/features/organization/organization-members'
+import OrganizationMembers from '@/features/organization/member/organization-members'
 import SectionHeading from '@/features/organization/settings/section-heading'
 
 type Props = {
@@ -24,6 +25,8 @@ const MembersSettings: FC<Props> = ({ organizationId }) => {
     session: { isLoading: isCheckingAuth },
   } = useProtectPage()
 
+  const isClient = useIsClient()
+
   const { can, isLoading: isCheckingPermissions } = usePermissions({
     area: 'organization',
     organizationId,
@@ -33,7 +36,7 @@ const MembersSettings: FC<Props> = ({ organizationId }) => {
 
   const userCanAddMembers = can('edit_org_members')
 
-  const { response, isLoading: isFetchingOrg } = useGetOrganizations({
+  const { response } = useGetOrganizations({
     id: organizationId,
     options: { enabled: !isCheckingAuth && !isCheckingPermissions },
   })
@@ -70,7 +73,7 @@ const MembersSettings: FC<Props> = ({ organizationId }) => {
           ) : null}
         </div>
 
-        {isFetchingOrg || !organization ? (
+        {!isClient ? (
           <OrgMembersSkeleton />
         ) : (
           <OrganizationMembers organization={organization} />
