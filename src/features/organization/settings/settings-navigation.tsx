@@ -1,13 +1,11 @@
 'use client'
 
 import { Organization } from '@prisma/client'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { FC, useMemo } from 'react'
 
 import { NavItem } from '@/utils/nav'
 
-import Crumbs from '@/components/layout/app-nav/crumbs'
 import { TabNav, TabNavLink, TabNavList } from '@/components/ui/tab-navigation'
 
 type Props = {
@@ -36,14 +34,17 @@ const SettingsNavigation: FC<Props> = ({ organizationId }) => {
 
   return (
     <>
-      <Crumbs hidden />
-      <TabNav className='border-b pb-2'>
+      {/* <Crumbs hidden /> */}
+      <TabNav className='border-b'>
         <TabNavList>
-          {tabs?.map((item) => (
-            <TabNavLink key={item?.id} active={pathname === item?.url} asChild>
-              <Link href={item?.url}>{item?.name}</Link>
-            </TabNavLink>
-          ))}
+          {tabs?.map((item) => {
+            const active = pathname === item?.url
+            return (
+              <TabNavLink key={item?.id} href={item?.url} active={active}>
+                {item?.name}
+              </TabNavLink>
+            )
+          })}
         </TabNavList>
       </TabNav>
     </>
