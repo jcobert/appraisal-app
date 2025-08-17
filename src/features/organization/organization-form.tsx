@@ -2,8 +2,8 @@
 
 import { Organization } from '@prisma/client'
 import { useRouter } from 'next/navigation'
-import { FC, useEffect } from 'react'
-import { Controller, SubmitHandler } from 'react-hook-form'
+import { FC } from 'react'
+import { Controller, SubmitHandler, useFormState } from 'react-hook-form'
 
 import {
   OrganizationFormData,
@@ -20,8 +20,6 @@ import FormActionBar from '@/components/form/form-action-bar'
 import TextInput from '@/components/form/inputs/text-input'
 import { Button } from '@/components/ui/button'
 
-import { useOrgPageRedirect } from '@/hooks/use-org-page-redirect'
-import { usePermissions } from '@/hooks/use-permissions'
 import { useProtectPage } from '@/hooks/use-protect-page'
 import useZodForm from '@/hooks/use-zod-form'
 
@@ -36,34 +34,28 @@ const defaultFormValues = {
 } satisfies OrganizationFormData
 
 type Props = {
-  initialData?: Organization | null
+  organization?: Organization | null
+  disabled?: boolean
+  className?: string
 }
 
-const OrganizationForm: FC<Props> = ({ initialData }) => {
+const OrganizationForm: FC<Props> = ({ organization, disabled, className }) => {
   const router = useRouter()
 
-  const organizationId = initialData?.id || ''
+  const organizationId = organization?.id || ''
 
   useProtectPage()
-
-  const { can, isLoading: isLoadingPermissions } = usePermissions({
-    area: 'organization',
-    organizationId,
-  })
-
-  useOrgPageRedirect(organizationId, { enabled: !!organizationId })
-
-  const userCanEditOrg = can('edit_org_info')
 
   const isUpdate = !!organizationId
 
   const prevUrl = homeUrl(true)
 
-  const defaultValues = formDefaults(defaultFormValues, initialData)
-
   const { control, handleSubmit } = useZodForm<OrganizationFormData>(schema, {
-    defaultValues,
+    defaultValues: defaultFormValues,
+    values: formDefaults(defaultFormValues, organization),
   })
+
+  const { isDirty } = useFormState({ control })
 
   const { createOrganization, updateOrganization } = useOrganizationMutations({
     organizationId,
@@ -74,50 +66,47 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
     },
   })
 
-  // As extra security, redirect if user doesn't have permissions.
-  // Could happen if user's rights were changed by admin while user is here.
-  useEffect(() => {
-    if (isUpdate && !userCanEditOrg && !isLoadingPermissions) {
-      router.push(homeUrl(true))
-    }
-  }, [isUpdate, userCanEditOrg, isLoadingPermissions, router])
-
   const onSubmit: SubmitHandler<OrganizationFormData> = async (data) => {
-    const payload = isUpdate ? data : { ...initialData, ...data }
+    if (!isDirty) return
+    const payload = isUpdate ? data : { ...organization, ...data }
 
     if (isUpdate) {
-      const res = await toastyRequest(() =>
-        updateOrganization.mutateAsync(payload),
-      )
-      if (successful(res.status)) {
-        router.replace(prevUrl)
-      }
+      await toastyRequest(() => updateOrganization.mutateAsync(payload))
     } else {
-      const res = await toastyRequest(
-        () => createOrganization.mutateAsync(payload),
+      await toastyRequest(
+        () =>
+          createOrganization.mutateAsync(payload, {
+            onSuccess: (r) => {
+              if (successful(r.status)) {
+                router.replace(prevUrl)
+              }
+            },
+          }),
         {
           success: () => `Organization ${payload?.name} has been created!`,
         },
       )
-      if (successful(res.status)) {
-        router.replace(prevUrl)
-      }
     }
   }
 
-  // const onCancel = () => {
-  //   router.replace(prevUrl)
-  // }
+  const onCancel = () => {
+    router.replace(prevUrl)
+  }
 
   return (
     <Form
       onSubmit={handleSubmit(onSubmit)}
-      containerClassName='self-start border__ px-2'
+      containerClassName='self-start px-0'
+      className={className}
     >
       <div className='grid grid-cols-1 gap-x-14 gap-y-8 md:grid-cols-3'>
         <SectionHeading
           title='Basic information'
-          subtitle='Update general organization info.'
+          subtitle={
+            isUpdate
+              ? 'Update general organization info.'
+              : 'General organization info.'
+          }
         />
 
         <div className='md:col-span-2'>
@@ -133,7 +122,7 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
                   error={error?.message}
                   required
                   className='col-span-full'
-                  disabled={isLoadingPermissions}
+                  disabled={disabled}
                 />
               )}
             />
@@ -141,14 +130,16 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
         </div>
       </div>
       <FormActionBar>
-        {/* <Button variant='outline' onClick={onCancel} className='max-sm:w-full'>
-          Cancel
-        </Button> */}
-        <Button
-          type='submit'
-          // className='max-sm:w-full'
-          disabled={isLoadingPermissions}
-        >
+        {!isUpdate ? (
+          <Button
+            variant='outline'
+            onClick={onCancel}
+            className='max-sm:w-full'
+          >
+            Cancel
+          </Button>
+        ) : null}
+        <Button type='submit' disabled={disabled}>
           {isUpdate ? 'Save' : 'Create'}
         </Button>
       </FormActionBar>

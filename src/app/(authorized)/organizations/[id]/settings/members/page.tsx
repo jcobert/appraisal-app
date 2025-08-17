@@ -16,7 +16,7 @@ import { organizationsQueryKey } from '@/features/organization/hooks/use-get-org
 import MembersSettings from '@/features/organization/settings/members-settings'
 
 export const metadata: Metadata = generatePageMeta({
-  title: 'User Settings',
+  title: 'Organization Settings',
 })
 
 type Props = PageParams<{ id: string }>

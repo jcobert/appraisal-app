@@ -30,23 +30,25 @@ export const useOrganizationMutations = ({
 }: UseOrganizationMutationsProps = {}) => {
   const queryClient = useQueryClient()
 
-  const refreshData = useCallback(async () => {
-    await queryClient.refetchQueries({
-      queryKey: organizationsQueryKey.filtered({ id: organizationId }),
-      exact: true,
-    })
-    queryClient.invalidateQueries({ queryKey: organizationsQueryKey.all })
-  }, [organizationId, queryClient])
+  const refreshData = useCallback(
+    async ({ update }: { update?: boolean } = { update: false }) => {
+      if (update) {
+        await queryClient.refetchQueries({
+          queryKey: organizationsQueryKey.filtered({ id: organizationId }),
+          exact: true,
+        })
+      }
+      queryClient.invalidateQueries({
+        queryKey: organizationsQueryKey.all,
+        exact: true,
+      })
+    },
+    [organizationId, queryClient],
+  )
 
   const createOrganization = useCoreMutation<Payload, Organization>({
     url: CORE_API_ENDPOINTS.organization,
     method: 'POST',
-    ...options,
-  })
-
-  const updateOrganization = useCoreMutation<Payload, Organization>({
-    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
-    method: 'PUT',
     ...options,
     onSuccess: async ({ status }) => {
       if (successful(status)) {
@@ -55,10 +57,26 @@ export const useOrganizationMutations = ({
     },
   })
 
+  const updateOrganization = useCoreMutation<Payload, Organization>({
+    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
+    method: 'PUT',
+    ...options,
+    onSuccess: async ({ status }) => {
+      if (successful(status)) {
+        await refreshData({ update: true })
+      }
+    },
+  })
+
   const deleteOrganization = useCoreMutation<{}, Organization>({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
     method: 'DELETE',
     ...options,
+    onSuccess: async ({ status }) => {
+      if (successful(status)) {
+        await refreshData()
+      }
+    },
   })
 
   const updateOrgMember = useCoreMutation<{}, OrgMember>({
@@ -70,7 +88,7 @@ export const useOrganizationMutations = ({
     >),
     onSuccess: async ({ status }) => {
       if (successful(status)) {
-        await refreshData()
+        await refreshData({ update: true })
       }
     },
   })
@@ -84,7 +102,7 @@ export const useOrganizationMutations = ({
     >),
     onSuccess: async ({ status }) => {
       if (successful(status)) {
-        await refreshData()
+        await refreshData({ update: true })
       }
     },
   })

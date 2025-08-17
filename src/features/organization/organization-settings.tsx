@@ -11,7 +11,6 @@ type Props = {
 }
 
 const OrganizationSettings: FC<Props> = ({ organization, className }) => {
-  //
   return (
     <div className={cn(className)}>
       <OrganizationMembers organization={organization} />
