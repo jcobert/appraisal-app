@@ -93,6 +93,7 @@ const Confirmation: FC<ConfirmationProps> = ({
               }}
               loading={isBusy}
               disabled={isBusy}
+              variant='destructive'
             >
               {primaryButtonText}
             </Button>

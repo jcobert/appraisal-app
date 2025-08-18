@@ -78,7 +78,7 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
             {
               id: 'cancel',
               content: 'Cancel',
-              // className: 'text-rose-700',
+              className: 'text-destructive',
               onSelect: () => {
                 setCancelOpen(true)
               },

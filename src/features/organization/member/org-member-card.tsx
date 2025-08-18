@@ -1,8 +1,12 @@
+'use client'
+
 import { FC, useState } from 'react'
 
 import { successful } from '@/utils/fetch'
 import { fullName } from '@/utils/string'
 import { toastyRequest } from '@/utils/toast'
+
+import { useOrganizationContext } from '@/providers/organization-provider'
 
 import Confirmation from '@/components/layout/confirmation'
 
@@ -16,6 +20,8 @@ type Props = OrgMemberCardBaseProps
 const OrgMemberCard: FC<Props> = (props) => {
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+
+  const { member } = props
 
   const { updateOrgMember, deleteOrgMember } = useOrganizationMutations({
     organizationId: props.member?.organizationId,
@@ -54,14 +60,15 @@ const OrgMemberCard: FC<Props> = (props) => {
               },
               disabled: true,
             },
-            // {
-            //   id: 'delete',
-            //   content: 'Remove',
-            //   // className: 'text-rose-700',
-            //   onSelect: () => {
-            //     setDeleteOpen(true)
-            //   },
-            // },
+            {
+              id: 'delete',
+              content: 'Remove',
+              className: 'text-destructive',
+              onSelect: () => {
+                setDeleteOpen(true)
+              },
+              disabled: true,
+            },
           ]}
           {...props}
         />

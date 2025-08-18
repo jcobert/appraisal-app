@@ -74,12 +74,13 @@ export const userIsOwner = async (params: {
   return !!data?.id
 }
 
+/** Gets organization by `id`. */
 export const getOrganization = async (params: {
   organizationId: Organization['id']
-  query?: Prisma.OrganizationFindUniqueArgs
+  // query?: Prisma.OrganizationFindUniqueArgs
   authOptions?: CanQueryOptions & { restrictToUser?: boolean }
 }) => {
-  const { organizationId, authOptions, query } = params
+  const { organizationId, authOptions } = params
   const { restrictToUser = true, ...opts } = authOptions || {}
   const authorized = await canQuery(opts)
   if (!authorized) return null
@@ -121,8 +122,8 @@ export const getOrganization = async (params: {
       },
     },
     omit: { createdBy: true, updatedBy: true },
-    ...query,
-  } satisfies typeof query
+    // ...query,
+  } satisfies Prisma.OrganizationFindUniqueArgs
 
   const data = await db.organization.findUnique(queryArgs)
   return data

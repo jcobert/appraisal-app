@@ -67,7 +67,7 @@ export const GET = async (
             code: FetchErrorCode.NOT_FOUND,
             message: 'The requested organization could not be found.',
           },
-        } satisfies FetchResponse<Organization>,
+        } satisfies FetchResponse,
         { status: 404 },
       )
     }
@@ -76,7 +76,7 @@ export const GET = async (
     return NextResponse.json(
       {
         data: res,
-      } satisfies FetchResponse<Organization>,
+      } satisfies FetchResponse,
       { status: 200 },
     )
   } catch (error) {
