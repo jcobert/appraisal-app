@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { getUserPermissions, isAuthenticated } from '@/utils/auth'
+import { getUserPermissions } from '@/lib/db/utils'
+
+import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 
 export const GET = async (

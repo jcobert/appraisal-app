@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { protectPage } from '@/utils/auth'
+import { protectPage } from '@/lib/db/utils'
 
 import { PageParams } from '@/types/general'
 

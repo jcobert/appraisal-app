@@ -74,12 +74,13 @@ export const userIsOwner = async (params: {
   return !!data?.id
 }
 
+/** Gets organization by `id`. */
 export const getOrganization = async (params: {
   organizationId: Organization['id']
-  query?: Prisma.OrganizationFindUniqueArgs
+  // query?: Prisma.OrganizationFindUniqueArgs
   authOptions?: CanQueryOptions & { restrictToUser?: boolean }
 }) => {
-  const { organizationId, authOptions, query } = params
+  const { organizationId, authOptions } = params
   const { restrictToUser = true, ...opts } = authOptions || {}
   const authorized = await canQuery(opts)
   if (!authorized) return null
@@ -121,38 +122,47 @@ export const getOrganization = async (params: {
       },
     },
     omit: { createdBy: true, updatedBy: true },
-    ...query,
-  } satisfies typeof query
+    // ...query,
+  } satisfies Prisma.OrganizationFindUniqueArgs
 
   const data = await db.organization.findUnique(queryArgs)
   return data
 }
 
-export const getOrgMemberRoles = async (params: {
+/** Gets member data for the active user in the provided org. */
+export const getActiveUserOrgMember = async (params: {
   organizationId: Organization['id']
 }) => {
   try {
     const { organizationId } = params || {}
     const authorized = await canQuery()
     const user = await getActiveUserAccount()
-    if (!authorized || !user?.id) return []
+    if (!authorized || !user?.id) return null
     const member = (
       await db.orgMember.findMany({
         where: {
           organizationId: organizationId,
           user: { accountId: user?.id },
         },
-        select: { active: true, roles: true },
+        select: {
+          active: true,
+          roles: true,
+          id: true,
+          user: true,
+        },
       })
     )?.[0]
-    if (!member || !member?.active || !member?.roles?.length) return []
-    return member?.roles
+    if (!member) return null
+    return member
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error)
-    return []
+    return null
   }
 }
+export type ActiveUserOrgMember = Awaited<
+  ReturnType<typeof getActiveUserOrgMember>
+>
 
 export const createOrganization = async (
   params: Prisma.OrganizationCreateArgs,

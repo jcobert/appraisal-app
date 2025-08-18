@@ -1,11 +1,15 @@
 'use client'
 
+import { LayoutDashboard, Settings } from 'lucide-react'
 import Link from 'next/link'
-import { FC } from 'react'
+import { FC, useMemo } from 'react'
+import { useIsClient } from 'usehooks-ts'
 
 import { cn } from '@/lib/utils'
 
-import { filterProtectedNavItems } from '@/utils/nav'
+import { NavItem } from '@/utils/nav'
+
+import { useOrganizationContext } from '@/providers/organization-provider'
 
 import ThemeSelector from '@/components/general/theme-selector'
 import SidebarOrgSelector from '@/components/layout/app-nav/sidebar-org-selector'
@@ -16,7 +20,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -24,24 +27,52 @@ import {
   SidebarSeparator,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { Skeleton } from '@/components/ui/skeleton'
 
 import { useNavigationMenu } from '@/hooks/use-navigation'
 
 import { SessionData } from '@/types/auth'
-
-import { APP_NAVIGATION_ITEMS } from '@/configuration/app-nav'
 
 type Props = {
   sessionData: Partial<SessionData>
 }
 
 const AppSidebarCore: FC<Props> = ({ sessionData }) => {
-  const { loggedIn, organizations } = sessionData || {}
+  const { organizations } = sessionData || {}
 
-  const navItems = filterProtectedNavItems(APP_NAVIGATION_ITEMS, !!loggedIn)
-
+  const isClient = useIsClient()
   const { open, openMobile } = useSidebar()
   const { isActiveItem } = useNavigationMenu()
+  const { activeOrgId } = useOrganizationContext()
+
+  const navItems = useMemo<NavItem[]>(() => {
+    return [
+      {
+        id: 'dashboard',
+        name: 'Dashboard',
+        url: '/dashboard',
+        icon: LayoutDashboard,
+      },
+      {
+        id: 'orgSettings',
+        name: 'Settings',
+        url: `/organizations/${activeOrgId}/settings`,
+        icon: Settings,
+      },
+      // {
+      //   id: 'orders',
+      //   name: 'Orders',
+      //   url: `/organizations/${activeOrgId}/orders`,
+      //   icon: ClipboardList,
+      // },
+      // {
+      //   id: 'clients',
+      //   name: 'Clients',
+      //   url: `/organizations/${activeOrgId}/clients`,
+      //   icon: BookUser,
+      // },
+    ]
+  }, [activeOrgId])
 
   return (
     <Sidebar
@@ -60,23 +91,29 @@ const AppSidebarCore: FC<Props> = ({ sessionData }) => {
         <SidebarGroup
           className={cn('h-full overflow-y-auto', 'overflow-x-hidden')}
         >
-          <SidebarGroupLabel>Organization</SidebarGroupLabel>
+          {/* <SidebarGroupLabel>Organization</SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems?.map((item) => {
                 const Icon = item?.icon
                 return (
                   <SidebarMenuItem key={item?.id}>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip={item?.name}
-                      isActive={isActiveItem(item)}
-                    >
-                      <Link href={item?.url}>
-                        {Icon ? <Icon /> : null}
-                        {open || openMobile ? item?.name : null}
-                      </Link>
-                    </SidebarMenuButton>
+                    {isClient ? (
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={item?.name}
+                        isActive={isActiveItem(item)}
+                      >
+                        <Link href={item?.url}>
+                          {Icon ? <Icon /> : null}
+                          {open || openMobile ? item?.name : null}
+                        </Link>
+                      </SidebarMenuButton>
+                    ) : (
+                      <SidebarMenuButton asChild>
+                        <Skeleton />
+                      </SidebarMenuButton>
+                    )}
                   </SidebarMenuItem>
                 )
               })}

@@ -53,7 +53,7 @@ const Avatar: FC<Props> = ({
           <AvatarFallback
             className={cn([
               // 'rounded-lg',
-              'bg-white',
+              // 'bg-white',
               size === 'xs' && 'text-sm',
               size === 'sm' && 'text-sm',
               size === 'md' && 'text-base',

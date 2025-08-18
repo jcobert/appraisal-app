@@ -4,6 +4,9 @@ import { FC, useMemo, useState } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 import { z } from 'zod'
 
+import { ORG_INVITE_EXPIRY } from '@/lib/db/config'
+import { orgMemberSchema } from '@/lib/db/schemas/org-member'
+
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 import { toastyRequest } from '@/utils/toast'
@@ -12,6 +15,7 @@ import FieldError from '@/components/form/field-error'
 import FieldLabel from '@/components/form/field-label'
 import FormActionBar from '@/components/form/form-action-bar'
 import TextInput from '@/components/form/inputs/text-input'
+import Banner from '@/components/general/banner'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 import Modal, { ModalProps } from '@/components/layout/modal'
 import { Button } from '@/components/ui/button'
@@ -27,14 +31,9 @@ type Props = {
   organization: Partial<DetailedOrganization> | null | undefined
   initialData?: Partial<OrgInvitation> | null
 } & Required<Pick<ModalProps, 'open' | 'onOpenChange'>> &
-  Partial<Omit<ModalProps, 'open' | 'onOpenChange'>>
+  Partial<Omit<ModalProps, 'open' | 'onOpenChange' | 'children'>>
 
-const formSchema = z.object({
-  firstName: z.string().nonempty(),
-  lastName: z.string().nonempty(),
-  email: z.string().email(),
-  roles: z.array(z.enum(ORG_MEMBER_ROLES)).min(1, 'Select at least one role'),
-})
+const formSchema = orgMemberSchema.form
 
 type MemberInviteFormData = z.infer<typeof formSchema>
 
@@ -52,6 +51,8 @@ const MemberInviteForm: FC<Props> = ({
   onOpenChange,
   ...modalProps
 }) => {
+  const [isBusy, setIsBusy] = useState(false)
+
   const isUpdate = !!initialData?.id
 
   const schema = useMemo(
@@ -120,8 +121,6 @@ const MemberInviteForm: FC<Props> = ({
     setIsBusy(false)
   }
 
-  const [isBusy, setIsBusy] = useState(false)
-
   useDisableInteraction({ disable: isBusy })
 
   return (
@@ -133,11 +132,16 @@ const MemberInviteForm: FC<Props> = ({
           onOpenChange(newOpen)
           onClose()
         }}
-        title='Invite to Organization'
+        title='Add Member'
         description='A form for inviting a new member to this organization.'
         preventOutsideClose
         {...modalProps}
       >
+        <Banner>
+          {`An email invitation will be sent to the
+          person below. They will have ${ORG_INVITE_EXPIRY} ${(ORG_INVITE_EXPIRY as number) === 1 ? 'day' : 'days'} to accept.`}
+        </Banner>
+
         <form
           onSubmit={handleSubmit(onSubmit)}
           className='flex flex-col gap-4 gap-y-6'
@@ -187,7 +191,7 @@ const MemberInviteForm: FC<Props> = ({
                 label='Email'
                 error={error?.message}
                 icon='mail'
-                placeholder='johnsmith@example.com'
+                placeholder='mail@example.com'
                 required
                 disabled={isUpdate}
                 helper={
@@ -223,7 +227,7 @@ const MemberInviteForm: FC<Props> = ({
                       return (
                         <div
                           key={role}
-                          className='grid grid-cols-6 grid-flow-row gap-2 items-center'
+                          className='grid grid-cols-8 sm:grid-cols-6 grid-flow-row gap-2 sm:gap-8 items-center'
                         >
                           <FieldLabel
                             htmlFor={id}

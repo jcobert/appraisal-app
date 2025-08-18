@@ -3,6 +3,7 @@ export type CrumbMeta = {
   path: string
   name?: string
   hidden?: boolean
+  link?: boolean
 }
 
 /**
@@ -23,6 +24,7 @@ export const buildCrumbsFromSegments = (
       path: fullPath,
       name: segment,
       hidden: false,
+      link: true,
       ...customCrumb,
     } satisfies (typeof prev)[number]
     const crumbs = prev.concat(crumb)

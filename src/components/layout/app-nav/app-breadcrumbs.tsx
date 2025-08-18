@@ -29,9 +29,7 @@ const AppBreadcrumbs: FC<AppBreadcrumbsProps> = ({ segments }) => {
   const isClient = useIsClient()
 
   const breadcrumbs = useMemo(() => {
-    return (
-      crumbs?.length ? crumbs : buildCrumbsFromSegments(segments)
-    )?.filter((c) => !c?.hidden)
+    return crumbs?.length ? crumbs : buildCrumbsFromSegments(segments)
   }, [crumbs, segments])
 
   if (hideAll || !breadcrumbs?.length || breadcrumbs?.length < 2) return null
@@ -45,23 +43,34 @@ const AppBreadcrumbs: FC<AppBreadcrumbsProps> = ({ segments }) => {
     >
       <BreadcrumbList>
         {breadcrumbs?.map((crumb, i) => {
-          const { name, path, hidden, segment } = crumb
+          const { name, path, hidden, segment, link } = crumb
 
           const label = decodeURIComponent(name || segment)
 
           if (hidden) return null
 
-          if (i === breadcrumbs.length - 1) {
+          if (i === breadcrumbs.length - 1 || !link) {
             return (
-              <BreadcrumbItem key={path}>
-                {isClient ? (
-                  <BreadcrumbPage className='capitalize'>
-                    {label}
-                  </BreadcrumbPage>
-                ) : (
-                  <Skeleton className='w-24 h-5' />
-                )}
-              </BreadcrumbItem>
+              <div key={path} className='flex items-center gap-2.5'>
+                <BreadcrumbItem key={path}>
+                  {isClient ? (
+                    <BreadcrumbPage className='capitalize'>
+                      {label}
+                    </BreadcrumbPage>
+                  ) : (
+                    <Skeleton className='w-24 h-5' />
+                  )}
+                </BreadcrumbItem>
+                {i !== breadcrumbs.length - 1 ? (
+                  <>
+                    {isClient ? (
+                      <BreadcrumbSeparator />
+                    ) : (
+                      <Skeleton className='size-3' />
+                    )}
+                  </>
+                ) : null}
+              </div>
             )
           }
           return (

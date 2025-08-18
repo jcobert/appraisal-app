@@ -6,7 +6,7 @@ export type NavLink = {
   name: string
   url: string
   /** Whether route is protected by authentication. */
-  protected: boolean
+  protected?: boolean
   description?: string
   hidden?: boolean
   icon?: IconType

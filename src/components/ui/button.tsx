@@ -4,6 +4,8 @@ import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
+import { Skeleton } from '@/components/ui/skeleton'
+
 const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
   {
@@ -39,11 +41,20 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
     loading?: boolean
+    skeleton?: boolean
   }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, variant, size, asChild = false, loading = false, ...props },
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      loading: _loading = false,
+      skeleton = false,
+      ...props
+    },
     ref,
   ) => {
     const Comp = asChild ? Slot : 'button'
@@ -65,6 +76,19 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     //     children
     //   )
     // }
+
+    if (skeleton) {
+      return (
+        <Skeleton
+          className={cn(
+            buttonVariants({ variant: 'minimal', size, className }),
+            'bg-primary/10 text-transparent',
+          )}
+        >
+          {props?.children}
+        </Skeleton>
+      )
+    }
 
     return (
       <Comp

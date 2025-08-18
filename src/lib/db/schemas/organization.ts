@@ -10,7 +10,7 @@ type SchemaBase = ZodObject<TableMutable<Organization>>
 
 const baseSchema = z.object(
   {
-    name: z.string().nonempty(),
+    name: z.string().trim().nonempty(),
     avatar: z.string().optional(),
   } satisfies SchemaBase,
   { errorMap: formErrorMap },

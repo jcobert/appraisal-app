@@ -11,12 +11,8 @@ import {
 } from '@/providers/breadcrumbs/breadcrumb-context'
 
 type Props = {
-  /** * Array of breadcrumbs with customized meta. */
-  crumbs?: {
-    segment: CrumbMeta['segment']
-    name?: CrumbMeta['name'] | undefined
-    hidden?: CrumbMeta['hidden']
-  }[]
+  /** Array of breadcrumbs with customized meta. */
+  crumbs?: Omit<CrumbMeta, 'path'>[]
   /** When `true` will hide all breadcrumbs. @default false */
   hidden?: BreadcrumbContextType['hidden']
 }

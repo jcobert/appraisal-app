@@ -3,7 +3,7 @@
 import { Organization } from '@prisma/client'
 import { useRouter } from 'next/navigation'
 import { FC } from 'react'
-import { Controller, SubmitHandler } from 'react-hook-form'
+import { Controller, SubmitHandler, useFormState } from 'react-hook-form'
 
 import {
   OrganizationFormData,
@@ -12,6 +12,7 @@ import {
 
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
+import { homeUrl } from '@/utils/nav'
 import { toastyRequest } from '@/utils/toast'
 
 import Form from '@/components/form/form'
@@ -19,9 +20,11 @@ import FormActionBar from '@/components/form/form-action-bar'
 import TextInput from '@/components/form/inputs/text-input'
 import { Button } from '@/components/ui/button'
 
+import { useProtectPage } from '@/hooks/use-protect-page'
 import useZodForm from '@/hooks/use-zod-form'
 
 import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
+import SectionHeading from '@/features/organization/settings/section-heading'
 
 const schema = organizationSchema.form
 
@@ -31,21 +34,33 @@ const defaultFormValues = {
 } satisfies OrganizationFormData
 
 type Props = {
-  initialData?: Organization | null
+  organization?: Organization | null
+  disabled?: boolean
+  className?: string
+
+  isUpdate?: boolean
 }
 
-const OrganizationForm: FC<Props> = ({ initialData }) => {
+const OrganizationForm: FC<Props> = ({
+  organization,
+  disabled,
+  className,
+  isUpdate = false,
+}) => {
   const router = useRouter()
 
-  const organizationId = initialData?.id
-  const isUpdate = !!organizationId
-  const prevUrl = `/organizations/${organizationId || ''}`
+  const organizationId = organization?.id || ''
 
-  const defaultValues = formDefaults(defaultFormValues, initialData)
+  useProtectPage()
+
+  const prevUrl = homeUrl(true)
 
   const { control, handleSubmit } = useZodForm<OrganizationFormData>(schema, {
-    defaultValues,
+    defaultValues: defaultFormValues,
+    values: formDefaults(defaultFormValues, organization),
   })
+
+  const { isDirty } = useFormState({ control })
 
   const { createOrganization, updateOrganization } = useOrganizationMutations({
     organizationId,
@@ -57,25 +72,25 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
   })
 
   const onSubmit: SubmitHandler<OrganizationFormData> = async (data) => {
-    const payload = isUpdate ? data : { ...initialData, ...data }
+    if (!isDirty) return
+    const payload = isUpdate ? data : { ...organization, ...data }
 
     if (isUpdate) {
-      const res = await toastyRequest(() =>
-        updateOrganization.mutateAsync(payload),
-      )
-      if (successful(res.status)) {
-        router.replace(prevUrl)
-      }
+      await toastyRequest(() => updateOrganization.mutateAsync(payload))
     } else {
-      const res = await toastyRequest(
-        () => createOrganization.mutateAsync(payload),
+      await toastyRequest(
+        () =>
+          createOrganization.mutateAsync(payload, {
+            onSuccess: (r) => {
+              if (successful(r.status)) {
+                router.replace(prevUrl)
+              }
+            },
+          }),
         {
           success: () => `Organization ${payload?.name} has been created!`,
         },
       )
-      if (successful(res.status)) {
-        router.replace('/organizations')
-      }
     }
   }
 
@@ -84,28 +99,52 @@ const OrganizationForm: FC<Props> = ({ initialData }) => {
   }
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)}>
-      <div>
-        <Controller
-          control={control}
-          name='name'
-          render={({ field, fieldState: { error } }) => (
-            <TextInput
-              {...field}
-              id={field.name}
-              label='Name'
-              error={error?.message}
-              required
-            />
-          )}
+    <Form
+      onSubmit={handleSubmit(onSubmit)}
+      containerClassName='self-start px-0'
+      className={className}
+    >
+      <div className='grid grid-cols-1 gap-x-14 gap-y-8 md:grid-cols-3'>
+        <SectionHeading
+          title='Basic Information'
+          subtitle={
+            isUpdate
+              ? 'Update general organization info.'
+              : 'General organization info.'
+          }
         />
-      </div>
 
+        <div className='md:col-span-2'>
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-6'>
+            <Controller
+              control={control}
+              name='name'
+              render={({ field, fieldState: { error } }) => (
+                <TextInput
+                  {...field}
+                  id={field.name}
+                  label='Name'
+                  error={error?.message}
+                  required
+                  className='col-span-full'
+                  disabled={disabled}
+                />
+              )}
+            />
+          </div>
+        </div>
+      </div>
       <FormActionBar>
-        <Button variant='outline' onClick={onCancel} className='max-sm:w-full'>
-          Cancel
-        </Button>
-        <Button type='submit' className='max-sm:w-full'>
+        {!isUpdate ? (
+          <Button
+            variant='outline'
+            onClick={onCancel}
+            className='max-sm:w-full'
+          >
+            Cancel
+          </Button>
+        ) : null}
+        <Button type='submit' disabled={disabled}>
           {isUpdate ? 'Save' : 'Create'}
         </Button>
       </FormActionBar>

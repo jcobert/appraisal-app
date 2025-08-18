@@ -23,6 +23,7 @@ const baseMockResponse = {
   errorUpdatedAt: 0,
   isInitialLoading: false,
   isPaused: false,
+  isEnabled: true,
   fetchStatus: 'idle' as const,
   refetch: jest.fn(),
   promise: Promise.resolve({ data: null, status: 200 }),

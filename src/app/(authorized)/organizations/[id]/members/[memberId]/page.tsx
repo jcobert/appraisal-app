@@ -3,8 +3,8 @@ import { Metadata } from 'next'
 import { FC } from 'react'
 
 import { getOrgMember } from '@/lib/db/queries/organization'
+import { protectPage } from '@/lib/db/utils'
 
-import { protectPage } from '@/utils/auth'
 import { FetchResponse } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
@@ -30,7 +30,7 @@ const Page: FC<Props> = async ({ params }) => {
   const queryClient = createQueryClient()
 
   await queryClient.prefetchQuery({
-    queryKey: orgMemberQueryKey.filtered({ organizationId, id: memberId }),
+    queryKey: orgMemberQueryKey.filtered({ organizationId, memberId }),
     queryFn: async () => {
       const data = await getOrgMember({ organizationId, memberId })
       return { data } satisfies FetchResponse

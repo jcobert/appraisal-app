@@ -17,23 +17,23 @@ import { PermissionAction } from '@/configuration/permissions'
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 
 type OrganizationContextValue = {
-  /** The currently active organization ID */
+  /** The currently active organization ID. */
   activeOrgId: string | undefined
-  /** The currently active organization object */
+  /** The currently active organization object. */
   selectedOrganization: Organization | undefined
-  /** All available organizations */
+  /** All available organizations. */
   organizations: Organization[]
-  /** Loading state for organizations */
+  /** Loading state for organizations. */
   isLoadingOrganizations: boolean
-  /** Current user's permissions for the active organization */
+  /** Current user's permissions for the active organization. */
   permissions: {
     can: (action: PermissionAction['organization']) => boolean
     isLoading: boolean
     error: Error | null
   }
-  /** Switch to a different organization */
+  /** Switch to a different organization. */
   switchOrganization: (orgId: string) => Promise<void>
-  /** Refresh permissions for the current organization */
+  /** Refresh permissions for the current organization. */
   refreshPermissions: () => Promise<void>
 }
 
@@ -41,7 +41,7 @@ const OrganizationContext = createContext<OrganizationContextValue | null>(null)
 
 type OrganizationProviderProps = {
   children: React.ReactNode
-  /** Optional initial organizations data */
+  /** Optional initial organizations data. */
   initialOrganizations?: Organization[]
 }
 
@@ -55,13 +55,25 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({
   } = useStoredSettings()
   const queryClient = useQueryClient()
 
-  const { response, isLoading: isLoadingOrganizations } = useGetOrganizations()
+  const { response, isLoading: isLoadingOrganizations } = useGetOrganizations({
+    options: { enabled: true },
+  })
   const organizations = response?.data || initialOrganizations
 
+  const { response: activeOrgRes } = useGetOrganizations({
+    id: activeOrgId,
+    options: { enabled: true },
+  })
+  const fetchedActiveOrg = activeOrgRes?.data
+
+  // The fetched org that matches activeOrgId from local storage.
+  // Prioritizes the "find one" org query and falls back to matching org from the "find many" query.
   const selectedOrganization = useMemo(() => {
-    if (!organizations?.length || !activeOrgId) return undefined
-    return organizations.find((org) => org.id === activeOrgId)
-  }, [activeOrgId, organizations])
+    if ((!organizations?.length && !fetchedActiveOrg) || !activeOrgId)
+      return undefined
+    if (fetchedActiveOrg?.id === activeOrgId) return fetchedActiveOrg
+    return organizations?.find((org) => org?.id === activeOrgId)
+  }, [activeOrgId, organizations, fetchedActiveOrg])
 
   const permissions = usePermissions({
     area: 'organization',
@@ -105,10 +117,10 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({
 
   // Auto-select first organization if none is selected
   useEffect(() => {
-    if (!activeOrgId && organizations.length > 0) {
-      const firstOrg = organizations[0]
+    if (!activeOrgId && !!organizations?.length) {
+      const firstOrg = organizations?.[0]
       if (firstOrg) {
-        updateSettings({ activeOrgId: firstOrg.id })
+        updateSettings({ activeOrgId: firstOrg?.id })
       }
     }
   }, [activeOrgId, organizations, updateSettings])
