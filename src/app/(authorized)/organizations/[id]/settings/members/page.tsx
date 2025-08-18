@@ -34,7 +34,7 @@ const Page: FC<Props> = async ({ params }) => {
   const { can } = await protectPage({
     permission: {
       area: 'organization',
-      action: 'edit_org_info',
+      action: 'edit_org_members',
       organizationId,
     },
   })

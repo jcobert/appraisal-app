@@ -31,7 +31,7 @@ type Props = {
   organization: Partial<DetailedOrganization> | null | undefined
   initialData?: Partial<OrgInvitation> | null
 } & Required<Pick<ModalProps, 'open' | 'onOpenChange'>> &
-  Partial<Omit<ModalProps, 'open' | 'onOpenChange'>>
+  Partial<Omit<ModalProps, 'open' | 'onOpenChange' | 'children'>>
 
 const formSchema = orgMemberSchema.form
 
@@ -51,6 +51,8 @@ const MemberInviteForm: FC<Props> = ({
   onOpenChange,
   ...modalProps
 }) => {
+  const [isBusy, setIsBusy] = useState(false)
+
   const isUpdate = !!initialData?.id
 
   const schema = useMemo(
@@ -118,8 +120,6 @@ const MemberInviteForm: FC<Props> = ({
     reset()
     setIsBusy(false)
   }
-
-  const [isBusy, setIsBusy] = useState(false)
 
   useDisableInteraction({ disable: isBusy })
 

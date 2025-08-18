@@ -79,7 +79,7 @@ export const useOrganizationMutations = ({
     },
   })
 
-  const updateOrgMember = useCoreMutation<{}, OrgMember>({
+  const updateOrgMember = useCoreMutation<Partial<OrgMember>, OrgMember>({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/members/${memberId}`,
     method: 'PUT',
     ...(options as Omit<

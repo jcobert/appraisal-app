@@ -50,7 +50,7 @@ const MembersSettings: FC<Props> = ({ organizationId }) => {
 
   useOrgPageRedirect(organizationId)
 
-  const userCanAddMembers = can('edit_org_members')
+  const userCanEditMembers = can('edit_org_members')
 
   const { response } = useGetOrganizations({
     id: organizationId,
@@ -82,14 +82,14 @@ const MembersSettings: FC<Props> = ({ organizationId }) => {
               setInviteFormOpen(true)
             }}
             skeleton={!isClient || isCheckingPermissions}
-            hidden={!userCanAddMembers}
+            hidden={!userCanEditMembers}
           />
         </div>
 
         {!isClient ? (
           <OrgMembersSkeleton />
         ) : (
-          <OrganizationMembers organization={organization} />
+          <OrganizationMembers organization={organization} hideInvites={!userCanEditMembers} />
         )}
       </div>
     </>

@@ -9,9 +9,13 @@ import { DetailedOrganization } from '@/features/organization/types'
 
 type Props = {
   organization: DetailedOrganization | null | undefined
+  hideInvites?: boolean
 }
 
-const OrganizationMembers: FC<Props> = ({ organization }) => {
+const OrganizationMembers: FC<Props> = ({
+  organization,
+  hideInvites = true,
+}) => {
   const { members, invitations } = organization || {}
 
   const [owners, others] = partition(members, (m) =>
@@ -30,7 +34,7 @@ const OrganizationMembers: FC<Props> = ({ organization }) => {
         </div>
       </div>
 
-      {invitations?.length ? (
+      {invitations?.length && !hideInvites ? (
         <>
           <Separator />
           <div className='flex flex-col gap-4 sm:w-fit'>

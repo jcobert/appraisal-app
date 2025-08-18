@@ -1,17 +1,11 @@
 'use client'
 
-import { ComponentProps, FC, useMemo, useState } from 'react'
-
-import { successful } from '@/utils/fetch'
-import { fullName } from '@/utils/string'
-import { toastyRequest } from '@/utils/toast'
-
-import { useOrganizationContext } from '@/providers/organization-provider'
+import { FC, useMemo, useState } from 'react'
 
 import Confirmation from '@/components/layout/confirmation'
 
 import { useGetOrgMember } from '@/features/organization/hooks/use-get-org-member'
-import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
+import MemberForm from '@/features/organization/member/member-form'
 import OrgMemberCardBase, {
   OrgMemberCardBaseProps,
 } from '@/features/organization/member/org-member-card-base'
@@ -30,16 +24,6 @@ const OrgMemberCard: FC<Props> = (props) => {
 
   const isActiveUser = member?.id === activeUserMemberQuery?.data?.id
 
-  const { updateOrgMember, deleteOrgMember } = useOrganizationMutations({
-    organizationId: props.member?.organizationId,
-    memberId: props.member?.id,
-  })
-
-  // const name = fullName(
-  //   props?.member?.user?.firstName,
-  //   props?.member?.user?.lastName,
-  // )
-
   const actions = useMemo<OrgMemberCardBaseProps['actions']>(() => {
     const acts: OrgMemberCardBaseProps['actions'] = [
       {
@@ -48,7 +32,6 @@ const OrgMemberCard: FC<Props> = (props) => {
         onSelect: () => {
           setEditOpen(true)
         },
-        disabled: true,
       },
     ]
     if (!isActiveUser) {
@@ -79,6 +62,15 @@ const OrgMemberCard: FC<Props> = (props) => {
           }
         }}
       /> */}
+
+      {editOpen ? (
+        <MemberForm
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          member={member}
+          isActiveUser={isActiveUser}
+        />
+      ) : null}
 
       <div className='flex gap-4 items-center'>
         <OrgMemberCardBase className='w-full' actions={actions} {...props} />
