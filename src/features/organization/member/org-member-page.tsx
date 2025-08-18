@@ -15,7 +15,7 @@ import { useProtectPage } from '@/hooks/use-protect-page'
 import { useGetOrgMember } from '@/features/organization/hooks/use-get-org-member'
 
 type Props = {
-  organizationId?: Organization['id']
+  organizationId: Organization['id']
   memberId?: OrgMember['id']
 }
 

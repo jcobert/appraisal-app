@@ -1,6 +1,6 @@
 'use client'
 
-import { FC, useState } from 'react'
+import { ComponentProps, FC, useMemo, useState } from 'react'
 
 import { successful } from '@/utils/fetch'
 import { fullName } from '@/utils/string'
@@ -10,6 +10,7 @@ import { useOrganizationContext } from '@/providers/organization-provider'
 
 import Confirmation from '@/components/layout/confirmation'
 
+import { useGetOrgMember } from '@/features/organization/hooks/use-get-org-member'
 import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
 import OrgMemberCardBase, {
   OrgMemberCardBaseProps,
@@ -23,6 +24,12 @@ const OrgMemberCard: FC<Props> = (props) => {
 
   const { member } = props
 
+  const { response: activeUserMemberQuery } = useGetOrgMember({
+    organizationId: member?.organizationId,
+  })
+
+  const isActiveUser = member?.id === activeUserMemberQuery?.data?.id
+
   const { updateOrgMember, deleteOrgMember } = useOrganizationMutations({
     organizationId: props.member?.organizationId,
     memberId: props.member?.id,
@@ -32,6 +39,31 @@ const OrgMemberCard: FC<Props> = (props) => {
   //   props?.member?.user?.firstName,
   //   props?.member?.user?.lastName,
   // )
+
+  const actions = useMemo<OrgMemberCardBaseProps['actions']>(() => {
+    const acts: OrgMemberCardBaseProps['actions'] = [
+      {
+        id: 'edit',
+        content: 'Edit',
+        onSelect: () => {
+          setEditOpen(true)
+        },
+        disabled: true,
+      },
+    ]
+    if (!isActiveUser) {
+      acts.push({
+        id: 'delete',
+        content: 'Remove',
+        className: 'text-destructive',
+        onSelect: () => {
+          setDeleteOpen(true)
+        },
+        disabled: true,
+      })
+    }
+    return acts
+  }, [isActiveUser])
 
   return (
     <>
@@ -49,29 +81,7 @@ const OrgMemberCard: FC<Props> = (props) => {
       /> */}
 
       <div className='flex gap-4 items-center'>
-        <OrgMemberCardBase
-          className='w-full'
-          actions={[
-            {
-              id: 'edit',
-              content: 'Edit',
-              onSelect: () => {
-                setEditOpen(true)
-              },
-              disabled: true,
-            },
-            {
-              id: 'delete',
-              content: 'Remove',
-              className: 'text-destructive',
-              onSelect: () => {
-                setDeleteOpen(true)
-              },
-              disabled: true,
-            },
-          ]}
-          {...props}
-        />
+        <OrgMemberCardBase className='w-full' actions={actions} {...props} />
       </div>
     </>
   )

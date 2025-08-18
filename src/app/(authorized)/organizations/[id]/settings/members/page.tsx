@@ -2,7 +2,10 @@ import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { getOrganization } from '@/lib/db/queries/organization'
+import {
+  getActiveUserOrgMember,
+  getOrganization,
+} from '@/lib/db/queries/organization'
 import { getUserPermissions, protectPage } from '@/lib/db/utils'
 
 import { FetchResponse } from '@/utils/fetch'
@@ -15,6 +18,7 @@ import { permissionsQueryKey } from '@/hooks/use-permissions'
 import { PageParams } from '@/types/general'
 
 import { generatePageMeta } from '@/configuration/seo'
+import { orgMemberQueryKey } from '@/features/organization/hooks/use-get-org-member'
 import { organizationsQueryKey } from '@/features/organization/hooks/use-get-organizations'
 import MembersSettings from '@/features/organization/settings/members-settings'
 
@@ -42,6 +46,16 @@ const Page: FC<Props> = async ({ params }) => {
       queryKey: organizationsQueryKey.filtered({ id: organizationId }),
       queryFn: async () => {
         const data = await getOrganization({ organizationId })
+        return { data } satisfies FetchResponse
+      },
+    }),
+    queryClient.prefetchQuery({
+      queryKey: orgMemberQueryKey.filtered({
+        organizationId,
+        activeUser: true,
+      }),
+      queryFn: async () => {
+        const data = await getActiveUserOrgMember({ organizationId })
         return { data } satisfies FetchResponse
       },
     }),

@@ -30,7 +30,7 @@ const Page: FC<Props> = async ({ params }) => {
   const queryClient = createQueryClient()
 
   await queryClient.prefetchQuery({
-    queryKey: orgMemberQueryKey.filtered({ organizationId, id: memberId }),
+    queryKey: orgMemberQueryKey.filtered({ organizationId, memberId }),
     queryFn: async () => {
       const data = await getOrgMember({ organizationId, memberId })
       return { data } satisfies FetchResponse

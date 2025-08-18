@@ -6,7 +6,7 @@ import { Organization } from '@prisma/client'
 import { intersection } from 'lodash'
 
 import {
-  getOrgMemberRoles,
+  getActiveUserOrgMember,
   getUserOrganizations,
 } from '@/lib/db/queries/organization'
 import { getActiveUserProfile } from '@/lib/db/queries/user'
@@ -43,7 +43,9 @@ export const getSessionData = async (): Promise<SessionData> => {
 export const getUserPermissions = async (
   organizationId: Organization['id'],
 ): Promise<{ [Area in PermissionArea]: PermissionAction[Area][] }> => {
-  const userRoles = await getOrgMemberRoles({ organizationId })
+  const { active, roles = [] } =
+    (await getActiveUserOrgMember({ organizationId })) || {}
+  const userRoles = !active ? [] : roles
 
   const permsByArea = objectEntries(APP_PERMISSIONS)?.map(([area, actions]) => {
     const userAllowedActions = !userRoles?.length
@@ -82,7 +84,9 @@ export const userCan = async <Area extends PermissionArea>({
   action: PermissionAction[Area]
   organizationId: Organization['id']
 }): Promise<boolean> => {
-  const userRoles = await getOrgMemberRoles({ organizationId })
+  const { active, roles = [] } =
+    (await getActiveUserOrgMember({ organizationId })) || {}
+  const userRoles = !active ? [] : roles
   if (!userRoles?.length) return false
   const allowedRoles = APP_PERMISSIONS[area][action]
   return !!intersection(allowedRoles, userRoles)?.length
