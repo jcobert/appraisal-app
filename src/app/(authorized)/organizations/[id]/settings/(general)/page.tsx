@@ -2,10 +2,10 @@ import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { getOrganization } from '@/lib/db/queries/organization'
-import { getUserPermissions, protectPage } from '@/lib/db/utils'
+import { CORE_API_ENDPOINTS } from '@/lib/db/config'
+import { protectPage } from '@/lib/db/utils'
 
-import { FetchResponse } from '@/utils/fetch'
+import fetch, { getAbsoluteUrl } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
 import FullScreenLoader from '@/components/layout/full-screen-loader'
@@ -38,22 +38,28 @@ const Page: FC<Props> = async ({ params }) => {
   const queryClient = createQueryClient()
 
   await Promise.all([
+    // Org
     queryClient.prefetchQuery({
       queryKey: organizationsQueryKey.filtered({ id: organizationId }),
-      queryFn: async () => {
-        const data = await getOrganization({ organizationId })
-        return { data } satisfies FetchResponse
-      },
+      queryFn: () =>
+        fetch.GET({
+          url: getAbsoluteUrl(
+            `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
+          ),
+        }),
     }),
+    // Permissions
     queryClient.prefetchQuery({
       queryKey: permissionsQueryKey.filtered({
         area: 'organization',
         organizationId,
       }),
-      queryFn: async () => {
-        const data = await getUserPermissions(organizationId)
-        return { data } satisfies FetchResponse
-      },
+      queryFn: () =>
+        fetch.GET({
+          url: getAbsoluteUrl(
+            `${CORE_API_ENDPOINTS.organization}/${organizationId}/permissions`,
+          ),
+        }),
     }),
   ])
 

@@ -27,6 +27,28 @@ export const successful = (status?: number) => {
   return status >= 200 && status < 300
 }
 
+/** Helper function to get cookies for server-side requests */
+const getServerSideHeaders = async (): Promise<Record<string, string>> => {
+  if (typeof window === 'undefined') {
+    // Server-side: dynamically import and forward cookies
+    try {
+      const { cookies } = await import('next/headers')
+      const cookieStore = await cookies()
+      const cookieHeader = cookieStore.toString()
+      return cookieHeader ? { Cookie: cookieHeader } : {}
+    } catch {
+      // If import fails or we're not in a server context that supports cookies, return empty headers
+      return {}
+    }
+  }
+  return {}
+}
+
+export const getAbsoluteUrl = (path?: string) => {
+  const base = process.env.NEXT_PUBLIC_SITE_BASE_URL
+  return `${base}/${path}`
+}
+
 const GET = async <TData = Record<string, unknown>>({
   url,
   options,
@@ -35,8 +57,13 @@ const GET = async <TData = Record<string, unknown>>({
   options?: Omit<RequestInit, 'method'>
 }): Promise<FetchResponse<TData>> => {
   try {
+    const serverSideHeaders = await getServerSideHeaders()
     const res = await fetch(url, {
       method: 'GET',
+      headers: {
+        ...serverSideHeaders,
+        ...options?.headers,
+      },
       ...options,
     })
     const responseData = (await res.json()) as FetchResponse<TData>
@@ -72,9 +99,15 @@ const POST = async <
   options?: Omit<RequestInit, 'method' | 'body'>
 }): Promise<FetchResponse<TResData>> => {
   try {
+    const serverSideHeaders = await getServerSideHeaders()
     const res = await fetch(url, {
       method: 'POST',
       body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json',
+        ...serverSideHeaders,
+        ...options?.headers,
+      },
       ...options,
     })
     const responseData = (await res.json()) as FetchResponse<TResData>
@@ -109,9 +142,15 @@ const PUT = async <
   options?: Omit<RequestInit, 'method' | 'body'>
 }): Promise<FetchResponse<TResData>> => {
   try {
+    const serverSideHeaders = await getServerSideHeaders()
     const res = await fetch(url, {
       method: 'PUT',
       body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json',
+        ...serverSideHeaders,
+        ...options?.headers,
+      },
       ...options,
     })
     const responseData = (await res.json()) as FetchResponse<TResData>
@@ -146,9 +185,15 @@ const PATCH = async <
   options?: Omit<RequestInit, 'method' | 'body'>
 }): Promise<FetchResponse<TResData>> => {
   try {
+    const serverSideHeaders = await getServerSideHeaders()
     const res = await fetch(url, {
       method: 'PATCH',
       body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json',
+        ...serverSideHeaders,
+        ...options?.headers,
+      },
       ...options,
     })
     const responseData = (await res.json()) as FetchResponse<TResData>
@@ -180,8 +225,13 @@ const DELETE = async <
   options?: Omit<RequestInit, 'method' | 'body'>
 }): Promise<FetchResponse<TResData>> => {
   try {
+    const serverSideHeaders = await getServerSideHeaders()
     const res = await fetch(url, {
       method: 'DELETE',
+      headers: {
+        ...serverSideHeaders,
+        ...options?.headers,
+      },
       ...options,
     })
     const responseData = (await res.json()) as FetchResponse<TResData>
@@ -203,6 +253,7 @@ const DELETE = async <
   }
 }
 
-const requests = { GET, POST, PUT, PATCH, DELETE }
+const coreFetch = { GET, POST, PUT, PATCH, DELETE }
 
-export default requests
+export { coreFetch }
+export default coreFetch

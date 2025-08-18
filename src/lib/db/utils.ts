@@ -14,8 +14,6 @@ import { getActiveUserProfile } from '@/lib/db/queries/user'
 import { isAuthenticated } from '@/utils/auth'
 import { objectEntries, objectKeys } from '@/utils/general'
 
-import { SessionData } from '@/types/auth'
-
 import {
   APP_PERMISSIONS,
   PermissionAction,
@@ -25,7 +23,7 @@ import { redirect } from 'next/navigation'
 import { homeUrl } from '@/utils/nav'
 
 /** Returns user session (account) and profile data, both from Kinde auth and core DB. */
-export const getSessionData = async (): Promise<SessionData> => {
+export const getSessionData = async () => {
   const session = getKindeServerSession()
   const { getUser, isAuthenticated } = session
   // Auth (from Kinde DB)
