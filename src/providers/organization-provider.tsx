@@ -62,7 +62,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({
 
   const { response: activeOrgRes } = useGetOrganizations({
     id: activeOrgId,
-    options: { enabled: true },
+    options: { enabled: !!activeOrgId },
   })
   const fetchedActiveOrg = activeOrgRes?.data
 

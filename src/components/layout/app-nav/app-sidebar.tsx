@@ -1,11 +1,10 @@
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { FC } from 'react'
 
-import { getUserOrganizations } from '@/lib/db/queries/organization'
-import { getActiveUserProfile } from '@/lib/db/queries/user'
+import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 import { getSessionData } from '@/lib/db/utils'
 
-import { FetchResponse } from '@/utils/fetch'
+import coreFetch, { getAbsoluteUrl } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
 import AppSidebarCore from '@/components/layout/app-nav/app-sidebar-core'
@@ -20,17 +19,17 @@ const AppSidebar: FC = async () => {
   await Promise.all([
     queryClient.prefetchQuery({
       queryKey: usersQueryKey.active,
-      queryFn: async () => {
-        const data = await getActiveUserProfile()
-        return { data } satisfies FetchResponse
-      },
+      queryFn: () =>
+        coreFetch.GET({
+          url: getAbsoluteUrl(`${CORE_API_ENDPOINTS.user}/active`),
+        }),
     }),
     queryClient.prefetchQuery({
       queryKey: organizationsQueryKey.all,
-      queryFn: async () => {
-        const data = await getUserOrganizations()
-        return { data } satisfies FetchResponse
-      },
+      queryFn: () =>
+        coreFetch.GET({
+          url: getAbsoluteUrl(`${CORE_API_ENDPOINTS.organization}`),
+        }),
     }),
   ])
 
