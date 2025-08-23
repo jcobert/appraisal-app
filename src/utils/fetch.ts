@@ -45,8 +45,8 @@ const getServerSideHeaders = async (): Promise<Record<string, string>> => {
 }
 
 export const getAbsoluteUrl = (path?: string) => {
-  const base = process.env.NEXT_PUBLIC_SITE_BASE_URL
-  return `${base}/${path}`
+  const base = process.env.NEXT_PUBLIC_SITE_BASE_URL || ''
+  return `${base}${path}`
 }
 
 const GET = async <TData = Record<string, unknown>>({

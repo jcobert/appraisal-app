@@ -15,10 +15,11 @@ import {
 } from '@react-email/components'
 import tailwindConfig from 'tailwind.config'
 
+import { getAssetPath } from '@/utils/email'
 import { fullName } from '@/utils/string'
 import { cn } from '@/utils/style'
 
-import { canonicalUrl, copyright } from '@/configuration/site'
+import { copyright, siteConfig } from '@/configuration/site'
 
 type Props = {
   invitee: Partial<User>
@@ -44,25 +45,22 @@ const OrgInviteEmail = ({
           <Font fontFamily='Helvetica' fallbackFontFamily='sans-serif' />
         </Head>
         <Preview>{`${inviterName || 'Someone'} invited you to join their organization, ${organization?.name}, on PrizmaTrack.`}</Preview>
-        <Body
-          className={cn(
-            'bg-background',
-            // 'h-0 min-h-screen'
-          )}
-        >
+        <Body className={cn('bg-[#ffffff]')}>
           <Container
-            className='bg-white rounded'
+            className='bg-white'
             style={{ border: '1px solid rgb(0,0,0,0.05)' }}
           >
             <Img
               className='mx-auto my-4 w-10'
-              // src='http://localhost:3000/images/prizmatrack-logo-64.webp'
-              src={canonicalUrl('/images/prizmatrack-logo-64.webp')}
+              // src={getAbsoluteUrl('/images/prizmatrack-logo-64.webp')}
+              // src={`${assetPath}/images/prizmatrack-logo-64.webp`}
+              src={getAssetPath('/images/prizmatrack-logo-64.webp')}
+              alt={`${siteConfig.company} logo`}
             />
 
             {/* <Heading className='text-xl font-normal text-balance'>{`Hi ${inviteeName ? `${inviteeName},` : ''}`}</Heading> */}
 
-            <Section className='max-w-prose mx-auto pt-2 px-8'>
+            <Section className='w-prose mx-auto pt-2 px-8'>
               <Text className='text-pretty text-lg'>
                 {inviteeName ? `Hi ${inviteeName},` : 'Hello,'}
               </Text>
@@ -88,7 +86,7 @@ const OrgInviteEmail = ({
             <Section className='mt-8 mb-12 w-fit mx-auto'>
               <Link
                 href={inviteLink}
-                className='min-h-[2.125rem] w-fit min-w-[6rem] rounded border border-primary bg-primary px-4 py-3 text-almost-white text-lg'
+                className='w-[6rem] font-medium border border-[#0d9c8b] bg-[#0d9c8b] px-4 py-3 text-[#fafafa] text-lg'
               >
                 View invitation
               </Link>
