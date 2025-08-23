@@ -1,29 +1,19 @@
 'use client'
 
-import { Organization } from '@prisma/client'
 import { FC } from 'react'
-import { SubmitHandler } from 'react-hook-form'
-
-import { formDefaults } from '@/utils/form'
-import { toastyRequest } from '@/utils/toast'
 
 import Form from '@/components/form/form'
-import FormActionBar from '@/components/form/form-action-bar'
-import { Button } from '@/components/ui/button'
 
 import SectionHeading from '@/features/organization/settings/section-heading'
 
-const defaultFormValues = {}
+// const defaultFormValues = {}
 
 type Props = {
-  initialData?: Organization | null
-  disabled?: boolean
   className?: string
 }
 
 const NotificationSettings: FC<Props> = ({
-  initialData,
-  disabled = true,
+  // initialData,
   className,
 }) => {
   // const defaultValues = formDefaults(defaultFormValues, initialData)

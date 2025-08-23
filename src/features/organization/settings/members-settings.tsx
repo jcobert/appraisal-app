@@ -71,7 +71,7 @@ const MembersSettings: FC<Props> = ({ organizationId }) => {
         />
       ) : null}
 
-      <div className='flex flex-col gap-8 max-sm:gap-4 py-6 px-2'>
+      <div className='flex flex-col gap-8 max-sm:gap-6 py-6 px-2'>
         <div className='flex sm:justify-between max-sm:flex-col gap-y-4'>
           <SectionHeading
             title='Members'
