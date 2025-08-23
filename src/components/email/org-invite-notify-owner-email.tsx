@@ -14,10 +14,11 @@ import {
 } from '@react-email/components'
 import tailwindConfig from 'tailwind.config'
 
+import { getAssetPath } from '@/utils/email'
 import { fullName } from '@/utils/string'
 import { cn } from '@/utils/style'
 
-import { canonicalUrl, copyright } from '@/configuration/site'
+import { copyright, siteConfig } from '@/configuration/site'
 
 type Props = {
   invitee: Partial<User>
@@ -66,16 +67,17 @@ const OrgInviteNotifyOwnerEmail = (props: Props) => {
         <Preview>{msg}</Preview>
         <Body className={cn('bg-background')}>
           <Container
-            className='bg-white rounded'
+            className='bg-white'
             style={{ border: '1px solid rgb(0,0,0,0.05)' }}
           >
             <Img
               className='mx-auto my-4 w-10'
               // src='http://localhost:3000/images/prizmatrack-logo-64.webp'
-              src={canonicalUrl('/images/prizmatrack-logo-64.webp')}
+              src={getAssetPath('/images/prizmatrack-logo-64.webp')}
+              alt={`${siteConfig.company} logo`}
             />
 
-            <Section className='max-w-prose mx-auto pt-2 px-8 pb-4'>
+            <Section className='w-prose mx-auto pt-2 px-8 pb-4'>
               <Text className='text-pretty text-lg'>
                 {inviterName ? `Hi ${inviterName},` : 'Hello,'}
               </Text>
