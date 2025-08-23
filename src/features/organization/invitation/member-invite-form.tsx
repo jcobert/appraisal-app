@@ -160,6 +160,7 @@ const MemberInviteForm: FC<Props> = ({
                   icon='person'
                   placeholder='First'
                   required
+                  autoComplete='off'
                 />
               )}
             />
@@ -176,6 +177,7 @@ const MemberInviteForm: FC<Props> = ({
                   icon='person'
                   placeholder='Last'
                   required
+                  autoComplete='off'
                 />
               )}
             />
@@ -199,6 +201,7 @@ const MemberInviteForm: FC<Props> = ({
                     ? 'If you need to change the email, cancel this invitation and create a new one.'
                     : undefined
                 }
+                autoComplete='off'
               />
             )}
           />

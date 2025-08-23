@@ -1,9 +1,7 @@
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { getUserOrganizations } from '@/lib/db/queries/organization'
-import { getActiveUserProfile } from '@/lib/db/queries/user'
-import { protectPage } from '@/lib/db/utils'
+import { getSessionData, protectPage } from '@/lib/db/utils'
 
 import { buildPageTitle } from '@/configuration/seo'
 import Dashboard from '@/features/dashboard/dashboard'
@@ -15,10 +13,9 @@ export const metadata: Metadata = {
 const Page: FC = async () => {
   await protectPage()
 
-  const user = await getActiveUserProfile()
-  const orgs = await getUserOrganizations()
+  const { organizations, profile } = await getSessionData()
 
-  return <Dashboard user={user} organizations={orgs} />
+  return <Dashboard user={profile} organizations={organizations} />
 }
 
 export default Page
