@@ -13,6 +13,7 @@ import { cn } from '@/utils/style'
 
 import FieldError from '@/components/form/field-error'
 import FieldHelper from '@/components/form/field-helper'
+import FieldLabel from '@/components/form/field-label'
 import { AdditionalInputProps } from '@/components/form/inputs/text-input'
 
 export const selectStyles: StylesConfig<any, boolean, GroupBase<any>> = {
@@ -55,6 +56,7 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
       classNames,
       ariaLabel,
       menuPortalTarget,
+      tooltip,
       ...props
     },
     ref,
@@ -89,22 +91,20 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
 
     return (
       <div className={cn(['flex flex-col gap-1', className])}>
-        <label
+        <FieldLabel
           htmlFor={id || name}
-          aria-label={!label ? ariaLabel || id : ariaLabel}
-          className={cn([
-            'text-sm text-gray-700 dark:text-gray-100 w-fit',
-            props?.required &&
-              "after:content-['*'] after:ml-[0.125rem] after:text-red-400",
-            error && 'text-red-500',
-            labelClassName,
-          ])}
+          required={props?.required}
+          disabled={props?.isDisabled}
+          error={!!error}
+          className={labelClassName}
+          tooltip={tooltip}
         >
           {label}
-        </label>
+        </FieldLabel>
 
         <Select
           inputId={id || name}
+          aria-label={ariaLabel}
           name={name}
           menuShouldBlockScroll
           menuShouldScrollIntoView
@@ -114,7 +114,7 @@ const SelectInput = forwardRef<SelectInstance, SelectInputProps>(
               cn([
                 '!transition !px-1 !py-px !border !border-gray-300 dark:!border-gray-500 [&:not(:disabled)]:hover:!border-gray-400 disabled:!text-gray-500 !rounded dark:!bg-zinc-600 !shadow-none',
                 error && 'border-red-500 hover:border-red-500',
-                props.isFocused && '!ring-2 !ring-brand-light ring-offset-2',
+                // props.isFocused && '!ring-2 !ring-brand-light ring-offset-2',
                 props.isDisabled && 'cursor-not-allowed',
               ]),
             placeholder: () => 'text-base text-zinc-400 dark:!text-zinc-300',

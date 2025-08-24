@@ -8,6 +8,7 @@ import {
   FiPhone,
   FiUser,
 } from 'react-icons/fi'
+import { LuCalendarDays } from 'react-icons/lu'
 
 import { cn } from '@/utils/style'
 
@@ -17,7 +18,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 
-export type InputIcon = 'mail' | 'phone' | 'web' | 'person' | 'briefcase'
+export type InputIcon =
+  | 'mail'
+  | 'phone'
+  | 'web'
+  | 'person'
+  | 'briefcase'
+  | 'calendar'
 
 export const inputIconMap: { [x in InputIcon]: IconType } = {
   mail: FiMail,
@@ -25,6 +32,7 @@ export const inputIconMap: { [x in InputIcon]: IconType } = {
   web: FiGlobe,
   person: FiUser,
   briefcase: FiBriefcase,
+  calendar: LuCalendarDays,
 }
 
 export type FieldLabelProps = {
@@ -53,7 +61,7 @@ const FieldLabel: FC<FieldLabelProps> = ({
   const Icon = icon ? inputIconMap?.[icon] : null
 
   return (
-    <div className={cn(tooltip && 'flex items-center gap-2', className)}>
+    <div className={cn('flex items-center flex-auto gap-2', className)}>
       <Comp
         htmlFor={htmlFor}
         className={cn([

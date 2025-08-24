@@ -6,7 +6,10 @@ import { cn } from '@/utils/style'
 
 import FieldError from '@/components/form/field-error'
 import FieldHelper from '@/components/form/field-helper'
-import FieldLabel, { InputIcon } from '@/components/form/field-label'
+import FieldLabel, {
+  FieldLabelProps,
+  InputIcon,
+} from '@/components/form/field-label'
 
 export type AdditionalInputProps = {
   label?: string
@@ -16,7 +19,7 @@ export type AdditionalInputProps = {
   icon?: InputIcon
   labelClassName?: string
   inputClassName?: string
-}
+} & Pick<FieldLabelProps, 'tooltip'>
 
 export type TextInputProps = Partial<InputHTMLAttributes<HTMLInputElement>> &
   AdditionalInputProps
@@ -37,6 +40,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       inputClassName,
       required,
       icon,
+      tooltip,
       ...props
     },
     ref,
@@ -54,6 +58,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           error={!!error}
           className={labelClassName}
           icon={icon}
+          tooltip={tooltip}
         >
           {label}
         </FieldLabel>

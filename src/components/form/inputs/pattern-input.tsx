@@ -27,6 +27,7 @@ const PatternInput = forwardRef<HTMLInputElement, PatternInputProps>(
       inputClassName,
       required,
       icon,
+      tooltip,
       ...props
     },
     ref,
@@ -44,6 +45,7 @@ const PatternInput = forwardRef<HTMLInputElement, PatternInputProps>(
           error={!!error}
           className={labelClassName}
           icon={icon}
+          tooltip={tooltip}
         >
           {label}
         </FieldLabel>
