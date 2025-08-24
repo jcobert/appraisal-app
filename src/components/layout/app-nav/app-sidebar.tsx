@@ -33,10 +33,8 @@ const AppSidebar: FC = async () => {
     }),
   ])
 
-  const queryState = dehydrate(queryClient)
-
   return (
-    <HydrationBoundary state={queryState}>
+    <HydrationBoundary state={dehydrate(queryClient)}>
       <AppSidebarCore sessionData={sessionData} />
     </HydrationBoundary>
   )
