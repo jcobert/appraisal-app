@@ -9,6 +9,7 @@ import {
   OrganizationFormData,
   organizationSchema,
 } from '@/lib/db/schemas/organization'
+import { cn } from '@/lib/utils'
 
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
@@ -71,8 +72,21 @@ const OrganizationForm: FC<Props> = ({
     },
   })
 
+  // const [noChanges, setNoChanges] = useState(false)
+
+  // Detects if a save has been attempted with no changes.
+  // This state then gets set to false with a delay in the onSubmit.
+  // useEffect(() => {
+  //   setNoChanges(!!submitCount && !isDirty && isUpdate)
+  // }, [isDirty, isUpdate, submitCount])
+
   const onSubmit: SubmitHandler<OrganizationFormData> = async (data) => {
-    if (!isDirty) return
+    if (!isDirty) {
+      // debounce(() => {
+      //   setNoChanges(false)
+      // }, 3000)()
+      return
+    }
     const payload = isUpdate ? data : { ...organization, ...data }
 
     if (isUpdate) {
@@ -134,20 +148,37 @@ const OrganizationForm: FC<Props> = ({
           </div>
         </div>
       </div>
-      <FormActionBar>
-        {!isUpdate ? (
+      <div className='flex flex-col gap-2'>
+        <FormActionBar>
+          {!isUpdate ? (
+            <Button
+              variant='outline'
+              onClick={onCancel}
+              className='max-sm:w-1/2'
+            >
+              Cancel
+            </Button>
+          ) : null}
           <Button
-            variant='outline'
-            onClick={onCancel}
-            className='max-sm:w-full'
+            type='submit'
+            disabled={disabled}
+            className={cn(!isUpdate && 'max-sm:w-1/2')}
           >
-            Cancel
+            {isUpdate ? 'Save' : 'Create'}
           </Button>
-        ) : null}
-        <Button type='submit' disabled={disabled}>
-          {isUpdate ? 'Save' : 'Create'}
-        </Button>
-      </FormActionBar>
+        </FormActionBar>
+        {/* {noChanges ? (
+          <span
+            role='alert'
+            className={cn(
+              'text-xs text-gray-600 text-pretty',
+              'self-end absolute mt-12',
+            )}
+          >
+            There are no changes to save.
+          </span>
+        ) : null} */}
+      </div>
     </Form>
   )
 }
