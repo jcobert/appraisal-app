@@ -2,12 +2,19 @@ import { MemberRole } from '@prisma/client'
 import { upperFirst } from 'lodash'
 import { forwardRef } from 'react'
 import { ControllerFieldState, ControllerRenderProps } from 'react-hook-form'
+import { FiInfo } from 'react-icons/fi'
 
 import { cn } from '@/lib/utils'
 
 import FieldError from '@/components/form/field-error'
 import FieldLabel from '@/components/form/field-label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 
+import MemberRoleDescriptions from '@/features/organization/common/member-role-descriptions'
 import { ORG_MEMBER_ROLES } from '@/features/organization/utils'
 
 type Props = {
@@ -24,14 +31,19 @@ const MemberRoleFieldset = forwardRef<HTMLInputElement, Props>(
   ({ value, onChange, error, disabled, name, required, className }, ref) => {
     return (
       <fieldset className={className}>
-        <FieldLabel
-          as='legend'
-          required={required}
-          error={!!error}
-          className='mb-1'
-        >
-          Roles
-        </FieldLabel>
+        <div className='flex items-center gap-2 mb-1'>
+          <FieldLabel as='legend' required={required} error={!!error}>
+            Roles
+          </FieldLabel>
+          <Popover>
+            <PopoverTrigger>
+              <FiInfo className='text-white text-2xl shrink-0 fill-blue-500' />
+            </PopoverTrigger>
+            <PopoverContent className='w-full max-w-[90vw] md:max-w-prose'>
+              <MemberRoleDescriptions />
+            </PopoverContent>
+          </Popover>
+        </div>
         <div
           className={cn(
             'flex flex-col gap-2 max-sm:gap-6 border border-gray-300 dark:border-gray-500 rounded w-full sm:w-[calc(50%-0.5rem)] p-2 max-sm:p-4',
