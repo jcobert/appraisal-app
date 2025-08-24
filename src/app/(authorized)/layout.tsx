@@ -1,12 +1,14 @@
 import { cookies } from 'next/headers'
 import { ReactNode } from 'react'
 
+import { isAuthenticated } from '@/utils/auth'
+
 import BreadcrumbProvider from '@/providers/breadcrumbs/breadcrumb-provider'
 import { OrganizationProvider } from '@/providers/organization-provider'
 
-import PageLayout from '@/components/layout/page-layout'
 import AppHeader from '@/components/layout/app-nav/app-header'
 import AppSidebar from '@/components/layout/app-nav/app-sidebar'
+import PageLayout from '@/components/layout/page-layout'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 
 const Layout = async ({
@@ -16,6 +18,10 @@ const Layout = async ({
   children: ReactNode
   breadcrumbs: ReactNode
 }) => {
+  const { allowed } = await isAuthenticated()
+
+  if (!allowed) return null
+
   const cookieStore = await cookies()
   const sidebarOpen = cookieStore.get('sidebar_state')?.value === 'true'
 
