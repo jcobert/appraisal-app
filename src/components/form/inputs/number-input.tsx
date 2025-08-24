@@ -28,6 +28,7 @@ const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
       inputClassName,
       required,
       icon,
+      tooltip,
       ...props
     },
     ref,
@@ -45,6 +46,7 @@ const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
           error={!!error}
           className={labelClassName}
           icon={icon}
+          tooltip={tooltip}
         >
           {label}
         </FieldLabel>

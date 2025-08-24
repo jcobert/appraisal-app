@@ -6,6 +6,7 @@ import { cn } from '@/utils/style'
 
 import FieldError from '@/components/form/field-error'
 import FieldHelper from '@/components/form/field-helper'
+import FieldLabel from '@/components/form/field-label'
 import { AdditionalInputProps } from '@/components/form/inputs/text-input'
 
 export type TextAreaInputProps = Partial<
@@ -23,9 +24,11 @@ const TextAreaInput = forwardRef<HTMLTextAreaElement, TextAreaInputProps>(
       helper,
       helperMode = 'always',
       error,
+      required,
       className,
       labelClassName,
       inputClassName,
+      tooltip,
       ...props
     },
     ref,
@@ -36,20 +39,19 @@ const TextAreaInput = forwardRef<HTMLTextAreaElement, TextAreaInputProps>(
 
     return (
       <div className={cn(['flex flex-col gap-1', className])}>
-        <label
+        <FieldLabel
           htmlFor={id || name}
-          className={cn([
-            'text-sm text-gray-700 w-fit',
-            props?.required &&
-              "after:content-['*'] after:ml-[0.125rem] after:text-red-400",
-            error && 'text-red-500',
-            labelClassName,
-          ])}
+          required={required}
+          disabled={props?.disabled}
+          error={!!error}
+          className={labelClassName}
+          tooltip={tooltip}
         >
           {label}
-        </label>
+        </FieldLabel>
 
         <textarea
+          aria-required={required}
           className={cn([
             'w-full px-[0.875rem] py-2 min-h-fit border border-gray-300 [&:not(:disabled)]:hover:border-gray-400 disabled:text-gray-500 transition rounded disabled:cursor-not-allowed',
             error && 'border-red-500 hover:border-red-500',
