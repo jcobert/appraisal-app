@@ -11,7 +11,6 @@ import { NavItem } from '@/utils/nav'
 
 import { useOrganizationContext } from '@/providers/organization-provider'
 
-import ThemeSelector from '@/components/general/theme-selector'
 import SidebarOrgSelector from '@/components/layout/app-nav/sidebar-org-selector'
 import SidebarUserMenu from '@/components/layout/app-nav/sidebar-user-menu'
 import {
@@ -121,14 +120,6 @@ const AppSidebarCore: FC<Props> = ({ sessionData }) => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarMenu>
-        <SidebarGroup>
-          <SidebarMenuItem>
-            <ThemeSelector />
-          </SidebarMenuItem>
-        </SidebarGroup>
-      </SidebarMenu>
 
       <SidebarSeparator />
 

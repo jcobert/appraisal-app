@@ -1,12 +1,19 @@
-import { ChevronsUpDown, LogOut } from 'lucide-react'
+'use client'
+
+import { Check, ChevronsUpDown, LogOut } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { FC } from 'react'
 
+import { objectKeys } from '@/utils/general'
 import { fullName } from '@/utils/string'
 import { cn } from '@/utils/style'
 
+import { Theme } from '@/providers/theme-provider'
+
 import AuthLink from '@/components/auth/auth-link'
 import Avatar from '@/components/general/avatar'
+import { getThemeIcon } from '@/components/general/theme-selector'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +44,8 @@ const SidebarUserMenu: FC<Props> = ({ sessionData }) => {
   const name = fullName(profile?.firstName, profile?.lastName)
 
   const { isMobile, open, openMobile } = useSidebar()
+
+  const { setTheme, theme } = useTheme()
 
   return (
     <DropdownMenu>
@@ -101,30 +110,46 @@ const SidebarUserMenu: FC<Props> = ({ sessionData }) => {
           </div>
         </DropdownMenuLabel>
 
-        {/* <DropdownMenuSeparator /> */}
+        <DropdownMenuSeparator />
 
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link href='/user/profile'>My Profile</Link>
           </DropdownMenuItem>
-          {/* <DropdownMenuItem asChild>
-            <Link href='/user/settings'>Settings</Link>
-          </DropdownMenuItem> */}
         </DropdownMenuGroup>
 
-        {/* <DropdownMenuSeparator />
+        <DropdownMenuSeparator />
 
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
+        {/* <DropdownMenuSub>
+          <DropdownMenuSubTrigger></DropdownMenuSubTrigger>
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
-              <DropdownMenuItem>Email</DropdownMenuItem>
-              <DropdownMenuItem>Message</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>More...</DropdownMenuItem>
+              <DropdownMenuItem></DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuPortal>
         </DropdownMenuSub> */}
+
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className='text-muted-foreground text-xs'>
+            Theme
+          </DropdownMenuLabel>
+          {objectKeys(Theme)?.map((t) => {
+            const isActive = t === theme
+            const Icon = getThemeIcon(t)
+            return (
+              <DropdownMenuItem
+                key={t}
+                onClick={() => setTheme(t)}
+                className='flex items-center'
+              >
+                <Icon />
+                <span className='capitalize flex-1'>{t}</span>
+
+                {isActive ? <Check className='text-primary' /> : null}
+              </DropdownMenuItem>
+            )
+          })}
+        </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
 

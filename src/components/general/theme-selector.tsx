@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Moon, Sun } from 'lucide-react'
+import { Check, Monitor, Moon, Palette, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { FC } from 'react'
 import { useIsClient } from 'usehooks-ts'
@@ -20,6 +20,14 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
+
+/** Returns icon component that represents the provided `theme`. */
+export const getThemeIcon = (theme: keyof typeof Theme) => {
+  if (theme === 'system') return Monitor
+  if (theme === 'dark') return Moon
+  if (theme === 'light') return Sun
+  return Palette
+}
 
 const ThemeSelector: FC = () => {
   const isClient = useIsClient()
