@@ -4,8 +4,9 @@ import { FC } from 'react'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 import { protectPage } from '@/lib/db/utils'
+import { handleGetOrganization, handleGetOrganizationPermissions } from '@/lib/handlers/organization-handlers'
 
-import coreFetch, { getAbsoluteUrl } from '@/utils/fetch'
+import coreFetch, { getAbsoluteUrl, successful } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
 import FullScreenLoader from '@/components/layout/full-screen-loader'
@@ -42,14 +43,15 @@ const Page: FC<Props> = async ({ params }) => {
     // Org
     queryClient.prefetchQuery({
       queryKey: organizationsQueryKey.filtered({ id: organizationId }),
-      queryFn: () =>
-        coreFetch.GET({
-          url: getAbsoluteUrl(
-            `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
-          ),
-        }),
+      queryFn: async () => {
+        const result = await handleGetOrganization(organizationId)
+        if (!successful(result.status)) {
+          throw new Error(result.error?.message || 'Failed to fetch organization')
+        }
+        return result
+      },
     }),
-    // Active user org member
+    // Active user org member (still using direct fetch until handler is created)
     queryClient.prefetchQuery({
       queryKey: orgMemberQueryKey.filtered({
         organizationId,
@@ -68,12 +70,13 @@ const Page: FC<Props> = async ({ params }) => {
         area: 'organization',
         organizationId,
       }),
-      queryFn: () =>
-        coreFetch.GET({
-          url: getAbsoluteUrl(
-            `${CORE_API_ENDPOINTS.organization}/${organizationId}/permissions`,
-          ),
-        }),
+      queryFn: async () => {
+        const result = await handleGetOrganizationPermissions(organizationId)
+        if (!successful(result.status)) {
+          throw new Error(result.error?.message || 'Failed to fetch permissions')
+        }
+        return result
+      },
     }),
   ])
 

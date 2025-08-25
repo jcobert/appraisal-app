@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/lib/db/client'
 import { userProfileSchema } from '@/lib/db/schemas/user'
+import { handleGetUsers } from '@/lib/handlers/user-handlers'
+import { toNextResponse } from '@/lib/api-handlers'
 
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 import { validatePayload } from '@/utils/zod'
@@ -12,74 +14,8 @@ import { validatePayload } from '@/utils/zod'
 //      GET
 // =============
 export const GET = async (_req: NextRequest) => {
-  const { getUser, isAuthenticated } = getKindeServerSession()
-
-  const user = await getUser()
-  const isLoggedIn = await isAuthenticated()
-
-  // No user
-  if (!isLoggedIn || !user) {
-    return NextResponse.json(
-      {
-        error: {
-          code: FetchErrorCode.AUTH,
-          message: 'User not authenticated.',
-        },
-        data: null,
-      } satisfies FetchResponse<User[]>,
-      { status: 401 },
-    )
-  }
-
-  // Not authorized
-  // if (!isAuthorized) {
-  //   return NextResponse.json(
-  //     {
-  //       error: { code: 'AUTH', message: 'User not authorized.' },
-  //       data: null,
-  //     } satisfies FetchResponse<User>,
-  //     { status: 403 },
-  //   )
-  // }
-
-  try {
-    const res = await db.user.findMany()
-
-    // Server/database error
-    if (!res) {
-      return NextResponse.json(
-        {
-          data: null,
-          error: {
-            code: FetchErrorCode.DATABASE_FAILURE,
-            message: 'The request was not successful.',
-          },
-        } satisfies FetchResponse<User[]>,
-        { status: 500 },
-      )
-    }
-
-    // Success
-    return NextResponse.json(
-      {
-        data: res,
-      } satisfies FetchResponse<User[]>,
-      { status: 200 },
-    )
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log('\n\nError getting users:\n', error)
-    return NextResponse.json(
-      {
-        data: null,
-        error: {
-          code: FetchErrorCode.FAILURE,
-          message: 'An unknown failure occurred.',
-        },
-      } satisfies FetchResponse<User[]>,
-      { status: 500 },
-    )
-  }
+  const result = await handleGetUsers()
+  return toNextResponse(result)
 }
 
 // ==============
