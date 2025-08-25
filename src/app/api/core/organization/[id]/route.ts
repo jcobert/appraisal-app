@@ -2,7 +2,7 @@ import { Organization } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { organizationSchema } from '@/lib/db/schemas/organization'
-import { handleGetOrganization, handleUpdateOrganization, handleDeleteOrganization } from '@/lib/handlers/organization-handlers'
+import { handleGetOrganization, handleUpdateOrganization, handleDeleteOrganization } from '@/lib/db/handlers/organization-handlers'
 import { toNextResponse } from '@/lib/api-handlers'
 
 import { isAuthenticated } from '@/utils/auth'

@@ -2,11 +2,11 @@ import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 import { protectPage } from '@/lib/db/utils'
-import { handleGetOrganization, handleGetOrganizationPermissions } from '@/lib/handlers/organization-handlers'
+import { handleGetOrganization, handleGetOrganizationPermissions } from '@/lib/db/handlers/organization-handlers'
+import { handleGetOrgMember } from '@/lib/db/handlers/organization-member-handlers'
 
-import coreFetch, { getAbsoluteUrl, successful } from '@/utils/fetch'
+import { successful } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
 import { permissionsQueryKey } from '@/hooks/use-permissions'
@@ -45,18 +45,19 @@ const Page: FC<Props> = async ({ params }) => {
         return result
       },
     }),
-    // Org member (still using direct fetch until handler is created)
+    // Org member
     queryClient.prefetchQuery({
       queryKey: orgMemberQueryKey.filtered({
         organizationId,
         memberId,
       }),
-      queryFn: () =>
-        coreFetch.GET({
-          url: getAbsoluteUrl(
-            `${CORE_API_ENDPOINTS.organization}/${organizationId}/members/${memberId}`,
-          ),
-        }),
+      queryFn: async () => {
+        const result = await handleGetOrgMember(organizationId, memberId)
+        if (!successful(result.status)) {
+          throw new Error(result.error?.message || 'Failed to fetch organization member')
+        }
+        return result
+      },
     }),
     // Permissions
     queryClient.prefetchQuery({

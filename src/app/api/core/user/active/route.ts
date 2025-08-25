@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/lib/db/client'
 import { userProfileSchema } from '@/lib/db/schemas/user'
-import { handleGetActiveUser } from '@/lib/handlers/user-handlers'
+import { handleGetActiveUser } from '@/lib/db/handlers/user-handlers'
 import { toNextResponse } from '@/lib/api-handlers'
 import {
   updateAuthAccount,

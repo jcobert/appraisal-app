@@ -2,11 +2,11 @@ import { OrgMember } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import {
-  getActiveUserOrgMember,
   updateOrgMember,
-  userIsMember,
   userIsOwner,
 } from '@/lib/db/queries/organization'
+import { handleGetActiveUserOrgMember } from '@/lib/db/handlers/organization-member-handlers'
+import { toNextResponse } from '@/lib/api-handlers'
 
 import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
@@ -15,76 +15,9 @@ export const GET = async (
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
-  const { allowed } = await isAuthenticated()
-
-  // Not allowed
-  if (!allowed) {
-    return NextResponse.json(
-      {
-        error: {
-          code: FetchErrorCode.AUTH,
-          message: 'User not authenticated.',
-        },
-        data: null,
-      } satisfies FetchResponse,
-      { status: 401 },
-    )
-  }
-
   const { id: organizationId } = await params
-
-  const isMember = await userIsMember({ organizationId })
-
-  if (!isMember) {
-    return NextResponse.json(
-      {
-        data: null,
-        error: {
-          code: FetchErrorCode.AUTH,
-          message: 'Unauthorized to view this organization.',
-        },
-      } satisfies FetchResponse,
-      { status: 403 },
-    )
-  }
-
-  try {
-    if (!organizationId) {
-      return NextResponse.json(
-        {
-          error: {
-            code: FetchErrorCode.INVALID_DATA,
-            message: 'Missing required fields.',
-          },
-        } satisfies FetchResponse,
-        { status: 400 },
-      )
-    }
-
-    const res = await getActiveUserOrgMember({ organizationId })
-
-    if (!res) {
-      return NextResponse.json(
-        {
-          error: {
-            code: FetchErrorCode.DATABASE_FAILURE,
-            message: 'Failed to retrieve member data.',
-          },
-        } satisfies FetchResponse,
-        { status: 500 },
-      )
-    }
-
-    return NextResponse.json(
-      {
-        data: res,
-      } satisfies FetchResponse,
-      { status: 200 },
-    )
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error)
-  }
+  const result = await handleGetActiveUserOrgMember(organizationId)
+  return toNextResponse(result)
 }
 
 export const PUT = async (

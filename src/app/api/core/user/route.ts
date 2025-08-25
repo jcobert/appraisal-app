@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/lib/db/client'
 import { userProfileSchema } from '@/lib/db/schemas/user'
-import { handleGetUsers } from '@/lib/handlers/user-handlers'
+import { handleGetUsers } from '@/lib/db/handlers/user-handlers'
 import { toNextResponse } from '@/lib/api-handlers'
 
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'

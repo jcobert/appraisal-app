@@ -2,8 +2,8 @@ import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { FC } from 'react'
 
 import { getSessionData } from '@/lib/db/utils'
-import { handleGetUserOrganizations } from '@/lib/handlers/organization-handlers'
-import { handleGetActiveUser } from '@/lib/handlers/user-handlers'
+import { handleGetUserOrganizations } from '@/lib/db/handlers/organization-handlers'
+import { handleGetActiveUser } from '@/lib/db/handlers/user-handlers'
 
 import { createQueryClient } from '@/utils/query'
 import { successful } from '@/utils/fetch'

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { handleGetOrganizationPermissions } from '@/lib/handlers/organization-handlers'
+import { handleGetOrganizationPermissions } from '@/lib/db/handlers/organization-handlers'
 import { toNextResponse } from '@/lib/api-handlers'
 
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'

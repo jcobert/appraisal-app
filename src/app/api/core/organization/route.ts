@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createOrganization, getUserOrganizations } from '@/lib/db/queries/organization'
 import { organizationSchema } from '@/lib/db/schemas/organization'
 import { getActiveUserProfile } from '@/lib/db/queries/user'
-import { handleGetUserOrganizations } from '@/lib/handlers/organization-handlers'
+import { handleGetUserOrganizations } from '@/lib/db/handlers/organization-handlers'
 import { toNextResponse } from '@/lib/api-handlers'
 
 import { isAuthenticated } from '@/utils/auth'

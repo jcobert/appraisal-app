@@ -7,20 +7,11 @@ import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 
 /**
- * Handler result type that maintains parity with FetchResponse
- * This ensures consistent data structure between:
- * - Server-side prefetching: handlers return FetchResponse<TData>
- * - Client-side API calls: fetch.GET() returns FetchResponse<TData>
- * - API routes: return toNextResponse(handlerResult)
+ * Convert a `FetchResponse` to a `NextResponse` for API routes.
  */
-export type ApiHandlerResult<TData = any> = FetchResponse<TData>
-
-/**
- * Convert a FetchResponse to a NextResponse for API routes
- */
-export function toNextResponse<TData = any>(
+export const toNextResponse = <TData = any>(
   result: FetchResponse<TData>,
-): NextResponse {
+): NextResponse => {
   const status = result?.status || (result?.error ? 500 : 200)
   return NextResponse.json(result, { status })
 }
@@ -61,7 +52,7 @@ export type ApiHandlerConfig = {
 export async function createApiHandler<TData = any>(
   handler: () => Promise<TData>,
   config: ApiHandlerConfig = {},
-): Promise<ApiHandlerResult<TData>> {
+): Promise<FetchResponse<TData>> {
   const {
     requireAuth = true,
     authorizationCheck,
@@ -158,15 +149,3 @@ export async function createApiHandler<TData = any>(
     }
   }
 }
-
-// Convenience functions for common patterns
-export const createMutationHandler = <TData = any>(
-  handler: () => Promise<TData>,
-  config: Omit<ApiHandlerConfig, 'isMutation'> = {},
-) => createApiHandler(handler, { ...config, isMutation: true })
-
-export const createAuthorizedHandler = <TData = any>(
-  handler: () => Promise<TData>,
-  authorizationCheck: () => Promise<boolean>,
-  config: Omit<ApiHandlerConfig, 'authorizationCheck'> = {},
-) => createApiHandler(handler, { ...config, authorizationCheck })

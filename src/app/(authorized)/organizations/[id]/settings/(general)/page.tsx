@@ -3,7 +3,7 @@ import { Metadata } from 'next'
 import { FC } from 'react'
 
 import { protectPage } from '@/lib/db/utils'
-import { handleGetOrganization, handleGetOrganizationPermissions } from '@/lib/handlers/organization-handlers'
+import { handleGetOrganization, handleGetOrganizationPermissions } from '@/lib/db/handlers/organization-handlers'
 
 import { createQueryClient } from '@/utils/query'
 import { successful } from '@/utils/fetch'
