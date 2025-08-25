@@ -5,6 +5,64 @@ import { NextResponse } from 'next/server'
 
 import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
+import { ZodFieldErrors } from '@/utils/zod'
+
+/**
+ * Custom error class for validation errors with typed details
+ */
+export class ValidationError extends Error {
+  public readonly details: ZodFieldErrors
+
+  constructor(message: string, details: ZodFieldErrors) {
+    super(message)
+    this.name = 'ValidationError'
+    this.details = details
+  }
+}
+
+/**
+ * Custom error class for authorization errors
+ */
+export class AuthorizationError extends Error {
+  constructor(message: string = 'Unauthorized to perform this action.') {
+    super(message)
+    this.name = 'AuthorizationError'
+  }
+}
+
+/**
+ * Custom error class for not found errors
+ */
+export class NotFoundError extends Error {
+  constructor(message: string = 'The requested resource could not be found.') {
+    super(message)
+    this.name = 'NotFoundError'
+  }
+}
+
+/**
+ * Utility to add user ID fields to payload
+ * For use in handlers where auth is already confirmed
+ */
+export function withUserFields<T extends Record<string, any>>(
+  payload: T,
+  userId: string,
+  fields: ('createdBy' | 'updatedBy')[] = ['updatedBy'],
+): T & { createdBy?: string; updatedBy?: string } {
+  const userFields: { createdBy?: string; updatedBy?: string } = {}
+
+  if (fields.includes('createdBy')) {
+    userFields.createdBy = userId
+  }
+  if (fields.includes('updatedBy')) {
+    userFields.updatedBy = userId
+  }
+
+  return {
+    ...payload,
+    ...userFields,
+  }
+}
 
 /**
  * Convert a `FetchResponse` to a `NextResponse` for API routes.
@@ -50,7 +108,11 @@ export type ApiHandlerConfig = {
  * @returns ApiHandlerResult with both data and NextResponse
  */
 export async function createApiHandler<TData = any>(
-  handler: () => Promise<TData>,
+  handler: ({
+    user,
+  }: {
+    user: Awaited<ReturnType<typeof isAuthenticated>>['user']
+  }) => Promise<TData>,
   config: ApiHandlerConfig = {},
 ): Promise<FetchResponse<TData>> {
   const {
@@ -70,10 +132,10 @@ export async function createApiHandler<TData = any>(
     generalFailure: generalFailureMessage = 'An unknown failure occurred.',
   } = messages
 
+  const { allowed, user } = await isAuthenticated()
+
   // Authentication check
   if (requireAuth) {
-    const { allowed } = await isAuthenticated()
-
     if (!allowed) {
       return {
         status: 401,
@@ -117,7 +179,7 @@ export async function createApiHandler<TData = any>(
   }
 
   try {
-    const data = await handler()
+    const data = await handler({ user })
 
     // Handle null/undefined results
     if (!isMutation && (data === null || data === undefined)) {
@@ -139,12 +201,53 @@ export async function createApiHandler<TData = any>(
     // eslint-disable-next-line no-console
     console.error('API Handler Error:', error)
 
+    // Handle validation errors with typed details
+    if (error instanceof ValidationError) {
+      return {
+        status: 400,
+        data: null,
+        error: {
+          code: FetchErrorCode.INVALID_DATA,
+          message: error.message,
+          details: error.details,
+        },
+      }
+    }
+
+    // Handle authorization errors
+    if (error instanceof AuthorizationError) {
+      return {
+        status: 403,
+        data: null,
+        error: {
+          code: FetchErrorCode.AUTH,
+          message: error.message,
+        },
+      }
+    }
+
+    // Handle not found errors
+    if (error instanceof NotFoundError) {
+      return {
+        status: 404,
+        data: null,
+        error: {
+          code: FetchErrorCode.NOT_FOUND,
+          message: error.message,
+        },
+      }
+    }
+
+    // Handle generic errors
+    const errorMessage =
+      error instanceof Error ? error.message : generalFailureMessage
+
     return {
       status: 500,
       data: null,
       error: {
         code: FetchErrorCode.FAILURE,
-        message: generalFailureMessage,
+        message: errorMessage,
       },
     }
   }

@@ -78,12 +78,10 @@ export const userIsOwner = async (params: {
 export const getOrganization = async (params: {
   organizationId: Organization['id']
   // query?: Prisma.OrganizationFindUniqueArgs
-  authOptions?: CanQueryOptions & { restrictToUser?: boolean }
+  authOptions?: { restrictToUser?: boolean }
 }) => {
   const { organizationId, authOptions } = params
-  const { restrictToUser = true, ...opts } = authOptions || {}
-  const authorized = await canQuery(opts)
-  if (!authorized) return null
+  const { restrictToUser = true } = authOptions || {}
   if (restrictToUser) {
     const isMember = await userIsMember({ organizationId })
     if (!isMember) {
@@ -166,10 +164,7 @@ export type ActiveUserOrgMember = Awaited<
 
 export const createOrganization = async (
   params: Prisma.OrganizationCreateArgs,
-  authOptions?: CanQueryOptions,
 ) => {
-  const authorized = await canQuery(authOptions)
-  if (!authorized) return null
   const data = await db.organization.create(params)
   return data
 }
@@ -178,16 +173,8 @@ export const updateOrganization = async (params: {
   organizationId: Organization['id']
   payload: Prisma.OrganizationUpdateArgs['data']
   queryOptions?: Omit<Prisma.OrganizationUpdateArgs, 'data' | 'where'>
-  authOptions?: CanQueryOptions
 }) => {
-  const { organizationId, payload, queryOptions, authOptions } = params
-  const authorized = await canQuery(authOptions)
-  if (!authorized) return null
-
-  const isOwner = await userIsOwner({ organizationId })
-  if (!isOwner) {
-    return null
-  }
+  const { organizationId, payload, queryOptions } = params
 
   const queryArgs = {
     where: { id: organizationId },
@@ -202,15 +189,9 @@ export const updateOrganization = async (params: {
 export const deleteOrganization = async (params: {
   organizationId: Organization['id']
   query?: Prisma.OrganizationDeleteArgs
-  authOptions?: CanQueryOptions
 }) => {
-  const { organizationId, authOptions, query } = params
-  const authorized = await canQuery(authOptions)
-  if (!authorized) return null
-  const isOwner = await userIsOwner({ organizationId })
-  if (!isOwner) {
-    return null
-  }
+  const { organizationId, query } = params
+
   const queryArgs = {
     where: { id: organizationId },
     ...query,
@@ -224,15 +205,9 @@ export const getOrgMember = async (params: {
   organizationId: OrgMember['organizationId']
   memberId: OrgMember['id']
   query?: Prisma.OrgMemberFindUniqueArgs
-  authOptions?: CanQueryOptions
 }) => {
-  const { organizationId, memberId, query, authOptions } = params
-  const authorized = await canQuery(authOptions)
-  if (!authorized || !memberId) return null
-  const isMember = await userIsMember({ organizationId })
-  if (!isMember) {
-    return null
-  }
+  const { organizationId, memberId, query } = params
+  if (!memberId) return null
 
   const queryArgs = {
     where: { id: memberId, organizationId },
@@ -249,16 +224,8 @@ export const updateOrgMember = async (params: {
   memberId: OrgMember['id']
   payload: Prisma.OrgMemberUpdateArgs['data']
   queryOptions?: Omit<Prisma.OrgMemberUpdateArgs, 'data' | 'where'>
-  authOptions?: CanQueryOptions
 }) => {
-  const { organizationId, memberId, payload, queryOptions, authOptions } =
-    params
-  const authorized = await canQuery(authOptions)
-  if (!authorized) return null
-  const isOwner = await userIsOwner({ organizationId })
-  if (!isOwner) {
-    return null
-  }
+  const { organizationId, memberId, payload, queryOptions } = params
 
   const queryArgs = {
     where: { id: memberId, organizationId },
@@ -274,15 +241,8 @@ export const deleteOrgMember = async (params: {
   organizationId: OrgMember['organizationId']
   memberId: OrgMember['id']
   query?: Prisma.OrgMemberDeleteArgs
-  authOptions?: CanQueryOptions
 }) => {
-  const { organizationId, memberId, query, authOptions } = params
-  const authorized = await canQuery(authOptions)
-  if (!authorized) return null
-  const isOwner = await userIsOwner({ organizationId })
-  if (!isOwner) {
-    return null
-  }
+  const { organizationId, memberId, query } = params
 
   const queryArgs = {
     where: { id: memberId, organizationId },

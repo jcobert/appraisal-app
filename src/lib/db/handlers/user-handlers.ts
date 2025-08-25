@@ -2,9 +2,16 @@
 import 'server-only'
 
 import { db } from '@/lib/db/client'
-import { getActiveUserProfile } from '@/lib/db/queries/user'
+import {
+  createUserProfile,
+  deleteUserProfile,
+  getActiveUserProfile,
+  updateUserProfile,
+} from '@/lib/db/queries/user'
 
-import { createApiHandler } from '@/lib/api-handlers'
+import { createApiHandler, ValidationError } from '@/lib/api-handlers'
+import { validatePayload } from '@/utils/zod'
+import { userProfileSchema } from '@/lib/db/schemas/user'
 
 /**
  * Get all users
@@ -37,15 +44,113 @@ export async function handleGetUser(userId: string) {
     if (!userId) {
       throw new Error('User ID is required')
     }
-    
+
     const user = await db.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
     })
     return user
   })
 }
 
+/**
+ * Create a user profile
+ * Can be used in both API routes and server components
+ */
+export async function handleCreateUser(
+  payload: Parameters<typeof createUserProfile>[0]['data'],
+) {
+  return createApiHandler(
+    async () => {
+      // Validate payload
+      const validation = validatePayload(userProfileSchema.api, payload)
+      if (!validation?.success) {
+        throw new ValidationError(
+          'Invalid data provided.',
+          validation.errors || {},
+        )
+      }
+
+      const result = await createUserProfile({ data: payload })
+      return result
+    },
+    {
+      messages: {
+        success: 'User created successfully.',
+      },
+      isMutation: true,
+    },
+  )
+}
+
+/**
+ * Update a user profile
+ * Can be used in both API routes and server components
+ */
+export async function handleUpdateUser(
+  userId: string,
+  payload: Parameters<typeof updateUserProfile>[0]['data'],
+) {
+  return createApiHandler(
+    async () => {
+      if (!userId) {
+        throw new Error('User ID is required')
+      }
+
+      // Validate payload
+      const validation = validatePayload(userProfileSchema.api, payload)
+      if (!validation?.success) {
+        throw new ValidationError(
+          'Invalid data provided.',
+          validation.errors || {},
+        )
+      }
+
+      const result = await updateUserProfile({
+        where: { id: userId },
+        data: payload,
+      })
+      return result
+    },
+    {
+      messages: {
+        success: 'User updated successfully.',
+      },
+      isMutation: true,
+    },
+  )
+}
+
+/**
+ * Delete a user profile
+ * Can be used in both API routes and server components
+ */
+export async function handleDeleteUser(userId: string) {
+  return createApiHandler(
+    async () => {
+      if (!userId) {
+        throw new Error('User ID is required')
+      }
+
+      const result = await deleteUserProfile({
+        where: { id: userId },
+      })
+      return result
+    },
+    {
+      messages: {
+        success: 'User deleted successfully.',
+      },
+      isMutation: true,
+    },
+  )
+}
+
 // Export types for the handlers
 export type GetUsersResult = Awaited<ReturnType<typeof handleGetUsers>>
-export type GetActiveUserResult = Awaited<ReturnType<typeof handleGetActiveUser>>
+export type GetActiveUserResult = Awaited<
+  ReturnType<typeof handleGetActiveUser>
+>
 export type GetUserResult = Awaited<ReturnType<typeof handleGetUser>>
+export type CreateUserResult = Awaited<ReturnType<typeof handleCreateUser>>
+export type UpdateUserResult = Awaited<ReturnType<typeof handleUpdateUser>>
+export type DeleteUserResult = Awaited<ReturnType<typeof handleDeleteUser>>

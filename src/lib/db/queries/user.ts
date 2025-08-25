@@ -76,30 +76,21 @@ export const registerUserProfile = async (
 
 export const createUserProfile = async (
   params: Prisma.UserCreateArgs,
-  authOptions?: CanQueryOptions,
 ) => {
-  const authorized = await canQuery(authOptions)
-  if (!authorized) return null
   const data = await db.user.create(params)
   return data
 }
 
 export const updateUserProfile = async (
   params: Prisma.UserUpdateArgs,
-  authOptions?: CanQueryOptions,
 ) => {
-  const authorized = await canQuery(authOptions)
-  if (!authorized) return null
   const data = await db.user.update(params)
   return data
 }
 
 export const deleteUserProfile = async (
   params: Prisma.UserDeleteArgs,
-  authOptions?: CanQueryOptions,
 ) => {
-  const authorized = await canQuery(authOptions)
-  if (!authorized) return null
   const data = await db.user.delete(params)
   return data
 }

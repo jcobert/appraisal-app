@@ -7,10 +7,18 @@ import {
   updateOrganization,
   deleteOrganization,
   userIsOwner,
+  createOrganization,
 } from '@/lib/db/queries/organization'
+import { organizationSchema } from '@/lib/db/schemas/organization'
 import { getUserPermissions } from '@/lib/db/utils'
 
-import { createApiHandler } from '@/lib/api-handlers'
+import {
+  createApiHandler,
+  ValidationError,
+  AuthorizationError,
+  withUserFields,
+} from '@/lib/api-handlers'
+import { validatePayload } from '@/utils/zod'
 
 /**
  * Get organizations for the current user
@@ -32,7 +40,7 @@ export async function handleGetOrganization(organizationId: string) {
     if (!organizationId) {
       throw new Error('Organization ID is required')
     }
-    
+
     const organization = await getOrganization({ organizationId })
     return organization
   })
@@ -44,17 +52,31 @@ export async function handleGetOrganization(organizationId: string) {
  */
 export async function handleUpdateOrganization(
   organizationId: string,
-  payload: Parameters<typeof updateOrganization>[0]['payload']
+  payload: Parameters<typeof updateOrganization>[0]['payload'],
 ) {
   return createApiHandler(
-    async () => {
+    async ({ user }) => {
+      if (!user?.id) {
+        throw new Error('User not authenticated')
+      }
+
       if (!organizationId) {
         throw new Error('Organization ID is required')
       }
 
+      // Validate payload
+      const validation = validatePayload(organizationSchema.api, payload)
+      if (!validation?.success) {
+        throw new ValidationError(
+          'Invalid data provided.',
+          validation.errors || {},
+        )
+      }
+
+      // Skip auth checks in query since handler handles authorization
       const result = await updateOrganization({
         organizationId,
-        payload,
+        payload: withUserFields(payload, user?.id),
       })
       return result
     },
@@ -68,7 +90,7 @@ export async function handleUpdateOrganization(
         success: 'Organization updated successfully.',
       },
       isMutation: true,
-    }
+    },
   )
 }
 
@@ -83,7 +105,9 @@ export async function handleDeleteOrganization(organizationId: string) {
         throw new Error('Organization ID is required')
       }
 
-      const result = await deleteOrganization({ organizationId })
+      const result = await deleteOrganization({
+        organizationId,
+      })
       return result
     },
     {
@@ -96,7 +120,81 @@ export async function handleDeleteOrganization(organizationId: string) {
         success: 'Organization deleted successfully.',
       },
       isMutation: true,
-    }
+    },
+  )
+}
+
+/**
+ * Create a new organization with user ownership
+ * Handles user profile linking, duplicate checking, and member creation
+ * Can be used in both API routes and server components
+ */
+export async function handleCreateOrganization(
+  payload: Parameters<typeof createOrganization>[0]['data'],
+) {
+  return createApiHandler(
+    async () => {
+      // Import here to avoid circular dependencies
+      const { getActiveUserProfile } = await import('@/lib/db/queries/user')
+      const { isAuthenticated } = await import('@/utils/auth')
+
+      const { user } = await isAuthenticated()
+      if (!user?.id) {
+        throw new AuthorizationError('User not authenticated.')
+      }
+
+      // Validate payload
+      const validation = validatePayload(organizationSchema.api, payload)
+      if (!validation?.success) {
+        throw new ValidationError(
+          'Invalid data provided.',
+          validation.errors || {},
+        )
+      }
+
+      const userProfile = await getActiveUserProfile()
+      if (!userProfile?.id) {
+        throw new ValidationError('No user profile found.', {})
+      }
+
+      // Check for duplicate organization name for this owner
+      const existingOrgs = await getUserOrganizations({
+        owner: true,
+        filter: { name: { equals: payload?.name, mode: 'insensitive' } },
+      })
+
+      if (existingOrgs?.length) {
+        throw new ValidationError(
+          'An organization with this name already exists.',
+          {},
+        )
+      }
+
+      // Create organization with owner membership
+      const result = await createOrganization({
+        data: {
+          ...payload,
+          members: {
+            create: {
+              userId: userProfile.id,
+              roles: ['owner'],
+              createdBy: user.id,
+              updatedBy: user.id,
+            },
+          },
+          createdBy: user.id,
+          updatedBy: user.id,
+        },
+      })
+
+      return result
+    },
+    {
+      messages: {
+        success: 'Organization created successfully.',
+      },
+      isMutation: true,
+    },
   )
 }
 
@@ -109,15 +207,28 @@ export async function handleGetOrganizationPermissions(organizationId: string) {
     if (!organizationId) {
       throw new Error('Organization ID is required')
     }
-    
+
     const permissions = await getUserPermissions(organizationId)
     return permissions
   })
 }
 
 // Export types for the handlers
-export type GetUserOrganizationsResult = Awaited<ReturnType<typeof handleGetUserOrganizations>>
-export type GetOrganizationResult = Awaited<ReturnType<typeof handleGetOrganization>>
-export type UpdateOrganizationResult = Awaited<ReturnType<typeof handleUpdateOrganization>>
-export type DeleteOrganizationResult = Awaited<ReturnType<typeof handleDeleteOrganization>>
-export type GetOrganizationPermissionsResult = Awaited<ReturnType<typeof handleGetOrganizationPermissions>>
+export type GetUserOrganizationsResult = Awaited<
+  ReturnType<typeof handleGetUserOrganizations>
+>
+export type GetOrganizationResult = Awaited<
+  ReturnType<typeof handleGetOrganization>
+>
+export type CreateOrganizationResult = Awaited<
+  ReturnType<typeof handleCreateOrganization>
+>
+export type UpdateOrganizationResult = Awaited<
+  ReturnType<typeof handleUpdateOrganization>
+>
+export type DeleteOrganizationResult = Awaited<
+  ReturnType<typeof handleDeleteOrganization>
+>
+export type GetOrganizationPermissionsResult = Awaited<
+  ReturnType<typeof handleGetOrganizationPermissions>
+>
