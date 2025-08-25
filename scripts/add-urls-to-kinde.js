@@ -99,7 +99,7 @@ async function addCallbackUrlToKinde(token) {
 }
 
 ;(async () => {
-  if (process.env.VERCEL == 1) {
+  if (process.env.VERCEL == 1 && process.env.VERCEL_ENV === 'preview') {
     try {
       const authToken = await getAuthToken()
       await addCallbackUrlToKinde(authToken)
