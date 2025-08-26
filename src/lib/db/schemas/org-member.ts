@@ -22,16 +22,14 @@ const formSchema = z.object(
 
 const apiSchema = z.object(
   {
-    active: z.boolean(),
-    organizationId: z.string().nonempty(),
-    roles: z.array(z.enum(ORG_MEMBER_ROLES)).min(1, 'Select at least one role'),
+    // active: z.boolean(),
+    // organizationId: z.string().nonempty(),
+    roles: z
+      .array(z.enum(ORG_MEMBER_ROLES))
+      .min(1, 'At least 1 role required.'),
   } satisfies SchemaBase,
   { errorMap: formErrorMap },
 )
-
-// const form = baseSchema.extend({
-//   phone: baseSchema.shape.phone.or(z.literal('')),
-// } satisfies SchemaBase)
 
 export const orgMemberSchema = {
   form: formSchema,

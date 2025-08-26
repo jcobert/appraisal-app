@@ -90,7 +90,7 @@ export const userCan = async <Area extends PermissionArea>({
   return !!intersection(allowedRoles, userRoles)?.length
 }
 
-/** Protects page server side by redirecting if user not authenticated. */
+/** Protects page server side by redirecting if user not authorized. */
 export const protectPage = async <Area extends PermissionArea>(options?: {
   /** By default, redirects home. Provide alternate path for redirect. */
   redirect?: string

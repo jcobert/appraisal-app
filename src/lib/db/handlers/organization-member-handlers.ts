@@ -81,7 +81,7 @@ export async function handleUpdateOrgMember(
       if (!validation?.success) {
         throw new ValidationError(
           'Invalid data provided.',
-          validation.errors || {},
+          validation?.errors || {},
         )
       }
 

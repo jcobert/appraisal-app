@@ -208,8 +208,8 @@ export async function createApiHandler<TData = any>(
         data: null,
         error: {
           code: FetchErrorCode.INVALID_DATA,
-          message: error.message,
-          details: error.details,
+          message: error?.message,
+          details: error?.details,
         },
       }
     }
@@ -221,7 +221,7 @@ export async function createApiHandler<TData = any>(
         data: null,
         error: {
           code: FetchErrorCode.AUTH,
-          message: error.message,
+          message: error?.message,
         },
       }
     }
@@ -233,14 +233,16 @@ export async function createApiHandler<TData = any>(
         data: null,
         error: {
           code: FetchErrorCode.NOT_FOUND,
-          message: error.message,
+          message: error?.message,
         },
       }
     }
 
+    /** @todo Handle prisma errors? */
+
     // Handle generic errors
     const errorMessage =
-      error instanceof Error ? error.message : generalFailureMessage
+      error instanceof Error ? error?.message : generalFailureMessage
 
     return {
       status: 500,
