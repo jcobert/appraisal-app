@@ -2,11 +2,11 @@ import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 import { protectPage } from '@/lib/db/utils'
+import { handleGetOrganization, handleGetOrganizationPermissions } from '@/lib/db/handlers/organization-handlers'
 
-import fetch, { getAbsoluteUrl } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
+import { successful } from '@/utils/fetch'
 
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 
@@ -41,12 +41,13 @@ const Page: FC<Props> = async ({ params }) => {
     // Org
     queryClient.prefetchQuery({
       queryKey: organizationsQueryKey.filtered({ id: organizationId }),
-      queryFn: () =>
-        fetch.GET({
-          url: getAbsoluteUrl(
-            `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
-          ),
-        }),
+      queryFn: async () => {
+        const result = await handleGetOrganization(organizationId)
+        if (!successful(result.status)) {
+          throw new Error(result.error?.message || 'Failed to fetch organization')
+        }
+        return result
+      },
     }),
     // Permissions
     queryClient.prefetchQuery({
@@ -54,12 +55,13 @@ const Page: FC<Props> = async ({ params }) => {
         area: 'organization',
         organizationId,
       }),
-      queryFn: () =>
-        fetch.GET({
-          url: getAbsoluteUrl(
-            `${CORE_API_ENDPOINTS.organization}/${organizationId}/permissions`,
-          ),
-        }),
+      queryFn: async () => {
+        const result = await handleGetOrganizationPermissions(organizationId)
+        if (!successful(result.status)) {
+          throw new Error(result.error?.message || 'Failed to fetch permissions')
+        }
+        return result
+      },
     }),
   ])
 

@@ -2,10 +2,11 @@ import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 import { protectPage } from '@/lib/db/utils'
+import { handleGetOrganization, handleGetOrganizationPermissions } from '@/lib/db/handlers/organization-handlers'
+import { handleGetOrgMember } from '@/lib/db/handlers/organization-member-handlers'
 
-import coreFetch, { getAbsoluteUrl } from '@/utils/fetch'
+import { successful } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
 import { permissionsQueryKey } from '@/hooks/use-permissions'
@@ -36,12 +37,13 @@ const Page: FC<Props> = async ({ params }) => {
     // Org
     queryClient.prefetchQuery({
       queryKey: organizationsQueryKey.filtered({ id: organizationId }),
-      queryFn: () =>
-        coreFetch.GET({
-          url: getAbsoluteUrl(
-            `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
-          ),
-        }),
+      queryFn: async () => {
+        const result = await handleGetOrganization(organizationId)
+        if (!successful(result.status)) {
+          throw new Error(result.error?.message || 'Failed to fetch organization')
+        }
+        return result
+      },
     }),
     // Org member
     queryClient.prefetchQuery({
@@ -49,12 +51,13 @@ const Page: FC<Props> = async ({ params }) => {
         organizationId,
         memberId,
       }),
-      queryFn: () =>
-        coreFetch.GET({
-          url: getAbsoluteUrl(
-            `${CORE_API_ENDPOINTS.organization}/${organizationId}/members/${memberId}`,
-          ),
-        }),
+      queryFn: async () => {
+        const result = await handleGetOrgMember(organizationId, memberId)
+        if (!successful(result.status)) {
+          throw new Error(result.error?.message || 'Failed to fetch organization member')
+        }
+        return result
+      },
     }),
     // Permissions
     queryClient.prefetchQuery({
@@ -62,12 +65,13 @@ const Page: FC<Props> = async ({ params }) => {
         area: 'organization',
         organizationId,
       }),
-      queryFn: () =>
-        coreFetch.GET({
-          url: getAbsoluteUrl(
-            `${CORE_API_ENDPOINTS.organization}/${organizationId}/permissions`,
-          ),
-        }),
+      queryFn: async () => {
+        const result = await handleGetOrganizationPermissions(organizationId)
+        if (!successful(result.status)) {
+          throw new Error(result.error?.message || 'Failed to fetch permissions')
+        }
+        return result
+      },
     }),
   ])
 

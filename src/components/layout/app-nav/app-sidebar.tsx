@@ -1,11 +1,12 @@
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { FC } from 'react'
 
-import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 import { getSessionData } from '@/lib/db/utils'
+import { handleGetUserOrganizations } from '@/lib/db/handlers/organization-handlers'
+import { handleGetActiveUser } from '@/lib/db/handlers/user-handlers'
 
-import coreFetch, { getAbsoluteUrl } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
+import { successful } from '@/utils/fetch'
 
 import AppSidebarCore from '@/components/layout/app-nav/app-sidebar-core'
 
@@ -19,17 +20,23 @@ const AppSidebar: FC = async () => {
   await Promise.all([
     queryClient.prefetchQuery({
       queryKey: usersQueryKey.active,
-      queryFn: () =>
-        coreFetch.GET({
-          url: getAbsoluteUrl(`${CORE_API_ENDPOINTS.user}/active`),
-        }),
+      queryFn: async () => {
+        const result = await handleGetActiveUser()
+        if (!successful(result.status)) {
+          throw new Error(result.error?.message || 'Failed to fetch active user')
+        }
+        return result
+      },
     }),
     queryClient.prefetchQuery({
       queryKey: organizationsQueryKey.all,
-      queryFn: () =>
-        coreFetch.GET({
-          url: getAbsoluteUrl(`${CORE_API_ENDPOINTS.organization}`),
-        }),
+      queryFn: async () => {
+        const result = await handleGetUserOrganizations()
+        if (!successful(result.status)) {
+          throw new Error(result.error?.message || 'Failed to fetch organizations')
+        }
+        return result
+      },
     }),
   ])
 

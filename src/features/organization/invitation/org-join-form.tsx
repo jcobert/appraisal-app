@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 
 import { successful } from '@/utils/fetch'
+import { homeUrl } from '@/utils/nav'
 
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 import { Button } from '@/components/ui/button'
@@ -36,7 +37,7 @@ const OrgJoinForm: FC<Props> = ({ organizationId, invitation }) => {
 
     // 409 means user is already member of org.
     if (successful(res?.status) || res?.status === 409) {
-      router.push(`/organizations/${organizationId}`)
+      router.push(homeUrl(true))
     }
   }
 
