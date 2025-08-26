@@ -61,7 +61,7 @@ const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
 
   // Auto-select first org if none is selected
   useEffect(() => {
-    if (!activeOrgId && organizationOptions.length > 0) {
+    if (!activeOrgId && !!organizationOptions?.length) {
       selectOrg()
     }
   }, [activeOrgId, organizationOptions, selectOrg])

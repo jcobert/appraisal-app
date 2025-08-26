@@ -95,8 +95,8 @@ const OrganizationForm: FC<Props> = ({
       await toastyRequest(
         () =>
           createOrganization.mutateAsync(payload, {
-            onSuccess: (r) => {
-              if (successful(r.status)) {
+            onSuccess: (res) => {
+              if (successful(res?.status)) {
                 router.replace(prevUrl)
               }
             },

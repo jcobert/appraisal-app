@@ -36,7 +36,7 @@ const SidebarNavItem: FC<Props> = ({ item, authorizing, className }) => {
     return (
       <SidebarMenuItem key={item?.id} className={className}>
         <SidebarMenuButton asChild>
-          <Skeleton />
+          <Skeleton inert />
         </SidebarMenuButton>
       </SidebarMenuItem>
     )
