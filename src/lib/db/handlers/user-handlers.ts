@@ -1,15 +1,20 @@
 // sort-imports-ignore
 import 'server-only'
 
-import { db } from '@/lib/db/client'
 import {
-  createUserProfile,
-  deleteUserProfile,
+  getUserProfiles,
+  getUserProfile,
   getActiveUserProfile,
+  createUserProfile,
   updateUserProfile,
+  deleteUserProfile,
 } from '@/lib/db/queries/user'
 
-import { createApiHandler, ValidationError } from '@/lib/api-handlers'
+import {
+  createApiHandler,
+  ValidationError,
+  withUserFields,
+} from '@/lib/api-handlers'
 import { validatePayload } from '@/utils/zod'
 import { userProfileSchema } from '@/lib/db/schemas/user'
 
@@ -19,8 +24,8 @@ import { userProfileSchema } from '@/lib/db/schemas/user'
  */
 export async function handleGetUsers() {
   return createApiHandler(async () => {
-    const users = await db.user.findMany()
-    return users
+    const users = await getUserProfiles()
+    return users || []
   })
 }
 
@@ -45,7 +50,7 @@ export async function handleGetUser(userId: string) {
       throw new Error('User ID is required')
     }
 
-    const user = await db.user.findUnique({
+    const user = await getUserProfile({
       where: { id: userId },
     })
     return user
@@ -60,7 +65,7 @@ export async function handleCreateUser(
   payload: Parameters<typeof createUserProfile>[0]['data'],
 ) {
   return createApiHandler(
-    async () => {
+    async ({ user }) => {
       // Validate payload
       const validation = validatePayload(userProfileSchema.api, payload)
       if (!validation?.success) {
@@ -70,7 +75,13 @@ export async function handleCreateUser(
         )
       }
 
-      const result = await createUserProfile({ data: payload })
+      // Add user fields for audit trail
+      const dataWithUserFields = withUserFields(payload, user?.id || '', [
+        'createdBy',
+        'updatedBy',
+      ])
+
+      const result = await createUserProfile({ data: dataWithUserFields })
       return result
     },
     {
@@ -91,7 +102,7 @@ export async function handleUpdateUser(
   payload: Parameters<typeof updateUserProfile>[0]['data'],
 ) {
   return createApiHandler(
-    async () => {
+    async ({ user }) => {
       if (!userId) {
         throw new Error('User ID is required')
       }
@@ -105,9 +116,12 @@ export async function handleUpdateUser(
         )
       }
 
+      // Add user fields for audit trail
+      const dataWithUserFields = withUserFields(payload, user?.id || '')
+
       const result = await updateUserProfile({
         where: { id: userId },
-        data: payload,
+        data: dataWithUserFields,
       })
       return result
     },
