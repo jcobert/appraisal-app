@@ -2,14 +2,14 @@ import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import NextLink from 'next/link'
 import { FC } from 'react'
 
-import { useNavigationMenu } from '@/hooks/use-navigation'
+import { useNavigation } from '@/hooks/use-navigation'
 
 const NavLink: FC<NavigationMenu.NavigationMenuLinkProps> = ({
   href = '',
   children,
   ...props
 }) => {
-  const { isActivePath } = useNavigationMenu()
+  const { isActivePath } = useNavigation()
 
   const active = isActivePath(href)
 

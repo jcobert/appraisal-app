@@ -1,9 +1,7 @@
 'use client'
 
 import { LayoutDashboard, Settings } from 'lucide-react'
-import Link from 'next/link'
 import { FC, useMemo } from 'react'
-import { useIsClient } from 'usehooks-ts'
 
 import { cn } from '@/lib/utils'
 
@@ -11,6 +9,7 @@ import { NavItem } from '@/utils/nav'
 
 import { useOrganizationContext } from '@/providers/organization-provider'
 
+import SidebarNavItem from '@/components/layout/app-nav/sidebar-nav-item'
 import SidebarOrgSelector from '@/components/layout/app-nav/sidebar-org-selector'
 import SidebarUserMenu from '@/components/layout/app-nav/sidebar-user-menu'
 import {
@@ -21,14 +20,9 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
-  useSidebar,
 } from '@/components/ui/sidebar'
-import { Skeleton } from '@/components/ui/skeleton'
-
-import { useNavigationMenu } from '@/hooks/use-navigation'
 
 import { SessionData } from '@/types/auth'
 
@@ -39,10 +33,10 @@ type Props = {
 const AppSidebarCore: FC<Props> = ({ sessionData }) => {
   const { organizations } = sessionData || {}
 
-  const isClient = useIsClient()
-  const { open, openMobile } = useSidebar()
-  const { isActiveItem } = useNavigationMenu()
-  const { activeOrgId } = useOrganizationContext()
+  const {
+    activeOrgId,
+    permissions: { can, isLoading: isLoadingPermissions },
+  } = useOrganizationContext()
 
   const navItems = useMemo<NavItem[]>(() => {
     return [
@@ -57,6 +51,7 @@ const AppSidebarCore: FC<Props> = ({ sessionData }) => {
         name: 'Settings',
         url: `/organizations/${activeOrgId}/settings`,
         icon: Settings,
+        hidden: !can('edit_org_info'),
       },
       // {
       //   id: 'orders',
@@ -71,7 +66,7 @@ const AppSidebarCore: FC<Props> = ({ sessionData }) => {
       //   icon: BookUser,
       // },
     ]
-  }, [activeOrgId])
+  }, [activeOrgId, can])
 
   return (
     <Sidebar
@@ -94,26 +89,12 @@ const AppSidebarCore: FC<Props> = ({ sessionData }) => {
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems?.map((item) => {
-                const Icon = item?.icon
                 return (
-                  <SidebarMenuItem key={item?.id}>
-                    {isClient ? (
-                      <SidebarMenuButton
-                        asChild
-                        tooltip={item?.name}
-                        isActive={isActiveItem(item)}
-                      >
-                        <Link href={item?.url}>
-                          {Icon ? <Icon /> : null}
-                          {open || openMobile ? item?.name : null}
-                        </Link>
-                      </SidebarMenuButton>
-                    ) : (
-                      <SidebarMenuButton asChild>
-                        <Skeleton />
-                      </SidebarMenuButton>
-                    )}
-                  </SidebarMenuItem>
+                  <SidebarNavItem
+                    key={item?.id}
+                    item={item}
+                    authorizing={isLoadingPermissions}
+                  />
                 )
               })}
             </SidebarMenu>
