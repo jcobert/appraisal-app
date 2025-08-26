@@ -19,13 +19,13 @@ import {
 import { validatePayload } from '@/utils/zod'
 
 /**
- * Get a specific organization member by ID
- * Can be used in both API routes and server components
+ * Get a specific organization member by ID.
+ * Can be used in both API routes and server components.
  */
-export async function handleGetOrgMember(
+export const handleGetOrgMember = async (
   organizationId: string,
   memberId: string,
-) {
+) => {
   return createApiHandler(async () => {
     if (!organizationId) {
       throw new Error('Organization ID is required')
@@ -40,10 +40,10 @@ export async function handleGetOrgMember(
 }
 
 /**
- * Get the active user's organization member data
- * Can be used in both API routes and server components
+ * Get the active user's organization member data.
+ * Can be used in both API routes and server components.
  */
-export async function handleGetActiveUserOrgMember(organizationId: string) {
+export const handleGetActiveUserOrgMember = async (organizationId: string) => {
   return createApiHandler(async () => {
     if (!organizationId) {
       throw new Error('Organization ID is required')
@@ -55,14 +55,14 @@ export async function handleGetActiveUserOrgMember(organizationId: string) {
 }
 
 /**
- * Update an organization member
- * Can be used in both API routes and server components
+ * Update an organization member.
+ * Can be used in both API routes and server components.
  */
-export async function handleUpdateOrgMember(
+export const handleUpdateOrgMember = async (
   organizationId: string,
   memberId: string,
   payload: Parameters<typeof updateOrgMember>[0]['payload'],
-) {
+) => {
   return createApiHandler(
     async ({ user }) => {
       if (!user?.id) {
@@ -107,13 +107,13 @@ export async function handleUpdateOrgMember(
 }
 
 /**
- * Update the active user's organization member data
- * Can be used in both API routes and server components
+ * Update the active user's organization member data.
+ * Can be used in both API routes and server components.
  */
-export async function handleUpdateActiveUserOrgMember(
+export const handleUpdateActiveUserOrgMember = async (
   organizationId: string,
   payload: Parameters<typeof updateOrgMember>[0]['payload'],
-) {
+) => {
   return createApiHandler(
     async ({ user }) => {
       if (!user?.id) {
@@ -162,13 +162,13 @@ export async function handleUpdateActiveUserOrgMember(
 }
 
 /**
- * Delete an organization member
- * Can be used in both API routes and server components
+ * Delete an organization member.
+ * Can be used in both API routes and server components.
  */
-export async function handleDeleteOrgMember(
+export const handleDeleteOrgMember = async (
   organizationId: string,
   memberId: string,
-) {
+) => {
   return createApiHandler(
     async () => {
       if (!organizationId) {
@@ -198,7 +198,6 @@ export async function handleDeleteOrgMember(
   )
 }
 
-// Export types for the handlers
 export type GetOrgMemberResult = Awaited<ReturnType<typeof handleGetOrgMember>>
 export type GetActiveUserOrgMemberResult = Awaited<
   ReturnType<typeof handleGetActiveUserOrgMember>

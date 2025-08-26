@@ -19,10 +19,10 @@ import { validatePayload } from '@/utils/zod'
 import { userProfileSchema } from '@/lib/db/schemas/user'
 
 /**
- * Get all users
- * Can be used in both API routes and server components
+ * Get all users.
+ * Can be used in both API routes and server components.
  */
-export async function handleGetUsers() {
+export const handleGetUsers = async () => {
   return createApiHandler(async () => {
     const users = await getUserProfiles()
     return users || []
@@ -30,10 +30,10 @@ export async function handleGetUsers() {
 }
 
 /**
- * Get active user profile
- * Can be used in both API routes and server components
+ * Get active user profile.
+ * Can be used in both API routes and server components.
  */
-export async function handleGetActiveUser() {
+export const handleGetActiveUser = async () => {
   return createApiHandler(async () => {
     const user = await getActiveUserProfile()
     return user
@@ -41,10 +41,10 @@ export async function handleGetActiveUser() {
 }
 
 /**
- * Get user by ID
- * Can be used in both API routes and server components
+ * Get user by ID.
+ * Can be used in both API routes and server components.
  */
-export async function handleGetUser(userId: string) {
+export const handleGetUser = async (userId: string) => {
   return createApiHandler(async () => {
     if (!userId) {
       throw new Error('User ID is required')
@@ -58,12 +58,12 @@ export async function handleGetUser(userId: string) {
 }
 
 /**
- * Create a user profile
- * Can be used in both API routes and server components
+ * Create a user profile.
+ * Can be used in both API routes and server components.
  */
-export async function handleCreateUser(
+export const handleCreateUser = async (
   payload: Parameters<typeof createUserProfile>[0]['data'],
-) {
+) => {
   return createApiHandler(
     async ({ user }) => {
       // Validate payload
@@ -94,13 +94,13 @@ export async function handleCreateUser(
 }
 
 /**
- * Update a user profile
- * Can be used in both API routes and server components
+ * Update a user profile.
+ * Can be used in both API routes and server components.
  */
-export async function handleUpdateUser(
+export const handleUpdateUser = async (
   userId: string,
   payload: Parameters<typeof updateUserProfile>[0]['data'],
-) {
+) => {
   return createApiHandler(
     async ({ user }) => {
       if (!userId) {
@@ -135,10 +135,10 @@ export async function handleUpdateUser(
 }
 
 /**
- * Delete a user profile
- * Can be used in both API routes and server components
+ * Delete a user profile.
+ * Can be used in both API routes and server components.
  */
-export async function handleDeleteUser(userId: string) {
+export const handleDeleteUser = async (userId: string) => {
   return createApiHandler(
     async () => {
       if (!userId) {
@@ -159,7 +159,6 @@ export async function handleDeleteUser(userId: string) {
   )
 }
 
-// Export types for the handlers
 export type GetUsersResult = Awaited<ReturnType<typeof handleGetUsers>>
 export type GetActiveUserResult = Awaited<
   ReturnType<typeof handleGetActiveUser>

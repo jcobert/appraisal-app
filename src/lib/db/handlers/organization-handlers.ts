@@ -21,10 +21,10 @@ import {
 import { validatePayload } from '@/utils/zod'
 
 /**
- * Get organizations for the current user
- * Can be used in both API routes and server components
+ * Get organizations for the current user.
+ * Can be used in both API routes and server components.
  */
-export async function handleGetUserOrganizations() {
+export const handleGetUserOrganizations = async () => {
   return createApiHandler(async () => {
     const organizations = await getUserOrganizations()
     return organizations || []
@@ -32,10 +32,10 @@ export async function handleGetUserOrganizations() {
 }
 
 /**
- * Get a single organization by ID
- * Can be used in both API routes and server components
+ * Get a single organization by ID.
+ * Can be used in both API routes and server components.
  */
-export async function handleGetOrganization(organizationId: string) {
+export const handleGetOrganization = async (organizationId: string) => {
   return createApiHandler(async () => {
     if (!organizationId) {
       throw new Error('Organization ID is required')
@@ -47,13 +47,13 @@ export async function handleGetOrganization(organizationId: string) {
 }
 
 /**
- * Update an organization (requires owner permissions)
- * Can be used in both API routes and server components
+ * Update an organization (requires owner permissions).
+ * Can be used in both API routes and server components.
  */
-export async function handleUpdateOrganization(
+export const handleUpdateOrganization = async (
   organizationId: string,
   payload: Parameters<typeof updateOrganization>[0]['payload'],
-) {
+) => {
   return createApiHandler(
     async ({ user }) => {
       if (!user?.id) {
@@ -95,10 +95,10 @@ export async function handleUpdateOrganization(
 }
 
 /**
- * Delete an organization (requires owner permissions)
- * Can be used in both API routes and server components
+ * Delete an organization (requires owner permissions).
+ * Can be used in both API routes and server components.
  */
-export async function handleDeleteOrganization(organizationId: string) {
+export const handleDeleteOrganization = async (organizationId: string) => {
   return createApiHandler(
     async () => {
       if (!organizationId) {
@@ -125,13 +125,13 @@ export async function handleDeleteOrganization(organizationId: string) {
 }
 
 /**
- * Create a new organization with user ownership
- * Handles user profile linking, duplicate checking, and member creation
- * Can be used in both API routes and server components
+ * Create a new organization with user ownership.
+ * Handles user profile linking, duplicate checking, and member creation.
+ * Can be used in both API routes and server components.
  */
-export async function handleCreateOrganization(
+export const handleCreateOrganization = async (
   payload: Parameters<typeof createOrganization>[0]['data'],
-) {
+) => {
   return createApiHandler(
     async () => {
       // Import here to avoid circular dependencies
@@ -199,10 +199,12 @@ export async function handleCreateOrganization(
 }
 
 /**
- * Get user permissions for an organization
- * Can be used in both API routes and server components
+ * Get user permissions for an organization.
+ * Can be used in both API routes and server components.
  */
-export async function handleGetOrganizationPermissions(organizationId: string) {
+export const handleGetOrganizationPermissions = async (
+  organizationId: string,
+) => {
   return createApiHandler(async () => {
     if (!organizationId) {
       throw new Error('Organization ID is required')
@@ -213,7 +215,6 @@ export async function handleGetOrganizationPermissions(organizationId: string) {
   })
 }
 
-// Export types for the handlers
 export type GetUserOrganizationsResult = Awaited<
   ReturnType<typeof handleGetUserOrganizations>
 >

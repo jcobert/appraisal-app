@@ -8,7 +8,7 @@ import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
 import { ZodFieldErrors } from '@/utils/zod'
 
 /**
- * Custom error class for validation errors with typed details
+ * Custom error class for validation errors with typed details.
  */
 export class ValidationError extends Error {
   public readonly details: ZodFieldErrors
@@ -21,7 +21,7 @@ export class ValidationError extends Error {
 }
 
 /**
- * Custom error class for authorization errors
+ * Custom error class for authorization errors.
  */
 export class AuthorizationError extends Error {
   constructor(message: string = 'Unauthorized to perform this action.') {
@@ -31,7 +31,7 @@ export class AuthorizationError extends Error {
 }
 
 /**
- * Custom error class for not found errors
+ * Custom error class for not found errors.
  */
 export class NotFoundError extends Error {
   constructor(message: string = 'The requested resource could not be found.') {
@@ -41,14 +41,14 @@ export class NotFoundError extends Error {
 }
 
 /**
- * Utility to add user ID fields to payload
- * For use in handlers where auth is already confirmed
+ * Utility to add user ID fields to payload.
+ * For use in handlers where auth is already confirmed.
  */
-export function withUserFields<T extends Record<string, any>>(
+export const withUserFields = <T extends Record<string, any>>(
   payload: T,
   userId: string,
   fields: ('createdBy' | 'updatedBy')[] = ['updatedBy'],
-): T & { createdBy?: string; updatedBy?: string } {
+): T & { createdBy?: string; updatedBy?: string } => {
   const userFields: { createdBy?: string; updatedBy?: string } = {}
 
   if (fields.includes('createdBy')) {
@@ -75,7 +75,7 @@ export const toNextResponse = <TData = any>(
 }
 
 /**
- * Configuration for API handlers
+ * Configuration for API handlers.
  */
 export type ApiHandlerConfig = {
   /** Whether authentication is required (default: true) */
@@ -102,19 +102,19 @@ export type ApiHandlerConfig = {
 }
 
 /**
- * Creates a standardized API handler that can be used both in API routes and server components
+ * Creates a standardized API handler that can be used both in API routes and server components.
  * @param handler - The async function that contains the business logic
  * @param config - Configuration options for the handler
  * @returns ApiHandlerResult with both data and NextResponse
  */
-export async function createApiHandler<TData = any>(
+export const createApiHandler = async <TData = any>(
   handler: ({
     user,
   }: {
     user: Awaited<ReturnType<typeof isAuthenticated>>['user']
   }) => Promise<TData>,
   config: ApiHandlerConfig = {},
-): Promise<FetchResponse<TData>> {
+): Promise<FetchResponse<TData>> => {
   const {
     requireAuth = true,
     authorizationCheck,
