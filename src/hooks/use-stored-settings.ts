@@ -5,8 +5,6 @@ import { siteConfig } from '@/configuration/site'
 export type StoredSettings = {
   /** The currently selected organization. */
   activeOrgId?: string
-  /** Whether sidebar navigation is expanded. */
-  sidebarExpanded?: boolean
 }
 
 const storedSettingsKey =
@@ -14,7 +12,6 @@ const storedSettingsKey =
 
 const defaultSettings = {
   activeOrgId: '',
-  sidebarExpanded: true,
 } satisfies StoredSettings
 
 type UseStoredSettingsProps = {

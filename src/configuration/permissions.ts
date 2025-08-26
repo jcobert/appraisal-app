@@ -1,5 +1,6 @@
 import { MemberRole } from '@prisma/client'
 
+/** @todo Separate orders area doesn't make sense. Remove. */
 /**
  * Areas of the application where permissions are required.
  */
@@ -34,6 +35,7 @@ export const APP_PERMISSIONS: {
     delete_org: ['owner'],
     view_org_member_details: ['owner', 'manager'],
   },
+  /** @todo Move these under organization. */
   orders: {
     create_order: ['owner', 'manager', 'appraiser'],
     edit_order: ['owner', 'manager', 'appraiser'],

@@ -1,22 +1,12 @@
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { useIsClient } from 'usehooks-ts'
 
 import { NavItem } from '@/utils/nav'
 
-import { useStoredSettings } from '@/hooks/use-stored-settings'
-
-export const useNavigationMenu = () => {
+export const useNavigation = () => {
   const pathname = usePathname()
-  const { settings, updateSettings } = useStoredSettings()
-  const isClient = useIsClient()
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-
-  const isSidebarExpanded = isClient ? settings?.sidebarExpanded : true
-  const setIsSidebarExpanded = (expanded: boolean) => {
-    updateSettings({ ...settings, sidebarExpanded: expanded })
-  }
 
   // Close menu when new page is loaded.
   useEffect(() => {
@@ -65,7 +55,5 @@ export const useNavigationMenu = () => {
     isActivePath,
     isMenuOpen,
     setIsMenuOpen,
-    isSidebarExpanded,
-    setIsSidebarExpanded,
   }
 }

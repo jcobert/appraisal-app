@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 
-import { useNavigationMenu } from '@/hooks/use-navigation'
+import { useNavigation } from '@/hooks/use-navigation'
 
 import { SessionData } from '@/types/auth'
 
@@ -36,7 +36,7 @@ const MobileNav: FC<Props> = ({
   className,
 }) => {
   const { isActiveItem, isActivePath, isMenuOpen, setIsMenuOpen } =
-    useNavigationMenu()
+    useNavigation()
 
   const navItems = SITE_NAVIGATION_ITEMS
 
