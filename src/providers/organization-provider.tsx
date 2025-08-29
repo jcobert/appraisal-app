@@ -82,7 +82,10 @@ export const OrganizationProvider: FC<OrganizationProviderProps> = ({
 
   // Clear invalid stored org
   useEffect(() => {
-    if (activeOrgId && organizations?.length && !isStoredOrgValid) {
+    if (
+      activeOrgId &&
+      (!organizations?.length || (organizations?.length && !isStoredOrgValid))
+    ) {
       updateSettings({ activeOrgId: '' })
     }
   }, [activeOrgId, organizations, isStoredOrgValid, updateSettings])

@@ -535,11 +535,10 @@ describe('OrganizationProvider Security Tests', () => {
       const wrapper = createWrapper()
       const { result } = renderHook(() => useOrganizationContext(), { wrapper })
 
-      // Current behavior: does not clear stored org when organizations list is empty
-      // This is because the clear effect requires organizations?.length to be truthy
-      expect(mockUpdateSettings).not.toHaveBeenCalledWith({ activeOrgId: '' })
+      // Should clear stored org when no organizations are available
+      expect(mockUpdateSettings).toHaveBeenCalledWith({ activeOrgId: '' })
 
-      // But isStoredOrgValid should be false
+      // selectedOrganization should be undefined
       expect(result.current.selectedOrganization).toBeUndefined()
     })
 
