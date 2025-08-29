@@ -97,7 +97,7 @@ const createWrapper = () => {
 
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <OrganizationProvider>{children}</OrganizationProvider>
+      <OrganizationProvider userId='foo123'>{children}</OrganizationProvider>
     </QueryClientProvider>
   )
 }
@@ -200,7 +200,9 @@ describe('OrganizationProvider Security Tests', () => {
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <QueryClientProvider client={queryClient}>
-          <OrganizationProvider>{children}</OrganizationProvider>
+          <OrganizationProvider userId='foo123'>
+            {children}
+          </OrganizationProvider>
         </QueryClientProvider>
       )
 
@@ -394,6 +396,261 @@ describe('OrganizationProvider Security Tests', () => {
       renderHook(() => useOrganizationContext(), { wrapper })
 
       expect(mockUpdateSettings).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('User-Scoped Storage Integration', () => {
+    it('should pass userId to useStoredSettings hook', () => {
+      const wrapper = createWrapper()
+      renderHook(() => useOrganizationContext(), { wrapper })
+
+      expect(mockUseStoredSettings).toHaveBeenCalledWith({
+        userId: 'foo123',
+      })
+    })
+
+    it('should handle undefined userId gracefully', () => {
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      })
+
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+          <OrganizationProvider userId={undefined as any}>
+            {children}
+          </OrganizationProvider>
+        </QueryClientProvider>
+      )
+
+      renderHook(() => useOrganizationContext(), { wrapper })
+
+      expect(mockUseStoredSettings).toHaveBeenCalledWith({
+        userId: undefined,
+      })
+    })
+
+    it('should work with different userIds without cross-contamination', () => {
+      // Test that different userIds get different storage calls
+      const queryClient1 = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      })
+
+      const wrapper1 = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient1}>
+          <OrganizationProvider userId='user-1'>
+            {children}
+          </OrganizationProvider>
+        </QueryClientProvider>
+      )
+
+      renderHook(() => useOrganizationContext(), { wrapper: wrapper1 })
+
+      expect(mockUseStoredSettings).toHaveBeenCalledWith({
+        userId: 'user-1',
+      })
+
+      // Clear mocks and test second user
+      jest.clearAllMocks()
+      mockUseStoredSettings.mockReturnValue({
+        settings: { activeOrgId: 'org-1' },
+        updateSettings: mockUpdateSettings,
+        clearSettings: jest.fn(),
+      })
+
+      const queryClient2 = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      })
+
+      const wrapper2 = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient2}>
+          <OrganizationProvider userId='user-2'>
+            {children}
+          </OrganizationProvider>
+        </QueryClientProvider>
+      )
+
+      renderHook(() => useOrganizationContext(), { wrapper: wrapper2 })
+
+      expect(mockUseStoredSettings).toHaveBeenCalledWith({
+        userId: 'user-2',
+      })
+    })
+  })
+
+  describe('Invalid Stored Organization Cleanup', () => {
+    it('should clear stored org when user no longer has access', () => {
+      // Mock stored org that user doesn't have access to
+      mockUseStoredSettings.mockReturnValue({
+        settings: { activeOrgId: 'inaccessible-org' },
+        updateSettings: mockUpdateSettings,
+        clearSettings: jest.fn(),
+      })
+
+      // User only has access to org-1, org-2, org-3
+      mockUseGetOrganizations.mockReturnValue({
+        response: { data: mockOrganizations },
+      } as any)
+
+      const wrapper = createWrapper()
+      renderHook(() => useOrganizationContext(), { wrapper })
+
+      // Should clear the invalid stored org
+      expect(mockUpdateSettings).toHaveBeenCalledWith({ activeOrgId: '' })
+    })
+
+    it('should not clear stored org when user still has access', () => {
+      mockUseStoredSettings.mockReturnValue({
+        settings: { activeOrgId: 'org-2' },
+        updateSettings: mockUpdateSettings,
+        clearSettings: jest.fn(),
+      })
+
+      const wrapper = createWrapper()
+      renderHook(() => useOrganizationContext(), { wrapper })
+
+      // Should not clear the valid stored org
+      expect(mockUpdateSettings).not.toHaveBeenCalledWith({ activeOrgId: '' })
+    })
+
+    it('should handle stored org validation with empty organizations list', () => {
+      mockUseStoredSettings.mockReturnValue({
+        settings: { activeOrgId: 'org-1' },
+        updateSettings: mockUpdateSettings,
+        clearSettings: jest.fn(),
+      })
+
+      mockUseGetOrganizations.mockReturnValue({
+        response: { data: [] }, // No organizations available
+      } as any)
+
+      const wrapper = createWrapper()
+      const { result } = renderHook(() => useOrganizationContext(), { wrapper })
+
+      // Should clear stored org when no organizations are available
+      expect(mockUpdateSettings).toHaveBeenCalledWith({ activeOrgId: '' })
+
+      // selectedOrganization should be undefined
+      expect(result.current.selectedOrganization).toBeUndefined()
+    })
+
+    it('should clear stored org when organizations data loads and user has no access', () => {
+      mockUseStoredSettings.mockReturnValue({
+        settings: { activeOrgId: 'org-that-user-lost-access-to' },
+        updateSettings: mockUpdateSettings,
+        clearSettings: jest.fn(),
+      })
+
+      // Organizations load but user doesn't have access to stored org
+      mockUseGetOrganizations.mockReturnValue({
+        response: { data: mockOrganizations }, // Has orgs, but not the stored one
+      } as any)
+
+      const wrapper = createWrapper()
+      renderHook(() => useOrganizationContext(), { wrapper })
+
+      // Should clear the invalid stored org
+      expect(mockUpdateSettings).toHaveBeenCalledWith({ activeOrgId: '' })
+    })
+  })
+
+  describe('Server-side Props Integration', () => {
+    it('should work with initialOrganizations prop', () => {
+      const initialOrgs = [mockOrganizations[0]!] // Only one org initially
+
+      mockUseGetOrganizations.mockReturnValue({
+        response: { data: null }, // No data from API yet
+      } as any)
+
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      })
+
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+          <OrganizationProvider
+            userId='user-123'
+            initialOrganizations={initialOrgs}
+          >
+            {children}
+          </OrganizationProvider>
+        </QueryClientProvider>
+      )
+
+      const { result } = renderHook(() => useOrganizationContext(), {
+        wrapper,
+      })
+
+      expect(result.current.organizations).toEqual(initialOrgs)
+    })
+
+    it('should prefer API data over initialOrganizations when available', () => {
+      const initialOrgs = [mockOrganizations[0]!]
+
+      mockUseGetOrganizations.mockReturnValue({
+        response: { data: mockOrganizations }, // Full API data
+      } as any)
+
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      })
+
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+          <OrganizationProvider
+            userId='user-123'
+            initialOrganizations={initialOrgs}
+          >
+            {children}
+          </OrganizationProvider>
+        </QueryClientProvider>
+      )
+
+      const { result } = renderHook(() => useOrganizationContext(), {
+        wrapper,
+      })
+
+      // Should use API data, not initial data
+      expect(result.current.organizations).toEqual(mockOrganizations)
+      expect(result.current.organizations).not.toEqual(initialOrgs)
+    })
+
+    it('should only fetch organizations when userId is provided', () => {
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      })
+
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+          <OrganizationProvider userId={undefined as any}>
+            {children}
+          </OrganizationProvider>
+        </QueryClientProvider>
+      )
+
+      renderHook(() => useOrganizationContext(), { wrapper })
+
+      // Should be called with enabled: false when no userId
+      expect(mockUseGetOrganizations).toHaveBeenCalledWith({
+        options: { enabled: false },
+      })
     })
   })
 })
