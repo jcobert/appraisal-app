@@ -17,11 +17,6 @@ datasource db {
 //       ENUMS
 // -----------------
 
-enum UserRole {
-  manager
-  appraiser
-}
-
 enum MemberRole {
   owner
   manager
@@ -85,7 +80,6 @@ model User {
   // Relations
   memberships        OrgMember[]     @relation("UserMember")
   orgInvitationsSent OrgInvitation[] @relation("OrgInviter")
-  // orgInvitationsReceived OrgInvitation[] @relation("OrgInvitee")
 }
 
 model OrgMember {
@@ -101,6 +95,7 @@ model OrgMember {
   organizationId String
   user           User         @relation("UserMember", fields: [userId], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id])
+  Order          Order[]
 }
 
 model Organization {
@@ -134,24 +129,6 @@ model OrgInvitation {
   organizationId   String
   invitedBy        User                @relation("OrgInviter", fields: [invitedByUserId], references: [id])
   organization     Organization        @relation(fields: [organizationId], references: [id])
-  // inviteeUserId    String
-  // invitee          User                @relation("OrgInvitee", fields: [inviteeUserId], references: [id])
-}
-
-// @TODO - Phase this table out. An appraiser is an OrgMember with the appraiser role.
-model Appraiser {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String?
-  updatedBy String?
-  firstName String
-  lastName  String
-  email     String?
-  phone     String?
-  orders    Order[]
-  // userProfile User     @relation(fields: [userId], references: [id])
-  // userId    String   @unique
 }
 
 model Client {
@@ -173,6 +150,7 @@ model Client {
   poc       String? // point of contact
   note      String?
   favorite  Boolean? @default(false)
+  // Relations
   Order     Order[]
 }
 
@@ -192,6 +170,7 @@ model Borrower {
   state     String?
   zip       String?
   note      String?
+  // Relations
   Order     Order[]
 }
 
@@ -208,6 +187,7 @@ model Property {
   state        String?
   zip          String?
   note         String?
+  // Relations
   Order        Order[]
 }
 
@@ -222,14 +202,6 @@ model Order {
   orderDate        DateTime?
   inspectionDate   DateTime?
   dueDate          DateTime?
-  borrower         Borrower?      @relation(fields: [borrowerId], references: [id])
-  borrowerId       String?
-  property         Property?      @relation(fields: [propertyId], references: [id])
-  propertyId       String?
-  client           Client?        @relation(fields: [clientId], references: [id])
-  clientId         String?
-  appraiser        Appraiser?     @relation(fields: [appraiserId], references: [id])
-  appraiserId      String?
   orderStatus      OrderStatus?
   appraisalType    AppraisalType?
   paymentStatus    PaymentStatus?
@@ -239,6 +211,15 @@ model Order {
   contract         Boolean?
   questionnaire    Boolean?
   sent             Boolean?
+  // Relations
+  borrowerId       String?
+  borrower         Borrower?      @relation(fields: [borrowerId], references: [id])
+  propertyId       String?
+  property         Property?      @relation(fields: [propertyId], references: [id])
+  clientId         String?
+  client           Client?        @relation(fields: [clientId], references: [id])
+  appraiserId      String?
+  appraiser        OrgMember?     @relation(fields: [appraiserId], references: [id])
   Payment          Payment[]
 }
 
@@ -248,10 +229,11 @@ model Payment {
   updatedAt   DateTime     @updatedAt
   createdBy   String?
   updatedBy   String?
-  order       Order        @relation(fields: [orderId], references: [id])
-  orderId     String
   amount      Int
   paymentDate DateTime?
   paymentType PaymentType?
   description String?
+  // Relations
+  orderId     String
+  order       Order        @relation(fields: [orderId], references: [id])
 }
