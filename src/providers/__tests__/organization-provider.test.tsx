@@ -97,7 +97,7 @@ const createWrapper = () => {
 
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <OrganizationProvider>{children}</OrganizationProvider>
+      <OrganizationProvider userId='foo123'>{children}</OrganizationProvider>
     </QueryClientProvider>
   )
 }
@@ -200,7 +200,9 @@ describe('OrganizationProvider Security Tests', () => {
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <QueryClientProvider client={queryClient}>
-          <OrganizationProvider>{children}</OrganizationProvider>
+          <OrganizationProvider userId='foo123'>
+            {children}
+          </OrganizationProvider>
         </QueryClientProvider>
       )
 

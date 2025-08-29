@@ -2,7 +2,9 @@
 
 import { Organization } from '@prisma/client'
 import { useQueryClient } from '@tanstack/react-query'
+import { sortBy } from 'lodash'
 import {
+  FC,
   createContext,
   useCallback,
   useContext,
@@ -12,6 +14,8 @@ import {
 
 import { permissionsQueryKey, usePermissions } from '@/hooks/use-permissions'
 import { useStoredSettings } from '@/hooks/use-stored-settings'
+
+import { SessionUser } from '@/types/auth'
 
 import { PermissionAction } from '@/configuration/permissions'
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
@@ -41,30 +45,47 @@ const OrganizationContext = createContext<OrganizationContextValue | null>(null)
 
 type OrganizationProviderProps = {
   children: React.ReactNode
+  /** Active session user ID. */
+  userId: SessionUser['id']
   /** Optional initial organizations data. */
   initialOrganizations?: Organization[]
 }
 
-export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({
+export const OrganizationProvider: FC<OrganizationProviderProps> = ({
   children,
+  userId,
   initialOrganizations = [],
 }) => {
   const {
     settings: { activeOrgId },
     updateSettings,
-  } = useStoredSettings()
+  } = useStoredSettings({ userId })
+
   const queryClient = useQueryClient()
 
   const { response, isLoading: isLoadingOrganizations } = useGetOrganizations({
-    options: { enabled: true },
+    options: { enabled: !!userId },
   })
   const organizations = response?.data || initialOrganizations
 
   const { response: activeOrgRes } = useGetOrganizations({
     id: activeOrgId,
-    options: { enabled: !!activeOrgId },
+    options: { enabled: !!activeOrgId && !!userId },
   })
   const fetchedActiveOrg = activeOrgRes?.data
+
+  // Validate stored org is still accessible to current user
+  const isStoredOrgValid = useMemo(() => {
+    if (!activeOrgId || !organizations?.length) return false
+    return organizations?.some((org) => org?.id === activeOrgId)
+  }, [activeOrgId, organizations])
+
+  // Clear invalid stored org
+  useEffect(() => {
+    if (activeOrgId && organizations?.length && !isStoredOrgValid) {
+      updateSettings({ activeOrgId: '' })
+    }
+  }, [activeOrgId, organizations, isStoredOrgValid, updateSettings])
 
   // The fetched org that matches activeOrgId from local storage.
   // Prioritizes the "find one" org query and falls back to matching org from the "find many" query.
@@ -115,15 +136,15 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({
     })
   }, [queryClient, activeOrgId])
 
-  // Auto-select first organization if none is selected
+  // Auto-select first organization if none is selected or stored org is invalid
   useEffect(() => {
-    if (!activeOrgId && !!organizations?.length) {
-      const firstOrg = organizations?.[0]
+    if ((!activeOrgId || !isStoredOrgValid) && !!organizations?.length) {
+      const firstOrg = sortBy(organizations, (org) => org?.name)?.[0]
       if (firstOrg) {
         updateSettings({ activeOrgId: firstOrg?.id })
       }
     }
-  }, [activeOrgId, organizations, updateSettings])
+  }, [activeOrgId, isStoredOrgValid, organizations, updateSettings])
 
   const value = useMemo<OrganizationContextValue>(
     () => ({

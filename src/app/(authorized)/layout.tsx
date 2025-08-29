@@ -18,9 +18,9 @@ const Layout = async ({
   children: ReactNode
   breadcrumbs: ReactNode
 }) => {
-  const { allowed } = await isAuthenticated()
+  const { allowed, user } = await isAuthenticated()
 
-  if (!allowed) return null
+  if (!allowed || !user) return null
 
   const cookieStore = await cookies()
   const sidebarOpen = cookieStore.get('sidebar_state')?.value === 'true'
@@ -28,7 +28,7 @@ const Layout = async ({
   return (
     <div className='[--header-height:calc(3rem)]'>
       <BreadcrumbProvider>
-        <OrganizationProvider>
+        <OrganizationProvider userId={user?.id}>
           <SidebarProvider
             className='flex flex-col h-full'
             defaultOpen={sidebarOpen}

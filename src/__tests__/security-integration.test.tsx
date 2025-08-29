@@ -67,7 +67,7 @@ describe('Critical Security Integration Test', () => {
 
     return ({ children }: { children: React.ReactNode }) => (
       <QueryClientProvider client={queryClient}>
-        <OrganizationProvider>{children}</OrganizationProvider>
+        <OrganizationProvider userId='foo123'>{children}</OrganizationProvider>
       </QueryClientProvider>
     )
   }
