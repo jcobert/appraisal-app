@@ -4,7 +4,7 @@ import { Organization } from '@prisma/client'
 import { sortBy } from 'lodash'
 import { Check, ChevronsUpDown, Plus } from 'lucide-react'
 import Link from 'next/link'
-import { FC, ReactNode, useCallback, useEffect, useMemo } from 'react'
+import { FC, ReactNode, useCallback, useMemo } from 'react'
 import { FaBuilding } from 'react-icons/fa6'
 import { useIsClient } from 'usehooks-ts'
 
@@ -58,13 +58,6 @@ const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
     },
     [organizationOptions, activeOrgId, switchOrganization],
   )
-
-  // Auto-select first org if none is selected
-  useEffect(() => {
-    if (!activeOrgId && !!organizationOptions?.length) {
-      selectOrg()
-    }
-  }, [activeOrgId, organizationOptions, selectOrg])
 
   if (!isClient)
     return (
