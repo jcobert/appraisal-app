@@ -1,4 +1,4 @@
-import { useStoredSettings } from '../use-stored-settings'
+import { useStoredSettings, getActiveOrgCookieName, ACTIVE_ORG_COOKIE_MAX_AGE } from '../use-stored-settings'
 import { act, renderHook } from '@testing-library/react'
 
 // Mock the siteConfig
@@ -250,6 +250,186 @@ describe('useStoredSettings', () => {
       expect(result.current).toHaveProperty('clearSettings')
       expect(typeof result.current.updateSettings).toBe('function')
       expect(typeof result.current.clearSettings).toBe('function')
+    })
+  })
+
+  describe('Cookie Integration', () => {
+    describe('getActiveOrgCookieName', () => {
+      it('should generate user-specific cookie names', () => {
+        expect(getActiveOrgCookieName('user-123')).toBe('active_org_id_user-123')
+        expect(getActiveOrgCookieName('user-456')).toBe('active_org_id_user-456')
+      })
+
+      it('should handle special characters in user IDs', () => {
+        expect(getActiveOrgCookieName('user@example.com')).toBe('active_org_id_user@example.com')
+        expect(getActiveOrgCookieName('user-with-dashes')).toBe('active_org_id_user-with-dashes')
+        expect(getActiveOrgCookieName('user_with_underscores')).toBe('active_org_id_user_with_underscores')
+      })
+
+      it('should generate different names for different users', () => {
+        const name1 = getActiveOrgCookieName('user1')
+        const name2 = getActiveOrgCookieName('user2')
+        expect(name1).not.toBe(name2)
+      })
+    })
+
+    describe('Cookie Constants', () => {
+      it('should have proper cookie max age (30 days in seconds)', () => {
+        const thirtyDaysInSeconds = 60 * 60 * 24 * 30
+        expect(ACTIVE_ORG_COOKIE_MAX_AGE).toBe(thirtyDaysInSeconds)
+      })
+    })
+
+    describe('Server-side Props Integration', () => {
+      it('should work with initialSettings from server (cookie) value', () => {
+        const initialSettings = { activeOrgId: 'server-org-id' }
+        renderHook(() => 
+          useStoredSettings({ userId: 'user-123', initialSettings })
+        )
+
+        expect(mockUseLocalStorage).toHaveBeenCalledWith(
+          'test-app-prefs-user-123',
+          { activeOrgId: 'server-org-id' }
+        )
+      })
+
+      it('should merge initialSettings with defaults', () => {
+        const initialSettings = { activeOrgId: 'from-cookie' }
+        renderHook(() => 
+          useStoredSettings({ userId: 'user-123', initialSettings })
+        )
+
+        expect(mockUseLocalStorage).toHaveBeenCalledWith(
+          'test-app-prefs-user-123',
+          expect.objectContaining({
+            activeOrgId: 'from-cookie'
+          })
+        )
+      })
+
+      it('should handle undefined initialActiveOrgId', () => {
+        const initialSettings = { activeOrgId: undefined }
+        renderHook(() => 
+          useStoredSettings({ userId: 'user-123', initialSettings })
+        )
+
+        expect(mockUseLocalStorage).toHaveBeenCalledWith(
+          'test-app-prefs-user-123',
+          expect.objectContaining({
+            activeOrgId: undefined
+          })
+        )
+      })
+    })
+
+    describe('Multi-User Storage Isolation', () => {
+      it('should create different storage keys for different users', () => {
+        renderHook(() => useStoredSettings({ userId: 'user-1' }))
+        renderHook(() => useStoredSettings({ userId: 'user-2' }))
+
+        expect(mockUseLocalStorage).toHaveBeenCalledWith(
+          'test-app-prefs-user-1',
+          expect.any(Object)
+        )
+        expect(mockUseLocalStorage).toHaveBeenCalledWith(
+          'test-app-prefs-user-2',
+          expect.any(Object)
+        )
+      })
+
+      it('should isolate settings between different users', () => {
+        const { result: user1Result } = renderHook(() => 
+          useStoredSettings({ userId: 'user-1' })
+        )
+        const { result: user2Result } = renderHook(() => 
+          useStoredSettings({ userId: 'user-2' })
+        )
+
+        // Both should have independent updateSettings functions
+        expect(typeof user1Result.current.updateSettings).toBe('function')
+        expect(typeof user2Result.current.updateSettings).toBe('function')
+        expect(user1Result.current.updateSettings).not.toBe(user2Result.current.updateSettings)
+      })
+    })
+
+    describe('Backward Compatibility', () => {
+      it('should work without initialSettings (legacy behavior)', () => {
+        renderHook(() => useStoredSettings({ userId: 'user-123' }))
+
+        expect(mockUseLocalStorage).toHaveBeenCalledWith(
+          'test-app-prefs-user-123',
+          { activeOrgId: '' }
+        )
+      })
+
+      it('should maintain same API regardless of initialization method', () => {
+        const { result: withInitial } = renderHook(() => 
+          useStoredSettings({ 
+            userId: 'user-123', 
+            initialSettings: { activeOrgId: 'initial' }
+          })
+        )
+        
+        const { result: withoutInitial } = renderHook(() => 
+          useStoredSettings({ userId: 'user-456' })
+        )
+
+        // Both should have same API surface
+        expect(withInitial.current).toHaveProperty('settings')
+        expect(withInitial.current).toHaveProperty('updateSettings')
+        expect(withInitial.current).toHaveProperty('clearSettings')
+        
+        expect(withoutInitial.current).toHaveProperty('settings')
+        expect(withoutInitial.current).toHaveProperty('updateSettings')
+        expect(withoutInitial.current).toHaveProperty('clearSettings')
+      })
+    })
+
+    describe('Edge Cases', () => {
+      it('should handle very long organization IDs in cookie names', () => {
+        const longUserId = 'very-long-user-id-'.repeat(10) // Long user ID
+        const cookieName = getActiveOrgCookieName(longUserId)
+        
+        expect(cookieName).toBe(`active_org_id_${longUserId}`)
+        expect(cookieName.length).toBeGreaterThan(100) // Verify it's actually long
+      })
+
+      it('should handle special characters in organization IDs', () => {
+        const { result } = renderHook(() => useStoredSettings({ userId: 'user-123' }))
+        const specialOrgId = 'org-with-special!@#$%^&*()chars'
+
+        act(() => {
+          result.current.updateSettings({ activeOrgId: specialOrgId })
+        })
+
+        expect(mockUpdateSettings).toHaveBeenCalledWith({
+          activeOrgId: specialOrgId,
+        })
+      })
+
+      it('should handle empty organization ID updates', () => {
+        const { result } = renderHook(() => useStoredSettings({ userId: 'user-123' }))
+
+        act(() => {
+          result.current.updateSettings({ activeOrgId: '' })
+        })
+
+        expect(mockUpdateSettings).toHaveBeenCalledWith({
+          activeOrgId: '',
+        })
+      })
+
+      it('should handle undefined organization ID updates', () => {
+        const { result } = renderHook(() => useStoredSettings({ userId: 'user-123' }))
+
+        act(() => {
+          result.current.updateSettings({ activeOrgId: undefined })
+        })
+
+        expect(mockUpdateSettings).toHaveBeenCalledWith({
+          activeOrgId: undefined,
+        })
+      })
     })
   })
 })
