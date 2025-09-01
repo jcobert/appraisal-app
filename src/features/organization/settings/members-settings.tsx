@@ -52,7 +52,7 @@ const MembersSettings: FC<Props> = ({ organizationId }) => {
 
   const userCanEditMembers = can('edit_org_members')
 
-  const { response } = useGetOrganizations({
+  const { response, isLoading } = useGetOrganizations({
     id: organizationId,
     options: { enabled: !isCheckingAuth && !isCheckingPermissions },
   })
@@ -81,15 +81,18 @@ const MembersSettings: FC<Props> = ({ organizationId }) => {
             onClick={() => {
               setInviteFormOpen(true)
             }}
-            skeleton={!isClient || isCheckingPermissions}
             hidden={!userCanEditMembers}
+            disabled={!isClient || isLoading || isCheckingPermissions}
           />
         </div>
 
-        {!isClient ? (
+        {isLoading || isCheckingPermissions ? (
           <OrgMembersSkeleton />
         ) : (
-          <OrganizationMembers organization={organization} hideInvites={!userCanEditMembers} />
+          <OrganizationMembers
+            organization={organization}
+            hideInvites={!userCanEditMembers}
+          />
         )}
       </div>
     </>
