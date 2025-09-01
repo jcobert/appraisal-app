@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { FC } from 'react'
-import { useIsClient } from 'usehooks-ts'
 
 import { exists } from '@/utils/general'
 import { NavItem } from '@/utils/nav'
@@ -27,12 +26,11 @@ type Props = {
 }
 
 const SidebarNavItem: FC<Props> = ({ item, authorizing, className }) => {
-  const isClient = useIsClient()
   const { isActiveItem } = useNavigation()
   const { open, openMobile } = useSidebar()
 
   const Icon = item?.icon
-  if ((exists(item?.hidden) && authorizing) || !isClient)
+  if (exists(item?.hidden) && authorizing)
     return (
       <SidebarMenuItem key={item?.id} className={className}>
         <SidebarMenuButton asChild>
