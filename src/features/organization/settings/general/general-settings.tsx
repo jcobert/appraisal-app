@@ -26,7 +26,6 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
   const { can, isLoading: isCheckingPermissions } = usePermissions({
     area: 'organization',
     organizationId,
-    // options: { enabled: false },
   })
 
   useOrgPageRedirect(organizationId)
@@ -35,7 +34,7 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
 
   const isClient = useIsClient()
 
-  const { response } = useGetOrganizations({
+  const { response, isLoading } = useGetOrganizations({
     id: organizationId,
     options: { enabled: !isCheckingAuth && !isCheckingPermissions },
   })
@@ -54,8 +53,9 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
     <section className='flex flex-col gap-4 px-2'>
       <OrganizationForm
         organization={organization}
-        disabled={!isClient || !userCanEditInfo}
-        // disabled={isCheckingPermissions || !userCanEditInfo}
+        disabled={
+          isLoading || isCheckingPermissions || !userCanEditInfo || !isClient
+        }
         isUpdate
       />
 

@@ -4,9 +4,8 @@ import { Organization } from '@prisma/client'
 import { sortBy } from 'lodash'
 import { Check, ChevronsUpDown, Plus } from 'lucide-react'
 import Link from 'next/link'
-import { FC, ReactNode, useCallback, useEffect, useMemo } from 'react'
+import { FC, ReactNode, useCallback, useMemo } from 'react'
 import { FaBuilding } from 'react-icons/fa6'
-import { useIsClient } from 'usehooks-ts'
 
 import { cn } from '@/lib/utils'
 
@@ -22,7 +21,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar'
-import { Skeleton } from '@/components/ui/skeleton'
 
 type Props = {
   organizations?: Organization[] | null
@@ -30,8 +28,7 @@ type Props = {
 }
 
 const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
-  const isClient = useIsClient()
-  const { isMobile, open, setOpenMobile } = useSidebar()
+  const { isMobile, setOpenMobile } = useSidebar()
 
   const {
     activeOrgId,
@@ -59,23 +56,16 @@ const SidebarOrgSelector: FC<Props> = ({ organizations }) => {
     [organizationOptions, activeOrgId, switchOrganization],
   )
 
-  // Auto-select first org if none is selected
-  useEffect(() => {
-    if (!activeOrgId && !!organizationOptions?.length) {
-      selectOrg()
-    }
-  }, [activeOrgId, organizationOptions, selectOrg])
-
-  if (!isClient)
-    return (
-      <div
-        aria-hidden
-        className={cn('rounded flex items-center gap-2', open && 'p-2')}
-      >
-        <Skeleton className='size-8 rounded-full flex-none' />
-        {open ? <Skeleton className='w-full h-6' /> : null}
-      </div>
-    )
+  // if (!isClient)
+  //   return (
+  //     <div
+  //       aria-hidden
+  //       className={cn('rounded flex items-center gap-2', open && 'p-2')}
+  //     >
+  //       <Skeleton className='size-8 rounded-full flex-none' />
+  //       {open ? <Skeleton className='w-full h-6' /> : null}
+  //     </div>
+  //   )
 
   return (
     <DropdownMenu

@@ -38,7 +38,6 @@ type Props = {
   organization?: Organization | null
   disabled?: boolean
   className?: string
-
   isUpdate?: boolean
 }
 
@@ -57,8 +56,8 @@ const OrganizationForm: FC<Props> = ({
   const prevUrl = homeUrl(true)
 
   const { control, handleSubmit } = useZodForm<OrganizationFormData>(schema, {
-    defaultValues: defaultFormValues,
-    values: formDefaults(defaultFormValues, organization),
+    defaultValues: formDefaults(defaultFormValues, organization),
+    disabled,
   })
 
   const { isDirty } = useFormState({ control })
@@ -141,7 +140,6 @@ const OrganizationForm: FC<Props> = ({
                   error={error?.message}
                   required
                   className='col-span-full'
-                  disabled={disabled}
                 />
               )}
             />

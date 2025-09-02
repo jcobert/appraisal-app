@@ -1,7 +1,6 @@
 'use client'
 
 import { FC } from 'react'
-import { useIsClient } from 'usehooks-ts'
 
 import { cn } from '@/utils/style'
 
@@ -10,7 +9,6 @@ import {
   AvatarImage,
   Avatar as AvatarRoot,
 } from '@/components/ui/avatar'
-import { Skeleton } from '@/components/ui/skeleton'
 
 type Props = {
   name?: string
@@ -29,8 +27,6 @@ const Avatar: FC<Props> = ({
   className,
   fallbackClassName,
 }) => {
-  const isClient = useIsClient()
-
   const [first, second] = (name || '')?.split(' ')
   const fallback =
     `${first ? first?.[0] : ''}${second && size !== 'xs' ? second?.[0] : ''}`?.toUpperCase()
@@ -47,37 +43,33 @@ const Avatar: FC<Props> = ({
         className,
       ])}
     >
-      {isClient ? (
-        <>
-          <AvatarImage src={image || undefined} alt={alt || name} />
-          <AvatarFallback
-            className={cn([
-              // 'rounded-lg',
-              // 'bg-white',
-              size === 'xs' && 'text-sm',
-              size === 'sm' && 'text-sm',
-              size === 'md' && 'text-base',
-              size === 'lg' && 'text-lg',
-              size === 'xl' && 'text-xl',
-              fallbackClassName,
-            ])}
-          >
-            {fallback}
-          </AvatarFallback>
-        </>
-      ) : (
-        <Skeleton
-          className={cn([
-            // 'rounded-lg',
-            size === 'xs' && 'size-6',
-            size === 'sm' && 'size-8',
-            size === 'md' && 'size-10',
-            size === 'lg' && 'size-12',
-            size === 'xl' && 'size-16',
-            className,
-          ])}
-        />
-      )}
+      <AvatarImage src={image || undefined} alt={alt || name} />
+      <AvatarFallback
+        className={cn([
+          // 'rounded-lg',
+          // 'bg-white',
+          size === 'xs' && 'text-sm',
+          size === 'sm' && 'text-sm',
+          size === 'md' && 'text-base',
+          size === 'lg' && 'text-lg',
+          size === 'xl' && 'text-xl',
+          fallbackClassName,
+        ])}
+      >
+        {fallback}
+      </AvatarFallback>
+
+      {/* <Skeleton
+        className={cn([
+          // 'rounded-lg',
+          size === 'xs' && 'size-6',
+          size === 'sm' && 'size-8',
+          size === 'md' && 'size-10',
+          size === 'lg' && 'size-12',
+          size === 'xl' && 'size-16',
+          className,
+        ])}
+      /> */}
     </AvatarRoot>
   )
 }

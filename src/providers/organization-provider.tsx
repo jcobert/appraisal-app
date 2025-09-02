@@ -49,17 +49,26 @@ type OrganizationProviderProps = {
   userId: SessionUser['id']
   /** Optional initial organizations data. */
   initialOrganizations?: Organization[]
+  /** Initial active organization ID from server (cookie). */
+  initialActiveOrgId?: string
 }
 
 export const OrganizationProvider: FC<OrganizationProviderProps> = ({
   children,
   userId,
   initialOrganizations = [],
+  initialActiveOrgId,
 }) => {
   const {
     settings: { activeOrgId },
     updateSettings,
-  } = useStoredSettings({ userId })
+  } = useStoredSettings({
+    userId,
+    initialSettings: { activeOrgId: initialActiveOrgId },
+  })
+
+  // Use the activeOrgId from settings (which now includes the initial server value)
+  const effectiveActiveOrgId = activeOrgId
 
   const queryClient = useQueryClient()
 
@@ -69,44 +78,44 @@ export const OrganizationProvider: FC<OrganizationProviderProps> = ({
   const organizations = response?.data || initialOrganizations
 
   const { response: activeOrgRes } = useGetOrganizations({
-    id: activeOrgId,
-    options: { enabled: !!activeOrgId && !!userId },
+    id: effectiveActiveOrgId,
+    options: { enabled: !!effectiveActiveOrgId && !!userId },
   })
   const fetchedActiveOrg = activeOrgRes?.data
 
   // Validate stored org is still accessible to current user
   const isStoredOrgValid = useMemo(() => {
-    if (!activeOrgId || !organizations?.length) return false
-    return organizations?.some((org) => org?.id === activeOrgId)
-  }, [activeOrgId, organizations])
+    if (!effectiveActiveOrgId || !organizations?.length) return false
+    return organizations?.some((org) => org?.id === effectiveActiveOrgId)
+  }, [effectiveActiveOrgId, organizations])
 
   // Clear invalid stored org
   useEffect(() => {
     if (
-      activeOrgId &&
+      effectiveActiveOrgId &&
       (!organizations?.length || (organizations?.length && !isStoredOrgValid))
     ) {
       updateSettings({ activeOrgId: '' })
     }
-  }, [activeOrgId, organizations, isStoredOrgValid, updateSettings])
+  }, [effectiveActiveOrgId, organizations, isStoredOrgValid, updateSettings])
 
-  // The fetched org that matches activeOrgId from local storage.
+  // The fetched org that matches activeOrgId from cookie/local storage.
   // Prioritizes the "find one" org query and falls back to matching org from the "find many" query.
   const selectedOrganization = useMemo(() => {
-    if ((!organizations?.length && !fetchedActiveOrg) || !activeOrgId)
+    if ((!organizations?.length && !fetchedActiveOrg) || !effectiveActiveOrgId)
       return undefined
-    if (fetchedActiveOrg?.id === activeOrgId) return fetchedActiveOrg
-    return organizations?.find((org) => org?.id === activeOrgId)
-  }, [activeOrgId, organizations, fetchedActiveOrg])
+    if (fetchedActiveOrg?.id === effectiveActiveOrgId) return fetchedActiveOrg
+    return organizations?.find((org) => org?.id === effectiveActiveOrgId)
+  }, [effectiveActiveOrgId, organizations, fetchedActiveOrg])
 
   const permissions = usePermissions({
     area: 'organization',
-    organizationId: activeOrgId || '',
+    organizationId: effectiveActiveOrgId || '',
   })
 
   const switchOrganization = useCallback(
     async (newOrgId: string) => {
-      if (newOrgId === activeOrgId) return
+      if (newOrgId === effectiveActiveOrgId) return
 
       // Update the active org in settings
       updateSettings({ activeOrgId: newOrgId })
@@ -122,36 +131,39 @@ export const OrganizationProvider: FC<OrganizationProviderProps> = ({
         refetchType: 'all',
       })
     },
-    [activeOrgId, updateSettings, queryClient],
+    [effectiveActiveOrgId, updateSettings, queryClient],
   )
 
   const refreshPermissions = useCallback(async () => {
-    if (!activeOrgId) return
+    if (!effectiveActiveOrgId) return
 
     await queryClient.invalidateQueries({
       queryKey: permissionsQueryKey.filtered({
         area: 'organization',
-        organizationId: activeOrgId,
+        organizationId: effectiveActiveOrgId,
       }),
       exact: true,
       type: 'all',
       refetchType: 'all',
     })
-  }, [queryClient, activeOrgId])
+  }, [queryClient, effectiveActiveOrgId])
 
   // Auto-select first organization if none is selected or stored org is invalid
   useEffect(() => {
-    if ((!activeOrgId || !isStoredOrgValid) && !!organizations?.length) {
+    if (
+      (!effectiveActiveOrgId || !isStoredOrgValid) &&
+      !!organizations?.length
+    ) {
       const firstOrg = sortBy(organizations, (org) => org?.name)?.[0]
       if (firstOrg) {
         updateSettings({ activeOrgId: firstOrg?.id })
       }
     }
-  }, [activeOrgId, isStoredOrgValid, organizations, updateSettings])
+  }, [effectiveActiveOrgId, isStoredOrgValid, organizations, updateSettings])
 
   const value = useMemo<OrganizationContextValue>(
     () => ({
-      activeOrgId,
+      activeOrgId: effectiveActiveOrgId,
       selectedOrganization,
       organizations,
       isLoadingOrganizations,
@@ -160,7 +172,7 @@ export const OrganizationProvider: FC<OrganizationProviderProps> = ({
       refreshPermissions,
     }),
     [
-      activeOrgId,
+      effectiveActiveOrgId,
       selectedOrganization,
       organizations,
       isLoadingOrganizations,
