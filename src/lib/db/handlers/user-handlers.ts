@@ -10,11 +10,8 @@ import {
   deleteUserProfile,
 } from '@/lib/db/queries/user'
 
-import {
-  createApiHandler,
-  ValidationError,
-  withUserFields,
-} from '@/lib/api-handlers'
+import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
+import { ValidationError } from '@/lib/db/errors'
 import { validatePayload } from '@/utils/zod'
 import { userProfileSchema } from '@/lib/db/schemas/user'
 

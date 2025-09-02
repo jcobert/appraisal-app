@@ -12,12 +12,8 @@ import {
 import { organizationSchema } from '@/lib/db/schemas/organization'
 import { getUserPermissions } from '@/lib/db/utils'
 
-import {
-  createApiHandler,
-  ValidationError,
-  AuthorizationError,
-  withUserFields,
-} from '@/lib/api-handlers'
+import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
+import { ValidationError, AuthorizationError } from '@/lib/db/errors'
 import { validatePayload } from '@/utils/zod'
 
 /**

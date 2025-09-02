@@ -11,11 +11,8 @@ import {
 } from '@/lib/db/queries/organization'
 import { orgMemberSchema } from '@/lib/db/schemas/org-member'
 
-import {
-  createApiHandler,
-  ValidationError,
-  withUserFields,
-} from '@/lib/api-handlers'
+import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
+import { ValidationError } from '@/lib/db/errors'
 import { validatePayload } from '@/utils/zod'
 
 /**

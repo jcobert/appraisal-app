@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 
-import { toNextResponse } from '@/lib/api-handlers'
+import { toNextResponse } from '@/lib/db/api-handlers'
 import {
   handleCreateUser,
   handleGetUsers,

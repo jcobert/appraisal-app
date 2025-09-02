@@ -2,7 +2,7 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { User } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { toNextResponse } from '@/lib/api-handlers'
+import { toNextResponse } from '@/lib/db/api-handlers'
 import { db } from '@/lib/db/client'
 import { handleGetActiveUser } from '@/lib/db/handlers/user-handlers'
 import { userProfileSchema } from '@/lib/db/schemas/user'
