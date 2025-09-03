@@ -112,8 +112,8 @@ export const toastyRequest = async <TRes, TCtx>(
 }
 
 /**
- * Toast utility for queries that only shows error notifications.
- * Unlike toastyRequest/promiseToast, this doesn't show loading or success toasts.
+ * Toast utility for queries that shows error and optional success notifications.
+ * Unlike toastyRequest/promiseToast, this doesn't show loading toasts.
  */
 export const toastyQuery = async <TData>(
   queryFn: () => Promise<FetchResponse<TData>>,
@@ -121,9 +121,56 @@ export const toastyQuery = async <TData>(
   options?: DefaultToastOptions,
 ): Promise<FetchResponse<TData>> => {
   try {
-    return await queryFn()
+    const res = await queryFn()
+
+    // If not successful, treat it as an error and show error toast
+    if (!successful(res?.status)) {
+      let errorMessage: Renderable = genericErrorMessage
+
+      // Check custom messages first
+      if (
+        res?.error?.code &&
+        messages?.error?.[res.error.code as keyof typeof FetchErrorCode]
+      ) {
+        const customMessageGetter =
+          messages.error[res.error.code as keyof typeof FetchErrorCode]
+        if (customMessageGetter) {
+          errorMessage = customMessageGetter({
+            response: res,
+            context: undefined,
+          })
+        }
+      } else if (
+        res?.error?.code &&
+        defaultToastMessages.error[
+          res.error.code as keyof typeof FetchErrorCode
+        ]
+      ) {
+        const messageGetter =
+          defaultToastMessages.error[
+            res.error.code as keyof typeof FetchErrorCode
+          ]
+        if (messageGetter) {
+          errorMessage = messageGetter({ response: res, context: undefined })
+        }
+      }
+
+      toast.error(errorMessage, options)
+      return res // Return the error response instead of throwing
+    }
+
+    // Request was successful - show success toast if configured
+    if (messages?.success) {
+      const successMessage = messages.success({
+        response: res,
+        context: undefined,
+      })
+      toast.success(successMessage, options)
+    }
+
+    return res
   } catch (error: any) {
-    // Extract error message using the same logic as defaultToastMessages
+    // Handle actual thrown errors (network errors, etc.)
     let errorMessage: Renderable = genericErrorMessage
 
     // Check custom messages first
