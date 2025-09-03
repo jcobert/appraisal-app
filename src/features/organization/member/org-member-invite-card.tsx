@@ -41,7 +41,8 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
           const res = await toastyRequest(
             () => deleteOrgInvitation.mutateAsync({}),
             {
-              success: `Invitation for ${fullName(inviteeFirstName, inviteeLastName)} has been canceled.`,
+              success: () =>
+                `Invitation for ${fullName(inviteeFirstName, inviteeLastName)} has been canceled.`,
             },
           )
           if (successful(res?.status)) {

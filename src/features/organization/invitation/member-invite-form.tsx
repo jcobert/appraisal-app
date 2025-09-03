@@ -104,7 +104,7 @@ const MemberInviteForm: FC<Props> = ({
     } else {
       const res = await toastyRequest(
         () => createInvitation.mutateAsync(data),
-        { success: 'Invitation sent!' },
+        { success: () => 'Invitation sent!' },
       )
       if (successful(res?.status)) {
         onOpenChange(false)

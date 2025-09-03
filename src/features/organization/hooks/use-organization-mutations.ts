@@ -55,6 +55,12 @@ export const useOrganizationMutations = ({
         await refreshData()
       }
     },
+    toast: {
+      messages: {
+        success: ({ context: payload }) =>
+          `Organization ${payload?.name} has been created!`,
+      },
+    },
   })
 
   const updateOrganization = useCoreMutation<Payload, Organization>({
@@ -120,27 +126,6 @@ export const useOrganizationMutations = ({
       }
     },
   })
-
-  // const isPending =
-  //   createOrganization.isPending ||
-  //   updateOrganization.isPending ||
-  //   deleteOrganization.isPending ||
-  //   deleteOrgMember.isPending ||
-  //   deleteOrgInvitation.isPending
-
-  // const isSuccess =
-  //   createOrganization.isSuccess ||
-  //   updateOrganization.isSuccess ||
-  //   deleteOrganization.isSuccess ||
-  //   deleteOrgMember.isSuccess ||
-  //   deleteOrgInvitation.isSuccess
-
-  // const isError =
-  //   createOrganization.isError ||
-  //   updateOrganization.isError ||
-  //   deleteOrganization.isError ||
-  //   deleteOrgMember.isError ||
-  //   deleteOrgInvitation.isError
 
   return {
     createOrganization,
