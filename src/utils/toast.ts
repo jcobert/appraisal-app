@@ -110,3 +110,44 @@ export const toastyRequest = async <TRes, TCtx>(
     } as FetchResponse<TRes>
   }
 }
+
+/**
+ * Toast utility for queries that only shows error notifications.
+ * Unlike toastyRequest/promiseToast, this doesn't show loading or success toasts.
+ */
+export const toastyQuery = async <TData>(
+  queryFn: () => Promise<FetchResponse<TData>>,
+  messages?: ToastMessages<TData, void>,
+  options?: DefaultToastOptions,
+): Promise<FetchResponse<TData>> => {
+  try {
+    return await queryFn()
+  } catch (error: any) {
+    // Extract error message using the same logic as defaultToastMessages
+    let errorMessage: Renderable = genericErrorMessage
+
+    // Check custom messages first
+    if (messages?.error?.[error?.code as keyof typeof FetchErrorCode]) {
+      const customMessageGetter =
+        messages.error[error.code as keyof typeof FetchErrorCode]
+      if (customMessageGetter) {
+        errorMessage = customMessageGetter({
+          response: error,
+          context: undefined,
+        })
+      }
+    } else if (
+      error?.code &&
+      defaultToastMessages.error[error.code as keyof typeof FetchErrorCode]
+    ) {
+      const messageGetter =
+        defaultToastMessages.error[error.code as keyof typeof FetchErrorCode]
+      if (messageGetter) {
+        errorMessage = messageGetter({ response: error, context: undefined })
+      }
+    }
+
+    toast.error(errorMessage, options)
+    throw error // Re-throw to maintain React Query's error handling
+  }
+}

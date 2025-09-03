@@ -1,11 +1,18 @@
+import toast from 'react-hot-toast'
+
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
-import { type ToastMessages, defaultToastMessages } from '@/utils/toast'
+import {
+  type ToastMessages,
+  defaultToastMessages,
+  toastyQuery,
+} from '@/utils/toast'
 
 // Mock react-hot-toast
 jest.mock('react-hot-toast', () => ({
   __esModule: true,
   default: {
     promise: jest.fn(),
+    error: jest.fn(),
   },
 }))
 
@@ -26,6 +33,10 @@ jest.mock('@/utils/fetch', () => ({
 }))
 
 describe('Toast Utils', () => {
+  const mockToast = {
+    error: toast.error as jest.MockedFunction<typeof toast.error>,
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -196,6 +207,75 @@ describe('Toast Utils', () => {
         context,
       })
       expect(result).toBe('John Doe successfully performed update on Acme Corp')
+    })
+  })
+
+  describe('toastyQuery', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should return result when query succeeds', async () => {
+      const mockResponse = { data: 'test' }
+      const queryFn = jest.fn().mockResolvedValue(mockResponse)
+
+      const result = await toastyQuery(queryFn)
+
+      expect(result).toEqual(mockResponse)
+      expect(queryFn).toHaveBeenCalledTimes(1)
+      expect(mockToast.error).not.toHaveBeenCalled()
+    })
+
+    it('should show error toast and re-throw error when query fails', async () => {
+      const mockError = new Error('Query failed')
+      const queryFn = jest.fn().mockRejectedValue(mockError)
+
+      await expect(toastyQuery(queryFn)).rejects.toThrow('Query failed')
+
+      expect(queryFn).toHaveBeenCalledTimes(1)
+      expect(mockToast.error).toHaveBeenCalledWith(
+        'An unexpected error occurred. Please try again.',
+        undefined,
+      )
+    })
+
+    it('should use custom error messages when provided', async () => {
+      const mockError = { code: 'NOT_FOUND' }
+      const queryFn = jest.fn().mockRejectedValue(mockError)
+      const customMessages = {
+        error: {
+          NOT_FOUND: () => 'Custom not found message',
+        },
+      }
+
+      try {
+        await toastyQuery(queryFn, customMessages)
+        // If we reach here, the function didn't throw
+        fail('Expected toastyQuery to throw but it did not')
+      } catch (error) {
+        // Expected to throw
+        expect(error).toEqual(mockError)
+      }
+
+      expect(mockToast.error).toHaveBeenCalledWith(
+        'Custom not found message',
+        undefined,
+      )
+    })
+
+    it('should pass custom toast options', async () => {
+      const mockError = new Error('Query failed')
+      const queryFn = jest.fn().mockRejectedValue(mockError)
+      const customOptions = { duration: 5000 }
+
+      await expect(
+        toastyQuery(queryFn, undefined, customOptions),
+      ).rejects.toThrow()
+
+      expect(mockToast.error).toHaveBeenCalledWith(
+        'An unexpected error occurred. Please try again.',
+        customOptions,
+      )
     })
   })
 })
