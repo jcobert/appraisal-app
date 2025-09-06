@@ -22,7 +22,7 @@ export const DELETE = async (
     return NextResponse.json(
       {
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHENTICATED,
           message: 'User not authenticated.',
         },
         data: null,
@@ -40,7 +40,7 @@ export const DELETE = async (
       {
         data: null,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHORIZED,
           message: 'Unauthorized to update this organization.',
         },
       } satisfies FetchResponse,
@@ -99,7 +99,7 @@ export const PUT = async (
     return NextResponse.json(
       {
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHENTICATED,
           message: 'User not authenticated.',
         },
         data: null,
@@ -117,7 +117,7 @@ export const PUT = async (
       {
         data: null,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHORIZED,
           message: 'Unauthorized to update this organization.',
         },
       } satisfies FetchResponse,

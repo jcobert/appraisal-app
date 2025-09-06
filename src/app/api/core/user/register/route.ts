@@ -20,7 +20,7 @@ export const POST = async (_req: NextRequest) => {
     return NextResponse.json(
       {
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHENTICATED,
           message: 'User not authenticated.',
         },
         data: null,

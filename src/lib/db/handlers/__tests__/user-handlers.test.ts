@@ -138,7 +138,7 @@ describe('user-handlers', () => {
       const result = await handleGetUsers()
 
       expect(result.status).toBe(401)
-      expect(result.error?.code).toBe('AUTH')
+      expect(result.error?.code).toBe('NOT_AUTHENTICATED')
     })
   })
 
@@ -173,7 +173,7 @@ describe('user-handlers', () => {
       const result = await handleGetActiveUser()
 
       expect(result.status).toBe(401)
-      expect(result.error?.code).toBe('AUTH')
+      expect(result.error?.code).toBe('NOT_AUTHENTICATED')
     })
   })
 
@@ -221,7 +221,7 @@ describe('user-handlers', () => {
       const result = await handleGetUser('user-123')
 
       expect(result.status).toBe(401)
-      expect(result.error?.code).toBe('AUTH')
+      expect(result.error?.code).toBe('NOT_AUTHENTICATED')
     })
   })
 
@@ -294,7 +294,7 @@ describe('user-handlers', () => {
       const result = await handleCreateUser(createPayload)
 
       expect(result.status).toBe(401)
-      expect(result.error?.code).toBe('AUTH')
+      expect(result.error?.code).toBe('NOT_AUTHENTICATED')
     })
 
     it('should handle database errors', async () => {
@@ -375,7 +375,7 @@ describe('user-handlers', () => {
       const result = await handleUpdateUser(userId, updatePayload)
 
       expect(result.status).toBe(401)
-      expect(result.error?.code).toBe('AUTH')
+      expect(result.error?.code).toBe('NOT_AUTHENTICATED')
     })
 
     it('should handle database errors', async () => {
@@ -420,7 +420,7 @@ describe('user-handlers', () => {
       const result = await handleDeleteUser(userId)
 
       expect(result.status).toBe(401)
-      expect(result.error?.code).toBe('AUTH')
+      expect(result.error?.code).toBe('NOT_AUTHENTICATED')
     })
 
     it('should handle database errors', async () => {

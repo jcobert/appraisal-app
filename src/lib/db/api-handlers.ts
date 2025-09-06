@@ -50,7 +50,7 @@ export const withUserFields = <T extends Record<string, any>>(
 export const toNextResponse = <TData = any>(
   result: FetchResponse<TData>,
 ): NextResponse => {
-  const status = result?.status || (result?.error ? 500 : 200)
+  const status = result?.status ?? (result?.error ? 500 : 200)
   return NextResponse.json(result, { status })
 }
 
@@ -120,7 +120,7 @@ export const createApiHandler = async <TData = any>(
       return {
         status: 401,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHENTICATED,
           message: authRequiredMessage,
         },
         data: null,
@@ -138,7 +138,7 @@ export const createApiHandler = async <TData = any>(
           status: 403,
           data: null,
           error: {
-            code: FetchErrorCode.AUTH,
+            code: FetchErrorCode.NOT_AUTHORIZED,
             message: unauthorizedMessage,
           },
         }
@@ -200,7 +200,7 @@ export const createApiHandler = async <TData = any>(
         status: 403,
         data: null,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHORIZED,
           message: error?.message,
         },
       }

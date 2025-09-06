@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { ReactNode } from 'react'
 
 import { FetchErrorCode, FetchResponse, coreFetch } from '@/utils/fetch'
-import { toastyQuery } from '@/utils/toast'
+import { ToastMessages, toastyQuery } from '@/utils/toast'
 
 import { UseCoreQueryProps, useCoreQuery } from '@/hooks/use-core-query'
 
@@ -394,7 +394,8 @@ describe('useCoreQuery', () => {
               messages: {
                 error: {
                   NOT_FOUND: () => 'User not found',
-                  AUTH: () => 'You do not have permission to view this user',
+                  NOT_AUTHORIZED: () =>
+                    'You do not have permission to view this user',
                 },
               },
             },
@@ -411,9 +412,9 @@ describe('useCoreQuery', () => {
         expect.objectContaining({
           error: expect.objectContaining({
             NOT_FOUND: expect.any(Function),
-            AUTH: expect.any(Function),
-          }),
-        }),
+            NOT_AUTHORIZED: expect.any(Function),
+          } satisfies ToastMessages['error']),
+        } satisfies ToastMessages),
         undefined,
       )
     })

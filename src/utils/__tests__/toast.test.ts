@@ -59,8 +59,12 @@ describe('Toast Utils', () => {
         defaultToastMessages.error.INVALID_DATA?.({ response: mockResponse }),
       ).toBe('There was a problem with your request.\nError: Test error')
 
-      expect(defaultToastMessages.error.AUTH?.()).toBe(
-        'You are not authorized to do that.',
+      expect(defaultToastMessages.error.NOT_AUTHENTICATED?.()).toBe(
+        'Please sign in to continue.',
+      )
+
+      expect(defaultToastMessages.error.NOT_AUTHORIZED?.()).toBe(
+        'You are not authorized to perform this action.',
       )
 
       expect(defaultToastMessages.error.INTERNAL_ERROR?.()).toBe(
@@ -138,11 +142,13 @@ describe('Toast Utils', () => {
 
     it('should handle different error codes', () => {
       const codes = [
-        'AUTH',
+        'NOT_AUTHENTICATED',
+        'NOT_AUTHORIZED',
         'INTERNAL_ERROR',
         'DATABASE_FAILURE',
         'DUPLICATE',
         'NOT_FOUND',
+        'NETWORK_ERROR',
       ] as const
 
       codes.forEach((code) => {

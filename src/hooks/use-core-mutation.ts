@@ -20,7 +20,7 @@ export type UseCoreMutationProps<
   unknown
 > & {
   url: string
-  method?: Exclude<FetchMethod, 'GET'>
+  method?: Exclude<`${FetchMethod}`, 'GET'>
   /** Transforms payload before request. */
   transform?: (payload: TPayload) => TPayload
   /** Configuration for toast notifications. */

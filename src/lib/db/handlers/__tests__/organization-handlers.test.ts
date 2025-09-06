@@ -145,7 +145,7 @@ describe('organization-handlers', () => {
       expect(result).toEqual({
         status: 401,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHENTICATED,
           message: 'User not authenticated.',
         },
         data: null,
@@ -287,7 +287,7 @@ describe('organization-handlers', () => {
         status: 403,
         data: null,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHORIZED,
           message: 'Unauthorized to update this organization.',
         },
       })
@@ -365,7 +365,7 @@ describe('organization-handlers', () => {
         status: 403,
         data: null,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHORIZED,
           message: 'Unauthorized to delete this organization.',
         },
       })

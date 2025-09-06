@@ -298,7 +298,7 @@ describe('api-handlers', () => {
         expect(result).toEqual({
           status: 401,
           error: {
-            code: FetchErrorCode.AUTH,
+            code: FetchErrorCode.NOT_AUTHENTICATED,
             message: 'User not authenticated.',
           },
           data: null,
@@ -364,7 +364,7 @@ describe('api-handlers', () => {
           status: 403,
           data: null,
           error: {
-            code: FetchErrorCode.AUTH,
+            code: FetchErrorCode.NOT_AUTHORIZED,
             message: 'Unauthorized to perform this action.',
           },
         })
@@ -634,7 +634,7 @@ describe('api-handlers', () => {
           status: 403,
           data: null,
           error: {
-            code: FetchErrorCode.AUTH,
+            code: FetchErrorCode.NOT_AUTHORIZED,
             message: 'Access denied',
           },
         })

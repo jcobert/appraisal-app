@@ -2,7 +2,8 @@ import { exists } from '@/utils/general'
 import { ZodFieldErrors } from '@/utils/zod'
 
 export enum FetchErrorCode {
-  AUTH = 'AUTH',
+  NOT_AUTHENTICATED = 'NOT_AUTHENTICATED',
+  NOT_AUTHORIZED = 'NOT_AUTHORIZED',
   NOT_FOUND = 'NOT_FOUND',
   INVALID_DATA = 'INVALID_DATA',
   DUPLICATE = 'DUPLICATE',
@@ -11,7 +12,13 @@ export enum FetchErrorCode {
   INTERNAL_ERROR = 'INTERNAL_ERROR',
 }
 
-export type FetchMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+export enum FetchMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  PATCH = 'PATCH',
+  DELETE = 'DELETE',
+}
 
 export type FetchResponse<TData = any> = {
   status?: number
@@ -62,13 +69,15 @@ const createFetchFunction = async <
   options,
 }: {
   url: string
-  method: FetchMethod
+  method: `${FetchMethod}`
   payload?: TPayload
   options?: Omit<RequestInit, 'method' | 'body'>
 }): Promise<FetchResponse<TResData>> => {
   try {
     const serverSideHeaders = await getServerSideHeaders()
-    const hasBody = exists(payload) && ['POST', 'PUT', 'PATCH'].includes(method)
+    const hasBody =
+      exists(payload) &&
+      [FetchMethod.PATCH, FetchMethod.POST, FetchMethod.PUT].includes(method)
 
     const fetchConfig: RequestInit = {
       method,
@@ -108,7 +117,7 @@ const createFetchFunction = async <
   } catch (error) {
     // Only catch actual network/fetch errors here
     // eslint-disable-next-line no-console
-    console.error('Network or fetch error:', error)
+    console.error('Network or internal fetch error:', error)
 
     // Network connectivity issues - these should get status 0
     if (
@@ -136,7 +145,7 @@ const createFetchFunction = async <
       status: 500,
       error: {
         code: FetchErrorCode.INTERNAL_ERROR,
-        message: 'An unexpected error occurred in the request.',
+        message: 'An unexpected error occurred.',
       },
     }
   }

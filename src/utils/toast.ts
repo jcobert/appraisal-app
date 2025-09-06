@@ -6,14 +6,14 @@ import toast, {
 
 import { FetchErrorCode, FetchResponse, successful } from '@/utils/fetch'
 
-type ErrorToastMessages<TRes, TCtx> = {
+export type ErrorToastMessages<TRes = unknown, TCtx = unknown> = {
   [key in keyof typeof FetchErrorCode]?: ValueFunction<
     Renderable,
     { response: FetchResponse<TRes>; context?: TCtx }
   >
 }
 
-export type ToastMessages<TRes, TCtx> = {
+export type ToastMessages<TRes = unknown, TCtx = unknown> = {
   loading?: Renderable
   success?: ValueFunction<
     Renderable,
@@ -30,7 +30,8 @@ export const defaultToastMessages = {
   error: {
     INVALID_DATA: ({ response: { error } }) =>
       `There was a problem with your request.${error?.message ? `\nError: ${error?.message}` : ''}`,
-    AUTH: () => 'You are not authorized to do that.',
+    NOT_AUTHENTICATED: () => 'Please sign in to continue.',
+    NOT_AUTHORIZED: () => 'You are not authorized to perform this action.',
     NETWORK_ERROR: () =>
       'Connection failed. Please check your internet connection and try again.',
     INTERNAL_ERROR: () => genericErrorMessage,
@@ -40,7 +41,7 @@ export const defaultToastMessages = {
   },
 } as const satisfies ToastMessages<unknown, unknown>
 
-const promiseToast = <TRes, TCtx>(
+const promiseToast = <TRes = unknown, TCtx = unknown>(
   request: () => Promise<FetchResponse<TRes>>,
   msgs?: ToastMessages<TRes, TCtx>,
   opts?: DefaultToastOptions,
@@ -92,7 +93,7 @@ const promiseToast = <TRes, TCtx>(
 }
 
 /** Runs provided async request with toasts. */
-export const toastyRequest = async <TRes, TCtx>(
+export const toastyRequest = async <TRes = unknown, TCtx = unknown>(
   ...args: Parameters<typeof promiseToast<TRes, TCtx>>
 ) => {
   try {
@@ -117,7 +118,7 @@ export const toastyRequest = async <TRes, TCtx>(
  * Toast utility for queries that shows error and optional success notifications.
  * Unlike toastyRequest/promiseToast, this doesn't show loading toasts.
  */
-export const toastyQuery = async <TData>(
+export const toastyQuery = async <TData = unknown>(
   queryFn: () => Promise<FetchResponse<TData>>,
   messages?: ToastMessages<TData, void>,
   options?: DefaultToastOptions,
