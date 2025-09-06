@@ -1,9 +1,18 @@
 /**
  * @jest-environment node
-*/
+ */
 
 // Mock dependencies first - DO NOT REORDER THESE IMPORTS DUE TO HOISTING ISSUES
 jest.mock('../../api-handlers')
+jest.mock('../../client', () => ({
+  db: {
+    orgInvitation: {
+      create: jest.fn(),
+      delete: jest.fn(),
+      update: jest.fn(),
+    },
+  },
+})) // Mock the database client
 jest.mock('../../queries/organization')
 jest.mock('../../queries/user')
 jest.mock('@/lib/server-utils')
@@ -22,7 +31,7 @@ jest.mock('@/components/email/org-invite-email', () => {
 jest.mock('resend', () => {
   // Create the mock inside the factory to avoid hoisting issues
   const mockEmailSend = jest.fn()
-  
+
   return {
     Resend: jest.fn().mockImplementation(() => ({
       emails: {
@@ -35,13 +44,19 @@ jest.mock('resend', () => {
 })
 
 import { createApiHandler } from '../../api-handlers'
+import { db } from '../../client'
 import { ValidationError } from '../../errors'
 import {
-  createOrgInvitation,
+  getOrgInvitation,
   getOrganization,
+  userIsOwner,
 } from '../../queries/organization'
 import { getActiveUserProfile } from '../../queries/user'
-import { handleCreateOrgInvite } from '../organization-invite-handlers'
+import {
+  handleCreateOrgInvite,
+  handleDeleteOrgInvite,
+  handleUpdateOrgInvite,
+} from '../organization-invite-handlers'
 import { MemberRole, OrgInvitationStatus, User } from '@prisma/client'
 
 import { generateUniqueToken } from '@/lib/server-utils'
@@ -56,12 +71,14 @@ import { getOrgInviteUrl } from '@/features/organization/utils'
 const mockCreateApiHandler = createApiHandler as jest.MockedFunction<
   typeof createApiHandler
 >
-const mockCreateOrgInvitation = createOrgInvitation as jest.MockedFunction<
-  typeof createOrgInvitation
+const mockDb = db as jest.Mocked<typeof db>
+const mockGetOrgInvitation = getOrgInvitation as jest.MockedFunction<
+  typeof getOrgInvitation
 >
 const mockGetOrganization = getOrganization as jest.MockedFunction<
   typeof getOrganization
 >
+const mockUserIsOwner = userIsOwner as jest.MockedFunction<typeof userIsOwner>
 const mockGetActiveUserProfile = getActiveUserProfile as jest.MockedFunction<
   typeof getActiveUserProfile
 >
@@ -135,6 +152,8 @@ const mockInvitation = {
   expires: new Date('2024-12-31'),
   token: 'mock-token',
   invitedByUserId: 'active-user-1',
+  organization: mockOrganization,
+  invitedBy: mockActiveUser,
 }
 
 describe('organization-invite-handlers', () => {
@@ -157,16 +176,29 @@ describe('organization-invite-handlers', () => {
     mockGetOrganization.mockResolvedValue(mockOrganization)
     mockGenerateUniqueToken.mockReturnValue('mock-token')
     mockGenerateExpiry.mockReturnValue('2024-12-31T23:59:59.999Z')
-    mockCreateOrgInvitation.mockResolvedValue(mockInvitation)
     mockGetOrgInviteUrl.mockReturnValue({
       local: '/organization-invite/org-1/join?inv=mock-token',
-      absolute: 'https://app.prizmatrack.com/organization-invite/org-1/join?inv=mock-token'
+      absolute:
+        'https://app.prizmatrack.com/organization-invite/org-1/join?inv=mock-token',
+    })
+
+    // Mock database operations
+    ;(mockDb.orgInvitation.create as jest.Mock).mockResolvedValue({
+      id: 'invite-1',
+    })
+    ;(mockDb.orgInvitation.delete as jest.Mock).mockResolvedValue({
+      id: 'invite-1',
+      inviteeFirstName: 'Test',
+      inviteeLastName: 'User',
+    })
+    ;(mockDb.orgInvitation.update as jest.Mock).mockResolvedValue({
+      id: 'invite-1',
     })
 
     // Mock successful email send
-    mockEmailSend.mockResolvedValue({ 
+    mockEmailSend.mockResolvedValue({
       data: { id: 'mock-email-id' },
-      error: null 
+      error: null,
     })
 
     // Mock createApiHandler to call the handler function directly
@@ -178,15 +210,15 @@ describe('organization-invite-handlers', () => {
   describe('handleCreateOrgInvite', () => {
     it('should create organization invite successfully', async () => {
       // Mock the email send to return success
-      mockEmailSend.mockResolvedValue({ 
+      mockEmailSend.mockResolvedValue({
         data: { id: 'mock-email-id' },
-        error: null 
+        error: null,
       })
 
       const result = await handleCreateOrgInvite('org-1', mockPayload)
 
-      expect(result).toEqual({ success: true })
-      expect(mockCreateOrgInvitation).toHaveBeenCalledWith({
+      expect(result).toEqual({ id: 'invite-1' })
+      expect(mockDb.orgInvitation.create).toHaveBeenCalledWith({
         data: {
           createdBy: mockKindeUser.id,
           updatedBy: mockKindeUser.id,
@@ -199,6 +231,7 @@ describe('organization-invite-handlers', () => {
           expires: expect.any(String),
           token: 'mock-token',
         },
+        select: { id: true },
       })
     })
 
@@ -227,7 +260,7 @@ describe('organization-invite-handlers', () => {
     })
 
     it('should throw error when invitation creation fails', async () => {
-      mockCreateOrgInvitation.mockResolvedValue(null)
+      ;(mockDb.orgInvitation.create as jest.Mock).mockResolvedValue(null)
 
       // Mock createApiHandler to call the handler function directly
       mockCreateApiHandler.mockImplementation((handlerFn: any) => {
@@ -240,8 +273,8 @@ describe('organization-invite-handlers', () => {
     })
 
     it('should throw error when email sending fails', async () => {
-      mockEmailSend.mockResolvedValue({ 
-        error: { message: 'Email service error' } 
+      mockEmailSend.mockResolvedValue({
+        error: { message: 'Email service error' },
       })
 
       // Mock createApiHandler to call the handler function directly
@@ -299,10 +332,11 @@ describe('organization-invite-handlers', () => {
 
       await handleCreateOrgInvite('org-1', mockPayload)
 
-      expect(mockCreateOrgInvitation).toHaveBeenCalledWith({
+      expect(mockDb.orgInvitation.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           invitedByUserId: '',
         }),
+        select: { id: true },
       })
     })
 
@@ -321,7 +355,228 @@ describe('organization-invite-handlers', () => {
 
       // Should not throw for valid payload
       const result = await handleCreateOrgInvite('org-1', invalidPayload)
-      expect(result).toEqual({ success: true })
+      expect(result).toEqual({ id: 'invite-1' })
+    })
+  })
+
+  describe('handleDeleteOrgInvite', () => {
+    beforeEach(() => {
+      // Setup successful defaults for delete tests
+      mockUserIsOwner.mockResolvedValue(true)
+    })
+
+    it('should delete organization invite successfully', async () => {
+      // Mock createApiHandler to call the handler function directly
+      mockCreateApiHandler.mockImplementation(
+        (handlerFn: any, config?: any) => {
+          // Call the authorization check if provided
+          if (config?.authorizationCheck) {
+            config.authorizationCheck()
+          }
+          return handlerFn({ user: mockKindeUser })
+        },
+      )
+
+      const result = await handleDeleteOrgInvite('org-1', 'invite-1')
+
+      expect(result).toEqual({
+        id: 'invite-1',
+        inviteeFirstName: 'Test',
+        inviteeLastName: 'User',
+      })
+      expect(mockDb.orgInvitation.delete).toHaveBeenCalledWith({
+        where: { id: 'invite-1', organizationId: 'org-1' },
+        select: { id: true, inviteeFirstName: true, inviteeLastName: true },
+      })
+      expect(mockUserIsOwner).toHaveBeenCalledWith({ organizationId: 'org-1' })
+    })
+
+    it('should throw ValidationError when inviteId is missing', async () => {
+      // Mock createApiHandler to call the handler function directly
+      mockCreateApiHandler.mockImplementation((handlerFn: any) => {
+        return handlerFn({ user: mockKindeUser })
+      })
+
+      await expect(handleDeleteOrgInvite('org-1', '')).rejects.toThrow(
+        ValidationError,
+      )
+      await expect(handleDeleteOrgInvite('org-1', '')).rejects.toThrow(
+        'Missing required fields.',
+      )
+    })
+
+    it('should throw ValidationError when organizationId is missing', async () => {
+      // Mock createApiHandler to call the handler function directly
+      mockCreateApiHandler.mockImplementation((handlerFn: any) => {
+        return handlerFn({ user: mockKindeUser })
+      })
+
+      await expect(handleDeleteOrgInvite('', 'invite-1')).rejects.toThrow(
+        ValidationError,
+      )
+      await expect(handleDeleteOrgInvite('', 'invite-1')).rejects.toThrow(
+        'Missing required fields.',
+      )
+    })
+
+    it('should call createApiHandler with correct configuration', async () => {
+      await handleDeleteOrgInvite('org-1', 'invite-1')
+
+      expect(mockCreateApiHandler).toHaveBeenCalledWith(expect.any(Function), {
+        authorizationCheck: expect.any(Function),
+        messages: {
+          unauthorized: 'Unauthorized to update this organization.',
+          success: 'Invitation deleted successfully.',
+        },
+        isMutation: true,
+      })
+    })
+
+    it('should check user authorization with userIsOwner', async () => {
+      // Mock createApiHandler to call the authorization check
+      mockCreateApiHandler.mockImplementation(
+        async (handlerFn: any, config?: any) => {
+          // Call the authorization check if provided
+          if (config?.authorizationCheck) {
+            await config.authorizationCheck()
+          }
+          return handlerFn({ user: mockKindeUser })
+        },
+      )
+
+      await handleDeleteOrgInvite('org-1', 'invite-1')
+      expect(mockUserIsOwner).toHaveBeenCalledWith({ organizationId: 'org-1' })
+    })
+  })
+
+  describe('handleUpdateOrgInvite', () => {
+    const updatePayload: OrgInvitePayload = {
+      email: 'updated@example.com',
+      firstName: 'Updated',
+      lastName: 'User',
+      roles: [MemberRole.manager],
+    }
+
+    beforeEach(() => {
+      // Setup successful defaults for update tests
+      mockUserIsOwner.mockResolvedValue(true)
+      mockGetOrgInvitation.mockResolvedValue(mockInvitation)
+    })
+
+    it('should update organization invite successfully', async () => {
+      // Mock createApiHandler to call the handler function directly
+      mockCreateApiHandler.mockImplementation(
+        (handlerFn: any, config?: any) => {
+          // Call the authorization check if provided
+          if (config?.authorizationCheck) {
+            config.authorizationCheck()
+          }
+          return handlerFn({ user: mockKindeUser })
+        },
+      )
+
+      const result = await handleUpdateOrgInvite(
+        'org-1',
+        'invite-1',
+        updatePayload,
+      )
+
+      expect(result).toEqual({ id: 'invite-1' })
+      expect(mockGetOrgInvitation).toHaveBeenCalledWith({
+        where: { id: 'invite-1', organizationId: 'org-1', status: 'pending' },
+      })
+      expect(mockDb.orgInvitation.update).toHaveBeenCalledWith({
+        where: { id: 'invite-1', organizationId: 'org-1' },
+        data: {
+          inviteeFirstName: updatePayload.firstName,
+          inviteeLastName: updatePayload.lastName,
+          roles: updatePayload.roles,
+          updatedBy: mockKindeUser.id,
+        },
+        select: { id: true },
+      })
+      expect(mockUserIsOwner).toHaveBeenCalledWith({ organizationId: 'org-1' })
+    })
+
+    it('should throw ValidationError when payload is missing', async () => {
+      // Mock createApiHandler to call the handler function directly
+      mockCreateApiHandler.mockImplementation((handlerFn: any) => {
+        return handlerFn({ user: mockKindeUser })
+      })
+
+      await expect(
+        handleUpdateOrgInvite('org-1', 'invite-1', null as any),
+      ).rejects.toThrow(ValidationError)
+      await expect(
+        handleUpdateOrgInvite('org-1', 'invite-1', null as any),
+      ).rejects.toThrow('Missing required fields.')
+    })
+
+    it('should throw error when invitation is not found or not pending', async () => {
+      mockGetOrgInvitation.mockResolvedValue(null)
+
+      // Mock createApiHandler to call the handler function directly
+      mockCreateApiHandler.mockImplementation((handlerFn: any) => {
+        return handlerFn({ user: mockKindeUser })
+      })
+
+      await expect(
+        handleUpdateOrgInvite('org-1', 'invite-1', updatePayload),
+      ).rejects.toThrow('Invitation no longer pending. Ineligible to update.')
+    })
+
+    it('should call createApiHandler with correct configuration', async () => {
+      await handleUpdateOrgInvite('org-1', 'invite-1', updatePayload)
+
+      expect(mockCreateApiHandler).toHaveBeenCalledWith(expect.any(Function), {
+        authorizationCheck: expect.any(Function),
+        messages: {
+          unauthorized: 'Unauthorized to update this organization.',
+          success: 'Invitation updated successfully.',
+        },
+        isMutation: true,
+      })
+    })
+
+    it('should check user authorization with userIsOwner', async () => {
+      // Mock createApiHandler to call the authorization check
+      mockCreateApiHandler.mockImplementation(
+        async (handlerFn: any, config?: any) => {
+          // Call the authorization check if provided
+          if (config?.authorizationCheck) {
+            await config.authorizationCheck()
+          }
+          return handlerFn({ user: mockKindeUser })
+        },
+      )
+
+      await handleUpdateOrgInvite('org-1', 'invite-1', updatePayload)
+      expect(mockUserIsOwner).toHaveBeenCalledWith({ organizationId: 'org-1' })
+    })
+
+    it('should validate invitation exists and is pending', async () => {
+      await handleUpdateOrgInvite('org-1', 'invite-1', updatePayload)
+
+      expect(mockGetOrgInvitation).toHaveBeenCalledWith({
+        where: { id: 'invite-1', organizationId: 'org-1', status: 'pending' },
+      })
+    })
+
+    it('should pass correct user ID to update operation', async () => {
+      // Mock createApiHandler to call the handler function directly
+      mockCreateApiHandler.mockImplementation((handlerFn: any) => {
+        return handlerFn({ user: mockKindeUser })
+      })
+
+      await handleUpdateOrgInvite('org-1', 'invite-1', updatePayload)
+
+      expect(mockDb.orgInvitation.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            updatedBy: mockKindeUser.id,
+          }),
+        }),
+      )
     })
   })
 })

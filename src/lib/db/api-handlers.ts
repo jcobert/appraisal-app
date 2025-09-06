@@ -62,6 +62,7 @@ export type ApiHandlerConfig = {
   requireAuth?: boolean
   /** Additional authorization check function to run after authentication */
   authorizationCheck?: () => Promise<boolean>
+  /** @todo Update messages to functions with data similar to toasts?. */
   /** Custom messages for different response scenarios */
   messages?: {
     /** Success message to include in successful responses */

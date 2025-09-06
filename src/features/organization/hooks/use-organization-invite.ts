@@ -1,7 +1,7 @@
 import { OrgInvitation, OrgMember, Organization, User } from '@prisma/client'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
-import { CreateEmailOptions, CreateEmailResponse } from 'resend'
+import { CreateEmailOptions } from 'resend'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
@@ -20,12 +20,15 @@ export type OrgInvitePayload = Partial<
   Pick<User, 'firstName' | 'lastName' | 'email'> &
   Pick<OrgMember, 'roles'>
 
-type EmailResponse = Awaited<CreateEmailResponse>
+// type EmailResponse = Awaited<CreateEmailResponse>
 
 type UseOrganizationInviteProps = {
   organizationId?: Organization['id']
   inviteId?: OrgInvitation['id']
-  options?: UseCoreMutationProps<OrgInvitePayload, FetchResponse<EmailResponse>>
+  options?: UseCoreMutationProps<
+    OrgInvitePayload,
+    FetchResponse<Partial<OrgInvitation>>
+  >
 }
 
 export const useOrganizationInvite = ({
@@ -61,23 +64,20 @@ export const useOrganizationInvite = ({
     },
   })
 
-  const deleteInvitation = useCoreMutation<Partial<OrgInvitation>, {}>({
+  const deleteInvitation = useCoreMutation<{}, Partial<OrgInvitation>>({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/invite/${inviteId}`,
     method: 'DELETE',
     ...(options as Omit<
-      UseCoreMutationProps<Partial<OrgInvitation> | {}, {}>,
+      UseCoreMutationProps<{}, Partial<OrgInvitation>>,
       'url' | 'method'
     >),
-    // We allow a payload when the mutation is called to provide context for toasts.
-    // We don't want to include it in the request though, so transform to empty payload.
-    transform: () => ({}),
     toast: {
       enabled: true,
       messages: {
-        success: ({ context }) => {
+        success: ({ response }) => {
           const name = fullName(
-            context?.inviteeFirstName,
-            context?.inviteeLastName,
+            response?.data?.inviteeFirstName,
+            response?.data?.inviteeLastName,
           )
           return `Invitation ${name ? `for ${name} ` : ''}has been canceled.`
         },

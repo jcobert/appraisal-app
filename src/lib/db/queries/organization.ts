@@ -1,7 +1,7 @@
 // sort-imports-ignore
 import 'server-only'
 
-import { Organization, OrgInvitation, OrgMember, Prisma } from '@prisma/client'
+import { Organization, OrgMember, Prisma } from '@prisma/client'
 
 import { db } from '@/lib/db/client'
 import { canQuery, CanQueryOptions } from '@/lib/db/utils'
@@ -371,21 +371,24 @@ export const getOrgInvitations = async <
   }
 }
 
-export const createOrgInvitation = async (
-  params: Prisma.OrgInvitationCreateArgs,
-  authOptions?: CanQueryOptions,
-) => {
-  try {
-    const authorized = await canQuery(authOptions)
-    if (!authorized) return null
-    const data = await db.orgInvitation.create(params)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
+// export const createOrgInvitation = async (
+//   params: Prisma.OrgInvitationCreateArgs,
+//   authOptions?: CanQueryOptions,
+// ) => {
+//   try {
+//     const authorized = await canQuery(authOptions)
+//     if (!authorized) return null
+//     const data = await db.orgInvitation.create(params)
+//     return data
+//   } catch (error) {
+//     handlePrismaError(error)
+//     return null
+//   }
+// }
 
+/**
+ * @deprecated This will be removed once routes migrated to api handlers.
+ */
 export const updateOrgInvitation = async (
   params: Prisma.OrgInvitationUpdateArgs,
   authOptions?: CanQueryOptions & { publicAccess?: boolean },
@@ -402,29 +405,29 @@ export const updateOrgInvitation = async (
   }
 }
 
-export const deleteOrgInvitation = async (params: {
-  organizationId: OrgMember['organizationId']
-  inviteId: OrgInvitation['id']
-  query?: Prisma.OrgInvitationDeleteArgs
-  authOptions?: CanQueryOptions
-}) => {
-  try {
-    const { organizationId, inviteId, query, authOptions } = params
-    const { ...opts } = authOptions || {}
-    const authorized = await canQuery(opts)
-    if (!authorized) return null
-    const isOwner = await userIsOwner({ organizationId })
-    if (!isOwner) return null
+// export const deleteOrgInvitation = async (params: {
+//   organizationId: OrgMember['organizationId']
+//   inviteId: OrgInvitation['id']
+//   query?: Omit<Prisma.OrgInvitationDeleteArgs, 'where'>
+//   authOptions?: CanQueryOptions
+// }) => {
+//   try {
+//     const { organizationId, inviteId, query, authOptions } = params
+//     const { ...opts } = authOptions || {}
+//     const authorized = await canQuery(opts)
+//     if (!authorized) return null
+//     const isOwner = await userIsOwner({ organizationId })
+//     if (!isOwner) return null
 
-    const queryArgs = {
-      where: { id: inviteId, organizationId },
-      ...query,
-    } satisfies typeof query
+//     const queryArgs = {
+//       where: { id: inviteId, organizationId },
+//       ...query,
+//     } satisfies Prisma.OrgInvitationDeleteArgs
 
-    const data = await db.orgInvitation.delete(queryArgs)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
+//     const data = await db.orgInvitation.delete(queryArgs)
+//     return data
+//   } catch (error) {
+//     handlePrismaError(error)
+//     return null
+//   }
+// }
