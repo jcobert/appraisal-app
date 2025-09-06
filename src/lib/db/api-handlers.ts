@@ -63,19 +63,21 @@ export const toNextResponse = <TData = any>(
   return NextResponse.json(result, { status })
 }
 
+type ContextUser = Awaited<ReturnType<typeof isAuthenticated>>['user']
+
 /** Context provided to various API handler callback parameters. */
-type ApiHandlerContext = {
-  user: Awaited<ReturnType<typeof isAuthenticated>>['user']
+type ApiHandlerContext<TAuth extends boolean = boolean> = {
+  user: TAuth extends true ? NonNullable<ContextUser> : ContextUser
 }
 
 /**
  * Configuration for API handlers.
  */
-export type ApiHandlerConfig = {
+export type ApiHandlerConfig<TAuth extends boolean = boolean> = {
   /** Whether authentication is required (default: true) */
-  requireAuth?: boolean
+  requireAuth?: TAuth
   /** Additional authorization check function to run after authentication */
-  authorizationCheck?: (context: ApiHandlerContext) => Promise<boolean>
+  authorizationCheck?: (context: ApiHandlerContext<TAuth>) => Promise<boolean>
   /** @todo Update messages to functions with data similar to toasts?. */
   /** Custom messages for different response scenarios */
   messages?: {
@@ -102,9 +104,12 @@ export type ApiHandlerConfig = {
  * @param config - Configuration options for the handler
  * @returns ApiHandlerResult with both data and NextResponse
  */
-export const createApiHandler = async <TData = any>(
-  handler: (context: ApiHandlerContext) => Promise<TData>,
-  config: ApiHandlerConfig = {},
+export const createApiHandler = async <
+  TData = any,
+  TAuth extends boolean = true,
+>(
+  handler: (context: ApiHandlerContext<TAuth>) => Promise<TData>,
+  config: ApiHandlerConfig<TAuth> = {},
 ): Promise<FetchResponse<TData>> => {
   const {
     requireAuth = true,
@@ -142,7 +147,7 @@ export const createApiHandler = async <TData = any>(
   // Authorization check (if provided)
   if (authorizationCheck) {
     try {
-      const authorized = await authorizationCheck({ user })
+      const authorized = await authorizationCheck({ user } as ApiHandlerContext)
 
       if (!authorized) {
         return {
@@ -170,7 +175,7 @@ export const createApiHandler = async <TData = any>(
   }
 
   try {
-    const data = await handler({ user })
+    const data = await handler({ user } as ApiHandlerContext)
 
     // Handle null/undefined results
     if (!isMutation && (data === null || data === undefined)) {

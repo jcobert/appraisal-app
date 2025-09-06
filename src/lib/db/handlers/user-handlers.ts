@@ -157,7 +157,7 @@ export const handleUpdateActiveUser = async (
       }
 
       const changes = getProfileChanges({
-        account: user!, // user is guaranteed to be non-null due to requireAuth: true
+        account: user,
         profile: payload as any, // Type assertion for compatibility
       })
 
@@ -193,11 +193,11 @@ export const handleUpdateActiveUser = async (
 
       // Update user profile in database
       const result = await db.user.update({
-        where: { accountId: user!.id },
+        where: { accountId: user?.id },
         data: {
           ...payload,
-          email: payload?.email || user!.email,
-          updatedBy: user!.id,
+          email: payload?.email || user?.email,
+          updatedBy: user?.id,
         },
       })
 
