@@ -11,6 +11,8 @@ jest.mock('@/lib/db/client', () => ({
   db: {
     user: {
       update: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
     },
   },
 }))
@@ -52,6 +54,7 @@ import {
   handleGetActiveUser,
   handleGetUser,
   handleGetUsers,
+  handleRegisterUser,
   handleUpdateActiveUser,
   handleUpdateUser,
 } from '@/lib/db/handlers/user-handlers'
@@ -157,6 +160,8 @@ describe('user-handlers', () => {
 
     // Mock database operations
     ;(mockDb.user.update as jest.Mock).mockResolvedValue(mockUserProfile)
+    ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
+    ;(mockDb.user.create as jest.Mock).mockResolvedValue(mockUserProfile)
   })
 
   describe('handleGetUsers', () => {
@@ -274,6 +279,106 @@ describe('user-handlers', () => {
 
       expect(result.status).toBe(401)
       expect(result.error?.code).toBe('NOT_AUTHENTICATED')
+    })
+  })
+
+  describe('handleRegisterUser', () => {
+    it('should register a new user profile successfully', async () => {
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.user.create as jest.Mock).mockResolvedValue(mockUserProfile)
+
+      const result = await handleRegisterUser()
+
+      expect(result.status).toBe(200)
+      expect(result.data).toEqual(mockUserProfile)
+      expect(result.message).toBe('User profile created successfully.')
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
+        where: { accountId: mockUser.id },
+      })
+      expect(mockDb.user.create).toHaveBeenCalledWith({
+        data: {
+          accountId: mockUser.id,
+          createdBy: mockUser.id,
+          updatedBy: mockUser.id,
+          firstName: mockUser.given_name,
+          lastName: mockUser.family_name,
+          avatar: mockUser.picture,
+          email: mockUser.email,
+          phone: mockUser.phone_number,
+        },
+      })
+    })
+
+    it('should handle case when user profile already exists', async () => {
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockUserProfile)
+
+      const result = await handleRegisterUser()
+
+      expect(result.status).toBe(409)
+      expect(result.error?.code).toBe('DUPLICATE')
+      expect(result.error?.message).toBe(
+        'A profile for this account already exists.',
+      )
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
+        where: { accountId: mockUser.id },
+      })
+      expect(mockDb.user.create).not.toHaveBeenCalled()
+    })
+
+    it('should handle authentication failure', async () => {
+      mockIsAuthenticated.mockResolvedValue({
+        allowed: false,
+        user: null,
+      })
+
+      const result = await handleRegisterUser()
+
+      expect(result.status).toBe(401)
+      expect(result.error?.code).toBe('NOT_AUTHENTICATED')
+    })
+
+    it('should handle database errors', async () => {
+      ;(mockDb.user.findUnique as jest.Mock).mockRejectedValue(
+        new Error('Database error'),
+      )
+
+      const result = await handleRegisterUser()
+
+      expect(result.status).toBe(500)
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
+    })
+
+    it('should handle missing user data gracefully', async () => {
+      const userWithMissingFields = {
+        ...mockUser,
+        given_name: null,
+        family_name: null,
+        picture: null,
+        phone_number: null,
+      }
+
+      mockIsAuthenticated.mockResolvedValue({
+        allowed: true,
+        user: userWithMissingFields,
+      })
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.user.create as jest.Mock).mockResolvedValue(mockUserProfile)
+
+      const result = await handleRegisterUser()
+
+      expect(result.status).toBe(200)
+      expect(mockDb.user.create).toHaveBeenCalledWith({
+        data: {
+          accountId: userWithMissingFields.id,
+          createdBy: userWithMissingFields.id,
+          updatedBy: userWithMissingFields.id,
+          firstName: '',
+          lastName: '',
+          avatar: null,
+          email: userWithMissingFields.email,
+          phone: null,
+        },
+      })
     })
   })
 

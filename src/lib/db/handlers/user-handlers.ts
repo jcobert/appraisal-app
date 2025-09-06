@@ -10,7 +10,7 @@ import {
 } from '@/lib/db/queries/user'
 
 import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
-import { ValidationError } from '@/lib/db/errors'
+import { ValidationError, DatabaseConstraintError } from '@/lib/db/errors'
 import { validatePayload } from '@/utils/zod'
 import { userProfileSchema } from '@/lib/db/schemas/user'
 import {
@@ -90,6 +90,51 @@ export const handleCreateUser = async (
     {
       messages: {
         success: 'User created successfully.',
+      },
+      isMutation: true,
+    },
+  )
+}
+
+/**
+ * Register a new user profile from authenticated Kinde user.
+ * Can be used in both API routes and server components.
+ */
+export const handleRegisterUser = async () => {
+  return createApiHandler(
+    async ({ user }) => {
+      // Check if profile already exists
+      const currentProfile = await db.user.findUnique({
+        where: { accountId: user?.id },
+      })
+
+      if (currentProfile?.id) {
+        throw new DatabaseConstraintError(
+          'A profile for this account already exists.',
+          'unique',
+          'accountId',
+        )
+      }
+
+      // Create user profile from Kinde user data
+      const result = await db.user.create({
+        data: {
+          accountId: user?.id,
+          createdBy: user?.id,
+          updatedBy: user?.id,
+          firstName: user?.given_name || '',
+          lastName: user?.family_name || '',
+          avatar: user?.picture,
+          email: user?.email,
+          phone: user?.phone_number,
+        },
+      })
+
+      return result
+    },
+    {
+      messages: {
+        success: 'User profile created successfully.',
       },
       isMutation: true,
     },
@@ -255,6 +300,7 @@ export type GetActiveUserResult = Awaited<
 >
 export type GetUserResult = Awaited<ReturnType<typeof handleGetUser>>
 export type CreateUserResult = Awaited<ReturnType<typeof handleCreateUser>>
+export type RegisterUserResult = Awaited<ReturnType<typeof handleRegisterUser>>
 export type UpdateUserResult = Awaited<ReturnType<typeof handleUpdateUser>>
 export type UpdateActiveUserResult = Awaited<
   ReturnType<typeof handleUpdateActiveUser>
