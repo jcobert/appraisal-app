@@ -251,7 +251,7 @@ describe('api-handlers', () => {
     it('should default to status 500 when error exists but no status', () => {
       const response = {
         data: null,
-        error: { code: FetchErrorCode.FAILURE, message: 'Error' },
+        error: { code: FetchErrorCode.INTERNAL_ERROR, message: 'Error' },
       }
 
       const result = toNextResponse(response)
@@ -406,7 +406,7 @@ describe('api-handlers', () => {
           status: 500,
           data: null,
           error: {
-            code: FetchErrorCode.FAILURE,
+            code: FetchErrorCode.INTERNAL_ERROR,
             message: 'Authorization check failed.',
           },
         })
@@ -676,7 +676,7 @@ describe('api-handlers', () => {
           status: 500,
           data: null,
           error: {
-            code: FetchErrorCode.FAILURE,
+            code: FetchErrorCode.INTERNAL_ERROR,
             message: 'Something went wrong',
           },
         })
@@ -696,7 +696,7 @@ describe('api-handlers', () => {
           status: 500,
           data: null,
           error: {
-            code: FetchErrorCode.FAILURE,
+            code: FetchErrorCode.INTERNAL_ERROR,
             message: 'An unknown failure occurred.',
           },
         })

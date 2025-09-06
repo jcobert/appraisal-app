@@ -1,8 +1,13 @@
-import { QueryFunction, UseQueryOptions, useQuery } from '@tanstack/react-query'
+import {
+  QueryFunction,
+  QueryFunctionContext,
+  UseQueryOptions,
+  useQuery,
+} from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { DefaultToastOptions } from 'react-hot-toast'
 
-import fetch, { FetchResponse } from '@/utils/fetch'
+import { FetchResponse, coreFetch } from '@/utils/fetch'
 import { ToastMessages, toastyQuery } from '@/utils/toast'
 
 export type UseCoreQueryProps<TData = unknown> = UseQueryOptions<
@@ -25,21 +30,27 @@ export const useCoreQuery = <TData = unknown>({
   toast: toastConfig = { enabled: false },
   ...options
 }: UseCoreQueryProps<TData>) => {
-  const queryFetch = useCallback(async (): Promise<FetchResponse<TData>> => {
-    return fetch.GET({ url }) as FetchResponse<TData>
-  }, [url])
+  const queryFetch = useCallback(
+    async (context: QueryFunctionContext): Promise<FetchResponse<TData>> => {
+      return coreFetch.GET({
+        url,
+        options: { signal: context?.signal },
+      }) as FetchResponse<TData>
+    },
+    [url],
+  )
 
-  const queryFn: QueryFunction<FetchResponse<TData>> = async () => {
-    // If toast is enabled use toastyQuery for error-only handling.
+  const queryFn: QueryFunction<FetchResponse<TData>> = async (context) => {
+    // If toast is enabled use toastyQuery.
     if (toastConfig?.enabled) {
       return toastyQuery(
-        () => queryFetch(),
+        () => queryFetch(context),
         toastConfig?.messages,
         toastConfig?.options,
       )
     }
     // Otherwise just return the raw fetch response.
-    return queryFetch()
+    return queryFetch(context)
   }
 
   const { data: response, ...query } = useQuery<FetchResponse<TData>>({

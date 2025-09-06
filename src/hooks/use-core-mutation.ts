@@ -7,7 +7,7 @@ import {
 import { useCallback } from 'react'
 import { DefaultToastOptions } from 'react-hot-toast'
 
-import fetch, { FetchMethod, FetchResponse } from '@/utils/fetch'
+import { FetchMethod, FetchResponse, coreFetch } from '@/utils/fetch'
 import { ToastMessages, toastyRequest } from '@/utils/toast'
 
 export type UseCoreMutationProps<
@@ -50,17 +50,17 @@ export const useCoreMutation = <
 
       switch (method) {
         case 'PUT':
-          return fetch.PUT({ url, payload }) as FetchResponse<TResData>
+          return coreFetch.PUT({ url, payload }) as FetchResponse<TResData>
         case 'PATCH':
-          return fetch.PATCH({
+          return coreFetch.PATCH({
             url,
             payload,
           }) as FetchResponse<TResData>
         case 'DELETE':
-          return fetch.DELETE({ url }) as FetchResponse<TResData>
+          return coreFetch.DELETE({ url }) as FetchResponse<TResData>
         case 'POST':
         default:
-          return fetch.POST({ url, payload }) as FetchResponse<TResData>
+          return coreFetch.POST({ url, payload }) as FetchResponse<TResData>
       }
     },
     [url, method, transform],

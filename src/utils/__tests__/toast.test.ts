@@ -20,14 +20,7 @@ jest.mock('react-hot-toast', () => ({
 
 // Mock fetch utils
 jest.mock('@/utils/fetch', () => ({
-  FetchErrorCode: {
-    INVALID_DATA: 'INVALID_DATA',
-    AUTH: 'AUTH',
-    FAILURE: 'FAILURE',
-    DATABASE_FAILURE: 'DATABASE_FAILURE',
-    DUPLICATE: 'DUPLICATE',
-    NOT_FOUND: 'NOT_FOUND',
-  },
+  ...jest.requireActual('@/utils/fetch'),
   successful: jest.fn((status?: number) => {
     if (!status) return false
     return status >= 200 && status < 300
@@ -70,7 +63,7 @@ describe('Toast Utils', () => {
         'You are not authorized to do that.',
       )
 
-      expect(defaultToastMessages.error.FAILURE?.()).toBe(
+      expect(defaultToastMessages.error.INTERNAL_ERROR?.()).toBe(
         'An unexpected error occurred. Please try again.',
       )
     })
@@ -146,7 +139,7 @@ describe('Toast Utils', () => {
     it('should handle different error codes', () => {
       const codes = [
         'AUTH',
-        'FAILURE',
+        'INTERNAL_ERROR',
         'DATABASE_FAILURE',
         'DUPLICATE',
         'NOT_FOUND',

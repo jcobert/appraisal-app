@@ -2,30 +2,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import { ReactNode } from 'react'
 
-import fetch, { FetchErrorCode, FetchResponse } from '@/utils/fetch'
+import { FetchErrorCode, FetchResponse, coreFetch } from '@/utils/fetch'
 import { toastyQuery } from '@/utils/toast'
 
 import { UseCoreQueryProps, useCoreQuery } from '@/hooks/use-core-query'
 
 // Mock the fetch utility
 jest.mock('@/utils/fetch', () => ({
-  FetchMethod: {
-    GET: 'GET',
-    POST: 'POST',
-    PUT: 'PUT',
-    PATCH: 'PATCH',
-    DELETE: 'DELETE',
-  },
-  FetchErrorCode: {
-    INVALID_DATA: 'INVALID_DATA',
-    AUTH: 'AUTH',
-    FAILURE: 'FAILURE',
-    DATABASE_FAILURE: 'DATABASE_FAILURE',
-    DUPLICATE: 'DUPLICATE',
-    NOT_FOUND: 'NOT_FOUND',
-  },
-  __esModule: true,
-  default: {
+  ...jest.requireActual('@/utils/fetch'),
+  coreFetch: {
     GET: jest.fn(),
   },
 }))
@@ -37,12 +22,10 @@ jest.mock('@/utils/toast', () => ({
 }))
 
 const mockFetch = {
-  GET: fetch.GET as jest.MockedFunction<typeof fetch.GET>,
+  GET: coreFetch.GET as jest.MockedFunction<typeof coreFetch.GET>,
 }
 
-const mockToastyQuery = toastyQuery as jest.MockedFunction<
-  typeof toastyQuery
->
+const mockToastyQuery = toastyQuery as jest.MockedFunction<typeof toastyQuery>
 
 // Test wrapper component
 const createWrapper = () => {
@@ -95,7 +78,10 @@ describe('useCoreQuery', () => {
       })
 
       expect(result.current.response).toEqual(mockSuccessResponse)
-      expect(mockFetch.GET).toHaveBeenCalledWith({ url: '/api/test' })
+      expect(mockFetch.GET).toHaveBeenCalledWith({
+        url: '/api/test',
+        options: { signal: expect.any(AbortSignal) },
+      })
     })
 
     it('should handle query errors without toast by default', async () => {

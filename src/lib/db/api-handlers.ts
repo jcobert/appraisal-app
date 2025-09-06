@@ -151,7 +151,7 @@ export const createApiHandler = async <TData = any>(
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: authCheckFailedMessage,
         },
       }
@@ -271,7 +271,7 @@ export const createApiHandler = async <TData = any>(
       status: 500,
       data: null,
       error: {
-        code: FetchErrorCode.FAILURE,
+        code: FetchErrorCode.INTERNAL_ERROR,
         message: errorMessage,
       },
     }

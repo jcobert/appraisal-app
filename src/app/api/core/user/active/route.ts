@@ -164,7 +164,7 @@ export const PUT = async (req: NextRequest) => {
       {
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'An unknown failure occurred.',
         },
       } satisfies FetchResponse<User>,

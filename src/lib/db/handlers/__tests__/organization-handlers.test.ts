@@ -165,7 +165,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Database connection failed',
         },
       })
@@ -219,7 +219,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Organization ID is required',
         },
       })
@@ -240,7 +240,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Database error',
         },
       })
@@ -330,7 +330,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Authorization check failed.',
         },
       })
@@ -383,7 +383,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Authorization check failed.',
         },
       })
@@ -521,7 +521,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Failed to create organization',
         },
       })
@@ -570,7 +570,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Organization ID is required',
         },
       })
@@ -591,7 +591,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Failed to get permissions',
         },
       })

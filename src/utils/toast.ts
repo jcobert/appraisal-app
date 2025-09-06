@@ -31,7 +31,9 @@ export const defaultToastMessages = {
     INVALID_DATA: ({ response: { error } }) =>
       `There was a problem with your request.${error?.message ? `\nError: ${error?.message}` : ''}`,
     AUTH: () => 'You are not authorized to do that.',
-    FAILURE: () => genericErrorMessage,
+    NETWORK_ERROR: () =>
+      'Connection failed. Please check your internet connection and try again.',
+    INTERNAL_ERROR: () => genericErrorMessage,
     DATABASE_FAILURE: () => genericErrorMessage,
     DUPLICATE: () => genericErrorMessage,
     NOT_FOUND: () => genericErrorMessage,
@@ -104,7 +106,7 @@ export const toastyRequest = async <TRes, TCtx>(
       data: null,
       status: 500,
       error: {
-        code: FetchErrorCode.FAILURE,
+        code: FetchErrorCode.INTERNAL_ERROR,
         message: 'An unexpected error occurred',
       },
     } as FetchResponse<TRes>

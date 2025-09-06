@@ -156,7 +156,7 @@ describe('organization-member-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Database error',
         },
       })
@@ -210,7 +210,7 @@ describe('organization-member-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Database error',
         },
       })
@@ -318,7 +318,7 @@ describe('organization-member-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Authorization check failed.',
         },
       })
@@ -453,7 +453,7 @@ describe('organization-member-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Authorization check failed.',
         },
       })

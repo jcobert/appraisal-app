@@ -185,7 +185,7 @@ export const PUT = async (
     console.error(error)
     return NextResponse.json(
       {
-        error: { code: FetchErrorCode.FAILURE },
+        error: { code: FetchErrorCode.INTERNAL_ERROR },
       } satisfies FetchResponse,
       { status: 500 },
     )

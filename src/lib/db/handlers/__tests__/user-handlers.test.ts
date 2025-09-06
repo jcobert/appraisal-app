@@ -303,7 +303,7 @@ describe('user-handlers', () => {
       const result = await handleCreateUser(createPayload)
 
       expect(result.status).toBe(500)
-      expect(result.error?.code).toBe('FAILURE')
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
   })
 
@@ -384,7 +384,7 @@ describe('user-handlers', () => {
       const result = await handleUpdateUser(userId, updatePayload)
 
       expect(result.status).toBe(500)
-      expect(result.error?.code).toBe('FAILURE')
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
   })
 
@@ -429,7 +429,7 @@ describe('user-handlers', () => {
       const result = await handleDeleteUser(userId)
 
       expect(result.status).toBe(500)
-      expect(result.error?.code).toBe('FAILURE')
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
 
     it('should handle user not found during deletion', async () => {
@@ -440,7 +440,7 @@ describe('user-handlers', () => {
       const result = await handleDeleteUser(userId)
 
       expect(result.status).toBe(500)
-      expect(result.error?.code).toBe('FAILURE')
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
   })
 })

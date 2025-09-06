@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import { ReactNode } from 'react'
 
-import fetch, { FetchErrorCode, FetchResponse } from '@/utils/fetch'
+import { FetchErrorCode, FetchResponse, coreFetch } from '@/utils/fetch'
 import { toastyRequest } from '@/utils/toast'
 
 import {
@@ -12,23 +12,8 @@ import {
 
 // Mock the fetch utility
 jest.mock('@/utils/fetch', () => ({
-  FetchMethod: {
-    GET: 'GET',
-    POST: 'POST',
-    PUT: 'PUT',
-    PATCH: 'PATCH',
-    DELETE: 'DELETE',
-  },
-  FetchErrorCode: {
-    INVALID_DATA: 'INVALID_DATA',
-    AUTH: 'AUTH',
-    FAILURE: 'FAILURE',
-    DATABASE_FAILURE: 'DATABASE_FAILURE',
-    DUPLICATE: 'DUPLICATE',
-    NOT_FOUND: 'NOT_FOUND',
-  },
-  __esModule: true,
-  default: {
+  ...jest.requireActual('@/utils/fetch'),
+  coreFetch: {
     POST: jest.fn(),
     PUT: jest.fn(),
     PATCH: jest.fn(),
@@ -43,10 +28,10 @@ jest.mock('@/utils/toast', () => ({
 }))
 
 const mockFetch = {
-  POST: fetch.POST as jest.MockedFunction<typeof fetch.POST>,
-  PUT: fetch.PUT as jest.MockedFunction<typeof fetch.PUT>,
-  PATCH: fetch.PATCH as jest.MockedFunction<typeof fetch.PATCH>,
-  DELETE: fetch.DELETE as jest.MockedFunction<typeof fetch.DELETE>,
+  POST: coreFetch.POST as jest.MockedFunction<typeof coreFetch.POST>,
+  PUT: coreFetch.PUT as jest.MockedFunction<typeof coreFetch.PUT>,
+  PATCH: coreFetch.PATCH as jest.MockedFunction<typeof coreFetch.PATCH>,
+  DELETE: coreFetch.DELETE as jest.MockedFunction<typeof coreFetch.DELETE>,
 }
 
 const mockToastyRequest = toastyRequest as jest.MockedFunction<
