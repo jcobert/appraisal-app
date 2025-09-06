@@ -16,8 +16,8 @@ export type UseCoreQueryProps<TData = unknown> = UseQueryOptions<
   url: string
   /** Configuration for toast notifications. */
   toast?: {
-    /** Whether to display error toasts. @default false */
-    enabled?: boolean
+    /** Whether to display toasts. @default false */
+    enabled: boolean
     /** Defines the toast messages. */
     messages?: ToastMessages<TData, void>
     /** Advanced toast options. */
@@ -27,14 +27,13 @@ export type UseCoreQueryProps<TData = unknown> = UseQueryOptions<
 
 export const useCoreQuery = <TData = unknown>({
   url,
-  toast: toastConfig = { enabled: false },
+  toast,
   ...options
 }: UseCoreQueryProps<TData>) => {
-  /** @todo Define toastConfig here to preserve partial defaults. */
-  // const toastConfig = {
-  //   enabled: false,
-  //   ...toast,
-  // } satisfies UseCoreQueryProps<TData>['toast']
+  const toastConfig = {
+    enabled: false,
+    ...toast,
+  } satisfies UseCoreQueryProps<TData>['toast']
 
   const queryFetch = useCallback(
     async (context: QueryFunctionContext): Promise<FetchResponse<TData>> => {

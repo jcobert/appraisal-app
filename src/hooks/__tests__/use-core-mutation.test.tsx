@@ -183,6 +183,37 @@ describe('useCoreMutation', () => {
       )
     })
 
+    it('Toasts should remain enabled when other toast config is provided.', async () => {
+      // Make sure the mock returns a value
+      mockToastyRequest.mockImplementation(async () => mockSuccessResponse)
+
+      const { result } = renderHook(
+        () =>
+          useCoreMutation({
+            url: '/api/test',
+            toast: {
+              messages: {
+                success: () => 'Still enabled!',
+              },
+            },
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      const response = await result.current.mutateAsync({})
+
+      // Verify the mutation actually executed
+      expect(response).toBeDefined()
+      expect(mockToastyRequest).toHaveBeenCalledWith(
+        expect.any(Function),
+        expect.objectContaining({
+          success: expect.any(Function),
+        }),
+        undefined,
+        expect.objectContaining({}),
+      )
+    })
+
     it('should pass custom toast messages and options', async () => {
       // Make sure the mock returns a value
       mockToastyRequest.mockImplementation(async () => mockSuccessResponse)

@@ -41,14 +41,13 @@ export const useCoreMutation = <
   url,
   method = 'POST',
   transform,
-  toast: toastConfig = { enabled: true },
+  toast,
   ...options
 }: UseCoreMutationProps<TPayload, TResData>) => {
-  /** @todo Define toastConfig here to preserve partial defaults. */
-  // const toastConfig = {
-  //   enabled: true,
-  //   ...toast,
-  // } satisfies UseCoreMutationProps<TPayload, TResData>['toast']
+  const toastConfig = {
+    enabled: true,
+    ...toast,
+  } satisfies UseCoreMutationProps<TPayload, TResData>['toast']
 
   const mutationFetch = useCallback(
     async (data: TPayload): Promise<FetchResponse<TResData>> => {

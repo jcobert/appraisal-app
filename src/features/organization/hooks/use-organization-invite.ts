@@ -61,14 +61,11 @@ export const useOrganizationInvite = ({
     },
   })
 
-  const deleteInvitation = useCoreMutation<
-    Partial<OrgInvitation>,
-    OrgInvitation
-  >({
+  const deleteInvitation = useCoreMutation<Partial<OrgInvitation>, {}>({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/invite/${inviteId}`,
     method: 'DELETE',
     ...(options as Omit<
-      UseCoreMutationProps<Partial<OrgInvitation> | {}, OrgInvitation>,
+      UseCoreMutationProps<Partial<OrgInvitation> | {}, {}>,
       'url' | 'method'
     >),
     // We allow a payload when the mutation is called to provide context for toasts.
