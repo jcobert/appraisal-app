@@ -67,7 +67,7 @@ type ContextUser = Awaited<ReturnType<typeof isAuthenticated>>['user']
 
 /** Context provided to various API handler callback parameters. */
 type ApiHandlerContext<TAuth extends boolean = boolean> = {
-  user: TAuth extends true ? NonNullable<ContextUser> : ContextUser
+  user: TAuth extends false ? NonNullable<ContextUser> : ContextUser
 }
 
 /**
@@ -103,7 +103,7 @@ export type ApiHandlerConfig<TAuth extends boolean = boolean> = {
    * There are very few cases where unauthenticated interaction with the DB should be allowed.
    * @default false
    */
-  dangerouslyBypassAuthentication?: boolean
+  dangerouslyBypassAuthentication?: TAuth
 }
 
 /**
@@ -113,8 +113,8 @@ export type ApiHandlerConfig<TAuth extends boolean = boolean> = {
  * @returns ApiHandlerResult with both data and NextResponse
  */
 export const createApiHandler = async <
+  TAuth extends boolean = false,
   TData = any,
-  TAuth extends boolean = true,
 >(
   handler: (context: ApiHandlerContext<TAuth>) => Promise<TData>,
   config?: ApiHandlerConfig<TAuth>,

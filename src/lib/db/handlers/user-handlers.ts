@@ -188,7 +188,7 @@ export const handleUpdateUser = async (
  * Includes special logic for updating Kinde account details.
  */
 export const handleUpdateActiveUser = async (
-  payload: any, // Using any for now to match route expectations
+  payload: Parameters<typeof db.user.update>['0']['data'],
 ) => {
   return createApiHandler(
     async ({ user }) => {
@@ -203,7 +203,9 @@ export const handleUpdateActiveUser = async (
 
       const changes = getProfileChanges({
         account: user,
-        profile: payload as any, // Type assertion for compatibility
+        profile: payload as Parameters<
+          typeof getProfileChanges
+        >['0']['profile'],
       })
 
       // Get Kinde session for token refresh
