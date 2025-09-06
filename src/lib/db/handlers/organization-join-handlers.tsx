@@ -192,7 +192,7 @@ export async function handleJoinOrganization(
       }
     },
     {
-      requireAuth: false, // We handle auth manually since it's more complex
+      dangerouslyBypassAuthentication: true, // We handle auth manually since it's more complex
       messages: {
         success: 'Invitation processed successfully.',
       },

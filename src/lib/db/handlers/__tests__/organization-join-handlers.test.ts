@@ -24,7 +24,7 @@ jest.mock('@/components/email/org-invite-notify-owner-email', () => ({
 // Mock Resend properly with a factory function
 jest.mock('resend', () => {
   const mockEmailSend = jest.fn()
-  
+
   return {
     Resend: jest.fn().mockImplementation(() => ({
       emails: {
@@ -157,7 +157,7 @@ describe('organization-join-handlers', () => {
 
     // Mock createApiHandler to call the handler function directly
     mockCreateApiHandler.mockImplementation((handlerFn: any, _config?: any) => {
-      return handlerFn({ user: null }) // requireAuth: false, so user can be null
+      return handlerFn({ user: null }) // dangerouslyBypassAuthentication: true, so user can be null
     })
   })
 
@@ -240,11 +240,11 @@ describe('organization-join-handlers', () => {
       await handleJoinOrganization('org-1', validPayload)
 
       expect(mockCreateApiHandler).toHaveBeenCalledWith(expect.any(Function), {
-        requireAuth: false,
         messages: {
           success: 'Invitation processed successfully.',
         },
         isMutation: true,
+        dangerouslyBypassAuthentication: true,
       })
     })
   })

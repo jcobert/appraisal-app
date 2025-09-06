@@ -74,8 +74,6 @@ type ApiHandlerContext<TAuth extends boolean = boolean> = {
  * Configuration for API handlers.
  */
 export type ApiHandlerConfig<TAuth extends boolean = boolean> = {
-  /** Whether authentication is required (default: true) */
-  requireAuth?: TAuth
   /** Additional authorization check function to run after authentication */
   authorizationCheck?: (context: ApiHandlerContext<TAuth>) => Promise<boolean>
   /** @todo Update messages to functions with data similar to toasts?. */
@@ -96,6 +94,16 @@ export type ApiHandlerConfig<TAuth extends boolean = boolean> = {
   }
   /** Whether this is a mutation operation - affects how null results are handled */
   isMutation?: boolean
+  /**
+   * By default, user authentication is checked before running handler.
+   *
+   * Setting this parameter to `true` will bypass that check and allow handler to run unauthenticated.
+   *
+   * ⚠️ Be very careful when using this option and be sure to handle authentication checks in your handler as needed.
+   * There are very few cases where unauthenticated interaction with the DB should be allowed.
+   * @default false
+   */
+  dangerouslyBypassAuthentication?: boolean
 }
 
 /**
@@ -109,14 +117,14 @@ export const createApiHandler = async <
   TAuth extends boolean = true,
 >(
   handler: (context: ApiHandlerContext<TAuth>) => Promise<TData>,
-  config: ApiHandlerConfig<TAuth> = {},
+  config?: ApiHandlerConfig<TAuth>,
 ): Promise<FetchResponse<TData>> => {
   const {
-    requireAuth = true,
     authorizationCheck,
     messages = {},
     isMutation = false,
-  } = config
+    dangerouslyBypassAuthentication = false,
+  } = config || {}
 
   // Default messages
   const {
@@ -131,7 +139,7 @@ export const createApiHandler = async <
   const { allowed, user } = await isAuthenticated()
 
   // Authentication check
-  if (requireAuth) {
+  if (!dangerouslyBypassAuthentication) {
     if (!allowed) {
       return {
         status: 401,
