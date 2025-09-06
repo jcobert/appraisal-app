@@ -9,6 +9,7 @@ import {
 import { NextResponse } from 'next/server'
 
 import {
+  AuthenticationError,
   AuthorizationError,
   DatabaseConnectionError,
   DatabaseConstraintError,
@@ -191,6 +192,18 @@ export const createApiHandler = async <TData = any>(
           code: FetchErrorCode.INVALID_DATA,
           message: error?.message,
           details: error?.details,
+        },
+      }
+    }
+
+    // Handle authentication errors
+    if (error instanceof AuthenticationError) {
+      return {
+        status: 401,
+        data: null,
+        error: {
+          code: FetchErrorCode.NOT_AUTHENTICATED,
+          message: error?.message,
         },
       }
     }
