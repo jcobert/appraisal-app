@@ -6,7 +6,6 @@ import {
   getUserProfile,
   getActiveUserProfile,
   createUserProfile,
-  updateUserProfile,
   deleteUserProfile,
 } from '@/lib/db/queries/user'
 
@@ -14,6 +13,13 @@ import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
 import { ValidationError } from '@/lib/db/errors'
 import { validatePayload } from '@/utils/zod'
 import { userProfileSchema } from '@/lib/db/schemas/user'
+import {
+  updateAuthAccount,
+  updateAuthEmail,
+} from '@/lib/kinde-management/queries'
+import { getProfileChanges } from '@/features/user/utils'
+import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
+import { db } from '@/lib/db/client'
 
 /**
  * Get all users.
@@ -96,7 +102,7 @@ export const handleCreateUser = async (
  */
 export const handleUpdateUser = async (
   userId: string,
-  payload: Parameters<typeof updateUserProfile>[0]['data'],
+  payload: Parameters<typeof db.user.update>[0]['data'],
 ) => {
   return createApiHandler(
     async ({ user }) => {
@@ -116,7 +122,7 @@ export const handleUpdateUser = async (
       // Add user fields for audit trail
       const dataWithUserFields = withUserFields(payload, user?.id || '')
 
-      const result = await updateUserProfile({
+      const result = await db.user.update({
         where: { id: userId },
         data: dataWithUserFields,
       })
@@ -125,6 +131,93 @@ export const handleUpdateUser = async (
     {
       messages: {
         success: 'User updated successfully.',
+      },
+      isMutation: true,
+    },
+  )
+}
+
+/**
+ * Update the active user's profile.
+ * Can be used in both API routes and server components.
+ * Includes special logic for updating Kinde account details.
+ */
+export const handleUpdateActiveUser = async (
+  payload: any, // Using any for now to match route expectations
+) => {
+  return createApiHandler(
+    async ({ user }) => {
+      // Validate payload
+      const validation = validatePayload(userProfileSchema.api, payload)
+      if (!validation?.success) {
+        throw new ValidationError(
+          'Invalid data provided.',
+          validation.errors || {},
+        )
+      }
+
+      const changes = getProfileChanges({
+        account: user!, // user is guaranteed to be non-null due to requireAuth: true
+        profile: payload as any, // Type assertion for compatibility
+      })
+
+      // Get Kinde session for token refresh
+      const { refreshTokens } = getKindeServerSession()
+
+      // Apply email update to Kinde account record
+      if (changes?.email) {
+        const accountUpdate = await updateAuthEmail(
+          (payload?.email as string) || changes.email,
+        )
+        /** @todo Check if Kinde provides errors we can use to be more specific. */
+        if (!accountUpdate) {
+          throw new Error('User account could not be updated.')
+        }
+        // Refresh session data after successful email update
+        await refreshTokens()
+      }
+
+      // Apply name update to Kinde account record
+      if (changes?.firstName || changes?.lastName) {
+        /** @todo Check if Kinde provides errors we can use to be more specific. */
+        const accountUpdate = await updateAuthAccount({
+          given_name: payload?.firstName as string,
+          family_name: payload?.lastName as string,
+        })
+        if (!accountUpdate) {
+          throw new Error('User account could not be updated.')
+        }
+        // Refresh session data after successful name update
+        await refreshTokens()
+      }
+
+      // Update user profile in database
+      const result = await db.user.update({
+        where: { accountId: user!.id },
+        data: {
+          ...payload,
+          email: payload?.email || user!.email,
+          updatedBy: user!.id,
+        },
+      })
+
+      if (!result) {
+        throw new Error('User profile could not be updated.')
+      }
+
+      return result
+    },
+    {
+      authorizationCheck: async ({ user }) => {
+        // Validate that user is updating their own profile
+        if (payload?.accountId && payload.accountId !== user?.id) {
+          return false
+        }
+        return true
+      },
+      messages: {
+        success: 'User updated successfully.',
+        unauthorized: 'User not authorized to update this profile.',
       },
       isMutation: true,
     },
@@ -163,4 +256,7 @@ export type GetActiveUserResult = Awaited<
 export type GetUserResult = Awaited<ReturnType<typeof handleGetUser>>
 export type CreateUserResult = Awaited<ReturnType<typeof handleCreateUser>>
 export type UpdateUserResult = Awaited<ReturnType<typeof handleUpdateUser>>
+export type UpdateActiveUserResult = Awaited<
+  ReturnType<typeof handleUpdateActiveUser>
+>
 export type DeleteUserResult = Awaited<ReturnType<typeof handleDeleteUser>>

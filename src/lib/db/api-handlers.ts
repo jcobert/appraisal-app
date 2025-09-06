@@ -19,7 +19,11 @@ import {
 } from '@/lib/db/errors'
 
 import { isAuthenticated } from '@/utils/auth'
-import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
+import {
+  FetchErrorCode,
+  FetchResponse,
+  isValidHttpStatusCode,
+} from '@/utils/fetch'
 
 /**
  * Utility to add user ID fields to payload.
@@ -51,8 +55,17 @@ export const withUserFields = <T extends Record<string, any>>(
 export const toNextResponse = <TData = any>(
   result: FetchResponse<TData>,
 ): NextResponse => {
-  const status = result?.status ?? (result?.error ? 500 : 200)
+  const status = isValidHttpStatusCode(result?.status)
+    ? result?.status
+    : result?.error
+      ? 500
+      : 200
   return NextResponse.json(result, { status })
+}
+
+/** Context provided to various API handler callback parameters. */
+type ApiHandlerContext = {
+  user: Awaited<ReturnType<typeof isAuthenticated>>['user']
 }
 
 /**
@@ -62,7 +75,7 @@ export type ApiHandlerConfig = {
   /** Whether authentication is required (default: true) */
   requireAuth?: boolean
   /** Additional authorization check function to run after authentication */
-  authorizationCheck?: () => Promise<boolean>
+  authorizationCheck?: (context: ApiHandlerContext) => Promise<boolean>
   /** @todo Update messages to functions with data similar to toasts?. */
   /** Custom messages for different response scenarios */
   messages?: {
@@ -90,11 +103,7 @@ export type ApiHandlerConfig = {
  * @returns ApiHandlerResult with both data and NextResponse
  */
 export const createApiHandler = async <TData = any>(
-  handler: ({
-    user,
-  }: {
-    user: Awaited<ReturnType<typeof isAuthenticated>>['user']
-  }) => Promise<TData>,
+  handler: (context: ApiHandlerContext) => Promise<TData>,
   config: ApiHandlerConfig = {},
 ): Promise<FetchResponse<TData>> => {
   const {
@@ -133,7 +142,7 @@ export const createApiHandler = async <TData = any>(
   // Authorization check (if provided)
   if (authorizationCheck) {
     try {
-      const authorized = await authorizationCheck()
+      const authorized = await authorizationCheck({ user })
 
       if (!authorized) {
         return {

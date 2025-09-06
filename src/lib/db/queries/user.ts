@@ -105,15 +105,15 @@ export const createUserProfile = async (params: Prisma.UserCreateArgs) => {
   }
 }
 
-export const updateUserProfile = async (params: Prisma.UserUpdateArgs) => {
-  try {
-    const data = await db.user.update(params)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
+// export const updateUserProfile = async (params: Prisma.UserUpdateArgs) => {
+//   try {
+//     const data = await db.user.update(params)
+//     return data
+//   } catch (error) {
+//     handlePrismaError(error)
+//     return null
+//   }
+// }
 
 export const deleteUserProfile = async (params: Prisma.UserDeleteArgs) => {
   try {
