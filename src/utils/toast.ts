@@ -116,7 +116,7 @@ export const toastyRequest = async <TRes = unknown, TCtx = unknown>(
 
 /**
  * Toast utility for queries that shows error and optional success notifications.
- * Unlike toastyRequest/promiseToast, this doesn't show loading toasts.
+ * Unlike toastyRequest/promiseToast, this doesn't show toast when loading.
  */
 export const toastyQuery = async <TData = unknown>(
   queryFn: () => Promise<FetchResponse<TData>>,

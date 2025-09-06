@@ -15,7 +15,6 @@ import { UserProfileFormData, userProfileSchema } from '@/lib/db/schemas/user'
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 import { withoutBlanks } from '@/utils/general'
-import { toastyRequest } from '@/utils/toast'
 
 import Form from '@/components/form/form'
 import FormActionBar from '@/components/form/form-action-bar'
@@ -77,12 +76,12 @@ const UserProfileForm: FC<Props> = ({
   const onSubmit: SubmitHandler<UserProfileFormData> = async (data) => {
     const payload = { ...initialData, ...data }
     if (isUpdate) {
-      const res = await toastyRequest(() => updateUser.mutateAsync(payload))
+      const res = await updateUser.mutateAsync(payload)
       if (successful(res.status)) {
         router.push(prevUrl)
       }
     } else {
-      const res = await toastyRequest(() => createUser.mutateAsync(payload))
+      const res = await createUser.mutateAsync(payload)
       if (successful(res.status)) {
         router.push(prevUrl)
       }

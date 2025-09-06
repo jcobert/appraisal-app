@@ -44,6 +44,12 @@ export const useCoreMutation = <
   toast: toastConfig = { enabled: true },
   ...options
 }: UseCoreMutationProps<TPayload, TResData>) => {
+  /** @todo Define toastConfig here to preserve partial defaults. */
+  // const toastConfig = {
+  //   enabled: true,
+  //   ...toast,
+  // } satisfies UseCoreMutationProps<TPayload, TResData>['toast']
+
   const mutationFetch = useCallback(
     async (data: TPayload): Promise<FetchResponse<TResData>> => {
       const payload = transform ? transform(data) : data

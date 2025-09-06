@@ -8,7 +8,6 @@ import { orgMemberSchema } from '@/lib/db/schemas/org-member'
 
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
-import { toastyRequest } from '@/utils/toast'
 
 import FormActionBar from '@/components/form/form-action-bar'
 import TextInput from '@/components/form/inputs/text-input'
@@ -92,20 +91,13 @@ const MemberInviteForm: FC<Props> = ({
 
   const onSubmit: SubmitHandler<MemberInviteFormData> = async (data) => {
     setIsBusy(true)
-    // const res = await toastyRequest(() => {
-    //   if (isUpdate) return updateInvitation.mutateAsync(data)
-    //   return createInvitation.mutateAsync(data)
-    // })
     if (isUpdate) {
-      const res = await toastyRequest(() => updateInvitation.mutateAsync(data))
+      const res = await updateInvitation.mutateAsync(data)
       if (successful(res?.status)) {
         onOpenChange(false)
       }
     } else {
-      const res = await toastyRequest(
-        () => createInvitation.mutateAsync(data),
-        { success: () => 'Invitation sent!' },
-      )
+      const res = await createInvitation.mutateAsync(data)
       if (successful(res?.status)) {
         onOpenChange(false)
       }

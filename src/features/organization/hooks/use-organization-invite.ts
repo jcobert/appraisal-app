@@ -5,7 +5,8 @@ import { CreateEmailOptions, CreateEmailResponse } from 'resend'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
-import { FetchResponse } from '@/utils/fetch'
+import { FetchResponse, successful } from '@/utils/fetch'
+import { fullName } from '@/utils/string'
 
 import useCoreMutation, {
   UseCoreMutationProps,
@@ -39,11 +40,12 @@ export const useOrganizationInvite = ({
       queryKey: organizationsQueryKey.filtered({ id: organizationId }),
       exact: true,
     })
-  }, [organizationId])
+  }, [organizationId, queryClient])
 
   const createInvitation = useCoreMutation({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/invite`,
     method: 'POST',
+    toast: { enabled: true, messages: { success: () => 'Invitation sent!' } },
     ...options,
     onSuccess: async () => {
       await refreshData()
@@ -59,30 +61,37 @@ export const useOrganizationInvite = ({
     },
   })
 
-  return { createInvitation, updateInvitation }
+  const deleteInvitation = useCoreMutation<
+    Partial<OrgInvitation>,
+    OrgInvitation
+  >({
+    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/invite/${inviteId}`,
+    method: 'DELETE',
+    ...(options as Omit<
+      UseCoreMutationProps<Partial<OrgInvitation> | {}, OrgInvitation>,
+      'url' | 'method'
+    >),
+    // We allow a payload when the mutation is called to provide context for toasts.
+    // We don't want to include it in the request though, so transform to empty payload.
+    transform: () => ({}),
+    toast: {
+      enabled: true,
+      messages: {
+        success: ({ context }) => {
+          const name = fullName(
+            context?.inviteeFirstName,
+            context?.inviteeLastName,
+          )
+          return `Invitation ${name ? `for ${name} ` : ''}has been canceled.`
+        },
+      },
+    },
+    onSuccess: async ({ status }) => {
+      if (successful(status)) {
+        await refreshData()
+      }
+    },
+  })
+
+  return { createInvitation, updateInvitation, deleteInvitation }
 }
-
-// // GET
-
-// type UseGetOrganizationInvitesProps = {
-//   organizationId?: Organization['id']
-//   options?: UseCoreQueryProps
-// }
-
-// export const orgInvitesQueryKey = {
-//   all: ['org-invites'],
-//   filtered: (params: Partial<OrgInvitation>) =>
-//     filteredQueryKey(params, orgInvitesQueryKey.all),
-// } as const
-
-// export const useGetOrganizationInvites = ({
-//   organizationId,
-//   options,
-// }: UseGetOrganizationInvitesProps) => {
-//   const query = useCoreQuery({
-//     queryKey: orgInvitesQueryKey.filtered({ organizationId }),
-//     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
-//     ...options,
-//   })
-//   return query
-// }

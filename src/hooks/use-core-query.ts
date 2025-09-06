@@ -30,6 +30,12 @@ export const useCoreQuery = <TData = unknown>({
   toast: toastConfig = { enabled: false },
   ...options
 }: UseCoreQueryProps<TData>) => {
+  /** @todo Define toastConfig here to preserve partial defaults. */
+  // const toastConfig = {
+  //   enabled: false,
+  //   ...toast,
+  // } satisfies UseCoreQueryProps<TData>['toast']
+
   const queryFetch = useCallback(
     async (context: QueryFunctionContext): Promise<FetchResponse<TData>> => {
       return coreFetch.GET({

@@ -25,7 +25,6 @@ type UseOrganizationMutationsProps = {
 export const useOrganizationMutations = ({
   organizationId,
   memberId,
-  inviteId,
   options,
 }: UseOrganizationMutationsProps = {}) => {
   const queryClient = useQueryClient()
@@ -49,17 +48,17 @@ export const useOrganizationMutations = ({
   const createOrganization = useCoreMutation<Payload, Organization>({
     url: CORE_API_ENDPOINTS.organization,
     method: 'POST',
-    ...options,
-    onSuccess: async ({ status }) => {
-      if (successful(status)) {
-        await refreshData()
-      }
-    },
     toast: {
       messages: {
         success: ({ context: payload }) =>
           `Organization ${payload?.name} has been created!`,
       },
+    },
+    ...options,
+    onSuccess: async ({ status }) => {
+      if (successful(status)) {
+        await refreshData()
+      }
     },
   })
 
@@ -113,26 +112,11 @@ export const useOrganizationMutations = ({
     },
   })
 
-  const deleteOrgInvitation = useCoreMutation<{}, OrgInvitation>({
-    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/invite/${inviteId}`,
-    method: 'DELETE',
-    ...(options as Omit<
-      UseCoreMutationProps<Partial<OrgInvitation> | {}, OrgInvitation>,
-      'url' | 'method'
-    >),
-    onSuccess: async ({ status }) => {
-      if (successful(status)) {
-        await refreshData()
-      }
-    },
-  })
-
   return {
     createOrganization,
     updateOrganization,
     deleteOrganization,
     updateOrgMember,
     deleteOrgMember,
-    deleteOrgInvitation,
   }
 }
