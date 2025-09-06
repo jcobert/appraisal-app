@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 
-import { toNextResponse } from '@/lib/api-handlers'
+import { toNextResponse } from '@/lib/db/api-handlers'
 import {
   handleCreateOrganization,
   handleGetUserOrganizations,

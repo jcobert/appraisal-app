@@ -1,19 +1,61 @@
-import { QueryFunction, UseQueryOptions, useQuery } from '@tanstack/react-query'
+import {
+  QueryFunction,
+  QueryFunctionContext,
+  UseQueryOptions,
+  useQuery,
+} from '@tanstack/react-query'
+import { useCallback } from 'react'
+import { DefaultToastOptions } from 'react-hot-toast'
 
-import fetch, { FetchResponse } from '@/utils/fetch'
+import { FetchResponse, coreFetch } from '@/utils/fetch'
+import { ToastMessages, toastyQuery } from '@/utils/toast'
 
 export type UseCoreQueryProps<TData = unknown> = UseQueryOptions<
   FetchResponse<TData>
 > & {
   url: string
+  /** Configuration for toast notifications. */
+  toast?: {
+    /** Whether to display toasts. @default false */
+    enabled: boolean
+    /** Defines the toast messages. */
+    messages?: ToastMessages<TData, void>
+    /** Advanced toast options. */
+    options?: DefaultToastOptions
+  }
 }
 
 export const useCoreQuery = <TData = unknown>({
   url,
+  toast,
   ...options
 }: UseCoreQueryProps<TData>) => {
-  const queryFn: QueryFunction<FetchResponse<TData>> = async () => {
-    return await fetch.GET({ url })
+  const toastConfig = {
+    enabled: false,
+    ...toast,
+  } satisfies UseCoreQueryProps<TData>['toast']
+
+  const queryFetch = useCallback(
+    async (context: QueryFunctionContext): Promise<FetchResponse<TData>> => {
+      return coreFetch.GET({
+        url,
+        options: { signal: context?.signal },
+      }) as FetchResponse<TData>
+    },
+    [url],
+  )
+
+  const queryFn: QueryFunction<FetchResponse<TData>> = async (context) => {
+    // If toast is enabled use toastyQuery.
+    if (toastConfig?.enabled) {
+      return toastyQuery(
+        () => queryFetch(context),
+        toastConfig?.messages,
+        toastConfig?.options,
+      )
+    }
+    // Otherwise just return the raw fetch response.
+    return queryFetch(context)
   }
 
   const { data: response, ...query } = useQuery<FetchResponse<TData>>({

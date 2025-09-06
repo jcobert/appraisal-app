@@ -20,7 +20,7 @@ export const POST = async (_req: NextRequest) => {
     return NextResponse.json(
       {
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHENTICATED,
           message: 'User not authenticated.',
         },
         data: null,
@@ -39,7 +39,7 @@ export const POST = async (_req: NextRequest) => {
       return NextResponse.json(
         {
           error: {
-            code: FetchErrorCode.FAILURE,
+            code: FetchErrorCode.INTERNAL_ERROR,
             message: 'User profile already exists.',
           },
           data: null,
@@ -90,7 +90,7 @@ export const POST = async (_req: NextRequest) => {
       {
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'An unknown failure occurred.',
         },
       } satisfies FetchResponse<User>,

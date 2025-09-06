@@ -56,7 +56,7 @@ const OrgMemberCard: FC<Props> = (props) => {
         title='Remove User'
         description={`Are you sure you want to remove ${name} from the organization? This action cannot be undone.`}
         onConfirm={async ({ closeModal }) => {
-          const res = await toastyRequest(() => deleteOrgMember.mutateAsync({}))
+          const res = await deleteOrgMember.mutateAsync({})
           if (successful(res?.status)) {
             closeModal()
           }

@@ -3,14 +3,23 @@
  */
 import {
   type ApiHandlerConfig,
-  AuthorizationError,
-  NotFoundError,
-  ValidationError,
   createApiHandler,
   toNextResponse,
   withUserFields,
 } from '../api-handlers'
+import {
+  AuthorizationError,
+  DatabaseConnectionError,
+  DatabaseConstraintError,
+  NotFoundError,
+  ValidationError,
+} from '../errors'
 import type { KindeUser } from '@kinde-oss/kinde-auth-nextjs/types'
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientUnknownRequestError,
+  PrismaClientValidationError,
+} from '@prisma/client/runtime/library'
 import { NextResponse } from 'next/server'
 import { ZodIssueCode } from 'zod'
 
@@ -242,7 +251,7 @@ describe('api-handlers', () => {
     it('should default to status 500 when error exists but no status', () => {
       const response = {
         data: null,
-        error: { code: FetchErrorCode.FAILURE, message: 'Error' },
+        error: { code: FetchErrorCode.INTERNAL_ERROR, message: 'Error' },
       }
 
       const result = toNextResponse(response)
@@ -289,7 +298,7 @@ describe('api-handlers', () => {
         expect(result).toEqual({
           status: 401,
           error: {
-            code: FetchErrorCode.AUTH,
+            code: FetchErrorCode.NOT_AUTHENTICATED,
             message: 'User not authenticated.',
           },
           data: null,
@@ -355,7 +364,7 @@ describe('api-handlers', () => {
           status: 403,
           data: null,
           error: {
-            code: FetchErrorCode.AUTH,
+            code: FetchErrorCode.NOT_AUTHORIZED,
             message: 'Unauthorized to perform this action.',
           },
         })
@@ -397,7 +406,7 @@ describe('api-handlers', () => {
           status: 500,
           data: null,
           error: {
-            code: FetchErrorCode.FAILURE,
+            code: FetchErrorCode.INTERNAL_ERROR,
             message: 'Authorization check failed.',
           },
         })
@@ -625,7 +634,7 @@ describe('api-handlers', () => {
           status: 403,
           data: null,
           error: {
-            code: FetchErrorCode.AUTH,
+            code: FetchErrorCode.NOT_AUTHORIZED,
             message: 'Access denied',
           },
         })
@@ -667,7 +676,7 @@ describe('api-handlers', () => {
           status: 500,
           data: null,
           error: {
-            code: FetchErrorCode.FAILURE,
+            code: FetchErrorCode.INTERNAL_ERROR,
             message: 'Something went wrong',
           },
         })
@@ -687,7 +696,7 @@ describe('api-handlers', () => {
           status: 500,
           data: null,
           error: {
-            code: FetchErrorCode.FAILURE,
+            code: FetchErrorCode.INTERNAL_ERROR,
             message: 'An unknown failure occurred.',
           },
         })
@@ -791,6 +800,363 @@ describe('api-handlers', () => {
 
         expect(result.data).toEqual({ userId: mockUser.id })
         expect(handlerWithParams).toHaveBeenCalledWith({ user: mockUser })
+      })
+    })
+
+    describe('Prisma error handling', () => {
+      beforeEach(() => {
+        mockIsAuthenticated.mockResolvedValue({ allowed: true, user: mockUser })
+      })
+
+      it('should handle PrismaClientKnownRequestError P2002 unique constraint', async () => {
+        const prismaError = new PrismaClientKnownRequestError(
+          'Unique constraint failed',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['email'] },
+          },
+        )
+        mockHandler.mockRejectedValue(prismaError)
+
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {})
+
+        const result = await createApiHandler(mockHandler)
+
+        expect(result).toEqual({
+          status: 409,
+          data: null,
+          error: {
+            code: FetchErrorCode.DUPLICATE,
+            message: 'A record with this email already exists.',
+          },
+        })
+        expect(consoleSpy).toHaveBeenCalledWith(
+          'API Handler Error:',
+          prismaError,
+        )
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should handle PrismaClientKnownRequestError P2025 record not found', async () => {
+        const prismaError = new PrismaClientKnownRequestError(
+          'Record not found',
+          {
+            code: 'P2025',
+            clientVersion: '5.0.0',
+          },
+        )
+        mockHandler.mockRejectedValue(prismaError)
+
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {})
+
+        const result = await createApiHandler(mockHandler)
+
+        expect(result).toEqual({
+          status: 404,
+          data: null,
+          error: {
+            code: FetchErrorCode.NOT_FOUND,
+            message: 'The requested record could not be found.',
+          },
+        })
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should handle PrismaClientKnownRequestError P2003 foreign key constraint', async () => {
+        const prismaError = new PrismaClientKnownRequestError(
+          'Foreign key constraint failed',
+          {
+            code: 'P2003',
+            clientVersion: '5.0.0',
+            meta: { field_name: 'userId' },
+          },
+        )
+        mockHandler.mockRejectedValue(prismaError)
+
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {})
+
+        const result = await createApiHandler(mockHandler)
+
+        expect(result).toEqual({
+          status: 400,
+          data: null,
+          error: {
+            code: FetchErrorCode.INVALID_DATA,
+            message: 'Invalid reference: the userId record does not exist.',
+          },
+        })
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should handle PrismaClientKnownRequestError P2024 connection timeout', async () => {
+        const prismaError = new PrismaClientKnownRequestError(
+          'Connection pool timeout',
+          {
+            code: 'P2024',
+            clientVersion: '5.0.0',
+          },
+        )
+        mockHandler.mockRejectedValue(prismaError)
+
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {})
+
+        const result = await createApiHandler(mockHandler)
+
+        expect(result).toEqual({
+          status: 503,
+          data: null,
+          error: {
+            code: FetchErrorCode.DATABASE_FAILURE,
+            message: 'Database connection pool timeout.',
+          },
+        })
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should handle PrismaClientValidationError', async () => {
+        const prismaError = new PrismaClientValidationError(
+          'Invalid data provided',
+          {
+            clientVersion: '5.0.0',
+          },
+        )
+        mockHandler.mockRejectedValue(prismaError)
+
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {})
+
+        const result = await createApiHandler(mockHandler)
+
+        expect(result).toEqual({
+          status: 400,
+          data: null,
+          error: {
+            code: FetchErrorCode.INVALID_DATA,
+            message: 'Invalid data provided to the database.',
+          },
+        })
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should handle PrismaClientUnknownRequestError', async () => {
+        const prismaError = new PrismaClientUnknownRequestError(
+          'Unknown error occurred',
+          {
+            clientVersion: '5.0.0',
+          },
+        )
+        mockHandler.mockRejectedValue(prismaError)
+
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {})
+
+        const result = await createApiHandler(mockHandler)
+
+        expect(result).toEqual({
+          status: 500,
+          data: null,
+          error: {
+            code: FetchErrorCode.DATABASE_FAILURE,
+            message: 'An unknown database error occurred.',
+          },
+        })
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should handle connection errors ECONNREFUSED', async () => {
+        const connectionError = {
+          code: 'ECONNREFUSED',
+          message: 'Connection refused',
+        }
+        mockHandler.mockRejectedValue(connectionError)
+
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {})
+
+        const result = await createApiHandler(mockHandler)
+
+        expect(result).toEqual({
+          status: 503,
+          data: null,
+          error: {
+            code: FetchErrorCode.DATABASE_FAILURE,
+            message: 'Database connection failed.',
+          },
+        })
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should handle connection errors ENOTFOUND', async () => {
+        const connectionError = { code: 'ENOTFOUND', message: 'Host not found' }
+        mockHandler.mockRejectedValue(connectionError)
+
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {})
+
+        const result = await createApiHandler(mockHandler)
+
+        expect(result).toEqual({
+          status: 503,
+          data: null,
+          error: {
+            code: FetchErrorCode.DATABASE_FAILURE,
+            message: 'Database connection failed.',
+          },
+        })
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should handle DatabaseConstraintError', async () => {
+        const constraintError = new DatabaseConstraintError(
+          'Unique constraint violated',
+          'unique',
+          'email',
+        )
+        mockHandler.mockRejectedValue(constraintError)
+
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {})
+
+        const result = await createApiHandler(mockHandler)
+
+        expect(result).toEqual({
+          status: 409,
+          data: null,
+          error: {
+            code: FetchErrorCode.DUPLICATE,
+            message: 'Unique constraint violated',
+          },
+        })
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should handle DatabaseConnectionError', async () => {
+        const connectionError = new DatabaseConnectionError(
+          'Connection pool exhausted',
+        )
+        mockHandler.mockRejectedValue(connectionError)
+
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {})
+
+        const result = await createApiHandler(mockHandler)
+
+        expect(result).toEqual({
+          status: 503,
+          data: null,
+          error: {
+            code: FetchErrorCode.DATABASE_FAILURE,
+            message: 'Connection pool exhausted',
+          },
+        })
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should handle multiple different Prisma error codes', async () => {
+        const testCases = [
+          {
+            error: new PrismaClientKnownRequestError(
+              'Null constraint violated',
+              {
+                code: 'P2011',
+                clientVersion: '5.0.0',
+                meta: { constraint: 'name' },
+              },
+            ),
+            expected: {
+              status: 400,
+              error: {
+                code: FetchErrorCode.INVALID_DATA,
+                message: 'Required field name cannot be null.',
+              },
+            },
+          },
+          {
+            error: new PrismaClientKnownRequestError('Missing required value', {
+              code: 'P2012',
+              clientVersion: '5.0.0',
+              meta: { path: 'email' },
+            }),
+            expected: {
+              status: 400,
+              error: {
+                code: FetchErrorCode.INVALID_DATA,
+                message: 'Required field email is missing.',
+              },
+            },
+          },
+          {
+            error: new PrismaClientKnownRequestError('Invalid ID', {
+              code: 'P2014',
+              clientVersion: '5.0.0',
+            }),
+            expected: {
+              status: 400,
+              error: {
+                code: FetchErrorCode.INVALID_DATA,
+                message: 'The provided ID is invalid.',
+              },
+            },
+          },
+          {
+            error: new PrismaClientKnownRequestError(
+              'Related record not found',
+              {
+                code: 'P2015',
+                clientVersion: '5.0.0',
+              },
+            ),
+            expected: {
+              status: 404,
+              error: {
+                code: FetchErrorCode.NOT_FOUND,
+                message: 'A related record could not be found.',
+              },
+            },
+          },
+        ]
+
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {})
+
+        for (const testCase of testCases) {
+          mockHandler.mockRejectedValue(testCase.error)
+
+          const result = await createApiHandler(mockHandler)
+
+          expect(result).toEqual({
+            ...testCase.expected,
+            data: null,
+          })
+        }
+
+        consoleSpy.mockRestore()
       })
     })
   })

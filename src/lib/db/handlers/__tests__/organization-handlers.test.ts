@@ -145,7 +145,7 @@ describe('organization-handlers', () => {
       expect(result).toEqual({
         status: 401,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHENTICATED,
           message: 'User not authenticated.',
         },
         data: null,
@@ -165,7 +165,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Database connection failed',
         },
       })
@@ -219,7 +219,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Organization ID is required',
         },
       })
@@ -240,7 +240,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Database error',
         },
       })
@@ -287,7 +287,7 @@ describe('organization-handlers', () => {
         status: 403,
         data: null,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHORIZED,
           message: 'Unauthorized to update this organization.',
         },
       })
@@ -330,7 +330,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Authorization check failed.',
         },
       })
@@ -365,7 +365,7 @@ describe('organization-handlers', () => {
         status: 403,
         data: null,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHORIZED,
           message: 'Unauthorized to delete this organization.',
         },
       })
@@ -383,7 +383,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Authorization check failed.',
         },
       })
@@ -521,7 +521,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Failed to create organization',
         },
       })
@@ -570,7 +570,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Organization ID is required',
         },
       })
@@ -591,7 +591,7 @@ describe('organization-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Failed to get permissions',
         },
       })

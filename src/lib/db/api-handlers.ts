@@ -1,44 +1,24 @@
 // sort-imports-ignore
 import 'server-only'
 
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientUnknownRequestError,
+  PrismaClientValidationError,
+} from '@prisma/client/runtime/library'
 import { NextResponse } from 'next/server'
+
+import {
+  AuthorizationError,
+  DatabaseConnectionError,
+  DatabaseConstraintError,
+  NotFoundError,
+  parsePrismaError,
+  ValidationError,
+} from '@/lib/db/errors'
 
 import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
-import { ZodFieldErrors } from '@/utils/zod'
-
-/**
- * Custom error class for validation errors with typed details.
- */
-export class ValidationError extends Error {
-  public readonly details: ZodFieldErrors
-
-  constructor(message: string, details: ZodFieldErrors) {
-    super(message)
-    this.name = 'ValidationError'
-    this.details = details
-  }
-}
-
-/**
- * Custom error class for authorization errors.
- */
-export class AuthorizationError extends Error {
-  constructor(message: string = 'Unauthorized to perform this action.') {
-    super(message)
-    this.name = 'AuthorizationError'
-  }
-}
-
-/**
- * Custom error class for not found errors.
- */
-export class NotFoundError extends Error {
-  constructor(message: string = 'The requested resource could not be found.') {
-    super(message)
-    this.name = 'NotFoundError'
-  }
-}
 
 /**
  * Utility to add user ID fields to payload.
@@ -70,7 +50,7 @@ export const withUserFields = <T extends Record<string, any>>(
 export const toNextResponse = <TData = any>(
   result: FetchResponse<TData>,
 ): NextResponse => {
-  const status = result?.status || (result?.error ? 500 : 200)
+  const status = result?.status ?? (result?.error ? 500 : 200)
   return NextResponse.json(result, { status })
 }
 
@@ -140,7 +120,7 @@ export const createApiHandler = async <TData = any>(
       return {
         status: 401,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHENTICATED,
           message: authRequiredMessage,
         },
         data: null,
@@ -158,7 +138,7 @@ export const createApiHandler = async <TData = any>(
           status: 403,
           data: null,
           error: {
-            code: FetchErrorCode.AUTH,
+            code: FetchErrorCode.NOT_AUTHORIZED,
             message: unauthorizedMessage,
           },
         }
@@ -171,7 +151,7 @@ export const createApiHandler = async <TData = any>(
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: authCheckFailedMessage,
         },
       }
@@ -220,7 +200,7 @@ export const createApiHandler = async <TData = any>(
         status: 403,
         data: null,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHORIZED,
           message: error?.message,
         },
       }
@@ -238,7 +218,50 @@ export const createApiHandler = async <TData = any>(
       }
     }
 
-    /** @todo Handle prisma errors? */
+    // Handle database constraint errors
+    if (error instanceof DatabaseConstraintError) {
+      return {
+        status: 409,
+        data: null,
+        error: {
+          code: FetchErrorCode.DUPLICATE,
+          message: error?.message,
+        },
+      }
+    }
+
+    // Handle database connection errors
+    if (error instanceof DatabaseConnectionError) {
+      return {
+        status: 503,
+        data: null,
+        error: {
+          code: FetchErrorCode.DATABASE_FAILURE,
+          message: error?.message,
+        },
+      }
+    }
+
+    // Handle Prisma errors with detailed parsing
+    if (
+      error instanceof PrismaClientKnownRequestError ||
+      error instanceof PrismaClientUnknownRequestError ||
+      error instanceof PrismaClientValidationError ||
+      (error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND'))
+    ) {
+      const prismaError = parsePrismaError(error)
+      return {
+        status: prismaError.status,
+        data: null,
+        error: {
+          code: prismaError.code,
+          message: prismaError.message,
+        },
+      }
+    }
 
     // Handle generic errors
     const errorMessage =
@@ -248,7 +271,7 @@ export const createApiHandler = async <TData = any>(
       status: 500,
       data: null,
       error: {
-        code: FetchErrorCode.FAILURE,
+        code: FetchErrorCode.INTERNAL_ERROR,
         message: errorMessage,
       },
     }

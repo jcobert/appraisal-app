@@ -2,7 +2,7 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { User } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { toNextResponse } from '@/lib/api-handlers'
+import { toNextResponse } from '@/lib/db/api-handlers'
 import { db } from '@/lib/db/client'
 import { handleGetActiveUser } from '@/lib/db/handlers/user-handlers'
 import { userProfileSchema } from '@/lib/db/schemas/user'
@@ -38,7 +38,7 @@ export const PUT = async (req: NextRequest) => {
     return NextResponse.json(
       {
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHENTICATED,
           message: 'User not authenticated.',
         },
         data: null,
@@ -54,7 +54,7 @@ export const PUT = async (req: NextRequest) => {
     if (payload?.accountId !== user.id) {
       return NextResponse.json(
         {
-          error: { code: FetchErrorCode.AUTH, message: 'User not authorized.' },
+          error: { code: FetchErrorCode.NOT_AUTHORIZED, message: 'User not authorized.' },
           data: null,
         } satisfies FetchResponse<User>,
         { status: 403 },
@@ -164,7 +164,7 @@ export const PUT = async (req: NextRequest) => {
       {
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'An unknown failure occurred.',
         },
       } satisfies FetchResponse<User>,

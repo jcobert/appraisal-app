@@ -1,9 +1,13 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 
+import { toNextResponse } from '@/lib/db/api-handlers'
+import {
+  handleDeleteOrganization,
+  handleGetOrganization,
+  handleUpdateOrganization,
+} from '@/lib/db/handlers/organization-handlers'
 import { organizationSchema } from '@/lib/db/schemas/organization'
-import { handleGetOrganization, handleUpdateOrganization, handleDeleteOrganization } from '@/lib/db/handlers/organization-handlers'
-import { toNextResponse } from '@/lib/api-handlers'
 
 // =============
 //      GET
@@ -25,7 +29,7 @@ export const PUT = async (
   { params }: { params: Promise<{ id: string }> },
 ) => {
   const organizationId = (await params)?.id
-  const payload = await req.json() as z.infer<typeof organizationSchema.api>
+  const payload = (await req.json()) as z.infer<typeof organizationSchema.api>
 
   const result = await handleUpdateOrganization(organizationId, payload)
   return toNextResponse(result)
@@ -39,7 +43,7 @@ export const DELETE = async (
   { params }: { params: Promise<{ id: string }> },
 ) => {
   const organizationId = (await params)?.id
-  
+
   const result = await handleDeleteOrganization(organizationId)
   return toNextResponse(result)
 }

@@ -1,15 +1,24 @@
+import { exists } from '@/utils/general'
 import { ZodFieldErrors } from '@/utils/zod'
 
 export enum FetchErrorCode {
-  AUTH = 'AUTH',
+  NOT_AUTHENTICATED = 'NOT_AUTHENTICATED',
+  NOT_AUTHORIZED = 'NOT_AUTHORIZED',
   NOT_FOUND = 'NOT_FOUND',
   INVALID_DATA = 'INVALID_DATA',
   DUPLICATE = 'DUPLICATE',
   DATABASE_FAILURE = 'DATABASE_FAILURE',
-  FAILURE = 'FAILURE',
+  NETWORK_ERROR = 'NETWORK_ERROR',
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
 }
 
-export type FetchMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+export enum FetchMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  PATCH = 'PATCH',
+  DELETE = 'DELETE',
+}
 
 export type FetchResponse<TData = any> = {
   status?: number
@@ -49,6 +58,99 @@ export const getAbsoluteUrl = (path?: string) => {
   return `${base}${path}`
 }
 
+/** Generic fetch function with error handling and server-side cookie support. */
+const createFetchFunction = async <
+  TPayload extends Record<string, unknown> = Record<string, unknown>,
+  TResData = unknown,
+>({
+  url,
+  method,
+  payload,
+  options,
+}: {
+  url: string
+  method: `${FetchMethod}`
+  payload?: TPayload
+  options?: Omit<RequestInit, 'method' | 'body'>
+}): Promise<FetchResponse<TResData>> => {
+  try {
+    const serverSideHeaders = await getServerSideHeaders()
+    const hasBody =
+      exists(payload) &&
+      [FetchMethod.PATCH, FetchMethod.POST, FetchMethod.PUT].includes(method)
+
+    const fetchConfig: RequestInit = {
+      method,
+      headers: {
+        ...(hasBody && { 'Content-Type': 'application/json' }),
+        ...serverSideHeaders,
+        ...options?.headers,
+      },
+      ...(hasBody && { body: JSON.stringify(payload) }),
+      ...options,
+    }
+
+    const res = await fetch(url, fetchConfig)
+
+    // Try to parse response as JSON
+    let responseData: FetchResponse<TResData>
+    try {
+      responseData = (await res.json()) as FetchResponse<TResData>
+    } catch (parseError) {
+      // If JSON parsing fails, create a generic error response
+      // eslint-disable-next-line no-console
+      console.error('Failed to parse API response as JSON:', parseError)
+      return {
+        data: null,
+        status: res.status || 500,
+        error: {
+          code: FetchErrorCode.INTERNAL_ERROR,
+          message: 'Failed to parse server response.',
+        },
+      }
+    }
+
+    return {
+      status: res.status,
+      ...responseData,
+    }
+  } catch (error) {
+    // Only catch actual network/fetch errors here
+    // eslint-disable-next-line no-console
+    console.error('Network or internal fetch error:', error)
+
+    // Network connectivity issues - these should get status 0
+    if (
+      error instanceof TypeError ||
+      error instanceof DOMException ||
+      (error &&
+        typeof error === 'object' &&
+        'name' in error &&
+        error.name === 'AbortError')
+    ) {
+      return {
+        data: null,
+        status: 0,
+        error: {
+          code: FetchErrorCode.NETWORK_ERROR,
+          message:
+            'Network connection failed. Please check your internet connection.',
+        },
+      }
+    }
+
+    // Programming errors or unexpected system issues - these should get status 500
+    return {
+      data: null,
+      status: 500,
+      error: {
+        code: FetchErrorCode.INTERNAL_ERROR,
+        message: 'An unexpected error occurred.',
+      },
+    }
+  }
+}
+
 const GET = async <TData = Record<string, unknown>>({
   url,
   options,
@@ -56,39 +158,12 @@ const GET = async <TData = Record<string, unknown>>({
   url: string
   options?: Omit<RequestInit, 'method'>
 }): Promise<FetchResponse<TData>> => {
-  try {
-    const serverSideHeaders = await getServerSideHeaders()
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        ...serverSideHeaders,
-        ...options?.headers,
-      },
-      ...options,
-    })
-    const responseData = (await res.json()) as FetchResponse<TData>
-    return {
-      status: res.status,
-      ...responseData,
-    }
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error)
-    return {
-      data: null,
-      status: 500,
-      error: {
-        code: FetchErrorCode.FAILURE,
-        message: 'An unknown failure occurred.',
-      },
-    }
-  }
+  return createFetchFunction<never, TData>({ url, method: 'GET', options })
 }
 
 const POST = async <
   TPayload extends Record<string, unknown> = Record<string, unknown>,
-  // TResData extends Record<string, unknown> = Record<string, unknown>,
-  TResData extends unknown = unknown,
+  TResData = unknown,
 >({
   url,
   payload,
@@ -98,35 +173,12 @@ const POST = async <
   payload: TPayload
   options?: Omit<RequestInit, 'method' | 'body'>
 }): Promise<FetchResponse<TResData>> => {
-  try {
-    const serverSideHeaders = await getServerSideHeaders()
-    const res = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: {
-        'Content-Type': 'application/json',
-        ...serverSideHeaders,
-        ...options?.headers,
-      },
-      ...options,
-    })
-    const responseData = (await res.json()) as FetchResponse<TResData>
-    return {
-      status: res.status,
-      ...responseData,
-    }
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error)
-    return {
-      data: null,
-      status: 500,
-      error: {
-        code: FetchErrorCode.FAILURE,
-        message: 'An unknown failure occurred.',
-      },
-    }
-  }
+  return createFetchFunction<TPayload, TResData>({
+    url,
+    method: 'POST',
+    payload,
+    options,
+  })
 }
 
 const PUT = async <
@@ -141,35 +193,12 @@ const PUT = async <
   payload: TPayload
   options?: Omit<RequestInit, 'method' | 'body'>
 }): Promise<FetchResponse<TResData>> => {
-  try {
-    const serverSideHeaders = await getServerSideHeaders()
-    const res = await fetch(url, {
-      method: 'PUT',
-      body: JSON.stringify(payload),
-      headers: {
-        'Content-Type': 'application/json',
-        ...serverSideHeaders,
-        ...options?.headers,
-      },
-      ...options,
-    })
-    const responseData = (await res.json()) as FetchResponse<TResData>
-    return {
-      status: res.status,
-      ...responseData,
-    }
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error)
-    return {
-      data: null,
-      status: 500,
-      error: {
-        code: FetchErrorCode.FAILURE,
-        message: 'An unknown failure occurred.',
-      },
-    }
-  }
+  return createFetchFunction<TPayload, TResData>({
+    url,
+    method: 'PUT',
+    payload,
+    options,
+  })
 }
 
 const PATCH = async <
@@ -184,35 +213,12 @@ const PATCH = async <
   payload: TPayload
   options?: Omit<RequestInit, 'method' | 'body'>
 }): Promise<FetchResponse<TResData>> => {
-  try {
-    const serverSideHeaders = await getServerSideHeaders()
-    const res = await fetch(url, {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-      headers: {
-        'Content-Type': 'application/json',
-        ...serverSideHeaders,
-        ...options?.headers,
-      },
-      ...options,
-    })
-    const responseData = (await res.json()) as FetchResponse<TResData>
-    return {
-      status: res.status,
-      ...responseData,
-    }
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error)
-    return {
-      data: null,
-      status: 500,
-      error: {
-        code: FetchErrorCode.FAILURE,
-        message: 'An unknown failure occurred.',
-      },
-    }
-  }
+  return createFetchFunction<TPayload, TResData>({
+    url,
+    method: 'PATCH',
+    payload,
+    options,
+  })
 }
 
 const DELETE = async <
@@ -224,36 +230,13 @@ const DELETE = async <
   url: string
   options?: Omit<RequestInit, 'method' | 'body'>
 }): Promise<FetchResponse<TResData>> => {
-  try {
-    const serverSideHeaders = await getServerSideHeaders()
-    const res = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        ...serverSideHeaders,
-        ...options?.headers,
-      },
-      ...options,
-    })
-    const responseData = (await res.json()) as FetchResponse<TResData>
-    return {
-      status: res.status,
-      ...responseData,
-    }
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error)
-    return {
-      data: null,
-      status: 500,
-      error: {
-        code: FetchErrorCode.FAILURE,
-        message: 'An unknown failure occurred.',
-      },
-    }
-  }
+  return createFetchFunction<never, TResData>({
+    url,
+    method: 'DELETE',
+    options,
+  })
 }
 
 const coreFetch = { GET, POST, PUT, PATCH, DELETE }
 
 export { coreFetch }
-export default coreFetch

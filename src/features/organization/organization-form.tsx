@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils'
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 import { homeUrl } from '@/utils/nav'
-import { toastyRequest } from '@/utils/toast'
 
 import Form from '@/components/form/form'
 import FormActionBar from '@/components/form/form-action-bar'
@@ -89,21 +88,15 @@ const OrganizationForm: FC<Props> = ({
     const payload = isUpdate ? data : { ...organization, ...data }
 
     if (isUpdate) {
-      await toastyRequest(() => updateOrganization.mutateAsync(payload))
+      await updateOrganization.mutateAsync(payload)
     } else {
-      await toastyRequest(
-        () =>
-          createOrganization.mutateAsync(payload, {
-            onSuccess: (res) => {
-              if (successful(res?.status)) {
-                router.replace(prevUrl)
-              }
-            },
-          }),
-        {
-          success: () => `Organization ${payload?.name} has been created!`,
+      await createOrganization.mutateAsync(payload, {
+        onSuccess: (res) => {
+          if (successful(res?.status)) {
+            router.replace(prevUrl)
+          }
         },
-      )
+      })
     }
   }
 

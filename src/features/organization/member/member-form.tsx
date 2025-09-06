@@ -9,7 +9,6 @@ import { orgMemberSchema } from '@/lib/db/schemas/org-member'
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 import { fullName } from '@/utils/string'
-import { toastyRequest } from '@/utils/toast'
 
 import FormActionBar from '@/components/form/form-action-bar'
 import Banner from '@/components/general/banner'
@@ -76,17 +75,15 @@ const MemberForm: FC<Props> = ({
       return
     }
     setIsBusy(true)
-    await toastyRequest(() =>
-      updateOrgMember.mutateAsync(
-        { roles: data?.roles },
-        {
-          onSuccess: ({ status }) => {
-            if (successful(status)) {
-              onOpenChange(false)
-            }
-          },
+    await updateOrgMember.mutateAsync(
+      { roles: data?.roles },
+      {
+        onSuccess: ({ status }) => {
+          if (successful(status)) {
+            onOpenChange(false)
+          }
         },
-      ),
+      },
     )
     setIsBusy(false)
   }

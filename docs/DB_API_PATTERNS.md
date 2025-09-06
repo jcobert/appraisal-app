@@ -7,16 +7,19 @@ This document outlines the comprehensive architecture for database and API opera
 ## Architecture Layers
 
 ### 1. API Routes Layer
+
 **Location**: `/src/app/api/core/`
 **Purpose**: Thin HTTP interface layer
 **Responsibility**: Request/response handling only
 
-### 2. Handlers Layer  
+### 2. Handlers Layer
+
 **Location**: `/src/lib/db/handlers/`
 **Purpose**: Business logic, authentication, validation
 **Responsibility**: Core application logic that can be used anywhere
 
 ### 3. Query Functions Layer
+
 **Location**: `/src/lib/db/queries/`
 **Purpose**: Pure database operations
 **Responsibility**: Database interactions only
@@ -24,18 +27,22 @@ This document outlines the comprehensive architecture for database and API opera
 ## Core Principles
 
 ### 🎯 **Single Source of Truth**
+
 Handlers contain the business logic once, used everywhere:
+
 - API routes
 - Server-side page prefetching
 - Server components
 - Server actions
 
 ### 🔒 **Authentication at the Right Level**
+
 - **Handlers**: Contain authentication via `createApiHandler`
 - **Query Functions**: Pure database operations (no redundant auth when only used by handlers)
 - **API Routes**: Delegate all auth to handlers
 
 ### ✅ **Consistent Error Handling**
+
 Standardized error responses across all endpoints and server operations.
 
 ## Implementation Patterns
@@ -89,7 +96,10 @@ export async function handleCreateUser(
 ```typescript
 // /src/app/api/core/user/route.ts
 import { toNextResponse } from '@/lib/api-handlers'
-import { handleGetUsers, handleCreateUser } from '@/lib/db/handlers/user-handlers'
+import {
+  handleCreateUser,
+  handleGetUsers,
+} from '@/lib/db/handlers/user-handlers'
 
 export const GET = async (_req: NextRequest) => {
   const result = await handleGetUsers()
@@ -118,9 +128,7 @@ export const getUserProfiles = async (
 }
 
 // Pure CRUD operations (used only by handlers)
-export const createUserProfile = async (
-  params: Prisma.UserCreateArgs,
-) => {
+export const createUserProfile = async (params: Prisma.UserCreateArgs) => {
   const data = await db.user.create(params)
   return data
 }
@@ -171,7 +179,7 @@ const Page: FC<Props> = async () => {
 // Direct handler usage in server components
 const ServerComponent = async () => {
   const result = await handleGetUsers()
-  
+
   if (!successful(result.status)) {
     return <ErrorComponent message={result.error?.message} />
   }
@@ -194,7 +202,7 @@ export async function createUserAction(formData: FormData) {
   }
 
   const result = await handleCreateUser(payload)
-  
+
   if (!successful(result.status)) {
     return { error: result.error }
   }
@@ -215,7 +223,7 @@ export async function handleGetUser(userId: string) {
     // - Authentication check
     // - User session extraction
     // - Error standardization
-    
+
     if (!userId) {
       throw new Error('User ID is required')
     }
@@ -281,12 +289,14 @@ type FetchResponse<TData = any> = {
 
 ```typescript
 enum FetchErrorCode {
-  AUTH = 'AUTH',
-  NOT_FOUND = 'NOT_FOUND', 
+  NOT_AUTHENTICATED = 'NOT_AUTHENTICATED', // 401 - User needs to sign in
+  NOT_AUTHORIZED = 'NOT_AUTHORIZED', // 403 - User lacks permission
+  NOT_FOUND = 'NOT_FOUND',
   INVALID_DATA = 'INVALID_DATA',
   DUPLICATE = 'DUPLICATE',
   DATABASE_FAILURE = 'DATABASE_FAILURE',
-  FAILURE = 'FAILURE',
+  NETWORK_ERROR = 'NETWORK_ERROR', // Network/connectivity issues
+  INTERNAL_ERROR = 'INTERNAL_ERROR', // Server/application errors
 }
 ```
 
@@ -294,11 +304,11 @@ enum FetchErrorCode {
 
 The `createApiHandler` automatically handles:
 
-- **Authentication failures** → `401` with `AUTH` code
-- **Authorization failures** → `403` with `AUTH` code  
+- **Authentication failures** → `401` with `NOT_AUTHENTICATED` code
+- **Authorization failures** → `403` with `NOT_AUTHORIZED` code
 - **Validation errors** → `400` with `INVALID_DATA` code
 - **Not found (null returns)** → `404` with `NOT_FOUND` code
-- **Generic errors** → `500` with `FAILURE` code
+- **Generic errors** → `500` with `INTERNAL_ERROR` code
 
 ## Validation Patterns
 
@@ -316,10 +326,7 @@ export const userProfileSchema = {
 // Usage in handlers
 const validation = validatePayload(userProfileSchema.api, payload)
 if (!validation?.success) {
-  throw new ValidationError(
-    'Invalid data provided.',
-    validation.errors || {},
-  )
+  throw new ValidationError('Invalid data provided.', validation.errors || {})
 }
 ```
 
@@ -363,7 +370,7 @@ const mockGetUserProfiles = getUserProfiles as jest.MockedFunction<
 describe('user-handlers', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    
+
     mockIsAuthenticated.mockResolvedValue({
       allowed: true,
       user: mockUser,
@@ -413,23 +420,28 @@ src/
 ## Benefits
 
 ### 🔄 **Code Reuse**
+
 - Same business logic for API routes, server components, and server actions
 - No duplication of authentication, validation, or error handling logic
 
 ### 🔒 **Security**
+
 - Centralized authentication and authorization
 - Consistent security patterns across all access methods
 
-### 🧪 **Testability**  
+### 🧪 **Testability**
+
 - Business logic isolated in testable handlers
 - Comprehensive test coverage with proper mocking
 
 ### 🛠 **Maintainability**
+
 - Single place to update business logic
 - Consistent error handling and response formats
 - Clear separation of concerns
 
 ### 📊 **Type Safety**
+
 - Full TypeScript support across all layers
 - Strongly typed request/response patterns
 - Exported types for consuming code
@@ -439,13 +451,14 @@ src/
 ### Converting Direct DB Calls to Handlers
 
 ❌ **Before** (Direct database calls in API routes):
+
 ```typescript
 export const GET = async () => {
   const { allowed } = await isAuthenticated()
   if (!allowed) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  
+
   try {
     const users = await db.user.findMany()
     return NextResponse.json({ data: users })
@@ -456,6 +469,7 @@ export const GET = async () => {
 ```
 
 ✅ **After** (Using handlers):
+
 ```typescript
 export const GET = async () => {
   const result = await handleGetUsers()
@@ -466,11 +480,13 @@ export const GET = async () => {
 ### Converting require() to ES6 Imports in Tests
 
 ❌ **Before**:
+
 ```typescript
 const { getUserProfiles } = require('@/lib/db/queries/user')
 ```
 
 ✅ **After**:
+
 ```typescript
 import { getUserProfiles } from '@/lib/db/queries/user'
 

@@ -156,7 +156,7 @@ describe('organization-member-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Database error',
         },
       })
@@ -210,7 +210,7 @@ describe('organization-member-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Database error',
         },
       })
@@ -264,7 +264,7 @@ describe('organization-member-handlers', () => {
         status: 403,
         data: null,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHORIZED,
           message: 'Unauthorized to update organization members.',
         },
       })
@@ -318,7 +318,7 @@ describe('organization-member-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Authorization check failed.',
         },
       })
@@ -370,7 +370,7 @@ describe('organization-member-handlers', () => {
         status: 403,
         data: null,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHORIZED,
           message: 'Unauthorized to update your organization membership.',
         },
       })
@@ -435,7 +435,7 @@ describe('organization-member-handlers', () => {
         status: 403,
         data: null,
         error: {
-          code: FetchErrorCode.AUTH,
+          code: FetchErrorCode.NOT_AUTHORIZED,
           message: 'Unauthorized to delete organization members.',
         },
       })
@@ -453,7 +453,7 @@ describe('organization-member-handlers', () => {
         status: 500,
         data: null,
         error: {
-          code: FetchErrorCode.FAILURE,
+          code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Authorization check failed.',
         },
       })

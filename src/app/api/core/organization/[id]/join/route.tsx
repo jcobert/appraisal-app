@@ -108,7 +108,7 @@ export const POST = async (
       return NextResponse.json(
         {
           error: {
-            code: FetchErrorCode.AUTH,
+            code: FetchErrorCode.NOT_AUTHENTICATED,
             message: 'User not authenticated.',
           },
           data: null,
@@ -201,7 +201,7 @@ export const POST = async (
     console.error(error)
     return NextResponse.json(
       {
-        error: { code: FetchErrorCode.FAILURE },
+        error: { code: FetchErrorCode.INTERNAL_ERROR },
       } satisfies FetchResponse,
       { status: 500 },
     )

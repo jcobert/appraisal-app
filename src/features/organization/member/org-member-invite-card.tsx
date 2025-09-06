@@ -3,13 +3,11 @@ import { upperFirst } from 'lodash'
 import { FC, useState } from 'react'
 
 import { successful } from '@/utils/fetch'
-import { fullName } from '@/utils/string'
 import { cn } from '@/utils/style'
-import { toastyRequest } from '@/utils/toast'
 
 import Confirmation from '@/components/layout/confirmation'
 
-import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
+import { useOrganizationInvite } from '@/features/organization/hooks/use-organization-invite'
 import MemberInviteForm from '@/features/organization/invitation/member-invite-form'
 import OrgMemberCardBase, {
   OrgMemberCardBaseProps,
@@ -25,7 +23,7 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
   const [cancelOpen, setCancelOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
 
-  const { deleteOrgInvitation } = useOrganizationMutations({
+  const { deleteInvitation } = useOrganizationInvite({
     organizationId: invitation?.organizationId,
     inviteId: invitation?.id,
   })
@@ -38,12 +36,10 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
         title='Cancel Invitation'
         description='Are you sure you want to cancel this invitation?'
         onConfirm={async ({ closeModal }) => {
-          const res = await toastyRequest(
-            () => deleteOrgInvitation.mutateAsync({}),
-            {
-              success: `Invitation for ${fullName(inviteeFirstName, inviteeLastName)} has been canceled.`,
-            },
-          )
+          const res = await deleteInvitation.mutateAsync({
+            inviteeFirstName,
+            inviteeLastName,
+          })
           if (successful(res?.status)) {
             closeModal()
           }

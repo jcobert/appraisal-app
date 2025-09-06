@@ -25,7 +25,6 @@ type UseOrganizationMutationsProps = {
 export const useOrganizationMutations = ({
   organizationId,
   memberId,
-  inviteId,
   options,
 }: UseOrganizationMutationsProps = {}) => {
   const queryClient = useQueryClient()
@@ -49,6 +48,12 @@ export const useOrganizationMutations = ({
   const createOrganization = useCoreMutation<Payload, Organization>({
     url: CORE_API_ENDPOINTS.organization,
     method: 'POST',
+    toast: {
+      messages: {
+        success: ({ context: payload }) =>
+          `Organization ${payload?.name} has been created!`,
+      },
+    },
     ...options,
     onSuccess: async ({ status }) => {
       if (successful(status)) {
@@ -107,47 +112,11 @@ export const useOrganizationMutations = ({
     },
   })
 
-  const deleteOrgInvitation = useCoreMutation<{}, OrgInvitation>({
-    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/invite/${inviteId}`,
-    method: 'DELETE',
-    ...(options as Omit<
-      UseCoreMutationProps<Partial<OrgInvitation> | {}, OrgInvitation>,
-      'url' | 'method'
-    >),
-    onSuccess: async ({ status }) => {
-      if (successful(status)) {
-        await refreshData()
-      }
-    },
-  })
-
-  // const isPending =
-  //   createOrganization.isPending ||
-  //   updateOrganization.isPending ||
-  //   deleteOrganization.isPending ||
-  //   deleteOrgMember.isPending ||
-  //   deleteOrgInvitation.isPending
-
-  // const isSuccess =
-  //   createOrganization.isSuccess ||
-  //   updateOrganization.isSuccess ||
-  //   deleteOrganization.isSuccess ||
-  //   deleteOrgMember.isSuccess ||
-  //   deleteOrgInvitation.isSuccess
-
-  // const isError =
-  //   createOrganization.isError ||
-  //   updateOrganization.isError ||
-  //   deleteOrganization.isError ||
-  //   deleteOrgMember.isError ||
-  //   deleteOrgInvitation.isError
-
   return {
     createOrganization,
     updateOrganization,
     deleteOrganization,
     updateOrgMember,
     deleteOrgMember,
-    deleteOrgInvitation,
   }
 }
