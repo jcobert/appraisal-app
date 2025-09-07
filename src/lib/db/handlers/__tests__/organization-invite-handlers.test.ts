@@ -6,10 +6,14 @@
 jest.mock('../../api-handlers')
 jest.mock('../../client', () => ({
   db: {
+    organization: {
+      findUnique: jest.fn(),
+    },
     orgInvitation: {
       create: jest.fn(),
       delete: jest.fn(),
       update: jest.fn(),
+      findUnique: jest.fn(),
     },
   },
 })) // Mock the database client
@@ -46,11 +50,7 @@ jest.mock('resend', () => {
 import { createApiHandler } from '../../api-handlers'
 import { db } from '../../client'
 import { ValidationError } from '../../errors'
-import {
-  getOrgInvitation,
-  getOrganization,
-  userIsOwner,
-} from '../../queries/organization'
+import { userIsOwner } from '../../queries/organization'
 import { getActiveUserProfile } from '../../queries/user'
 import {
   handleCreateOrgInvite,
@@ -72,12 +72,6 @@ const mockCreateApiHandler = createApiHandler as jest.MockedFunction<
   typeof createApiHandler
 >
 const mockDb = db as jest.Mocked<typeof db>
-const mockGetOrgInvitation = getOrgInvitation as jest.MockedFunction<
-  typeof getOrgInvitation
->
-const mockGetOrganization = getOrganization as jest.MockedFunction<
-  typeof getOrganization
->
 const mockUserIsOwner = userIsOwner as jest.MockedFunction<typeof userIsOwner>
 const mockGetActiveUserProfile = getActiveUserProfile as jest.MockedFunction<
   typeof getActiveUserProfile
@@ -173,7 +167,9 @@ describe('organization-invite-handlers', () => {
     })
 
     mockGetActiveUserProfile.mockResolvedValue(mockActiveUser)
-    mockGetOrganization.mockResolvedValue(mockOrganization)
+    ;(mockDb.organization.findUnique as jest.Mock).mockResolvedValue(
+      mockOrganization,
+    )
     mockGenerateUniqueToken.mockReturnValue('mock-token')
     mockGenerateExpiry.mockReturnValue('2024-12-31T23:59:59.999Z')
     mockGetOrgInviteUrl.mockReturnValue({
@@ -283,7 +279,7 @@ describe('organization-invite-handlers', () => {
       })
 
       await expect(handleCreateOrgInvite('org-1', mockPayload)).rejects.toThrow(
-        'Failed to send invitation email: Email service error',
+        'Failure sending invitation email.',
       )
     })
 
@@ -291,6 +287,7 @@ describe('organization-invite-handlers', () => {
       await handleCreateOrgInvite('org-1', mockPayload)
 
       expect(mockCreateApiHandler).toHaveBeenCalledWith(expect.any(Function), {
+        authorizationCheck: expect.any(Function),
         messages: {
           success: 'Invitation sent successfully.',
         },
@@ -310,8 +307,9 @@ describe('organization-invite-handlers', () => {
     it('should fetch organization and active user data', async () => {
       await handleCreateOrgInvite('org-1', mockPayload)
 
-      expect(mockGetOrganization).toHaveBeenCalledWith({
-        organizationId: 'org-1',
+      expect(mockDb.organization.findUnique).toHaveBeenCalledWith({
+        where: { id: 'org-1' },
+        select: { name: true },
       })
       expect(mockGetActiveUserProfile).toHaveBeenCalled()
     })
@@ -371,7 +369,7 @@ describe('organization-invite-handlers', () => {
         (handlerFn: any, config?: any) => {
           // Call the authorization check if provided
           if (config?.authorizationCheck) {
-            config.authorizationCheck()
+            config.authorizationCheck({ user: mockKindeUser })
           }
           return handlerFn({ user: mockKindeUser })
         },
@@ -388,7 +386,10 @@ describe('organization-invite-handlers', () => {
         where: { id: 'invite-1', organizationId: 'org-1' },
         select: { id: true, inviteeFirstName: true, inviteeLastName: true },
       })
-      expect(mockUserIsOwner).toHaveBeenCalledWith({ organizationId: 'org-1' })
+      expect(mockUserIsOwner).toHaveBeenCalledWith({
+        organizationId: 'org-1',
+        userId: mockKindeUser.id,
+      })
     })
 
     it('should throw ValidationError when inviteId is missing', async () => {
@@ -438,14 +439,17 @@ describe('organization-invite-handlers', () => {
         async (handlerFn: any, config?: any) => {
           // Call the authorization check if provided
           if (config?.authorizationCheck) {
-            await config.authorizationCheck()
+            await config.authorizationCheck({ user: mockKindeUser })
           }
           return handlerFn({ user: mockKindeUser })
         },
       )
 
       await handleDeleteOrgInvite('org-1', 'invite-1')
-      expect(mockUserIsOwner).toHaveBeenCalledWith({ organizationId: 'org-1' })
+      expect(mockUserIsOwner).toHaveBeenCalledWith({
+        organizationId: 'org-1',
+        userId: mockKindeUser.id,
+      })
     })
   })
 
@@ -460,7 +464,9 @@ describe('organization-invite-handlers', () => {
     beforeEach(() => {
       // Setup successful defaults for update tests
       mockUserIsOwner.mockResolvedValue(true)
-      mockGetOrgInvitation.mockResolvedValue(mockInvitation)
+      ;(mockDb.orgInvitation.findUnique as jest.Mock).mockResolvedValue(
+        mockInvitation,
+      )
     })
 
     it('should update organization invite successfully', async () => {
@@ -469,7 +475,7 @@ describe('organization-invite-handlers', () => {
         (handlerFn: any, config?: any) => {
           // Call the authorization check if provided
           if (config?.authorizationCheck) {
-            config.authorizationCheck()
+            config.authorizationCheck({ user: mockKindeUser })
           }
           return handlerFn({ user: mockKindeUser })
         },
@@ -482,8 +488,9 @@ describe('organization-invite-handlers', () => {
       )
 
       expect(result).toEqual({ id: 'invite-1' })
-      expect(mockGetOrgInvitation).toHaveBeenCalledWith({
+      expect(mockDb.orgInvitation.findUnique).toHaveBeenCalledWith({
         where: { id: 'invite-1', organizationId: 'org-1', status: 'pending' },
+        select: { id: true },
       })
       expect(mockDb.orgInvitation.update).toHaveBeenCalledWith({
         where: { id: 'invite-1', organizationId: 'org-1' },
@@ -495,7 +502,10 @@ describe('organization-invite-handlers', () => {
         },
         select: { id: true },
       })
-      expect(mockUserIsOwner).toHaveBeenCalledWith({ organizationId: 'org-1' })
+      expect(mockUserIsOwner).toHaveBeenCalledWith({
+        organizationId: 'org-1',
+        userId: mockKindeUser.id,
+      })
     })
 
     it('should throw ValidationError when payload is missing', async () => {
@@ -513,7 +523,7 @@ describe('organization-invite-handlers', () => {
     })
 
     it('should throw error when invitation is not found or not pending', async () => {
-      mockGetOrgInvitation.mockResolvedValue(null)
+      ;(mockDb.orgInvitation.findUnique as jest.Mock).mockResolvedValue(null)
 
       // Mock createApiHandler to call the handler function directly
       mockCreateApiHandler.mockImplementation((handlerFn: any) => {
@@ -544,21 +554,25 @@ describe('organization-invite-handlers', () => {
         async (handlerFn: any, config?: any) => {
           // Call the authorization check if provided
           if (config?.authorizationCheck) {
-            await config.authorizationCheck()
+            await config.authorizationCheck({ user: mockKindeUser })
           }
           return handlerFn({ user: mockKindeUser })
         },
       )
 
       await handleUpdateOrgInvite('org-1', 'invite-1', updatePayload)
-      expect(mockUserIsOwner).toHaveBeenCalledWith({ organizationId: 'org-1' })
+      expect(mockUserIsOwner).toHaveBeenCalledWith({
+        organizationId: 'org-1',
+        userId: mockKindeUser.id,
+      })
     })
 
     it('should validate invitation exists and is pending', async () => {
       await handleUpdateOrgInvite('org-1', 'invite-1', updatePayload)
 
-      expect(mockGetOrgInvitation).toHaveBeenCalledWith({
+      expect(mockDb.orgInvitation.findUnique).toHaveBeenCalledWith({
         where: { id: 'invite-1', organizationId: 'org-1', status: 'pending' },
+        select: { id: true },
       })
     })
 

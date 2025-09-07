@@ -7,6 +7,7 @@ jest.mock('../../api-handlers')
 jest.mock('../../client', () => ({
   db: {
     orgInvitation: {
+      findUnique: jest.fn(),
       update: jest.fn(),
     },
   },
@@ -43,7 +44,7 @@ import {
   NotFoundError,
   ValidationError,
 } from '../../errors'
-import { getOrgInvitation, userIsMember } from '../../queries/organization'
+import { userIsMember } from '../../queries/organization'
 import { getActiveUserProfile } from '../../queries/user'
 import {
   OrgJoinPayload,
@@ -59,9 +60,6 @@ const mockCreateApiHandler = createApiHandler as jest.MockedFunction<
   typeof createApiHandler
 >
 const mockDb = db as jest.Mocked<typeof db>
-const mockGetOrgInvitation = getOrgInvitation as jest.MockedFunction<
-  typeof getOrgInvitation
->
 const mockUserIsMember = userIsMember as jest.MockedFunction<
   typeof userIsMember
 >
@@ -140,7 +138,9 @@ describe('organization-join-handlers', () => {
     // Setup default successful mocks
     mockGetActiveUserAccount.mockResolvedValue(mockUserAccount)
     mockGetActiveUserProfile.mockResolvedValue(mockUserProfile)
-    mockGetOrgInvitation.mockResolvedValue(mockInvitation as any)
+    ;(mockDb.orgInvitation.findUnique as jest.Mock).mockResolvedValue(
+      mockInvitation as any,
+    )
     mockIsExpired.mockReturnValue(false)
     mockUserIsMember.mockResolvedValue(false)
 
@@ -174,10 +174,22 @@ describe('organization-join-handlers', () => {
         status: 'accepted',
         message: 'Successfully joined organization.',
       })
-      expect(mockGetOrgInvitation).toHaveBeenCalledWith(
-        { where: { token: 'valid-token', organizationId: 'org-1' } },
-        { publicAccess: true },
-      )
+      expect(mockDb.orgInvitation.findUnique).toHaveBeenCalledWith({
+        where: { token: 'valid-token', organizationId: 'org-1' },
+        select: {
+          id: true,
+          expires: true,
+          status: true,
+          organization: { select: { name: true, avatar: true } },
+          invitedBy: {
+            select: { firstName: true, lastName: true, email: true },
+          },
+          inviteeFirstName: true,
+          inviteeLastName: true,
+          inviteeEmail: true,
+          roles: true,
+        },
+      })
     })
 
     it('should throw ValidationError when token is missing', async () => {
@@ -195,7 +207,7 @@ describe('organization-join-handlers', () => {
     })
 
     it('should throw NotFoundError when invitation is not found', async () => {
-      mockGetOrgInvitation.mockResolvedValue(null)
+      ;(mockDb.orgInvitation.findUnique as jest.Mock).mockResolvedValue(null)
 
       await expect(
         handleJoinOrganization('org-1', validPayload),

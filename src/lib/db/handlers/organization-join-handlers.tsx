@@ -10,7 +10,7 @@ import {
   NotFoundError,
   ValidationError,
 } from '@/lib/db/errors'
-import { getOrgInvitation, userIsMember } from '@/lib/db/queries/organization'
+import { userIsMember } from '@/lib/db/queries/organization'
 import {
   getActiveUserProfile,
   registerUserProfile,
@@ -39,7 +39,7 @@ export async function handleJoinOrganization(
   payload: OrgJoinPayload,
 ) {
   return createApiHandler(
-    async () => {
+    async ({ user }) => {
       const { token, status } = payload
 
       if (!token) {
@@ -57,12 +57,22 @@ export async function handleJoinOrganization(
         })
       }
 
-      const invitation = await getOrgInvitation(
-        {
-          where: { token, organizationId },
+      const invitation = await db.orgInvitation.findUnique({
+        where: { token, organizationId },
+        select: {
+          id: true,
+          expires: true,
+          status: true,
+          organization: { select: { name: true, avatar: true } },
+          invitedBy: {
+            select: { firstName: true, lastName: true, email: true },
+          },
+          inviteeFirstName: true,
+          inviteeLastName: true,
+          inviteeEmail: true,
+          roles: true,
         },
-        { publicAccess: true },
-      )
+      })
 
       if (!invitation) {
         throw new NotFoundError('Invitation not found.')
@@ -108,8 +118,10 @@ export async function handleJoinOrganization(
         throw new AuthenticationError('User not authenticated.')
       }
 
+      const isMember = await userIsMember({ organizationId, userId: user?.id })
+
       // User already member of org
-      if (await userIsMember({ organizationId })) {
+      if (isMember) {
         await db.orgInvitation.update({
           where: { token, organizationId },
           data: { token: null, status: 'accepted' },

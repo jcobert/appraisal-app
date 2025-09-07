@@ -1,14 +1,11 @@
 import { createApiHandler } from '../api-handlers'
+import { OrgInvitationStatus } from '@prisma/client'
 import { Resend } from 'resend'
 
 import { db } from '@/lib/db/client'
 import { ORG_INVITE_EXPIRY } from '@/lib/db/config'
 import { ValidationError } from '@/lib/db/errors'
-import {
-  getOrgInvitation,
-  getOrganization,
-  userIsOwner,
-} from '@/lib/db/queries/organization'
+import { userIsOwner } from '@/lib/db/queries/organization'
 import { getActiveUserProfile } from '@/lib/db/queries/user'
 import { generateUniqueToken } from '@/lib/server-utils'
 
@@ -21,6 +18,47 @@ import { getOrgInviteUrl } from '@/features/organization/utils'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+/**
+ * Get an organization invitation (public access).
+ * Can be used in both API routes and server components.
+ */
+export const handleGetPublicOrgInvite = async ({
+  organizationId,
+  token,
+  status,
+}: {
+  organizationId: string
+  token: string
+  status?: OrgInvitationStatus
+}) => {
+  return createApiHandler(
+    async () => {
+      if (!organizationId) {
+        throw new ValidationError('Organization ID is required', {})
+      }
+
+      if (!token) {
+        throw new ValidationError('Token is required', {})
+      }
+
+      const result = await db.orgInvitation.findUnique({
+        where: { organizationId, token, status },
+        select: {
+          organization: { select: { name: true, avatar: true } },
+          invitedBy: true,
+        },
+      })
+
+      return result
+    },
+    { dangerouslyBypassAuthentication: true },
+  )
+}
+
+/**
+ * Create an organization invitation (requires owner permissions).
+ * Can be used in both API routes and server components.
+ */
 export const handleCreateOrgInvite = async (
   organizationId: string,
   payload: OrgInvitePayload,
@@ -46,12 +84,11 @@ export const handleCreateOrgInvite = async (
       }
 
       const activeUser = await getActiveUserProfile()
-      /**
-       * @todo
-       * Only org name is used in email,
-       * so when replacing this with direct db call, only select name.
-       */
-      const org = await getOrganization({ organizationId })
+
+      const org = await db.organization.findUnique({
+        where: { id: organizationId },
+        select: { name: true },
+      })
 
       const inviteToken = generateUniqueToken()
       const expires = generateExpiry(ORG_INVITE_EXPIRY)
@@ -72,6 +109,12 @@ export const handleCreateOrgInvite = async (
         select: { id: true },
       })
 
+      /**
+       * @todo Do we want to throw an error here?
+       * The handler should be catching error during the create.
+       * We can guard the remaining code from running
+       * if there's no invite if that's what we want.
+       */
       if (!invite) {
         throw new Error('Failed to create invitation.')
       }
@@ -99,14 +142,21 @@ export const handleCreateOrgInvite = async (
       })
 
       if (resendError) {
-        throw new Error(
-          `Failed to send invitation email: ${resendError.message}`,
+        // eslint-disable-next-line no-console
+        console.error(
+          'Failed to send invitation email:',
+          `${resendError?.name} - ${resendError?.message}`,
         )
+        throw new Error('Failure sending invitation email.')
       }
 
       return invite
     },
     {
+      authorizationCheck: async ({ user }) => {
+        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
+        return isOwner
+      },
       messages: {
         success: 'Invitation sent successfully.',
       },
@@ -154,8 +204,8 @@ export const handleDeleteOrgInvite = async (
       return res
     },
     {
-      authorizationCheck: async () => {
-        const isOwner = await userIsOwner({ organizationId })
+      authorizationCheck: async ({ user }) => {
+        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
         return isOwner
       },
       messages: {
@@ -185,11 +235,13 @@ export const handleUpdateOrgInvite = async (
         })
       }
 
-      const currentInvite = await getOrgInvitation({
+      const currentInvite = await db.orgInvitation.findUnique({
         where: { id: inviteId, organizationId, status: 'pending' },
+        select: { id: true },
       })
 
-      if (!currentInvite) {
+      /** @todo Is there a more specific error we can throw? */
+      if (!currentInvite?.id) {
         throw new Error('Invitation no longer pending. Ineligible to update.')
       }
 
@@ -207,8 +259,8 @@ export const handleUpdateOrgInvite = async (
       return res
     },
     {
-      authorizationCheck: async () => {
-        const isOwner = await userIsOwner({ organizationId })
+      authorizationCheck: async ({ user }) => {
+        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
         return isOwner
       },
       messages: {

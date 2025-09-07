@@ -5,10 +5,6 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { Organization } from '@prisma/client'
 import { intersection } from 'lodash'
 
-import {
-  getActiveUserOrgMember,
-  getUserOrganizations,
-} from '@/lib/db/queries/organization'
 import { getActiveUserProfile } from '@/lib/db/queries/user'
 
 import { isAuthenticated } from '@/utils/auth'
@@ -21,6 +17,8 @@ import {
 } from '@/configuration/permissions'
 import { redirect } from 'next/navigation'
 import { homeUrl } from '@/utils/nav'
+import { db } from '@/lib/db/client'
+import { handleGetActiveUserOrgMember } from '@/lib/db/handlers/organization-member-handlers'
 
 /** Returns user session (account) and profile data, both from Kinde auth and core DB. */
 export const getSessionData = async () => {
@@ -31,7 +29,15 @@ export const getSessionData = async () => {
   const loggedIn = !!(await isAuthenticated())
   // User data (from core DB)
   const profile = await getActiveUserProfile()
-  const organizations = await getUserOrganizations()
+  const organizations = await db.organization.findMany({
+    where: {
+      members: {
+        some: {
+          user: { accountId: user?.id },
+        },
+      },
+    },
+  })
   return { user, loggedIn, profile, organizations }
 }
 
@@ -41,20 +47,34 @@ export const getSessionData = async () => {
 export const getUserPermissions = async (
   organizationId: Organization['id'],
 ): Promise<{ [Area in PermissionArea]: PermissionAction[Area][] }> => {
-  const { active, roles = [] } =
-    (await getActiveUserOrgMember({ organizationId })) || {}
-  const userRoles = !active ? [] : roles
+  try {
+    const { active, roles = [] } =
+      (await handleGetActiveUserOrgMember(organizationId))?.data || {}
+    const userRoles = !active ? [] : roles
 
-  const permsByArea = objectEntries(APP_PERMISSIONS)?.map(([area, actions]) => {
-    const userAllowedActions = !userRoles?.length
-      ? []
-      : objectKeys(actions)?.filter((action) => {
-          const allowedRoles = actions[action]
-          return !!intersection(allowedRoles, userRoles)?.length
-        })
-    return [area, userAllowedActions]
-  })
-  return Object.fromEntries(permsByArea)
+    const permsByArea = objectEntries(APP_PERMISSIONS)?.map(
+      ([area, actions]) => {
+        const userAllowedActions: (keyof typeof actions)[] = !userRoles?.length
+          ? []
+          : objectKeys(actions)?.filter((action) => {
+              const allowedRoles = actions[action]
+              return !!intersection(allowedRoles, userRoles)?.length
+            })
+        return [area, userAllowedActions]
+      },
+    )
+    return Object.fromEntries(permsByArea)
+  } catch (error) {
+    // If database query fails, return empty permissions (no access).
+    // This ensures the function always returns a valid permissions object.
+    // eslint-disable-next-line no-console
+    console.error('Error fetching user permissions:', error)
+    const permsByArea = objectEntries(APP_PERMISSIONS)?.map(([area]) => [
+      area,
+      [],
+    ])
+    return Object.fromEntries(permsByArea)
+  }
 }
 
 export type CanQueryOptions = {}
@@ -82,12 +102,19 @@ export const userCan = async <Area extends PermissionArea>({
   action: PermissionAction[Area]
   organizationId: Organization['id']
 }): Promise<boolean> => {
-  const { active, roles = [] } =
-    (await getActiveUserOrgMember({ organizationId })) || {}
-  const userRoles = !active ? [] : roles
-  if (!userRoles?.length) return false
-  const allowedRoles = APP_PERMISSIONS[area][action]
-  return !!intersection(allowedRoles, userRoles)?.length
+  try {
+    const { active, roles = [] } =
+      (await handleGetActiveUserOrgMember(organizationId))?.data || {}
+    const userRoles = !active ? [] : roles
+    if (!userRoles?.length) return false
+    const allowedRoles = APP_PERMISSIONS[area][action]
+    return !!intersection(allowedRoles, userRoles)?.length
+  } catch (error) {
+    // If database query fails, deny permission (fail safe)
+    // eslint-disable-next-line no-console
+    console.error('Error checking user permissions:', error)
+    return false
+  }
 }
 
 /** Protects page server side by redirecting if user not authorized. */

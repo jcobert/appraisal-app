@@ -1,6 +1,14 @@
+/**
+ * @jest-environment node
+ */
+import { KindeUser } from '@kinde-oss/kinde-auth-nextjs'
 import { redirect } from 'next/navigation'
 
+import { db } from '@/lib/db/client'
+import { getActiveUserOrgMember } from '@/lib/db/queries/organization'
+import { getActiveUserProfile } from '@/lib/db/queries/user'
 import {
+  canQuery,
   getSessionData,
   getUserPermissions,
   protectPage,
@@ -8,28 +16,36 @@ import {
   withPermission,
 } from '@/lib/db/utils'
 
+import { isAuthenticated } from '@/utils/auth'
+
 import { PermissionAction } from '@/configuration/permissions'
 
+jest.mock('@/lib/db/client', () => ({
+  db: {
+    organization: {
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+    },
+  },
+}))
+jest.mock('@/utils/auth')
+jest.mock('@/lib/db/queries/organization')
+jest.mock('@/lib/db/queries/user')
+
 // Mock the DB queries
-const mockGetOrgMemberRoles = jest.fn()
-const mockGetActiveUserProfile = jest.fn()
-const mockGetUserOrganizations = jest.fn()
+const mockGetActiveUserOrgMember =
+  getActiveUserOrgMember as jest.MockedFunction<typeof getActiveUserOrgMember>
 
-jest.mock('@/lib/db/queries/organization', () => ({
-  getActiveUserOrgMember: (...args: any[]) => mockGetOrgMemberRoles(...args),
-  getUserOrganizations: (...args: any[]) => mockGetUserOrganizations(...args),
-}))
-
-jest.mock('@/lib/db/queries/user', () => ({
-  getActiveUserProfile: (...args: any[]) => mockGetActiveUserProfile(...args),
-}))
-
-type KindeUser = {
-  id: string
-  email?: string
-  given_name?: string
-  family_name?: string
-}
+const mockDb = db as jest.Mocked<typeof db>
+const mockIsAuthenticated = isAuthenticated as jest.MockedFunction<
+  typeof isAuthenticated
+>
+const mockGetActiveUserProfile = getActiveUserProfile as jest.MockedFunction<
+  typeof getActiveUserProfile
+>
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
@@ -52,20 +68,40 @@ jest.mock('@kinde-oss/kinde-auth-nextjs/server', () => ({
 // Mock auth utils
 jest.mock('@/utils/auth', () => ({
   isAuthenticated: jest.fn(),
+  getActiveUserAccount: jest.fn(),
 }))
 
 describe('db utils', () => {
-  const mockUser: KindeUser = {
+  const mockUser: KindeUser<Record<string, any>> = {
     id: 'user_123',
     email: 'test@example.com',
     given_name: 'Test',
     family_name: 'User',
+    picture: 'https://example.com/avatar.jpg',
   }
 
   const mockOrgId = 'org_123'
 
+  const mockOrganization = {
+    id: mockOrgId,
+    name: 'Test Organization',
+    description: 'A test organization',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    createdBy: 'user-123',
+    updatedBy: 'user-123',
+    avatar: null,
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
+
+    mockIsAuthenticated.mockResolvedValue({ allowed: true, user: mockUser })
+
+    const organizations = [mockOrganization]
+    ;(mockDb.organization.findMany as jest.Mock).mockResolvedValue(
+      organizations,
+    )
 
     // Default mock for isAuthenticated
     const { isAuthenticated } = jest.requireMock('@/utils/auth')
@@ -104,7 +140,7 @@ describe('db utils', () => {
       isAuthenticated.mockResolvedValue({ allowed: true, user: mockUser })
 
       // Mock user having no roles (no permissions)
-      mockGetOrgMemberRoles.mockResolvedValue([])
+      mockGetActiveUserOrgMember.mockResolvedValue(null)
 
       await protectPage({
         permission: {
@@ -122,9 +158,23 @@ describe('db utils', () => {
       isAuthenticated.mockResolvedValue({ allowed: true, user: mockUser })
 
       // Mock user having manager role
-      mockGetOrgMemberRoles.mockResolvedValue({
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
         active: true,
         roles: ['manager'],
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
       })
 
       const { can } = await protectPage({
@@ -142,7 +192,19 @@ describe('db utils', () => {
 
   describe('getSessionData', () => {
     it('should return complete session data', async () => {
-      const mockProfile = { id: 'profile_123', userId: 'user_123' }
+      const mockProfile = {
+        id: 'profile_123',
+        accountId: 'user_123',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        phone: null,
+        avatar: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: null,
+        updatedBy: null,
+      }
       const mockOrgs = [{ id: 'org_123', name: 'Test Org' }]
 
       const getKindeServerSession = jest.requireMock(
@@ -154,7 +216,7 @@ describe('db utils', () => {
       }))
 
       mockGetActiveUserProfile.mockResolvedValue(mockProfile)
-      mockGetUserOrganizations.mockResolvedValue(mockOrgs)
+      ;(mockDb.organization.findMany as jest.Mock).mockResolvedValue(mockOrgs)
 
       const result = await getSessionData()
       expect(result).toEqual({
@@ -166,9 +228,27 @@ describe('db utils', () => {
     })
   })
 
+  describe('canQuery', () => {
+    it('should return true when user is authenticated', async () => {
+      mockIsAuthenticated.mockResolvedValue({ allowed: true, user: mockUser })
+
+      const result = await canQuery()
+
+      expect(result).toBe(true)
+    })
+
+    it('should return false when user is not authenticated', async () => {
+      mockIsAuthenticated.mockResolvedValue({ allowed: false, user: null })
+
+      const result = await canQuery()
+
+      expect(result).toBe(false)
+    })
+  })
+
   describe('getUserPermissions', () => {
     it('should return empty permissions when user has no roles', async () => {
-      mockGetOrgMemberRoles.mockResolvedValue([])
+      mockGetActiveUserOrgMember.mockResolvedValue(null)
 
       const result = await getUserPermissions(mockOrgId)
 
@@ -179,9 +259,23 @@ describe('db utils', () => {
     })
 
     it('should return correct permissions based on user roles', async () => {
-      mockGetOrgMemberRoles.mockResolvedValue({
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
         active: true,
         roles: ['manager'],
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
       })
 
       const result = await getUserPermissions(mockOrgId)
@@ -214,7 +308,7 @@ describe('db utils', () => {
 
   describe('userCan', () => {
     it('should return false when user has no roles', async () => {
-      mockGetOrgMemberRoles.mockResolvedValue([])
+      mockGetActiveUserOrgMember.mockResolvedValue(null)
 
       const result = await userCan({
         area: 'organization',
@@ -226,9 +320,23 @@ describe('db utils', () => {
     })
 
     it('should return true when user has required role', async () => {
-      mockGetOrgMemberRoles.mockResolvedValue({
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
         active: true,
         roles: ['manager'],
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
       })
 
       const result = await userCan({
@@ -241,9 +349,23 @@ describe('db utils', () => {
     })
 
     it('should return false when user lacks required role', async () => {
-      mockGetOrgMemberRoles.mockResolvedValue({
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
         active: true,
         roles: ['appraiser'],
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
       })
 
       const result = await userCan({
@@ -256,9 +378,23 @@ describe('db utils', () => {
     })
 
     it('should return false when member is inactive', async () => {
-      mockGetOrgMemberRoles.mockResolvedValue({
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
         active: false,
         roles: ['manager'],
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
       })
 
       const result = await userCan({
@@ -279,9 +415,23 @@ describe('db utils', () => {
     })
 
     it('should execute function when user has permission', async () => {
-      mockGetOrgMemberRoles.mockResolvedValue({
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
         active: true,
         roles: ['manager'],
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
       })
 
       const wrappedFn = withPermission('orders', 'create_order', mockFn)
@@ -292,7 +442,24 @@ describe('db utils', () => {
     })
 
     it('should return null when user lacks permission', async () => {
-      mockGetOrgMemberRoles.mockResolvedValue(['appraiser'])
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
+        active: true,
+        roles: ['appraiser'],
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      })
 
       const wrappedFn = withPermission('organization', 'delete_org', mockFn)
       const result = await wrappedFn(mockOrgId)

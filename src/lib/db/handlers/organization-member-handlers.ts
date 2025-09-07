@@ -2,10 +2,7 @@
 import 'server-only'
 
 import {
-  getOrgMember,
   getActiveUserOrgMember,
-  updateOrgMember,
-  deleteOrgMember,
   userIsOwner,
   userIsMember,
 } from '@/lib/db/queries/organization'
@@ -14,6 +11,7 @@ import { orgMemberSchema } from '@/lib/db/schemas/org-member'
 import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
 import { ValidationError } from '@/lib/db/errors'
 import { validatePayload } from '@/utils/zod'
+import { db } from '@/lib/db/client'
 
 /**
  * Get a specific organization member by ID.
@@ -24,14 +22,19 @@ export const handleGetOrgMember = async (
   memberId: string,
 ) => {
   return createApiHandler(async () => {
+    /** @todo Throw validation error. */
     if (!organizationId) {
       throw new Error('Organization ID is required')
     }
+    /** @todo Throw validation error. */
     if (!memberId) {
       throw new Error('Member ID is required')
     }
 
-    const member = await getOrgMember({ organizationId, memberId })
+    const member = await db.orgMember.findUnique({
+      where: { id: memberId, organizationId },
+      include: { user: true },
+    })
     return member
   })
 }
@@ -41,12 +44,16 @@ export const handleGetOrgMember = async (
  * Can be used in both API routes and server components.
  */
 export const handleGetActiveUserOrgMember = async (organizationId: string) => {
-  return createApiHandler(async () => {
+  return createApiHandler(async ({ user }) => {
+    /** @todo Throw validation error or not at all. */
     if (!organizationId) {
       throw new Error('Organization ID is required')
     }
 
-    const member = await getActiveUserOrgMember({ organizationId })
+    const member = await getActiveUserOrgMember({
+      organizationId,
+      userId: user?.id,
+    })
     return member
   })
 }
@@ -58,17 +65,15 @@ export const handleGetActiveUserOrgMember = async (organizationId: string) => {
 export const handleUpdateOrgMember = async (
   organizationId: string,
   memberId: string,
-  payload: Parameters<typeof updateOrgMember>[0]['payload'],
+  payload: Parameters<typeof db.orgMember.update>[0]['data'],
 ) => {
   return createApiHandler(
     async ({ user }) => {
-      if (!user?.id) {
-        throw new Error('User not authenticated')
-      }
-
+      /** @todo Throw validation error. */
       if (!organizationId) {
         throw new Error('Organization ID is required')
       }
+      /** @todo Throw validation error. */
       if (!memberId) {
         throw new Error('Member ID is required')
       }
@@ -82,16 +87,15 @@ export const handleUpdateOrgMember = async (
         )
       }
 
-      const result = await updateOrgMember({
-        organizationId,
-        memberId,
-        payload: withUserFields(payload, user?.id),
+      const result = await db.orgMember.update({
+        where: { id: memberId, organizationId },
+        data: withUserFields(payload, user?.id),
       })
       return result
     },
     {
-      authorizationCheck: async () => {
-        const isOwner = await userIsOwner({ organizationId })
+      authorizationCheck: async ({ user }) => {
+        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
         return isOwner
       },
       messages: {
@@ -109,14 +113,11 @@ export const handleUpdateOrgMember = async (
  */
 export const handleUpdateActiveUserOrgMember = async (
   organizationId: string,
-  payload: Parameters<typeof updateOrgMember>[0]['payload'],
+  payload: Parameters<typeof db.orgMember.update>[0]['data'],
 ) => {
   return createApiHandler(
     async ({ user }) => {
-      if (!user?.id) {
-        throw new Error('User not authenticated')
-      }
-
+      /** @todo Throw validation error. */
       if (!organizationId) {
         throw new Error('Organization ID is required')
       }
@@ -131,22 +132,28 @@ export const handleUpdateActiveUserOrgMember = async (
       }
 
       // First get the active user's member record
-      const activeUserMember = await getActiveUserOrgMember({ organizationId })
+      const activeUserMember = await getActiveUserOrgMember({
+        organizationId,
+        userId: user?.id,
+      })
+
       if (!activeUserMember?.id) {
-        throw new Error('Active user is not a member of this organization')
+        throw new Error('Failed to get active member.')
       }
 
-      const result = await updateOrgMember({
-        organizationId,
-        memberId: activeUserMember.id,
-        payload: withUserFields(payload, user?.id),
+      const result = await db.orgMember.update({
+        where: { id: activeUserMember?.id, organizationId },
+        data: withUserFields(payload, user?.id),
       })
       return result
     },
     {
-      authorizationCheck: async () => {
+      authorizationCheck: async ({ user }) => {
         // For updating your own member record, just need to be a member
-        const isMember = await userIsMember({ organizationId })
+        const isMember = await userIsMember({
+          organizationId,
+          userId: user?.id,
+        })
         return isMember
       },
       messages: {
@@ -168,22 +175,23 @@ export const handleDeleteOrgMember = async (
 ) => {
   return createApiHandler(
     async () => {
+      /** @todo Throw validation error. */
       if (!organizationId) {
         throw new Error('Organization ID is required')
       }
+      /** @todo Throw validation error. */
       if (!memberId) {
         throw new Error('Member ID is required')
       }
 
-      const result = await deleteOrgMember({
-        organizationId,
-        memberId,
+      const result = await db.orgMember.delete({
+        where: { id: memberId, organizationId },
       })
       return result
     },
     {
-      authorizationCheck: async () => {
-        const isOwner = await userIsOwner({ organizationId })
+      authorizationCheck: async ({ user }) => {
+        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
         return isOwner
       },
       messages: {
