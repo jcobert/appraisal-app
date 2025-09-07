@@ -36,10 +36,6 @@ export const handleGetUserOrganizations = async () => {
 export const handleGetOrganization = async (organizationId: string) => {
   return createApiHandler(
     async () => {
-      if (!organizationId) {
-        throw new Error('Organization ID is required')
-      }
-
       const organization = await db.organization.findUnique({
         where: { id: organizationId },
         include: {
@@ -97,11 +93,6 @@ export const handleUpdateOrganization = async (
 ) => {
   return createApiHandler(
     async ({ user }) => {
-      /** @todo Throw validation error. */
-      if (!organizationId) {
-        throw new Error('Organization ID is required')
-      }
-
       // Validate payload
       const validation = validatePayload(organizationSchema.api, payload)
       if (!validation?.success) {
@@ -138,11 +129,6 @@ export const handleUpdateOrganization = async (
 export const handleDeleteOrganization = async (organizationId: string) => {
   return createApiHandler(
     async () => {
-      if (!organizationId) {
-        /** @todo Throw validation error. */
-        throw new Error('Organization ID is required')
-      }
-
       const result = await db.organization.delete({
         where: { id: organizationId },
       })
@@ -250,11 +236,6 @@ export const handleGetOrganizationPermissions = async (
   organizationId: string,
 ) => {
   return createApiHandler(async () => {
-    if (!organizationId) {
-      /** @todo Throw validation error. */
-      throw new Error('Organization ID is required')
-    }
-
     const permissions = await getUserPermissions(organizationId)
     return permissions
   })

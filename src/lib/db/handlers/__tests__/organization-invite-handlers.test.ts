@@ -1,8 +1,26 @@
 /**
  * @jest-environment node
  */
+import { createApiHandler } from '../../api-handlers'
+import { db } from '../../client'
+import { ValidationError } from '../../errors'
+import { userIsOwner } from '../../queries/organization'
+import { getActiveUserProfile } from '../../queries/user'
+import {
+  handleCreateOrgInvite,
+  handleDeleteOrgInvite,
+  handleUpdateOrgInvite,
+} from '../organization-invite-handlers'
+import { MemberRole, OrgInvitationStatus, User } from '@prisma/client'
 
-// Mock dependencies first - DO NOT REORDER THESE IMPORTS DUE TO HOISTING ISSUES
+import { generateUniqueToken } from '@/lib/server-utils'
+
+import { isAuthenticated } from '@/utils/auth'
+import { generateExpiry } from '@/utils/date'
+
+import { OrgInvitePayload } from '@/features/organization/hooks/use-organization-invite'
+import { getOrgInviteUrl } from '@/features/organization/utils'
+
 jest.mock('../../api-handlers')
 jest.mock('../../client', () => ({
   db: {
@@ -46,26 +64,6 @@ jest.mock('resend', () => {
     __mockEmailSend: mockEmailSend,
   }
 })
-
-import { createApiHandler } from '../../api-handlers'
-import { db } from '../../client'
-import { ValidationError } from '../../errors'
-import { userIsOwner } from '../../queries/organization'
-import { getActiveUserProfile } from '../../queries/user'
-import {
-  handleCreateOrgInvite,
-  handleDeleteOrgInvite,
-  handleUpdateOrgInvite,
-} from '../organization-invite-handlers'
-import { MemberRole, OrgInvitationStatus, User } from '@prisma/client'
-
-import { generateUniqueToken } from '@/lib/server-utils'
-
-import { isAuthenticated } from '@/utils/auth'
-import { generateExpiry } from '@/utils/date'
-
-import { OrgInvitePayload } from '@/features/organization/hooks/use-organization-invite'
-import { getOrgInviteUrl } from '@/features/organization/utils'
 
 // Typed mocks
 const mockCreateApiHandler = createApiHandler as jest.MockedFunction<
@@ -256,7 +254,9 @@ describe('organization-invite-handlers', () => {
     })
 
     it('should throw error when invitation creation fails', async () => {
-      ;(mockDb.orgInvitation.create as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.orgInvitation.create as jest.Mock).mockRejectedValue(
+        new Error('Database error'),
+      )
 
       // Mock createApiHandler to call the handler function directly
       mockCreateApiHandler.mockImplementation((handlerFn: any) => {
@@ -264,7 +264,7 @@ describe('organization-invite-handlers', () => {
       })
 
       await expect(handleCreateOrgInvite('org-1', mockPayload)).rejects.toThrow(
-        'Failed to create invitation.',
+        'Database error',
       )
     })
 
@@ -532,7 +532,7 @@ describe('organization-invite-handlers', () => {
 
       await expect(
         handleUpdateOrgInvite('org-1', 'invite-1', updatePayload),
-      ).rejects.toThrow('Invitation no longer pending. Ineligible to update.')
+      ).rejects.toThrow('Invitation not found or no longer pending.')
     })
 
     it('should call createApiHandler with correct configuration', async () => {

@@ -4,7 +4,7 @@ import { Resend } from 'resend'
 
 import { db } from '@/lib/db/client'
 import { ORG_INVITE_EXPIRY } from '@/lib/db/config'
-import { ValidationError } from '@/lib/db/errors'
+import { NotFoundError, ValidationError } from '@/lib/db/errors'
 import { userIsOwner } from '@/lib/db/queries/organization'
 import { getActiveUserProfile } from '@/lib/db/queries/user'
 import { generateUniqueToken } from '@/lib/server-utils'
@@ -108,16 +108,6 @@ export const handleCreateOrgInvite = async (
         },
         select: { id: true },
       })
-
-      /**
-       * @todo Do we want to throw an error here?
-       * The handler should be catching error during the create.
-       * We can guard the remaining code from running
-       * if there's no invite if that's what we want.
-       */
-      if (!invite) {
-        throw new Error('Failed to create invitation.')
-      }
 
       const inviteLink = getOrgInviteUrl({
         organizationId,
@@ -240,9 +230,8 @@ export const handleUpdateOrgInvite = async (
         select: { id: true },
       })
 
-      /** @todo Is there a more specific error we can throw? */
       if (!currentInvite?.id) {
-        throw new Error('Invitation no longer pending. Ineligible to update.')
+        throw new NotFoundError('Invitation not found or no longer pending.')
       }
 
       const res = await db.orgInvitation.update({

@@ -1,8 +1,37 @@
 /**
  * @jest-environment node
  */
+import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
+import { KindeUser } from '@kinde-oss/kinde-auth-nextjs/types'
+import { User } from '@prisma/client'
 
-// Mock dependencies first - DO NOT REORDER THESE IMPORTS DUE TO HOISTING ISSUES
+import { db } from '@/lib/db/client'
+import {
+  handleCreateUser,
+  handleDeleteUser,
+  handleGetActiveUser,
+  handleGetUser,
+  handleGetUsers,
+  handleRegisterUser,
+  handleUpdateActiveUser,
+  handleUpdateUser,
+} from '@/lib/db/handlers/user-handlers'
+import {
+  createUserProfile,
+  getActiveUserProfile,
+  getUserProfile,
+  getUserProfiles,
+} from '@/lib/db/queries/user'
+import {
+  updateAuthAccount,
+  updateAuthEmail,
+} from '@/lib/kinde-management/queries'
+
+import { isAuthenticated } from '@/utils/auth'
+import { validatePayload } from '@/utils/zod'
+
+import { getProfileChanges } from '@/features/user/utils'
+
 jest.mock('@/utils/auth', () => ({
   isAuthenticated: jest.fn(),
 }))
@@ -11,6 +40,7 @@ jest.mock('@/lib/db/client', () => ({
   db: {
     user: {
       update: jest.fn(),
+      delete: jest.fn(),
       findUnique: jest.fn(),
       create: jest.fn(),
     },
@@ -22,7 +52,6 @@ jest.mock('@/lib/db/queries/user', () => ({
   getUserProfile: jest.fn(),
   getActiveUserProfile: jest.fn(),
   createUserProfile: jest.fn(),
-  deleteUserProfile: jest.fn(),
 }))
 
 jest.mock('@/utils/zod', () => ({
@@ -43,38 +72,6 @@ jest.mock('@kinde-oss/kinde-auth-nextjs/server', () => ({
   getKindeServerSession: jest.fn(),
 }))
 
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
-import { KindeUser } from '@kinde-oss/kinde-auth-nextjs/types'
-import { User } from '@prisma/client'
-
-import { db } from '@/lib/db/client'
-import {
-  handleCreateUser,
-  handleDeleteUser,
-  handleGetActiveUser,
-  handleGetUser,
-  handleGetUsers,
-  handleRegisterUser,
-  handleUpdateActiveUser,
-  handleUpdateUser,
-} from '@/lib/db/handlers/user-handlers'
-import {
-  createUserProfile,
-  deleteUserProfile,
-  getActiveUserProfile,
-  getUserProfile,
-  getUserProfiles,
-} from '@/lib/db/queries/user'
-import {
-  updateAuthAccount,
-  updateAuthEmail,
-} from '@/lib/kinde-management/queries'
-
-import { isAuthenticated } from '@/utils/auth'
-import { validatePayload } from '@/utils/zod'
-
-import { getProfileChanges } from '@/features/user/utils'
-
 // Typed mocks
 const mockIsAuthenticated = isAuthenticated as jest.MockedFunction<
   typeof isAuthenticated
@@ -91,9 +88,6 @@ const mockGetActiveUserProfile = getActiveUserProfile as jest.MockedFunction<
 >
 const mockCreateUserProfile = createUserProfile as jest.MockedFunction<
   typeof createUserProfile
->
-const mockDeleteUserProfile = deleteUserProfile as jest.MockedFunction<
-  typeof deleteUserProfile
 >
 const mockValidatePayload = validatePayload as jest.MockedFunction<
   typeof validatePayload
@@ -263,10 +257,14 @@ describe('user-handlers', () => {
     })
 
     it('should handle missing user ID', async () => {
+      // Mock Prisma to simulate P2025 "Record not found" error for empty ID
+      const prismaError = new Error('Record not found')
+      mockGetUserProfile.mockRejectedValue(prismaError)
+
       const result = await handleGetUser('')
 
       expect(result.status).toBe(500)
-      expect(result.error?.message).toBe('User ID is required')
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
 
     it('should handle authentication failure', async () => {
@@ -496,10 +494,14 @@ describe('user-handlers', () => {
     })
 
     it('should handle missing user ID', async () => {
+      // Mock Prisma to throw an error when trying to update with invalid ID
+      const prismaError = new Error('Invalid ID')
+      ;(mockDb.user.update as jest.Mock).mockRejectedValue(prismaError)
+
       const result = await handleUpdateUser('', updatePayload)
 
       expect(result.status).toBe(500)
-      expect(result.error?.message).toBe('User ID is required')
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
 
     it('should handle validation errors', async () => {
@@ -551,23 +553,27 @@ describe('user-handlers', () => {
     const userId = 'user-profile-123'
 
     it('should delete user successfully', async () => {
-      mockDeleteUserProfile.mockResolvedValue(mockUserProfile)
+      ;(mockDb.user.delete as jest.Mock).mockResolvedValue(mockUserProfile)
 
       const result = await handleDeleteUser(userId)
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(mockUserProfile)
       expect(result.message).toBe('User deleted successfully.')
-      expect(mockDeleteUserProfile).toHaveBeenCalledWith({
+      expect(mockDb.user.delete).toHaveBeenCalledWith({
         where: { id: userId },
       })
     })
 
     it('should handle missing user ID', async () => {
+      // Mock Prisma to throw an error when trying to delete with invalid ID
+      const prismaError = new Error('Invalid ID')
+      ;(mockDb.user.delete as jest.Mock).mockRejectedValue(prismaError)
+
       const result = await handleDeleteUser('')
 
       expect(result.status).toBe(500)
-      expect(result.error?.message).toBe('User ID is required')
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
 
     it('should handle authentication failure', async () => {
@@ -583,7 +589,9 @@ describe('user-handlers', () => {
     })
 
     it('should handle database errors', async () => {
-      mockDeleteUserProfile.mockRejectedValue(new Error('Database error'))
+      ;(mockDb.user.delete as jest.Mock).mockRejectedValue(
+        new Error('Database error'),
+      )
 
       const result = await handleDeleteUser(userId)
 
@@ -592,7 +600,7 @@ describe('user-handlers', () => {
     })
 
     it('should handle user not found during deletion', async () => {
-      mockDeleteUserProfile.mockRejectedValue(
+      ;(mockDb.user.delete as jest.Mock).mockRejectedValue(
         new Error('Record to delete does not exist.'),
       )
 

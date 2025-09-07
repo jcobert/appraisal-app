@@ -22,15 +22,6 @@ export const handleGetOrgMember = async (
   memberId: string,
 ) => {
   return createApiHandler(async () => {
-    /** @todo Throw validation error. */
-    if (!organizationId) {
-      throw new Error('Organization ID is required')
-    }
-    /** @todo Throw validation error. */
-    if (!memberId) {
-      throw new Error('Member ID is required')
-    }
-
     const member = await db.orgMember.findUnique({
       where: { id: memberId, organizationId },
       include: { user: true },
@@ -45,11 +36,6 @@ export const handleGetOrgMember = async (
  */
 export const handleGetActiveUserOrgMember = async (organizationId: string) => {
   return createApiHandler(async ({ user }) => {
-    /** @todo Throw validation error or not at all. */
-    if (!organizationId) {
-      throw new Error('Organization ID is required')
-    }
-
     const member = await getActiveUserOrgMember({
       organizationId,
       userId: user?.id,
@@ -69,15 +55,6 @@ export const handleUpdateOrgMember = async (
 ) => {
   return createApiHandler(
     async ({ user }) => {
-      /** @todo Throw validation error. */
-      if (!organizationId) {
-        throw new Error('Organization ID is required')
-      }
-      /** @todo Throw validation error. */
-      if (!memberId) {
-        throw new Error('Member ID is required')
-      }
-
       // Validate payload
       const validation = validatePayload(orgMemberSchema.api, payload)
       if (!validation?.success) {
@@ -117,11 +94,6 @@ export const handleUpdateActiveUserOrgMember = async (
 ) => {
   return createApiHandler(
     async ({ user }) => {
-      /** @todo Throw validation error. */
-      if (!organizationId) {
-        throw new Error('Organization ID is required')
-      }
-
       // Validate payload
       const validation = validatePayload(orgMemberSchema.api, payload)
       if (!validation?.success) {
@@ -175,15 +147,6 @@ export const handleDeleteOrgMember = async (
 ) => {
   return createApiHandler(
     async () => {
-      /** @todo Throw validation error. */
-      if (!organizationId) {
-        throw new Error('Organization ID is required')
-      }
-      /** @todo Throw validation error. */
-      if (!memberId) {
-        throw new Error('Member ID is required')
-      }
-
       const result = await db.orgMember.delete({
         where: { id: memberId, organizationId },
       })

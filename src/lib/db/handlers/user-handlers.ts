@@ -6,7 +6,6 @@ import {
   getUserProfile,
   getActiveUserProfile,
   createUserProfile,
-  deleteUserProfile,
 } from '@/lib/db/queries/user'
 
 import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
@@ -49,10 +48,6 @@ export const handleGetActiveUser = async () => {
  */
 export const handleGetUser = async (userId: string) => {
   return createApiHandler(async () => {
-    if (!userId) {
-      throw new Error('User ID is required')
-    }
-
     const user = await getUserProfile({
       where: { id: userId },
     })
@@ -151,10 +146,6 @@ export const handleUpdateUser = async (
 ) => {
   return createApiHandler(
     async ({ user }) => {
-      if (!userId) {
-        throw new Error('User ID is required')
-      }
-
       // Validate payload
       const validation = validatePayload(userProfileSchema.api, payload)
       if (!validation?.success) {
@@ -278,11 +269,7 @@ export const handleUpdateActiveUser = async (
 export const handleDeleteUser = async (userId: string) => {
   return createApiHandler(
     async () => {
-      if (!userId) {
-        throw new Error('User ID is required')
-      }
-
-      const result = await deleteUserProfile({
+      const result = await db.user.delete({
         where: { id: userId },
       })
       return result
