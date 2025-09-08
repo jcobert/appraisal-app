@@ -5,7 +5,6 @@ import { createApiHandler } from '../../api-handlers'
 import { db } from '../../client'
 import { ValidationError } from '../../errors'
 import { userIsOwner } from '../../queries/organization'
-import { getActiveUserProfile } from '../../queries/user'
 import {
   handleCreateOrgInvite,
   handleDeleteOrgInvite,
@@ -33,10 +32,12 @@ jest.mock('../../client', () => ({
       update: jest.fn(),
       findUnique: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   },
 })) // Mock the database client
 jest.mock('../../queries/organization')
-jest.mock('../../queries/user')
 jest.mock('@/lib/server-utils')
 jest.mock('@/utils/date')
 jest.mock('@/utils/auth')
@@ -71,9 +72,6 @@ const mockCreateApiHandler = createApiHandler as jest.MockedFunction<
 >
 const mockDb = db as jest.Mocked<typeof db>
 const mockUserIsOwner = userIsOwner as jest.MockedFunction<typeof userIsOwner>
-const mockGetActiveUserProfile = getActiveUserProfile as jest.MockedFunction<
-  typeof getActiveUserProfile
->
 const mockGenerateUniqueToken = generateUniqueToken as jest.MockedFunction<
   typeof generateUniqueToken
 >
@@ -163,8 +161,7 @@ describe('organization-invite-handlers', () => {
       allowed: true,
       user: mockKindeUser,
     })
-
-    mockGetActiveUserProfile.mockResolvedValue(mockActiveUser)
+    ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockActiveUser)
     ;(mockDb.organization.findUnique as jest.Mock).mockResolvedValue(
       mockOrganization,
     )
@@ -311,7 +308,7 @@ describe('organization-invite-handlers', () => {
         where: { id: 'org-1' },
         select: { name: true },
       })
-      expect(mockGetActiveUserProfile).toHaveBeenCalled()
+      expect(mockDb.user.findUnique).toHaveBeenCalled()
     })
 
     it('should send email with correct parameters', async () => {
@@ -326,7 +323,7 @@ describe('organization-invite-handlers', () => {
     })
 
     it('should handle missing active user gracefully', async () => {
-      mockGetActiveUserProfile.mockResolvedValue(null)
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
 
       await handleCreateOrgInvite('org-1', mockPayload)
 

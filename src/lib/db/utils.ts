@@ -5,8 +5,6 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { Organization } from '@prisma/client'
 import { intersection } from 'lodash'
 
-import { getActiveUserProfile } from '@/lib/db/queries/user'
-
 import { isAuthenticated } from '@/utils/auth'
 import { objectEntries, objectKeys } from '@/utils/general'
 
@@ -24,11 +22,12 @@ import { handleGetActiveUserOrgMember } from '@/lib/db/handlers/organization-mem
 export const getSessionData = async () => {
   const session = getKindeServerSession()
   const { getUser, isAuthenticated } = session
-  // Auth (from Kinde DB)
+  // User account (from Kinde DB)
   const user = await getUser()
   const loggedIn = !!(await isAuthenticated())
-  // User data (from core DB)
-  const profile = await getActiveUserProfile()
+  // User profile (from core DB)
+  const profile = await db.user.findUnique({ where: { accountId: user?.id } })
+  // User organizations
   const organizations = await db.organization.findMany({
     where: {
       members: {

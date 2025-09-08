@@ -1,19 +1,45 @@
 /**
  * @jest-environment node
  */
+import { createApiHandler } from '../../api-handlers'
+import { db } from '../../client'
+import {
+  AuthenticationError,
+  DatabaseConstraintError,
+  NotFoundError,
+  ValidationError,
+} from '../../errors'
+import { userIsMember } from '../../queries/organization'
+import {
+  OrgJoinPayload,
+  handleJoinOrganization,
+} from '../organization-join-handlers'
+import { handleRegisterUser } from '../user-handlers'
+import { MemberRole, OrgInvitationStatus } from '@prisma/client'
 
-// Mock dependencies first - DO NOT REORDER THESE IMPORTS DUE TO HOISTING ISSUES
+import { getActiveUserAccount } from '@/utils/auth'
+import { isExpired } from '@/utils/date'
+import { FetchErrorCode } from '@/utils/fetch'
+
 jest.mock('../../api-handlers')
+jest.mock('../user-handlers', () => ({
+  handleRegisterUser: jest.fn(),
+}))
 jest.mock('../../client', () => ({
   db: {
     orgInvitation: {
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
+    orgMember: {
+      create: jest.fn(),
+    },
   },
 }))
 jest.mock('../../queries/organization')
-jest.mock('../../queries/user')
 jest.mock('@/utils/auth')
 jest.mock('@/utils/date')
 jest.mock('@/components/email/org-invite-notify-owner-email', () => ({
@@ -36,25 +62,6 @@ jest.mock('resend', () => {
   }
 })
 
-import { createApiHandler } from '../../api-handlers'
-import { db } from '../../client'
-import {
-  AuthenticationError,
-  DatabaseConstraintError,
-  NotFoundError,
-  ValidationError,
-} from '../../errors'
-import { userIsMember } from '../../queries/organization'
-import { getActiveUserProfile } from '../../queries/user'
-import {
-  OrgJoinPayload,
-  handleJoinOrganization,
-} from '../organization-join-handlers'
-import { MemberRole, OrgInvitationStatus } from '@prisma/client'
-
-import { getActiveUserAccount } from '@/utils/auth'
-import { isExpired } from '@/utils/date'
-
 // Typed mocks
 const mockCreateApiHandler = createApiHandler as jest.MockedFunction<
   typeof createApiHandler
@@ -63,8 +70,8 @@ const mockDb = db as jest.Mocked<typeof db>
 const mockUserIsMember = userIsMember as jest.MockedFunction<
   typeof userIsMember
 >
-const mockGetActiveUserProfile = getActiveUserProfile as jest.MockedFunction<
-  typeof getActiveUserProfile
+const mockHandleRegisterUser = handleRegisterUser as jest.MockedFunction<
+  typeof handleRegisterUser
 >
 const mockGetActiveUserAccount = getActiveUserAccount as jest.MockedFunction<
   typeof getActiveUserAccount
@@ -137,7 +144,7 @@ describe('organization-join-handlers', () => {
 
     // Setup default successful mocks
     mockGetActiveUserAccount.mockResolvedValue(mockUserAccount)
-    mockGetActiveUserProfile.mockResolvedValue(mockUserProfile)
+    ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockUserProfile)
     ;(mockDb.orgInvitation.findUnique as jest.Mock).mockResolvedValue(
       mockInvitation as any,
     )
@@ -157,7 +164,7 @@ describe('organization-join-handlers', () => {
 
     // Mock createApiHandler to call the handler function directly
     mockCreateApiHandler.mockImplementation((handlerFn: any, _config?: any) => {
-      return handlerFn({ user: null }) // dangerouslyBypassAuthentication: true, so user can be null
+      return handlerFn({ user: mockUserAccount }) // Provide proper user object
     })
   })
 
@@ -190,6 +197,90 @@ describe('organization-join-handlers', () => {
           roles: true,
         },
       })
+    })
+
+    it('should automatically register user profile when user has no profile', async () => {
+      // Mock user with no profile initially
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValueOnce(null)
+
+      // Mock successful profile registration
+      mockHandleRegisterUser.mockResolvedValue({
+        status: 200,
+        data: mockUserProfile,
+        message: 'User profile created successfully.',
+      })
+
+      const result = await handleJoinOrganization('org-1', validPayload)
+
+      expect(result).toEqual({
+        status: 'accepted',
+        message: 'Successfully joined organization.',
+      })
+
+      // Verify profile registration was called
+      expect(mockHandleRegisterUser).toHaveBeenCalledTimes(1)
+
+      // Verify user lookup was called to check for existing profile
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
+        where: { accountId: mockUserAccount.id },
+        select: { id: true },
+      })
+    })
+
+    it('should handle profile registration failure gracefully', async () => {
+      // Mock user with no profile initially
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValueOnce(null)
+
+      // Mock failed profile registration (throws error)
+      mockHandleRegisterUser.mockRejectedValue(
+        new Error('Profile registration failed'),
+      )
+
+      // Should throw AuthenticationError since no user profile after failed registration
+      await expect(
+        handleJoinOrganization('org-1', validPayload),
+      ).rejects.toThrow(AuthenticationError)
+
+      // Verify profile registration was attempted
+      expect(mockHandleRegisterUser).toHaveBeenCalledTimes(1)
+    })
+
+    it('should handle profile registration returning error response', async () => {
+      // Mock user with no profile initially
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValueOnce(null)
+
+      // Mock failed profile registration (returns error response)
+      mockHandleRegisterUser.mockResolvedValue({
+        status: 500,
+        data: null,
+        error: {
+          code: FetchErrorCode.INTERNAL_ERROR,
+          message: 'Failed to create profile',
+        },
+      })
+
+      // Should throw AuthenticationError since no user profile after failed registration
+      await expect(
+        handleJoinOrganization('org-1', validPayload),
+      ).rejects.toThrow(AuthenticationError)
+
+      // Verify profile registration was attempted
+      expect(mockHandleRegisterUser).toHaveBeenCalledTimes(1)
+    })
+
+    it('should skip profile registration when user already has profile', async () => {
+      // Mock user with existing profile
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockUserProfile)
+
+      const result = await handleJoinOrganization('org-1', validPayload)
+
+      expect(result).toEqual({
+        status: 'accepted',
+        message: 'Successfully joined organization.',
+      })
+
+      // Verify profile registration was NOT called since profile already exists
+      expect(mockHandleRegisterUser).not.toHaveBeenCalled()
     })
 
     it('should throw ValidationError when token is missing', async () => {
@@ -228,7 +319,12 @@ describe('organization-join-handlers', () => {
     })
 
     it('should throw AuthenticationError when user is not authenticated', async () => {
-      mockGetActiveUserAccount.mockResolvedValue(null)
+      // Override the createApiHandler mock for this test to provide no user
+      mockCreateApiHandler.mockImplementation(
+        (handlerFn: any, _config?: any) => {
+          return handlerFn({ user: null })
+        },
+      )
 
       await expect(
         handleJoinOrganization('org-1', validPayload),

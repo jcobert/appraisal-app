@@ -158,9 +158,6 @@ export const handleCreateOrganization = async (
 ) => {
   return createApiHandler(
     async ({ user }) => {
-      // Import here to avoid circular dependencies
-      const { getActiveUserProfile } = await import('@/lib/db/queries/user')
-
       if (!user?.id) {
         throw new AuthenticationError('User not authenticated.')
       }
@@ -174,7 +171,9 @@ export const handleCreateOrganization = async (
         )
       }
 
-      const userProfile = await getActiveUserProfile()
+      const userProfile = await db.user.findUnique({
+        where: { accountId: user?.id },
+      })
       if (!userProfile?.id) {
         throw new ValidationError('No user profile found.', {})
       }
@@ -205,14 +204,14 @@ export const handleCreateOrganization = async (
           ...payload,
           members: {
             create: {
-              userId: userProfile.id,
+              userId: userProfile?.id,
               roles: ['owner'],
-              createdBy: user.id,
-              updatedBy: user.id,
+              createdBy: user?.id,
+              updatedBy: user?.id,
             },
           },
-          createdBy: user.id,
-          updatedBy: user.id,
+          createdBy: user?.id,
+          updatedBy: user?.id,
         },
         select: { id: true, name: true },
       })

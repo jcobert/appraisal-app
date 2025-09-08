@@ -10,13 +10,9 @@ import {
   NotFoundError,
   ValidationError,
 } from '@/lib/db/errors'
+import { handleRegisterUser } from '@/lib/db/handlers/user-handlers'
 import { userIsMember } from '@/lib/db/queries/organization'
-import {
-  getActiveUserProfile,
-  registerUserProfile,
-} from '@/lib/db/queries/user'
 
-import { getActiveUserAccount } from '@/utils/auth'
 import { isExpired } from '@/utils/date'
 
 import OrgInviteNotifyOwnerEmail, {
@@ -101,20 +97,49 @@ export async function handleJoinOrganization(
         }
       }
 
-      const userAccount = await getActiveUserAccount()
-      let userProfile = await getActiveUserProfile()
+      let userProfile = await db.user.findUnique({
+        where: { accountId: user?.id },
+        select: { id: true },
+      })
 
-      // User account but no profile (just created acct while joining org).
-      // Register profile automatically.
-      if (userAccount && !userProfile) {
-        const registeredProfile = await registerUserProfile({
-          redirectIfExists: false,
-        })
-        userProfile = registeredProfile || null
+      /**
+       * User account but no profile (just created account while joining org).
+       * Try to register profile automatically, but don't block org join if it fails.
+       *
+       * We gracefully handle profile registration failure because:
+       * 1. The invitation should not be lost due to unrelated profile issues
+       * 2. We can create profile later if needed
+       * 3. Core org join functionality takes priority
+       */
+      if (user && !userProfile) {
+        try {
+          const registrationResult = await handleRegisterUser()
+          userProfile = registrationResult?.data || null
+
+          // Log successful auto-registration for monitoring
+          if (userProfile) {
+            // eslint-disable-next-line no-console
+            console.info('Auto-registered user profile during org join:', {
+              userId: userProfile?.id,
+              invitation: invitation?.id,
+            })
+          }
+        } catch (registrationError) {
+          // Log the error but continue with org join process
+          // eslint-disable-next-line no-console
+          console.error(
+            'Failed to auto-register user profile during org join:',
+            {
+              error: registrationError,
+              userId: user?.id,
+              invitation: invitation?.id,
+            },
+          )
+        }
       }
 
       // Not allowed
-      if (!userAccount || !userProfile) {
+      if (!user || !userProfile) {
         throw new AuthenticationError('User not authenticated.')
       }
 
@@ -145,8 +170,8 @@ export async function handleJoinOrganization(
               members: {
                 create: [
                   {
-                    createdBy: userAccount?.id,
-                    updatedBy: userAccount?.id,
+                    createdBy: user?.id,
+                    updatedBy: user?.id,
                     userId: userProfile?.id,
                     active: true,
                     roles: invitation?.roles,

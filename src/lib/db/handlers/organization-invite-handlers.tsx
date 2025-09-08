@@ -6,7 +6,6 @@ import { db } from '@/lib/db/client'
 import { ORG_INVITE_EXPIRY } from '@/lib/db/config'
 import { NotFoundError, ValidationError } from '@/lib/db/errors'
 import { userIsOwner } from '@/lib/db/queries/organization'
-import { getActiveUserProfile } from '@/lib/db/queries/user'
 import { generateUniqueToken } from '@/lib/server-utils'
 
 import { generateExpiry } from '@/utils/date'
@@ -83,7 +82,9 @@ export const handleCreateOrgInvite = async (
         })
       }
 
-      const activeUser = await getActiveUserProfile()
+      const activeUser = await db.user.findUnique({
+        where: { accountId: user?.id },
+      })
 
       const org = await db.organization.findUnique({
         where: { id: organizationId },

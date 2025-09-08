@@ -6,7 +6,6 @@ import { redirect } from 'next/navigation'
 
 import { db } from '@/lib/db/client'
 import { getActiveUserOrgMember } from '@/lib/db/queries/organization'
-import { getActiveUserProfile } from '@/lib/db/queries/user'
 import {
   canQuery,
   getSessionData,
@@ -29,11 +28,13 @@ jest.mock('@/lib/db/client', () => ({
       findUnique: jest.fn(),
       findMany: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   },
 }))
 jest.mock('@/utils/auth')
 jest.mock('@/lib/db/queries/organization')
-jest.mock('@/lib/db/queries/user')
 
 // Mock the DB queries
 const mockGetActiveUserOrgMember =
@@ -42,9 +43,6 @@ const mockGetActiveUserOrgMember =
 const mockDb = db as jest.Mocked<typeof db>
 const mockIsAuthenticated = isAuthenticated as jest.MockedFunction<
   typeof isAuthenticated
->
-const mockGetActiveUserProfile = getActiveUserProfile as jest.MockedFunction<
-  typeof getActiveUserProfile
 >
 
 // Mock next/navigation
@@ -214,8 +212,7 @@ describe('db utils', () => {
         isAuthenticated: jest.fn().mockResolvedValue(true),
         getUser: jest.fn().mockResolvedValue(mockUser),
       }))
-
-      mockGetActiveUserProfile.mockResolvedValue(mockProfile)
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockProfile)
       ;(mockDb.organization.findMany as jest.Mock).mockResolvedValue(mockOrgs)
 
       const result = await getSessionData()

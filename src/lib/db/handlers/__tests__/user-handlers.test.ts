@@ -11,17 +11,10 @@ import {
   handleDeleteUser,
   handleGetActiveUser,
   handleGetUser,
-  handleGetUsers,
   handleRegisterUser,
   handleUpdateActiveUser,
   handleUpdateUser,
 } from '@/lib/db/handlers/user-handlers'
-import {
-  createUserProfile,
-  getActiveUserProfile,
-  getUserProfile,
-  getUserProfiles,
-} from '@/lib/db/queries/user'
 import {
   updateAuthAccount,
   updateAuthEmail,
@@ -47,13 +40,6 @@ jest.mock('@/lib/db/client', () => ({
   },
 }))
 
-jest.mock('@/lib/db/queries/user', () => ({
-  getUserProfiles: jest.fn(),
-  getUserProfile: jest.fn(),
-  getActiveUserProfile: jest.fn(),
-  createUserProfile: jest.fn(),
-}))
-
 jest.mock('@/utils/zod', () => ({
   validatePayload: jest.fn(),
 }))
@@ -77,18 +63,6 @@ const mockIsAuthenticated = isAuthenticated as jest.MockedFunction<
   typeof isAuthenticated
 >
 const mockDb = db as jest.Mocked<typeof db>
-const mockGetUserProfiles = getUserProfiles as jest.MockedFunction<
-  typeof getUserProfiles
->
-const mockGetUserProfile = getUserProfile as jest.MockedFunction<
-  typeof getUserProfile
->
-const mockGetActiveUserProfile = getActiveUserProfile as jest.MockedFunction<
-  typeof getActiveUserProfile
->
-const mockCreateUserProfile = createUserProfile as jest.MockedFunction<
-  typeof createUserProfile
->
 const mockValidatePayload = validatePayload as jest.MockedFunction<
   typeof validatePayload
 >
@@ -158,61 +132,30 @@ describe('user-handlers', () => {
     ;(mockDb.user.create as jest.Mock).mockResolvedValue(mockUserProfile)
   })
 
-  describe('handleGetUsers', () => {
-    it('should return all users successfully', async () => {
-      const mockUsers = [mockUserProfile]
-      mockGetUserProfiles.mockResolvedValue(mockUsers)
-
-      const result = await handleGetUsers()
-
-      expect(result.status).toBe(200)
-      expect(result.data).toEqual(mockUsers)
-      expect(mockGetUserProfiles).toHaveBeenCalledWith()
-    })
-
-    it('should return empty array when getUserProfiles returns null', async () => {
-      mockGetUserProfiles.mockResolvedValue(null)
-
-      const result = await handleGetUsers()
-
-      expect(result.status).toBe(200)
-      expect(result.data).toEqual([])
-      expect(mockGetUserProfiles).toHaveBeenCalledWith()
-    })
-
-    it('should handle authentication failure', async () => {
-      mockIsAuthenticated.mockResolvedValue({
-        allowed: false,
-        user: null,
-      })
-
-      const result = await handleGetUsers()
-
-      expect(result.status).toBe(401)
-      expect(result.error?.code).toBe('NOT_AUTHENTICATED')
-    })
-  })
-
   describe('handleGetActiveUser', () => {
     it('should return active user profile successfully', async () => {
-      mockGetActiveUserProfile.mockResolvedValue(mockUserProfile)
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockUserProfile)
 
       const result = await handleGetActiveUser()
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(mockUserProfile)
-      expect(mockGetActiveUserProfile).toHaveBeenCalledWith()
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
+        where: { accountId: mockUser.id },
+      })
     })
 
     it('should return 404 when no active user profile found', async () => {
-      mockGetActiveUserProfile.mockResolvedValue(null)
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
 
       const result = await handleGetActiveUser()
 
       expect(result.status).toBe(404)
       expect(result.data).toBeNull()
       expect(result.error?.code).toBe('NOT_FOUND')
-      expect(mockGetActiveUserProfile).toHaveBeenCalledWith()
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
+        where: { accountId: mockUser.id },
+      })
     })
 
     it('should handle authentication failure', async () => {
@@ -231,27 +174,27 @@ describe('user-handlers', () => {
   describe('handleGetUser', () => {
     it('should return user by ID successfully', async () => {
       const userId = 'user-profile-123'
-      mockGetUserProfile.mockResolvedValue(mockUserProfile)
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockUserProfile)
 
       const result = await handleGetUser(userId)
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(mockUserProfile)
-      expect(mockGetUserProfile).toHaveBeenCalledWith({
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
       })
     })
 
     it('should return 404 when user not found', async () => {
       const userId = 'nonexistent-user'
-      mockGetUserProfile.mockResolvedValue(null)
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
 
       const result = await handleGetUser(userId)
 
       expect(result.status).toBe(404)
       expect(result.data).toBeNull()
       expect(result.error?.code).toBe('NOT_FOUND')
-      expect(mockGetUserProfile).toHaveBeenCalledWith({
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
       })
     })
@@ -259,7 +202,7 @@ describe('user-handlers', () => {
     it('should handle missing user ID', async () => {
       // Mock Prisma to simulate P2025 "Record not found" error for empty ID
       const prismaError = new Error('Record not found')
-      mockGetUserProfile.mockRejectedValue(prismaError)
+      ;(mockDb.user.findUnique as jest.Mock).mockRejectedValue(prismaError)
 
       const result = await handleGetUser('')
 
@@ -292,6 +235,7 @@ describe('user-handlers', () => {
       expect(result.message).toBe('User profile created successfully.')
       expect(mockDb.user.findUnique).toHaveBeenCalledWith({
         where: { accountId: mockUser.id },
+        select: { id: true },
       })
       expect(mockDb.user.create).toHaveBeenCalledWith({
         data: {
@@ -304,6 +248,7 @@ describe('user-handlers', () => {
           email: mockUser.email,
           phone: mockUser.phone_number,
         },
+        select: { id: true },
       })
     })
 
@@ -319,6 +264,7 @@ describe('user-handlers', () => {
       )
       expect(mockDb.user.findUnique).toHaveBeenCalledWith({
         where: { accountId: mockUser.id },
+        select: { id: true },
       })
       expect(mockDb.user.create).not.toHaveBeenCalled()
     })
@@ -376,6 +322,7 @@ describe('user-handlers', () => {
           email: userWithMissingFields.email,
           phone: null,
         },
+        select: { id: true },
       })
     })
   })
@@ -391,7 +338,7 @@ describe('user-handlers', () => {
 
     it('should create user successfully', async () => {
       const createdUser = { ...mockUserProfile, ...createPayload }
-      mockCreateUserProfile.mockResolvedValue(createdUser)
+      ;(mockDb.user.create as jest.Mock).mockResolvedValue(createdUser)
 
       const result = await handleCreateUser(createPayload)
 
@@ -402,7 +349,7 @@ describe('user-handlers', () => {
         expect.any(Object),
         createPayload,
       )
-      expect(mockCreateUserProfile).toHaveBeenCalledWith({
+      expect(mockDb.user.create).toHaveBeenCalledWith({
         data: {
           ...createPayload,
           createdBy: mockUser.id,
@@ -453,7 +400,9 @@ describe('user-handlers', () => {
     })
 
     it('should handle database errors', async () => {
-      mockCreateUserProfile.mockRejectedValue(new Error('Database error'))
+      ;(mockDb.user.create as jest.Mock).mockRejectedValue(
+        new Error('Database error'),
+      )
 
       const result = await handleCreateUser(createPayload)
 

@@ -1,13 +1,6 @@
 // sort-imports-ignore
 import 'server-only'
 
-import {
-  getUserProfiles,
-  getUserProfile,
-  getActiveUserProfile,
-  createUserProfile,
-} from '@/lib/db/queries/user'
-
 import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
 import { ValidationError, DatabaseConstraintError } from '@/lib/db/errors'
 import { validatePayload } from '@/utils/zod'
@@ -21,34 +14,23 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { db } from '@/lib/db/client'
 
 /**
- * Get all users.
- * Can be used in both API routes and server components.
- */
-export const handleGetUsers = async () => {
-  return createApiHandler(async () => {
-    const users = await getUserProfiles()
-    return users || []
-  })
-}
-
-/**
  * Get active user profile.
  * Can be used in both API routes and server components.
  */
 export const handleGetActiveUser = async () => {
-  return createApiHandler(async () => {
-    const user = await getActiveUserProfile()
-    return user
+  return createApiHandler(async ({ user }) => {
+    const result = await db.user.findUnique({ where: { accountId: user?.id } })
+    return result
   })
 }
 
 /**
- * Get user by ID.
+ * Get user profile by ID.
  * Can be used in both API routes and server components.
  */
 export const handleGetUser = async (userId: string) => {
   return createApiHandler(async () => {
-    const user = await getUserProfile({
+    const user = await db.user.findUnique({
       where: { id: userId },
     })
     return user
@@ -60,7 +42,7 @@ export const handleGetUser = async (userId: string) => {
  * Can be used in both API routes and server components.
  */
 export const handleCreateUser = async (
-  payload: Parameters<typeof createUserProfile>[0]['data'],
+  payload: Parameters<typeof db.user.create>[0]['data'],
 ) => {
   return createApiHandler(
     async ({ user }) => {
@@ -79,7 +61,7 @@ export const handleCreateUser = async (
         'updatedBy',
       ])
 
-      const result = await createUserProfile({ data: dataWithUserFields })
+      const result = await db.user.create({ data: dataWithUserFields })
       return result
     },
     {
@@ -101,6 +83,7 @@ export const handleRegisterUser = async () => {
       // Check if profile already exists
       const currentProfile = await db.user.findUnique({
         where: { accountId: user?.id },
+        select: { id: true },
       })
 
       if (currentProfile?.id) {
@@ -123,6 +106,7 @@ export const handleRegisterUser = async () => {
           email: user?.email,
           phone: user?.phone_number,
         },
+        select: { id: true },
       })
 
       return result
@@ -283,7 +267,6 @@ export const handleDeleteUser = async (userId: string) => {
   )
 }
 
-export type GetUsersResult = Awaited<ReturnType<typeof handleGetUsers>>
 export type GetActiveUserResult = Awaited<
   ReturnType<typeof handleGetActiveUser>
 >

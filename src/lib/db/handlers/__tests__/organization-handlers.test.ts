@@ -14,7 +14,6 @@ import type { KindeUser } from '@kinde-oss/kinde-auth-nextjs/types'
 import { ZodIssueCode } from 'zod'
 
 import { userIsMember, userIsOwner } from '@/lib/db/queries/organization'
-import { getActiveUserProfile } from '@/lib/db/queries/user'
 import { getUserPermissions } from '@/lib/db/utils'
 
 import { isAuthenticated } from '@/utils/auth'
@@ -30,11 +29,13 @@ jest.mock('../../client', () => ({
       findUnique: jest.fn(),
       findMany: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   },
 }))
 jest.mock('@/utils/auth')
 jest.mock('@/lib/db/queries/organization')
-jest.mock('@/lib/db/queries/user')
 jest.mock('@/lib/db/utils')
 jest.mock('@/utils/zod')
 
@@ -46,9 +47,6 @@ const mockIsAuthenticated = isAuthenticated as jest.MockedFunction<
 const mockUserIsOwner = userIsOwner as jest.MockedFunction<typeof userIsOwner>
 const mockUserIsMember = userIsMember as jest.MockedFunction<
   typeof userIsMember
->
-const mockGetActiveUserProfile = getActiveUserProfile as jest.MockedFunction<
-  typeof getActiveUserProfile
 >
 const mockGetUserPermissions = getUserPermissions as jest.MockedFunction<
   typeof getUserPermissions
@@ -436,7 +434,7 @@ describe('organization-handlers', () => {
 
     beforeEach(() => {
       // Make sure the user profile is available for create tests
-      mockGetActiveUserProfile.mockResolvedValue({
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue({
         id: 'user-profile-123',
         accountId: mockUser.id,
         firstName: 'Test',
@@ -508,7 +506,7 @@ describe('organization-handlers', () => {
     })
 
     it('should return 400 when user profile not found', async () => {
-      mockGetActiveUserProfile.mockResolvedValue(null)
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
 
       const result = await handleCreateOrganization(payload)
 
