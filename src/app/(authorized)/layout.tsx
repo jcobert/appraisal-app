@@ -7,7 +7,7 @@ import {
   handleGetOrganizationPermissions,
   handleGetUserOrganizations,
 } from '@/lib/db/handlers/organization-handlers'
-import { handleGetActiveUser } from '@/lib/db/handlers/user-handlers'
+import { handleGetActiveUserProfile } from '@/lib/db/handlers/user-handlers'
 
 import { isAuthenticated } from '@/utils/auth'
 import { successful } from '@/utils/fetch'
@@ -48,7 +48,7 @@ const Layout = async ({
     queryClient.prefetchQuery({
       queryKey: usersQueryKey.active,
       queryFn: async () => {
-        const res = await handleGetActiveUser()
+        const res = await handleGetActiveUserProfile()
         if (!successful(res?.status)) {
           throw new Error(res?.error?.message || 'Failed to fetch active user')
         }

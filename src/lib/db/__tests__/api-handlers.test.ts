@@ -14,7 +14,6 @@ import {
   NotFoundError,
   ValidationError,
 } from '../errors'
-import type { KindeUser } from '@kinde-oss/kinde-auth-nextjs/types'
 import {
   PrismaClientKnownRequestError,
   PrismaClientUnknownRequestError,
@@ -25,6 +24,8 @@ import { ZodIssueCode } from 'zod'
 
 import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode } from '@/utils/fetch'
+
+import { SessionUser } from '@/types/auth'
 
 // Mock the auth utility
 jest.mock('@/utils/auth', () => ({
@@ -275,7 +276,7 @@ describe('api-handlers', () => {
   })
 
   describe('createApiHandler', () => {
-    const mockUser: KindeUser<Record<string, any>> = {
+    const mockUser: SessionUser = {
       id: 'user-123',
       email: 'test@example.com',
       given_name: 'Test',

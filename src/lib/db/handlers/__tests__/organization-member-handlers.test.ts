@@ -8,7 +8,6 @@ import {
   handleUpdateActiveUserOrgMember,
   handleUpdateOrgMember,
 } from '../organization-member-handlers'
-import type { KindeUser } from '@kinde-oss/kinde-auth-nextjs/types'
 import { MemberRole } from '@prisma/client'
 import { ZodIssueCode } from 'zod'
 
@@ -22,6 +21,8 @@ import {
 import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode } from '@/utils/fetch'
 import { validatePayload } from '@/utils/zod'
+
+import { SessionUser } from '@/types/auth'
 
 // Mock dependencies
 jest.mock('@/utils/auth', () => ({
@@ -63,7 +64,7 @@ const mockValidatePayload = validatePayload as jest.MockedFunction<
 >
 
 describe('organization-member-handlers', () => {
-  const mockUser: KindeUser<Record<string, any>> = {
+  const mockUser: SessionUser = {
     id: 'user-123',
     email: 'test@example.com',
     given_name: 'Test',

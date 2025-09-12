@@ -58,7 +58,7 @@ export async function handleGetUsers() {
   })
 }
 
-export async function handleCreateUser(
+export async function handleCreateUserProfile(
   payload: Parameters<typeof createUserProfile>[0]['data'],
 ) {
   return createApiHandler(
@@ -97,7 +97,7 @@ export async function handleCreateUser(
 // /src/app/api/core/user/route.ts
 import { toNextResponse } from '@/lib/api-handlers'
 import {
-  handleCreateUser,
+  handleCreateUserProfile,
   handleGetUsers,
 } from '@/lib/db/handlers/user-handlers'
 
@@ -107,8 +107,8 @@ export const GET = async (_req: NextRequest) => {
 }
 
 export const POST = async (req: NextRequest) => {
-  const payload = (await req.json()) as Parameters<typeof handleCreateUser>[0]
-  const result = await handleCreateUser(payload)
+  const payload = (await req.json()) as Parameters<typeof handleCreateUserProfile>[0]
+  const result = await handleCreateUserProfile(payload)
   return toNextResponse(result)
 }
 ```
@@ -201,7 +201,7 @@ export async function createUserAction(formData: FormData) {
     email: formData.get('email') as string,
   }
 
-  const result = await handleCreateUser(payload)
+  const result = await handleCreateUserProfile(payload)
 
   if (!successful(result.status)) {
     return { error: result.error }
@@ -217,7 +217,7 @@ export async function createUserAction(formData: FormData) {
 ### Handler-Level Authentication
 
 ```typescript
-export async function handleGetUser(userId: string) {
+export async function handleGetUserProfile(userId: string) {
   return createApiHandler(async () => {
     // createApiHandler automatically handles:
     // - Authentication check

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { FC } from 'react'
 
-import { handleGetActiveUser } from '@/lib/db/handlers/user-handlers'
+import { handleGetActiveUserProfile } from '@/lib/db/handlers/user-handlers'
 import { getUserIdentities } from '@/lib/kinde-management/queries'
 
 import { getActiveUserAccount } from '@/utils/auth'
@@ -17,7 +17,7 @@ type Props = PageParams
 const Page: FC<Props> = async () => {
   const user = await getActiveUserAccount()
 
-  const userProfile = (await handleGetActiveUser())?.data
+  const userProfile = (await handleGetActiveUserProfile())?.data
 
   if (!user || !userProfile) {
     redirect('/dashboard')

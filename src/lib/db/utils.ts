@@ -15,29 +15,23 @@ import {
 } from '@/configuration/permissions'
 import { redirect } from 'next/navigation'
 import { homeUrl } from '@/utils/nav'
-import { db } from '@/lib/db/client'
 import { handleGetActiveUserOrgMember } from '@/lib/db/handlers/organization-member-handlers'
+import { handleGetActiveUserProfile } from '@/lib/db/handlers/user-handlers'
+import { handleGetUserOrganizations } from '@/lib/db/handlers/organization-handlers'
+import { SessionData } from '@/types/auth'
 
-/** Returns user session (account) and profile data, both from Kinde auth and core DB. */
-export const getSessionData = async () => {
+/** Returns active user account (Kinde auth DB) and profile (core DB) data. */
+export const getSessionData = async (): Promise<SessionData> => {
   const session = getKindeServerSession()
   const { getUser, isAuthenticated } = session
   // User account (from Kinde DB)
-  const user = await getUser()
+  const account = await getUser()
   const loggedIn = !!(await isAuthenticated())
   // User profile (from core DB)
-  const profile = await db.user.findUnique({ where: { accountId: user?.id } })
+  const profile = (await handleGetActiveUserProfile())?.data ?? null
   // User organizations
-  const organizations = await db.organization.findMany({
-    where: {
-      members: {
-        some: {
-          user: { accountId: user?.id },
-        },
-      },
-    },
-  })
-  return { user, loggedIn, profile, organizations }
+  const organizations = (await handleGetUserOrganizations())?.data ?? []
+  return { account, loggedIn, profile, organizations }
 }
 
 /**

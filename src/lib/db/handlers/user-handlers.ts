@@ -17,7 +17,7 @@ import { db } from '@/lib/db/client'
  * Get active user profile.
  * Can be used in both API routes and server components.
  */
-export const handleGetActiveUser = async () => {
+export const handleGetActiveUserProfile = async () => {
   return createApiHandler(async ({ user }) => {
     const result = await db.user.findUnique({ where: { accountId: user?.id } })
     return result
@@ -28,7 +28,7 @@ export const handleGetActiveUser = async () => {
  * Get user profile by ID.
  * Can be used in both API routes and server components.
  */
-export const handleGetUser = async (userId: string) => {
+export const handleGetUserProfile = async (userId: string) => {
   return createApiHandler(async () => {
     const user = await db.user.findUnique({
       where: { id: userId },
@@ -41,7 +41,7 @@ export const handleGetUser = async (userId: string) => {
  * Create a user profile.
  * Can be used in both API routes and server components.
  */
-export const handleCreateUser = async (
+export const handleCreateUserProfile = async (
   payload: Parameters<typeof db.user.create>[0]['data'],
 ) => {
   return createApiHandler(
@@ -124,7 +124,7 @@ export const handleRegisterUser = async () => {
  * Update a user profile.
  * Can be used in both API routes and server components.
  */
-export const handleUpdateUser = async (
+export const handleUpdateUserProfile = async (
   userId: string,
   payload: Parameters<typeof db.user.update>[0]['data'],
 ) => {
@@ -162,7 +162,7 @@ export const handleUpdateUser = async (
  * Can be used in both API routes and server components.
  * Includes special logic for updating Kinde account details.
  */
-export const handleUpdateActiveUser = async (
+export const handleUpdateActiveUserProfile = async (
   payload: Parameters<typeof db.user.update>['0']['data'],
 ) => {
   return createApiHandler(
@@ -250,7 +250,7 @@ export const handleUpdateActiveUser = async (
  * Delete a user profile.
  * Can be used in both API routes and server components.
  */
-export const handleDeleteUser = async (userId: string) => {
+export const handleDeleteUserProfile = async (userId: string) => {
   return createApiHandler(
     async () => {
       const result = await db.user.delete({
@@ -268,13 +268,19 @@ export const handleDeleteUser = async (userId: string) => {
 }
 
 export type GetActiveUserResult = Awaited<
-  ReturnType<typeof handleGetActiveUser>
+  ReturnType<typeof handleGetActiveUserProfile>
 >
-export type GetUserResult = Awaited<ReturnType<typeof handleGetUser>>
-export type CreateUserResult = Awaited<ReturnType<typeof handleCreateUser>>
+export type GetUserResult = Awaited<ReturnType<typeof handleGetUserProfile>>
+export type CreateUserResult = Awaited<
+  ReturnType<typeof handleCreateUserProfile>
+>
 export type RegisterUserResult = Awaited<ReturnType<typeof handleRegisterUser>>
-export type UpdateUserResult = Awaited<ReturnType<typeof handleUpdateUser>>
-export type UpdateActiveUserResult = Awaited<
-  ReturnType<typeof handleUpdateActiveUser>
+export type UpdateUserResult = Awaited<
+  ReturnType<typeof handleUpdateUserProfile>
 >
-export type DeleteUserResult = Awaited<ReturnType<typeof handleDeleteUser>>
+export type UpdateActiveUserResult = Awaited<
+  ReturnType<typeof handleUpdateActiveUserProfile>
+>
+export type DeleteUserResult = Awaited<
+  ReturnType<typeof handleDeleteUserProfile>
+>

@@ -1,7 +1,6 @@
 /**
  * @jest-environment node
  */
-import { KindeUser } from '@kinde-oss/kinde-auth-nextjs'
 import { redirect } from 'next/navigation'
 
 import { db } from '@/lib/db/client'
@@ -16,6 +15,8 @@ import {
 } from '@/lib/db/utils'
 
 import { isAuthenticated } from '@/utils/auth'
+
+import { SessionUser } from '@/types/auth'
 
 import { PermissionAction } from '@/configuration/permissions'
 
@@ -70,7 +71,7 @@ jest.mock('@/utils/auth', () => ({
 }))
 
 describe('db utils', () => {
-  const mockUser: KindeUser<Record<string, any>> = {
+  const mockUser: SessionUser = {
     id: 'user_123',
     email: 'test@example.com',
     given_name: 'Test',
@@ -217,10 +218,30 @@ describe('db utils', () => {
 
       const result = await getSessionData()
       expect(result).toEqual({
-        user: mockUser,
+        account: mockUser,
         loggedIn: true,
         profile: mockProfile,
         organizations: mockOrgs,
+      })
+    })
+
+    it('should handle no user gracefully', async () => {
+      const getKindeServerSession = jest.requireMock(
+        '@kinde-oss/kinde-auth-nextjs/server',
+      ).getKindeServerSession
+      getKindeServerSession.mockImplementation(() => ({
+        isAuthenticated: jest.fn().mockResolvedValue(false),
+        getUser: jest.fn().mockResolvedValue(null),
+      }))
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.organization.findMany as jest.Mock).mockResolvedValue(null)
+
+      const result = await getSessionData()
+      expect(result).toEqual({
+        account: null,
+        loggedIn: false,
+        profile: null,
+        organizations: [],
       })
     })
   })

@@ -2,18 +2,17 @@
  * @jest-environment node
  */
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
-import { KindeUser } from '@kinde-oss/kinde-auth-nextjs/types'
 import { User } from '@prisma/client'
 
 import { db } from '@/lib/db/client'
 import {
-  handleCreateUser,
-  handleDeleteUser,
-  handleGetActiveUser,
-  handleGetUser,
+  handleCreateUserProfile,
+  handleDeleteUserProfile,
+  handleGetActiveUserProfile,
+  handleGetUserProfile,
   handleRegisterUser,
-  handleUpdateActiveUser,
-  handleUpdateUser,
+  handleUpdateActiveUserProfile,
+  handleUpdateUserProfile,
 } from '@/lib/db/handlers/user-handlers'
 import {
   updateAuthAccount,
@@ -22,6 +21,8 @@ import {
 
 import { isAuthenticated } from '@/utils/auth'
 import { validatePayload } from '@/utils/zod'
+
+import { SessionUser } from '@/types/auth'
 
 import { getProfileChanges } from '@/features/user/utils'
 
@@ -80,7 +81,7 @@ const mockGetKindeServerSession = getKindeServerSession as jest.MockedFunction<
 >
 
 describe('user-handlers', () => {
-  const mockUser: KindeUser<Record<string, any>> = {
+  const mockUser: SessionUser = {
     id: 'user-123',
     email: 'test@example.com',
     given_name: 'Test',
@@ -132,11 +133,11 @@ describe('user-handlers', () => {
     ;(mockDb.user.create as jest.Mock).mockResolvedValue(mockUserProfile)
   })
 
-  describe('handleGetActiveUser', () => {
+  describe('handleGetActiveUserProfile', () => {
     it('should return active user profile successfully', async () => {
       ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockUserProfile)
 
-      const result = await handleGetActiveUser()
+      const result = await handleGetActiveUserProfile()
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(mockUserProfile)
@@ -148,7 +149,7 @@ describe('user-handlers', () => {
     it('should return 404 when no active user profile found', async () => {
       ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
 
-      const result = await handleGetActiveUser()
+      const result = await handleGetActiveUserProfile()
 
       expect(result.status).toBe(404)
       expect(result.data).toBeNull()
@@ -164,19 +165,19 @@ describe('user-handlers', () => {
         user: null,
       })
 
-      const result = await handleGetActiveUser()
+      const result = await handleGetActiveUserProfile()
 
       expect(result.status).toBe(401)
       expect(result.error?.code).toBe('NOT_AUTHENTICATED')
     })
   })
 
-  describe('handleGetUser', () => {
+  describe('handleGetUserProfile', () => {
     it('should return user by ID successfully', async () => {
       const userId = 'user-profile-123'
       ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockUserProfile)
 
-      const result = await handleGetUser(userId)
+      const result = await handleGetUserProfile(userId)
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(mockUserProfile)
@@ -189,7 +190,7 @@ describe('user-handlers', () => {
       const userId = 'nonexistent-user'
       ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
 
-      const result = await handleGetUser(userId)
+      const result = await handleGetUserProfile(userId)
 
       expect(result.status).toBe(404)
       expect(result.data).toBeNull()
@@ -204,7 +205,7 @@ describe('user-handlers', () => {
       const prismaError = new Error('Record not found')
       ;(mockDb.user.findUnique as jest.Mock).mockRejectedValue(prismaError)
 
-      const result = await handleGetUser('')
+      const result = await handleGetUserProfile('')
 
       expect(result.status).toBe(500)
       expect(result.error?.code).toBe('INTERNAL_ERROR')
@@ -216,7 +217,7 @@ describe('user-handlers', () => {
         user: null,
       })
 
-      const result = await handleGetUser('user-123')
+      const result = await handleGetUserProfile('user-123')
 
       expect(result.status).toBe(401)
       expect(result.error?.code).toBe('NOT_AUTHENTICATED')
@@ -327,7 +328,7 @@ describe('user-handlers', () => {
     })
   })
 
-  describe('handleCreateUser', () => {
+  describe('handleCreateUserProfile', () => {
     const createPayload = {
       accountId: 'user-456',
       firstName: 'John',
@@ -340,7 +341,7 @@ describe('user-handlers', () => {
       const createdUser = { ...mockUserProfile, ...createPayload }
       ;(mockDb.user.create as jest.Mock).mockResolvedValue(createdUser)
 
-      const result = await handleCreateUser(createPayload)
+      const result = await handleCreateUserProfile(createPayload)
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(createdUser)
@@ -375,7 +376,7 @@ describe('user-handlers', () => {
         },
       })
 
-      const result = await handleCreateUser(invalidPayload)
+      const result = await handleCreateUserProfile(invalidPayload)
 
       expect(result.status).toBe(400)
       expect(result.error?.code).toBe('INVALID_DATA')
@@ -393,7 +394,7 @@ describe('user-handlers', () => {
         user: null,
       })
 
-      const result = await handleCreateUser(createPayload)
+      const result = await handleCreateUserProfile(createPayload)
 
       expect(result.status).toBe(401)
       expect(result.error?.code).toBe('NOT_AUTHENTICATED')
@@ -404,14 +405,14 @@ describe('user-handlers', () => {
         new Error('Database error'),
       )
 
-      const result = await handleCreateUser(createPayload)
+      const result = await handleCreateUserProfile(createPayload)
 
       expect(result.status).toBe(500)
       expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
   })
 
-  describe('handleUpdateUser', () => {
+  describe('handleUpdateUserProfile', () => {
     const userId = 'user-profile-123'
     const updatePayload = {
       firstName: 'Jane',
@@ -424,7 +425,7 @@ describe('user-handlers', () => {
       const updatedUser = { ...mockUserProfile, ...updatePayload }
       ;(mockDb.user.update as jest.Mock).mockResolvedValue(updatedUser)
 
-      const result = await handleUpdateUser(userId, updatePayload)
+      const result = await handleUpdateUserProfile(userId, updatePayload)
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(updatedUser)
@@ -447,7 +448,7 @@ describe('user-handlers', () => {
       const prismaError = new Error('Invalid ID')
       ;(mockDb.user.update as jest.Mock).mockRejectedValue(prismaError)
 
-      const result = await handleUpdateUser('', updatePayload)
+      const result = await handleUpdateUserProfile('', updatePayload)
 
       expect(result.status).toBe(500)
       expect(result.error?.code).toBe('INTERNAL_ERROR')
@@ -464,7 +465,7 @@ describe('user-handlers', () => {
         },
       })
 
-      const result = await handleUpdateUser(userId, invalidPayload)
+      const result = await handleUpdateUserProfile(userId, invalidPayload)
 
       expect(result.status).toBe(400)
       expect(result.error?.code).toBe('INVALID_DATA')
@@ -480,7 +481,7 @@ describe('user-handlers', () => {
         user: null,
       })
 
-      const result = await handleUpdateUser(userId, updatePayload)
+      const result = await handleUpdateUserProfile(userId, updatePayload)
 
       expect(result.status).toBe(401)
       expect(result.error?.code).toBe('NOT_AUTHENTICATED')
@@ -491,20 +492,20 @@ describe('user-handlers', () => {
         new Error('Database error'),
       )
 
-      const result = await handleUpdateUser(userId, updatePayload)
+      const result = await handleUpdateUserProfile(userId, updatePayload)
 
       expect(result.status).toBe(500)
       expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
   })
 
-  describe('handleDeleteUser', () => {
+  describe('handleDeleteUserProfile', () => {
     const userId = 'user-profile-123'
 
     it('should delete user successfully', async () => {
       ;(mockDb.user.delete as jest.Mock).mockResolvedValue(mockUserProfile)
 
-      const result = await handleDeleteUser(userId)
+      const result = await handleDeleteUserProfile(userId)
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(mockUserProfile)
@@ -519,7 +520,7 @@ describe('user-handlers', () => {
       const prismaError = new Error('Invalid ID')
       ;(mockDb.user.delete as jest.Mock).mockRejectedValue(prismaError)
 
-      const result = await handleDeleteUser('')
+      const result = await handleDeleteUserProfile('')
 
       expect(result.status).toBe(500)
       expect(result.error?.code).toBe('INTERNAL_ERROR')
@@ -531,7 +532,7 @@ describe('user-handlers', () => {
         user: null,
       })
 
-      const result = await handleDeleteUser(userId)
+      const result = await handleDeleteUserProfile(userId)
 
       expect(result.status).toBe(401)
       expect(result.error?.code).toBe('NOT_AUTHENTICATED')
@@ -542,7 +543,7 @@ describe('user-handlers', () => {
         new Error('Database error'),
       )
 
-      const result = await handleDeleteUser(userId)
+      const result = await handleDeleteUserProfile(userId)
 
       expect(result.status).toBe(500)
       expect(result.error?.code).toBe('INTERNAL_ERROR')
@@ -553,14 +554,14 @@ describe('user-handlers', () => {
         new Error('Record to delete does not exist.'),
       )
 
-      const result = await handleDeleteUser(userId)
+      const result = await handleDeleteUserProfile(userId)
 
       expect(result.status).toBe(500)
       expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
   })
 
-  describe('handleUpdateActiveUser', () => {
+  describe('handleUpdateActiveUserProfile', () => {
     it('should update active user profile successfully', async () => {
       const payload = {
         accountId: mockUser.id,
@@ -576,7 +577,7 @@ describe('user-handlers', () => {
       })
       ;(mockDb.user.update as jest.Mock).mockResolvedValue(mockUserProfile)
 
-      const result = await handleUpdateActiveUser(payload)
+      const result = await handleUpdateActiveUserProfile(payload)
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(mockUserProfile)
@@ -594,7 +595,7 @@ describe('user-handlers', () => {
     it('should throw AuthorizationError when user not authenticated', async () => {
       mockIsAuthenticated.mockResolvedValue({ allowed: false, user: null })
 
-      const result = await handleUpdateActiveUser({})
+      const result = await handleUpdateActiveUserProfile({})
 
       expect(result.status).toBe(401)
       expect(result.error?.code).toBe('NOT_AUTHENTICATED')
@@ -608,7 +609,7 @@ describe('user-handlers', () => {
         errors: {},
       })
 
-      const result = await handleUpdateActiveUser(payload)
+      const result = await handleUpdateActiveUserProfile(payload)
 
       expect(result.status).toBe(403)
       expect(result.error?.code).toBe('NOT_AUTHORIZED')
@@ -622,7 +623,7 @@ describe('user-handlers', () => {
         errors: { email: { code: 'invalid_string', message: 'Invalid email' } },
       })
 
-      const result = await handleUpdateActiveUser(payload)
+      const result = await handleUpdateActiveUserProfile(payload)
 
       expect(result.status).toBe(400)
       expect(result.error?.code).toBe('INVALID_DATA')
@@ -638,7 +639,7 @@ describe('user-handlers', () => {
       })
       ;(mockDb.user.update as jest.Mock).mockResolvedValue(null)
 
-      const result = await handleUpdateActiveUser(payload)
+      const result = await handleUpdateActiveUserProfile(payload)
 
       expect(result.status).toBe(500)
       expect(result.error?.code).toBe('INTERNAL_ERROR')

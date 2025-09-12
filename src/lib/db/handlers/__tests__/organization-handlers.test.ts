@@ -10,7 +10,6 @@ import {
   handleGetUserOrganizations,
   handleUpdateOrganization,
 } from '../organization-handlers'
-import type { KindeUser } from '@kinde-oss/kinde-auth-nextjs/types'
 import { ZodIssueCode } from 'zod'
 
 import { userIsMember, userIsOwner } from '@/lib/db/queries/organization'
@@ -19,6 +18,8 @@ import { getUserPermissions } from '@/lib/db/utils'
 import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode } from '@/utils/fetch'
 import { validatePayload } from '@/utils/zod'
+
+import { SessionUser } from '@/types/auth'
 
 jest.mock('../../client', () => ({
   db: {
@@ -56,7 +57,7 @@ const mockValidatePayload = validatePayload as jest.MockedFunction<
 >
 
 describe('organization-handlers', () => {
-  const mockUser: KindeUser<Record<string, any>> = {
+  const mockUser: SessionUser = {
     id: 'user-123',
     email: 'test@example.com',
     given_name: 'Test',
