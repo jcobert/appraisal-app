@@ -9,6 +9,7 @@ import {
 import { NextResponse } from 'next/server'
 
 import {
+  AuthenticationError,
   AuthorizationError,
   DatabaseConnectionError,
   DatabaseConstraintError,
@@ -18,7 +19,11 @@ import {
 } from '@/lib/db/errors'
 
 import { isAuthenticated } from '@/utils/auth'
-import { FetchErrorCode, FetchResponse } from '@/utils/fetch'
+import {
+  FetchErrorCode,
+  FetchResponse,
+  isValidHttpStatusCode,
+} from '@/utils/fetch'
 
 /**
  * Utility to add user ID fields to payload.
@@ -50,18 +55,28 @@ export const withUserFields = <T extends Record<string, any>>(
 export const toNextResponse = <TData = any>(
   result: FetchResponse<TData>,
 ): NextResponse => {
-  const status = result?.status ?? (result?.error ? 500 : 200)
+  const status = isValidHttpStatusCode(result?.status)
+    ? result?.status
+    : result?.error
+      ? 500
+      : 200
   return NextResponse.json(result, { status })
+}
+
+type ContextUser = Awaited<ReturnType<typeof isAuthenticated>>['user']
+
+/** Context provided to various API handler callback parameters. */
+type ApiHandlerContext<TAuth extends boolean = boolean> = {
+  user: TAuth extends false ? NonNullable<ContextUser> : ContextUser
 }
 
 /**
  * Configuration for API handlers.
  */
-export type ApiHandlerConfig = {
-  /** Whether authentication is required (default: true) */
-  requireAuth?: boolean
+export type ApiHandlerConfig<TAuth extends boolean = boolean> = {
   /** Additional authorization check function to run after authentication */
-  authorizationCheck?: () => Promise<boolean>
+  authorizationCheck?: (context: ApiHandlerContext<TAuth>) => Promise<boolean>
+  /** @todo Update messages to functions with data similar to toasts?. */
   /** Custom messages for different response scenarios */
   messages?: {
     /** Success message to include in successful responses */
@@ -79,6 +94,16 @@ export type ApiHandlerConfig = {
   }
   /** Whether this is a mutation operation - affects how null results are handled */
   isMutation?: boolean
+  /**
+   * By default, user authentication is checked before running handler.
+   *
+   * Setting this parameter to `true` will bypass that check and allow handler to run unauthenticated.
+   *
+   * ⚠️ Be very careful when using this option and be sure to handle authentication checks in your handler as needed.
+   * There are very few cases where unauthenticated interaction with the DB should be allowed.
+   * @default false
+   */
+  dangerouslyBypassAuthentication?: TAuth
 }
 
 /**
@@ -87,20 +112,19 @@ export type ApiHandlerConfig = {
  * @param config - Configuration options for the handler
  * @returns ApiHandlerResult with both data and NextResponse
  */
-export const createApiHandler = async <TData = any>(
-  handler: ({
-    user,
-  }: {
-    user: Awaited<ReturnType<typeof isAuthenticated>>['user']
-  }) => Promise<TData>,
-  config: ApiHandlerConfig = {},
+export const createApiHandler = async <
+  TAuth extends boolean = false,
+  TData = any,
+>(
+  handler: (context: ApiHandlerContext<TAuth>) => Promise<TData>,
+  config?: ApiHandlerConfig<TAuth>,
 ): Promise<FetchResponse<TData>> => {
   const {
-    requireAuth = true,
     authorizationCheck,
     messages = {},
     isMutation = false,
-  } = config
+    dangerouslyBypassAuthentication = false,
+  } = config || {}
 
   // Default messages
   const {
@@ -115,7 +139,7 @@ export const createApiHandler = async <TData = any>(
   const { allowed, user } = await isAuthenticated()
 
   // Authentication check
-  if (requireAuth) {
+  if (!dangerouslyBypassAuthentication) {
     if (!allowed) {
       return {
         status: 401,
@@ -131,7 +155,7 @@ export const createApiHandler = async <TData = any>(
   // Authorization check (if provided)
   if (authorizationCheck) {
     try {
-      const authorized = await authorizationCheck()
+      const authorized = await authorizationCheck({ user } as ApiHandlerContext)
 
       if (!authorized) {
         return {
@@ -159,7 +183,7 @@ export const createApiHandler = async <TData = any>(
   }
 
   try {
-    const data = await handler({ user })
+    const data = await handler({ user } as ApiHandlerContext)
 
     // Handle null/undefined results
     if (!isMutation && (data === null || data === undefined)) {
@@ -190,6 +214,18 @@ export const createApiHandler = async <TData = any>(
           code: FetchErrorCode.INVALID_DATA,
           message: error?.message,
           details: error?.details,
+        },
+      }
+    }
+
+    // Handle authentication errors
+    if (error instanceof AuthenticationError) {
+      return {
+        status: 401,
+        data: null,
+        error: {
+          code: FetchErrorCode.NOT_AUTHENTICATED,
+          message: error?.message,
         },
       }
     }

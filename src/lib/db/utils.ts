@@ -5,12 +5,6 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { Organization } from '@prisma/client'
 import { intersection } from 'lodash'
 
-import {
-  getActiveUserOrgMember,
-  getUserOrganizations,
-} from '@/lib/db/queries/organization'
-import { getActiveUserProfile } from '@/lib/db/queries/user'
-
 import { isAuthenticated } from '@/utils/auth'
 import { objectEntries, objectKeys } from '@/utils/general'
 
@@ -21,18 +15,23 @@ import {
 } from '@/configuration/permissions'
 import { redirect } from 'next/navigation'
 import { homeUrl } from '@/utils/nav'
+import { handleGetActiveUserOrgMember } from '@/lib/db/handlers/organization-member-handlers'
+import { handleGetActiveUserProfile } from '@/lib/db/handlers/user-handlers'
+import { handleGetUserOrganizations } from '@/lib/db/handlers/organization-handlers'
+import { SessionData } from '@/types/auth'
 
-/** Returns user session (account) and profile data, both from Kinde auth and core DB. */
-export const getSessionData = async () => {
+/** Returns active user account (Kinde auth DB) and profile (core DB) data. */
+export const getSessionData = async (): Promise<SessionData> => {
   const session = getKindeServerSession()
   const { getUser, isAuthenticated } = session
-  // Auth (from Kinde DB)
-  const user = await getUser()
+  // User account (from Kinde DB)
+  const account = await getUser()
   const loggedIn = !!(await isAuthenticated())
-  // User data (from core DB)
-  const profile = await getActiveUserProfile()
-  const organizations = await getUserOrganizations()
-  return { user, loggedIn, profile, organizations }
+  // User profile (from core DB)
+  const profile = (await handleGetActiveUserProfile())?.data ?? null
+  // User organizations
+  const organizations = (await handleGetUserOrganizations())?.data ?? []
+  return { account, loggedIn, profile, organizations }
 }
 
 /**
@@ -41,20 +40,34 @@ export const getSessionData = async () => {
 export const getUserPermissions = async (
   organizationId: Organization['id'],
 ): Promise<{ [Area in PermissionArea]: PermissionAction[Area][] }> => {
-  const { active, roles = [] } =
-    (await getActiveUserOrgMember({ organizationId })) || {}
-  const userRoles = !active ? [] : roles
+  try {
+    const { active, roles = [] } =
+      (await handleGetActiveUserOrgMember(organizationId))?.data || {}
+    const userRoles = !active ? [] : roles
 
-  const permsByArea = objectEntries(APP_PERMISSIONS)?.map(([area, actions]) => {
-    const userAllowedActions = !userRoles?.length
-      ? []
-      : objectKeys(actions)?.filter((action) => {
-          const allowedRoles = actions[action]
-          return !!intersection(allowedRoles, userRoles)?.length
-        })
-    return [area, userAllowedActions]
-  })
-  return Object.fromEntries(permsByArea)
+    const permsByArea = objectEntries(APP_PERMISSIONS)?.map(
+      ([area, actions]) => {
+        const userAllowedActions: (keyof typeof actions)[] = !userRoles?.length
+          ? []
+          : objectKeys(actions)?.filter((action) => {
+              const allowedRoles = actions[action]
+              return !!intersection(allowedRoles, userRoles)?.length
+            })
+        return [area, userAllowedActions]
+      },
+    )
+    return Object.fromEntries(permsByArea)
+  } catch (error) {
+    // If database query fails, return empty permissions (no access).
+    // This ensures the function always returns a valid permissions object.
+    // eslint-disable-next-line no-console
+    console.error('Error fetching user permissions:', error)
+    const permsByArea = objectEntries(APP_PERMISSIONS)?.map(([area]) => [
+      area,
+      [],
+    ])
+    return Object.fromEntries(permsByArea)
+  }
 }
 
 export type CanQueryOptions = {}
@@ -82,12 +95,19 @@ export const userCan = async <Area extends PermissionArea>({
   action: PermissionAction[Area]
   organizationId: Organization['id']
 }): Promise<boolean> => {
-  const { active, roles = [] } =
-    (await getActiveUserOrgMember({ organizationId })) || {}
-  const userRoles = !active ? [] : roles
-  if (!userRoles?.length) return false
-  const allowedRoles = APP_PERMISSIONS[area][action]
-  return !!intersection(allowedRoles, userRoles)?.length
+  try {
+    const { active, roles = [] } =
+      (await handleGetActiveUserOrgMember(organizationId))?.data || {}
+    const userRoles = !active ? [] : roles
+    if (!userRoles?.length) return false
+    const allowedRoles = APP_PERMISSIONS[area][action]
+    return !!intersection(allowedRoles, userRoles)?.length
+  } catch (error) {
+    // If database query fails, deny permission (fail safe)
+    // eslint-disable-next-line no-console
+    console.error('Error checking user permissions:', error)
+    return false
+  }
 }
 
 /** Protects page server side by redirecting if user not authorized. */

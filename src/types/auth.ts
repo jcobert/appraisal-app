@@ -6,8 +6,8 @@ export type SessionUser = KindeUser<Record<string, unknown>>
 
 /** Various user profile and session data. */
 export type SessionData = {
-  user: SessionUser | null
+  account: SessionUser | null
   loggedIn: boolean
-  profile?: User | null
-  organizations?: Organization[] | null
+  profile: User | null
+  organizations: Organization[]
 }

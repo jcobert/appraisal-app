@@ -1,430 +1,79 @@
 // sort-imports-ignore
 import 'server-only'
 
-import { Organization, OrgInvitation, OrgMember, Prisma } from '@prisma/client'
+import { Organization } from '@prisma/client'
 
 import { db } from '@/lib/db/client'
-import { canQuery, CanQueryOptions } from '@/lib/db/utils'
-import { handlePrismaError } from '@/lib/db/errors'
+import { CanQueryOptions } from '@/lib/db/utils'
 
 import { getActiveUserAccount } from '@/utils/auth'
-
-/**
- * Returns organizations that user is a member of.
- * When `owner` is true, will return only those that user is owner of (default is false).
- */
-export const getUserOrganizations = async (params?: {
-  owner?: boolean
-  filter?: Prisma.OrganizationFindManyArgs['where']
-  authOptions?: CanQueryOptions
-}) => {
-  try {
-    const { owner = false, filter, authOptions } = params || {}
-    const authorized = await canQuery(authOptions)
-    if (!authorized) return null
-    const userId = (await getActiveUserAccount())?.id
-    const baseFilter: Prisma.OrganizationFindManyArgs['where'] = {
-      members: {
-        some: {
-          user: { accountId: userId },
-          ...(owner ? { roles: { has: 'owner' } } : {}),
-        },
-      },
-    }
-    const data = await db.organization.findMany({
-      where: { ...baseFilter, ...filter },
-    })
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
+import { KindeUser } from '@kinde-oss/kinde-auth-nextjs'
 
 export const userIsMember = async (params: {
   organizationId: Organization['id']
-  authOptions?: CanQueryOptions
+  userId?: KindeUser['id']
 }) => {
-  try {
-    const { organizationId, authOptions } = params || {}
-    const authorized = await canQuery(authOptions)
-    if (!authorized || !organizationId) return false
-    const userId = (await getActiveUserAccount())?.id
-    const data = await db.organization.findUnique({
-      where: {
-        id: organizationId,
-        members: { some: { user: { accountId: userId } } },
-      },
-    })
-    return !!data?.id
-  } catch (error) {
-    handlePrismaError(error)
-    return false
-  }
+  const { organizationId, userId } = params || {}
+  const accountId = userId || (await getActiveUserAccount())?.id
+  if (!accountId) return false
+  const data = await db.organization.findUnique({
+    where: {
+      id: organizationId,
+      members: { some: { user: { accountId } } },
+    },
+    select: { id: true },
+  })
+  return !!data?.id
 }
 
 export const userIsOwner = async (params: {
   organizationId: Organization['id']
+  userId?: KindeUser['id']
   authOptions?: CanQueryOptions
 }) => {
-  try {
-    const { organizationId, authOptions } = params || {}
-    const authorized = await canQuery(authOptions)
-    if (!authorized || !organizationId) return false
-    const userId = (await getActiveUserAccount())?.id
-    const data = await db.organization.findUnique({
-      where: {
-        id: organizationId,
-        members: {
-          some: {
-            user: { accountId: userId },
-            roles: { has: 'owner' },
-          },
+  const { organizationId, userId } = params || {}
+  const accountId = userId || (await getActiveUserAccount())?.id
+  if (!accountId) return false
+  const data = await db.organization.findUnique({
+    where: {
+      id: organizationId,
+      members: {
+        some: {
+          user: { accountId },
+          roles: { has: 'owner' },
         },
       },
-    })
-    return !!data?.id
-  } catch (error) {
-    handlePrismaError(error)
-    return false
-  }
-}
-
-/** Gets organization by `id`. */
-export const getOrganization = async (params: {
-  organizationId: Organization['id']
-  // query?: Prisma.OrganizationFindUniqueArgs
-  authOptions?: { restrictToUser?: boolean }
-}) => {
-  try {
-    const { organizationId, authOptions } = params
-    const { restrictToUser = true } = authOptions || {}
-    if (restrictToUser) {
-      const isMember = await userIsMember({ organizationId })
-      if (!isMember) {
-        return null
-      }
-    }
-
-    const queryArgs = {
-      where: { id: organizationId },
-      include: {
-        members: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                avatar: true,
-                email: true,
-              },
-            },
-          },
-          omit: { createdBy: true, updatedBy: true },
-        },
-        invitations: {
-          where: { status: { in: ['expired', 'pending'] } },
-          select: {
-            id: true,
-            status: true,
-            expires: true,
-            inviteeFirstName: true,
-            inviteeLastName: true,
-            inviteeEmail: true,
-            roles: true,
-            organizationId: true,
-          },
-        },
-      },
-      omit: { createdBy: true, updatedBy: true },
-      // ...query,
-    } satisfies Prisma.OrganizationFindUniqueArgs
-
-    const data = await db.organization.findUnique(queryArgs)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
+    },
+    select: { id: true },
+  })
+  return !!data?.id
 }
 
 /** Gets member data for the active user in the provided org. */
 export const getActiveUserOrgMember = async (params: {
   organizationId: Organization['id']
+  userId?: KindeUser['id']
 }) => {
-  try {
-    const { organizationId } = params || {}
-    const authorized = await canQuery()
-    const user = await getActiveUserAccount()
-    if (!authorized || !user?.id) return null
-    const member = (
-      await db.orgMember.findMany({
-        where: {
-          organizationId: organizationId,
-          user: { accountId: user?.id },
-        },
-        select: {
-          active: true,
-          roles: true,
-          id: true,
-          user: true,
-        },
-      })
-    )?.[0]
-    if (!member) return null
-    return member
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
+  const { organizationId, userId } = params || {}
+  const accountId = userId || (await getActiveUserAccount())?.id
+  if (!accountId) return null
+  const member = (
+    await db.orgMember.findMany({
+      where: {
+        organizationId: organizationId,
+        user: { accountId },
+      },
+      select: {
+        active: true,
+        roles: true,
+        id: true,
+        user: true,
+      },
+    })
+  )?.[0]
+  return member ?? null
 }
+
 export type ActiveUserOrgMember = Awaited<
   ReturnType<typeof getActiveUserOrgMember>
 >
-
-export const createOrganization = async (
-  params: Prisma.OrganizationCreateArgs,
-) => {
-  try {
-    const data = await db.organization.create(params)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
-
-export const updateOrganization = async (params: {
-  organizationId: Organization['id']
-  payload: Prisma.OrganizationUpdateArgs['data']
-  queryOptions?: Omit<Prisma.OrganizationUpdateArgs, 'data' | 'where'>
-}) => {
-  try {
-    const { organizationId, payload, queryOptions } = params
-
-    const queryArgs = {
-      where: { id: organizationId },
-      data: payload,
-      ...queryOptions,
-    } satisfies Prisma.OrganizationUpdateArgs
-
-    const data = await db.organization.update(queryArgs)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
-
-export const deleteOrganization = async (params: {
-  organizationId: Organization['id']
-  query?: Prisma.OrganizationDeleteArgs
-}) => {
-  try {
-    const { organizationId, query } = params
-
-    const queryArgs = {
-      where: { id: organizationId },
-      ...query,
-    } satisfies typeof query
-
-    const data = await db.organization.delete(queryArgs)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
-
-export const getOrgMember = async (params: {
-  organizationId: OrgMember['organizationId']
-  memberId: OrgMember['id']
-  query?: Prisma.OrgMemberFindUniqueArgs
-}) => {
-  try {
-    const { organizationId, memberId, query } = params
-    if (!memberId) return null
-
-    const queryArgs = {
-      where: { id: memberId, organizationId },
-      include: { user: true },
-      ...query,
-    } satisfies typeof query
-
-    const data = await db.orgMember.findUnique(queryArgs)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
-
-export const updateOrgMember = async (params: {
-  organizationId: OrgMember['organizationId']
-  memberId: OrgMember['id']
-  payload: Prisma.OrgMemberUpdateArgs['data']
-  queryOptions?: Omit<Prisma.OrgMemberUpdateArgs, 'data' | 'where'>
-}) => {
-  try {
-    const { organizationId, memberId, payload, queryOptions } = params
-
-    const queryArgs = {
-      where: { id: memberId, organizationId },
-      data: payload,
-      ...queryOptions,
-    } satisfies Prisma.OrgMemberUpdateArgs
-
-    const data = await db.orgMember.update(queryArgs)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
-
-export const deleteOrgMember = async (params: {
-  organizationId: OrgMember['organizationId']
-  memberId: OrgMember['id']
-  query?: Prisma.OrgMemberDeleteArgs
-}) => {
-  try {
-    const { organizationId, memberId, query } = params
-
-    const queryArgs = {
-      where: { id: memberId, organizationId },
-      ...query,
-    } satisfies typeof query
-
-    const data = await db.orgMember.delete(queryArgs)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
-
-export const getOrgInvitation = async <
-  TParams extends Prisma.OrgInvitationFindUniqueArgs,
->(
-  params: TParams,
-  authOptions?: CanQueryOptions & { publicAccess?: boolean },
-) => {
-  try {
-    const { publicAccess = false, ...opts } = authOptions || {}
-    const authorized = publicAccess || (await canQuery(opts))
-    if (!authorized) return null
-
-    const queryArgs = {
-      select: {
-        id: true,
-        expires: true,
-        status: true,
-        organization: { select: { name: true, avatar: true } },
-        invitedBy: { select: { firstName: true, lastName: true, email: true } },
-        inviteeFirstName: true,
-        inviteeLastName: true,
-        inviteeEmail: true,
-        roles: true,
-      },
-      ...params,
-    } satisfies TParams
-
-    const data = await db.orgInvitation.findUnique(queryArgs)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
-
-export const getOrgInvitations = async <
-  TParams extends Prisma.OrgInvitationFindManyArgs,
->(
-  params: TParams,
-  authOptions?: CanQueryOptions & { publicAccess?: boolean },
-) => {
-  try {
-    const { publicAccess = false, ...opts } = authOptions || {}
-    const authorized = publicAccess || (await canQuery(opts))
-    if (!authorized) return null
-
-    const queryArgs = {
-      select: {
-        id: true,
-        expires: true,
-        status: true,
-        organization: { select: { name: true, avatar: true } },
-        invitedBy: { select: { firstName: true, lastName: true, email: true } },
-        inviteeFirstName: true,
-        inviteeLastName: true,
-        inviteeEmail: true,
-        roles: true,
-      },
-      ...params,
-    } satisfies TParams
-
-    const data = await db.orgInvitation.findMany(queryArgs)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
-
-export const createOrgInvitation = async (
-  params: Prisma.OrgInvitationCreateArgs,
-  authOptions?: CanQueryOptions,
-) => {
-  try {
-    const authorized = await canQuery(authOptions)
-    if (!authorized) return null
-    const data = await db.orgInvitation.create(params)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
-
-export const updateOrgInvitation = async (
-  params: Prisma.OrgInvitationUpdateArgs,
-  authOptions?: CanQueryOptions & { publicAccess?: boolean },
-) => {
-  try {
-    const { publicAccess = false, ...opts } = authOptions || {}
-    const authorized = publicAccess || (await canQuery(opts))
-    if (!authorized) return null
-    const data = await db.orgInvitation.update(params)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}
-
-export const deleteOrgInvitation = async (params: {
-  organizationId: OrgMember['organizationId']
-  inviteId: OrgInvitation['id']
-  query?: Prisma.OrgInvitationDeleteArgs
-  authOptions?: CanQueryOptions
-}) => {
-  try {
-    const { organizationId, inviteId, query, authOptions } = params
-    const { ...opts } = authOptions || {}
-    const authorized = await canQuery(opts)
-    if (!authorized) return null
-    const isOwner = await userIsOwner({ organizationId })
-    if (!isOwner) return null
-
-    const queryArgs = {
-      where: { id: inviteId, organizationId },
-      ...query,
-    } satisfies typeof query
-
-    const data = await db.orgInvitation.delete(queryArgs)
-    return data
-  } catch (error) {
-    handlePrismaError(error)
-    return null
-  }
-}

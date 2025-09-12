@@ -8,15 +8,12 @@ import {
   handleUpdateActiveUserOrgMember,
   handleUpdateOrgMember,
 } from '../organization-member-handlers'
-import type { KindeUser } from '@kinde-oss/kinde-auth-nextjs/types'
 import { MemberRole } from '@prisma/client'
 import { ZodIssueCode } from 'zod'
 
+import { db } from '@/lib/db/client'
 import {
-  deleteOrgMember,
   getActiveUserOrgMember,
-  getOrgMember,
-  updateOrgMember,
   userIsMember,
   userIsOwner,
 } from '@/lib/db/queries/organization'
@@ -25,16 +22,25 @@ import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode } from '@/utils/fetch'
 import { validatePayload } from '@/utils/zod'
 
+import { SessionUser } from '@/types/auth'
+
 // Mock dependencies
 jest.mock('@/utils/auth', () => ({
   isAuthenticated: jest.fn(),
 }))
 
+jest.mock('@/lib/db/client', () => ({
+  db: {
+    orgMember: {
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+  },
+}))
+
 jest.mock('@/lib/db/queries/organization', () => ({
-  getOrgMember: jest.fn(),
   getActiveUserOrgMember: jest.fn(),
-  updateOrgMember: jest.fn(),
-  deleteOrgMember: jest.fn(),
   userIsOwner: jest.fn(),
   userIsMember: jest.fn(),
 }))
@@ -46,17 +52,9 @@ jest.mock('@/utils/zod', () => ({
 const mockIsAuthenticated = isAuthenticated as jest.MockedFunction<
   typeof isAuthenticated
 >
-const mockGetOrgMember = getOrgMember as jest.MockedFunction<
-  typeof getOrgMember
->
+const mockDb = db as jest.Mocked<typeof db>
 const mockGetActiveUserOrgMember =
   getActiveUserOrgMember as jest.MockedFunction<typeof getActiveUserOrgMember>
-const mockUpdateOrgMember = updateOrgMember as jest.MockedFunction<
-  typeof updateOrgMember
->
-const mockDeleteOrgMember = deleteOrgMember as jest.MockedFunction<
-  typeof deleteOrgMember
->
 const mockUserIsOwner = userIsOwner as jest.MockedFunction<typeof userIsOwner>
 const mockUserIsMember = userIsMember as jest.MockedFunction<
   typeof userIsMember
@@ -66,7 +64,7 @@ const mockValidatePayload = validatePayload as jest.MockedFunction<
 >
 
 describe('organization-member-handlers', () => {
-  const mockUser: KindeUser<Record<string, any>> = {
+  const mockUser: SessionUser = {
     id: 'user-123',
     email: 'test@example.com',
     given_name: 'Test',
@@ -107,6 +105,11 @@ describe('organization-member-handlers', () => {
       data: {},
       errors: null,
     })
+
+    // Mock database operations
+    ;(mockDb.orgMember.findUnique as jest.Mock).mockResolvedValue(mockOrgMember)
+    ;(mockDb.orgMember.update as jest.Mock).mockResolvedValue(mockOrgMember)
+    ;(mockDb.orgMember.delete as jest.Mock).mockResolvedValue(mockOrgMember)
   })
 
   describe('handleGetOrgMember', () => {
@@ -114,22 +117,20 @@ describe('organization-member-handlers', () => {
     const memberId = 'member-456'
 
     it('should return organization member when found', async () => {
-      mockGetOrgMember.mockResolvedValue(mockOrgMember)
-
       const result = await handleGetOrgMember(organizationId, memberId)
 
       expect(result).toEqual({
         status: 200,
         data: mockOrgMember,
       })
-      expect(mockGetOrgMember).toHaveBeenCalledWith({
-        organizationId,
-        memberId,
+      expect(mockDb.orgMember.findUnique).toHaveBeenCalledWith({
+        where: { id: memberId, organizationId },
+        include: { user: true },
       })
     })
 
     it('should return 404 when member not found', async () => {
-      mockGetOrgMember.mockResolvedValue(null)
+      ;(mockDb.orgMember.findUnique as jest.Mock).mockResolvedValue(null)
 
       const result = await handleGetOrgMember(organizationId, memberId)
 
@@ -145,7 +146,7 @@ describe('organization-member-handlers', () => {
 
     it('should handle database errors', async () => {
       const error = new Error('Database error')
-      mockGetOrgMember.mockRejectedValue(error)
+      ;(mockDb.orgMember.findUnique as jest.Mock).mockRejectedValue(error)
 
       const consoleSpy = jest
         .spyOn(console, 'error')
@@ -179,6 +180,7 @@ describe('organization-member-handlers', () => {
       })
       expect(mockGetActiveUserOrgMember).toHaveBeenCalledWith({
         organizationId,
+        userId: mockUser.id,
       })
     })
 
@@ -227,7 +229,7 @@ describe('organization-member-handlers', () => {
     it('should update organization member when user is owner', async () => {
       const updatedMember = { ...mockOrgMember, ...payload }
       mockUserIsOwner.mockResolvedValue(true)
-      mockUpdateOrgMember.mockResolvedValue(updatedMember)
+      ;(mockDb.orgMember.update as jest.Mock).mockResolvedValue(updatedMember)
 
       const result = await handleUpdateOrgMember(
         organizationId,
@@ -241,10 +243,9 @@ describe('organization-member-handlers', () => {
         message: 'Member updated successfully.',
       })
       expect(mockValidatePayload).toHaveBeenCalled()
-      expect(mockUpdateOrgMember).toHaveBeenCalledWith({
-        organizationId,
-        memberId,
-        payload: expect.objectContaining({
+      expect(mockDb.orgMember.update).toHaveBeenCalledWith({
+        where: { id: memberId, organizationId },
+        data: expect.objectContaining({
           ...payload,
           updatedBy: mockUser.id,
         }),
@@ -268,7 +269,7 @@ describe('organization-member-handlers', () => {
           message: 'Unauthorized to update organization members.',
         },
       })
-      expect(mockUpdateOrgMember).not.toHaveBeenCalled()
+      expect(mockDb.orgMember.update).not.toHaveBeenCalled()
     })
 
     it('should return 400 when validation fails', async () => {
@@ -335,7 +336,7 @@ describe('organization-member-handlers', () => {
       const updatedMember = { ...mockOrgMember, ...payload }
       mockUserIsMember.mockResolvedValue(true)
       mockGetActiveUserOrgMember.mockResolvedValue(mockOrgMember)
-      mockUpdateOrgMember.mockResolvedValue(updatedMember)
+      ;(mockDb.orgMember.update as jest.Mock).mockResolvedValue(updatedMember)
 
       const result = await handleUpdateActiveUserOrgMember(
         organizationId,
@@ -348,10 +349,9 @@ describe('organization-member-handlers', () => {
         message: 'Member updated successfully.',
       })
       expect(mockValidatePayload).toHaveBeenCalled()
-      expect(mockUpdateOrgMember).toHaveBeenCalledWith({
-        organizationId,
-        memberId: mockOrgMember.id,
-        payload: expect.objectContaining({
+      expect(mockDb.orgMember.update).toHaveBeenCalledWith({
+        where: { id: mockOrgMember.id, organizationId },
+        data: expect.objectContaining({
           ...payload,
           updatedBy: mockUser.id,
         }),
@@ -411,7 +411,6 @@ describe('organization-member-handlers', () => {
 
     it('should delete organization member when user is owner', async () => {
       mockUserIsOwner.mockResolvedValue(true)
-      mockDeleteOrgMember.mockResolvedValue(mockOrgMember)
 
       const result = await handleDeleteOrgMember(organizationId, memberId)
 
@@ -420,9 +419,8 @@ describe('organization-member-handlers', () => {
         data: mockOrgMember,
         message: 'Member removed from organization successfully.',
       })
-      expect(mockDeleteOrgMember).toHaveBeenCalledWith({
-        organizationId,
-        memberId,
+      expect(mockDb.orgMember.delete).toHaveBeenCalledWith({
+        where: { id: memberId, organizationId },
       })
     })
 

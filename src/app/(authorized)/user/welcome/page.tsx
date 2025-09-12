@@ -1,7 +1,10 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { FC } from 'react'
 
-import { registerUserProfile } from '@/lib/db/queries/user'
+import { handleRegisterUser } from '@/lib/db/handlers/user-handlers'
+
+import { FetchErrorCode } from '@/utils/fetch'
 
 import Logo from '@/components/general/logo'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
@@ -13,9 +16,20 @@ import { PageParams } from '@/types/general'
 type Props = PageParams
 
 const Page: FC<Props> = async () => {
-  const profile = await registerUserProfile()
+  const profile = await handleRegisterUser()
 
-  if (!profile) return <FullScreenLoader />
+  // Redirect to dashboard if profile already exists.
+  if (profile?.error?.code === FetchErrorCode.DUPLICATE) {
+    redirect('/dashboard')
+  }
+
+  /**
+   * @todo
+   * Currently treating no data as indicator that req is still in progress.
+   * This isn't accurate though, as there could be no data due to error.
+   * Implement a better strategy for showing loading UI and handling error (retry?).
+   */
+  if (!profile?.data) return <FullScreenLoader />
 
   return (
     <div>

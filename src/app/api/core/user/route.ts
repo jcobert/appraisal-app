@@ -1,25 +1,14 @@
 import { NextRequest } from 'next/server'
 
 import { toNextResponse } from '@/lib/db/api-handlers'
-import {
-  handleCreateUser,
-  handleGetUsers,
-} from '@/lib/db/handlers/user-handlers'
-
-// =============
-//      GET
-// =============
-export const GET = async (_req: NextRequest) => {
-  const result = await handleGetUsers()
-  return toNextResponse(result)
-}
+import { handleCreateUserProfile } from '@/lib/db/handlers/user-handlers'
 
 // ==============
 //      POST
 // ==============
 export const POST = async (req: NextRequest) => {
-  const payload = (await req.json()) as Parameters<typeof handleCreateUser>[0]
+  const payload = (await req.json()) as Parameters<typeof handleCreateUserProfile>[0]
 
-  const result = await handleCreateUser(payload)
+  const result = await handleCreateUserProfile(payload)
   return toNextResponse(result)
 }

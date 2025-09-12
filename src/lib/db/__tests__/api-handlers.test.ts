@@ -14,7 +14,6 @@ import {
   NotFoundError,
   ValidationError,
 } from '../errors'
-import type { KindeUser } from '@kinde-oss/kinde-auth-nextjs/types'
 import {
   PrismaClientKnownRequestError,
   PrismaClientUnknownRequestError,
@@ -25,6 +24,8 @@ import { ZodIssueCode } from 'zod'
 
 import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode } from '@/utils/fetch'
+
+import { SessionUser } from '@/types/auth'
 
 // Mock the auth utility
 jest.mock('@/utils/auth', () => ({
@@ -275,7 +276,7 @@ describe('api-handlers', () => {
   })
 
   describe('createApiHandler', () => {
-    const mockUser: KindeUser<Record<string, any>> = {
+    const mockUser: SessionUser = {
       id: 'user-123',
       email: 'test@example.com',
       given_name: 'Test',
@@ -319,12 +320,14 @@ describe('api-handlers', () => {
         expect(mockHandler).toHaveBeenCalledWith({ user: mockUser })
       })
 
-      it('should skip auth check when requireAuth is false', async () => {
+      it('should skip auth check when dangerouslyBypassAuthentication is true', async () => {
         // Set up a mock that would fail if called during auth check
         mockIsAuthenticated.mockResolvedValue({ allowed: true, user: mockUser })
         mockHandler.mockResolvedValue({ data: 'test' })
 
-        const config: ApiHandlerConfig = { requireAuth: false }
+        const config: ApiHandlerConfig = {
+          dangerouslyBypassAuthentication: true,
+        }
         const result = await createApiHandler(mockHandler, config)
 
         expect(result).toEqual({
@@ -768,7 +771,9 @@ describe('api-handlers', () => {
       it('should handle missing messages object', async () => {
         mockIsAuthenticated.mockResolvedValue({ allowed: false, user: null })
 
-        const config: ApiHandlerConfig = { requireAuth: true }
+        const config: ApiHandlerConfig = {
+          dangerouslyBypassAuthentication: false,
+        }
         const result = await createApiHandler(mockHandler, config)
 
         expect(result.error?.message).toBe('User not authenticated.')

@@ -31,6 +31,11 @@ export type FetchResponse<TData = any> = {
   }
 }
 
+/** Returns whether the provided `status` is a valid HTTP response status code. */
+export const isValidHttpStatusCode = (status?: number): status is number => {
+  return Number.isInteger(status) && status! >= 100 && status! <= 599
+}
+
 export const successful = (status?: number) => {
   if (!status) return false
   return status >= 200 && status < 300

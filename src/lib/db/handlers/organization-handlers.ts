@@ -1,28 +1,30 @@
 // sort-imports-ignore
 import 'server-only'
 
-import {
-  getOrganization,
-  getUserOrganizations,
-  updateOrganization,
-  deleteOrganization,
-  userIsOwner,
-  createOrganization,
-} from '@/lib/db/queries/organization'
+import { userIsOwner, userIsMember } from '@/lib/db/queries/organization'
 import { organizationSchema } from '@/lib/db/schemas/organization'
 import { getUserPermissions } from '@/lib/db/utils'
 
 import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
-import { ValidationError, AuthorizationError } from '@/lib/db/errors'
+import { ValidationError, AuthenticationError } from '@/lib/db/errors'
 import { validatePayload } from '@/utils/zod'
+import { db } from '@/lib/db/client'
 
 /**
  * Get organizations for the current user.
  * Can be used in both API routes and server components.
  */
 export const handleGetUserOrganizations = async () => {
-  return createApiHandler(async () => {
-    const organizations = await getUserOrganizations()
+  return createApiHandler(async ({ user }) => {
+    const organizations = await db.organization.findMany({
+      where: {
+        members: {
+          some: {
+            user: { accountId: user?.id },
+          },
+        },
+      },
+    })
     return organizations || []
   })
 }
@@ -32,14 +34,53 @@ export const handleGetUserOrganizations = async () => {
  * Can be used in both API routes and server components.
  */
 export const handleGetOrganization = async (organizationId: string) => {
-  return createApiHandler(async () => {
-    if (!organizationId) {
-      throw new Error('Organization ID is required')
-    }
-
-    const organization = await getOrganization({ organizationId })
-    return organization
-  })
+  return createApiHandler(
+    async () => {
+      const organization = await db.organization.findUnique({
+        where: { id: organizationId },
+        include: {
+          members: {
+            include: {
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  avatar: true,
+                  email: true,
+                },
+              },
+            },
+            omit: { createdBy: true, updatedBy: true },
+          },
+          invitations: {
+            where: { status: { in: ['expired', 'pending'] } },
+            select: {
+              id: true,
+              status: true,
+              expires: true,
+              inviteeFirstName: true,
+              inviteeLastName: true,
+              inviteeEmail: true,
+              roles: true,
+              organizationId: true,
+            },
+          },
+        },
+        omit: { createdBy: true, updatedBy: true },
+      })
+      return organization
+    },
+    {
+      authorizationCheck: async ({ user }) => {
+        // User must be a member of org.
+        const isMember = await userIsMember({
+          organizationId,
+          userId: user?.id,
+        })
+        return isMember
+      },
+    },
+  )
 }
 
 /**
@@ -48,18 +89,10 @@ export const handleGetOrganization = async (organizationId: string) => {
  */
 export const handleUpdateOrganization = async (
   organizationId: string,
-  payload: Parameters<typeof updateOrganization>[0]['payload'],
+  payload: Parameters<typeof db.organization.update>[0]['data'],
 ) => {
   return createApiHandler(
     async ({ user }) => {
-      if (!user?.id) {
-        throw new Error('User not authenticated')
-      }
-
-      if (!organizationId) {
-        throw new Error('Organization ID is required')
-      }
-
       // Validate payload
       const validation = validatePayload(organizationSchema.api, payload)
       if (!validation?.success) {
@@ -69,16 +102,15 @@ export const handleUpdateOrganization = async (
         )
       }
 
-      // Skip auth checks in query since handler handles authorization
-      const result = await updateOrganization({
-        organizationId,
-        payload: withUserFields(payload, user?.id),
+      const result = await db.organization.update({
+        where: { id: organizationId },
+        data: withUserFields(payload, user?.id),
       })
       return result
     },
     {
-      authorizationCheck: async () => {
-        const isOwner = await userIsOwner({ organizationId })
+      authorizationCheck: async ({ user }) => {
+        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
         return isOwner
       },
       messages: {
@@ -97,18 +129,14 @@ export const handleUpdateOrganization = async (
 export const handleDeleteOrganization = async (organizationId: string) => {
   return createApiHandler(
     async () => {
-      if (!organizationId) {
-        throw new Error('Organization ID is required')
-      }
-
-      const result = await deleteOrganization({
-        organizationId,
+      const result = await db.organization.delete({
+        where: { id: organizationId },
       })
       return result
     },
     {
-      authorizationCheck: async () => {
-        const isOwner = await userIsOwner({ organizationId })
+      authorizationCheck: async ({ user }) => {
+        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
         return isOwner
       },
       messages: {
@@ -126,17 +154,12 @@ export const handleDeleteOrganization = async (organizationId: string) => {
  * Can be used in both API routes and server components.
  */
 export const handleCreateOrganization = async (
-  payload: Parameters<typeof createOrganization>[0]['data'],
+  payload: Parameters<typeof db.organization.create>[0]['data'],
 ) => {
   return createApiHandler(
-    async () => {
-      // Import here to avoid circular dependencies
-      const { getActiveUserProfile } = await import('@/lib/db/queries/user')
-      const { isAuthenticated } = await import('@/utils/auth')
-
-      const { user } = await isAuthenticated()
+    async ({ user }) => {
       if (!user?.id) {
-        throw new AuthorizationError('User not authenticated.')
+        throw new AuthenticationError('User not authenticated.')
       }
 
       // Validate payload
@@ -148,15 +171,24 @@ export const handleCreateOrganization = async (
         )
       }
 
-      const userProfile = await getActiveUserProfile()
+      const userProfile = await db.user.findUnique({
+        where: { accountId: user?.id },
+      })
       if (!userProfile?.id) {
         throw new ValidationError('No user profile found.', {})
       }
 
       // Check for duplicate organization name for this owner
-      const existingOrgs = await getUserOrganizations({
-        owner: true,
-        filter: { name: { equals: payload?.name, mode: 'insensitive' } },
+      const existingOrgs = await db.organization.findMany({
+        where: {
+          members: {
+            some: {
+              user: { accountId: user?.id },
+              roles: { has: 'owner' },
+            },
+          },
+          name: { equals: payload?.name, mode: 'insensitive' },
+        },
       })
 
       if (existingOrgs?.length) {
@@ -167,20 +199,21 @@ export const handleCreateOrganization = async (
       }
 
       // Create organization with owner membership
-      const result = await createOrganization({
+      const result = await db.organization.create({
         data: {
           ...payload,
           members: {
             create: {
-              userId: userProfile.id,
+              userId: userProfile?.id,
               roles: ['owner'],
-              createdBy: user.id,
-              updatedBy: user.id,
+              createdBy: user?.id,
+              updatedBy: user?.id,
             },
           },
-          createdBy: user.id,
-          updatedBy: user.id,
+          createdBy: user?.id,
+          updatedBy: user?.id,
         },
+        select: { id: true, name: true },
       })
 
       return result
@@ -202,10 +235,6 @@ export const handleGetOrganizationPermissions = async (
   organizationId: string,
 ) => {
   return createApiHandler(async () => {
-    if (!organizationId) {
-      throw new Error('Organization ID is required')
-    }
-
     const permissions = await getUserPermissions(organizationId)
     return permissions
   })

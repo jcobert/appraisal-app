@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { FC } from 'react'
 
-import { getOrgInvitation } from '@/lib/db/queries/organization'
+import { handleGetPublicOrgInvite } from '@/lib/db/handlers/organization-invite-handlers'
 import {
   addLogoutRedirectUrls,
   deleteLogoutRedirectUrl,
@@ -48,12 +48,13 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
   const isRedirect = !!query?.redirect
   const isJustRegistered = !!query?.registered
 
-  const invitation = await getOrgInvitation(
-    {
-      where: { organizationId, token: inviteToken, status: 'pending' },
-    },
-    { publicAccess: true },
-  )
+  const invitation = (
+    await handleGetPublicOrgInvite({
+      organizationId,
+      token: inviteToken,
+      status: 'pending',
+    })
+  )?.data
 
   const postLoginRedirect = getOrgInviteUrl({
     organizationId,

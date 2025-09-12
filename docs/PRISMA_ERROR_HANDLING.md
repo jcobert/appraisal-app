@@ -62,7 +62,7 @@ The enhanced error handling works automatically in your handlers:
 
 ```typescript
 // src/lib/db/handlers/user-handlers.ts
-export const handleCreateUser = async (payload: CreateUserPayload) => {
+export const handleCreateUserProfile = async (payload: CreateUserPayload) => {
   return createApiHandler(
     async ({ user }) => {
       // Validation
@@ -226,7 +226,7 @@ Test your error handling with these scenarios:
 
 ```typescript
 // user-handlers.test.ts
-describe('handleCreateUser', () => {
+describe('handleCreateUserProfile', () => {
   it('should handle unique constraint violation', async () => {
     const prismaError = new PrismaClientKnownRequestError(
       'Unique constraint failed',
@@ -239,7 +239,7 @@ describe('handleCreateUser', () => {
     
     mockCreateUserProfile.mockRejectedValue(prismaError)
     
-    const result = await handleCreateUser(validPayload)
+    const result = await handleCreateUserProfile(validPayload)
     
     expect(result.status).toBe(409)
     expect(result.error?.code).toBe('DUPLICATE')
@@ -257,7 +257,7 @@ describe('handleCreateUser', () => {
     
     mockUpdateUserProfile.mockRejectedValue(prismaError)
     
-    const result = await handleUpdateUser(userId, updatePayload)
+    const result = await handleUpdateUserProfile(userId, updatePayload)
     
     expect(result.status).toBe(404)
     expect(result.error?.code).toBe('NOT_FOUND')
@@ -277,7 +277,7 @@ describe('handleCreateUser', () => {
 
 ### Before (Manual Error Handling)
 ```typescript
-export const handleCreateUser = async (payload: CreateUserPayload) => {
+export const handleCreateUserProfile = async (payload: CreateUserPayload) => {
   try {
     const result = await createUserProfile({ data: payload })
     return { status: 200, data: result }
@@ -300,7 +300,7 @@ export const handleCreateUser = async (payload: CreateUserPayload) => {
 
 ### After (Automatic Error Handling)
 ```typescript
-export const handleCreateUser = async (payload: CreateUserPayload) => {
+export const handleCreateUserProfile = async (payload: CreateUserPayload) => {
   return createApiHandler(
     async ({ user }) => {
       // Validation

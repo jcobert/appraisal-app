@@ -1,7 +1,13 @@
 /**
  * @jest-environment node
  */
-import { FetchErrorCode, coreFetch, getAbsoluteUrl, successful } from '../fetch'
+import {
+  FetchErrorCode,
+  coreFetch,
+  getAbsoluteUrl,
+  isValidHttpStatusCode,
+  successful,
+} from '../fetch'
 
 // Mock fetch globally
 global.fetch = jest.fn()
@@ -27,6 +33,93 @@ describe('fetch utilities', () => {
     Object.defineProperty(global, 'window', {
       value: {},
       writable: true,
+    })
+  })
+
+  describe('isValidHttpStatusCode', () => {
+    it('should return false for undefined', () => {
+      expect(isValidHttpStatusCode(undefined)).toBe(false)
+    })
+
+    it('should return false for null', () => {
+      expect(isValidHttpStatusCode(null as any)).toBe(false)
+    })
+
+    it('should return false for status code 0', () => {
+      expect(isValidHttpStatusCode(0)).toBe(false)
+    })
+
+    it('should return false for negative status codes', () => {
+      expect(isValidHttpStatusCode(-1)).toBe(false)
+      expect(isValidHttpStatusCode(-100)).toBe(false)
+    })
+
+    it('should return false for status codes below 100', () => {
+      expect(isValidHttpStatusCode(1)).toBe(false)
+      expect(isValidHttpStatusCode(50)).toBe(false)
+      expect(isValidHttpStatusCode(99)).toBe(false)
+    })
+
+    it('should return true for valid 1xx status codes', () => {
+      expect(isValidHttpStatusCode(100)).toBe(true)
+      expect(isValidHttpStatusCode(101)).toBe(true)
+      expect(isValidHttpStatusCode(102)).toBe(true)
+      expect(isValidHttpStatusCode(199)).toBe(true)
+    })
+
+    it('should return true for valid 2xx status codes', () => {
+      expect(isValidHttpStatusCode(200)).toBe(true)
+      expect(isValidHttpStatusCode(201)).toBe(true)
+      expect(isValidHttpStatusCode(204)).toBe(true)
+      expect(isValidHttpStatusCode(299)).toBe(true)
+    })
+
+    it('should return true for valid 3xx status codes', () => {
+      expect(isValidHttpStatusCode(300)).toBe(true)
+      expect(isValidHttpStatusCode(301)).toBe(true)
+      expect(isValidHttpStatusCode(302)).toBe(true)
+      expect(isValidHttpStatusCode(399)).toBe(true)
+    })
+
+    it('should return true for valid 4xx status codes', () => {
+      expect(isValidHttpStatusCode(400)).toBe(true)
+      expect(isValidHttpStatusCode(401)).toBe(true)
+      expect(isValidHttpStatusCode(404)).toBe(true)
+      expect(isValidHttpStatusCode(499)).toBe(true)
+    })
+
+    it('should return true for valid 5xx status codes', () => {
+      expect(isValidHttpStatusCode(500)).toBe(true)
+      expect(isValidHttpStatusCode(501)).toBe(true)
+      expect(isValidHttpStatusCode(503)).toBe(true)
+      expect(isValidHttpStatusCode(599)).toBe(true)
+    })
+
+    it('should return false for status codes above 599', () => {
+      expect(isValidHttpStatusCode(600)).toBe(false)
+      expect(isValidHttpStatusCode(700)).toBe(false)
+      expect(isValidHttpStatusCode(1000)).toBe(false)
+    })
+
+    it('should return false for decimal numbers in valid range', () => {
+      expect(isValidHttpStatusCode(200.5)).toBe(false)
+      expect(isValidHttpStatusCode(404.9)).toBe(false)
+    })
+
+    it('should return false for non-number types', () => {
+      expect(isValidHttpStatusCode('200' as any)).toBe(false)
+      expect(isValidHttpStatusCode(true as any)).toBe(false)
+      expect(isValidHttpStatusCode({} as any)).toBe(false)
+      expect(isValidHttpStatusCode([] as any)).toBe(false)
+    })
+
+    it('should return false for NaN', () => {
+      expect(isValidHttpStatusCode(NaN)).toBe(false)
+    })
+
+    it('should return false for Infinity', () => {
+      expect(isValidHttpStatusCode(Infinity)).toBe(false)
+      expect(isValidHttpStatusCode(-Infinity)).toBe(false)
     })
   })
 

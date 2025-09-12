@@ -36,10 +36,7 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
         title='Cancel Invitation'
         description='Are you sure you want to cancel this invitation?'
         onConfirm={async ({ closeModal }) => {
-          const res = await deleteInvitation.mutateAsync({
-            inviteeFirstName,
-            inviteeLastName,
-          })
+          const res = await deleteInvitation.mutateAsync({})
           if (successful(res?.status)) {
             closeModal()
           }

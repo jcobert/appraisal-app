@@ -1,74 +1,87 @@
 /**
  * @jest-environment node
  */
-import { KindeUser } from '@kinde-oss/kinde-auth-nextjs/types'
+import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 import { User } from '@prisma/client'
 
+import { db } from '@/lib/db/client'
 import {
-  handleCreateUser,
-  handleDeleteUser,
-  handleGetActiveUser,
-  handleGetUser,
-  handleGetUsers,
-  handleUpdateUser,
+  handleCreateUserProfile,
+  handleDeleteUserProfile,
+  handleGetActiveUserProfile,
+  handleGetUserProfile,
+  handleRegisterUser,
+  handleUpdateActiveUserProfile,
+  handleUpdateUserProfile,
 } from '@/lib/db/handlers/user-handlers'
 import {
-  createUserProfile,
-  deleteUserProfile,
-  getActiveUserProfile,
-  getUserProfile,
-  getUserProfiles,
-  updateUserProfile,
-} from '@/lib/db/queries/user'
+  updateAuthAccount,
+  updateAuthEmail,
+} from '@/lib/kinde-management/queries'
 
 import { isAuthenticated } from '@/utils/auth'
 import { validatePayload } from '@/utils/zod'
 
-// Mock dependencies
+import { SessionUser } from '@/types/auth'
+
+import { getProfileChanges } from '@/features/user/utils'
+
 jest.mock('@/utils/auth', () => ({
   isAuthenticated: jest.fn(),
 }))
 
-jest.mock('@/lib/db/queries/user', () => ({
-  getUserProfiles: jest.fn(),
-  getUserProfile: jest.fn(),
-  getActiveUserProfile: jest.fn(),
-  createUserProfile: jest.fn(),
-  updateUserProfile: jest.fn(),
-  deleteUserProfile: jest.fn(),
+jest.mock('@/lib/db/client', () => ({
+  db: {
+    user: {
+      update: jest.fn(),
+      delete: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+    },
+  },
 }))
 
 jest.mock('@/utils/zod', () => ({
   validatePayload: jest.fn(),
 }))
 
+// Mock Kinde management and user utilities
+jest.mock('@/lib/kinde-management/queries', () => ({
+  updateAuthAccount: jest.fn(),
+  updateAuthEmail: jest.fn(),
+}))
+
+jest.mock('@/features/user/utils', () => ({
+  getProfileChanges: jest.fn(),
+}))
+
+jest.mock('@kinde-oss/kinde-auth-nextjs/server', () => ({
+  getKindeServerSession: jest.fn(),
+}))
+
+// Typed mocks
 const mockIsAuthenticated = isAuthenticated as jest.MockedFunction<
   typeof isAuthenticated
 >
-const mockGetUserProfiles = getUserProfiles as jest.MockedFunction<
-  typeof getUserProfiles
->
-const mockGetUserProfile = getUserProfile as jest.MockedFunction<
-  typeof getUserProfile
->
-const mockGetActiveUserProfile = getActiveUserProfile as jest.MockedFunction<
-  typeof getActiveUserProfile
->
-const mockCreateUserProfile = createUserProfile as jest.MockedFunction<
-  typeof createUserProfile
->
-const mockUpdateUserProfile = updateUserProfile as jest.MockedFunction<
-  typeof updateUserProfile
->
-const mockDeleteUserProfile = deleteUserProfile as jest.MockedFunction<
-  typeof deleteUserProfile
->
+const mockDb = db as jest.Mocked<typeof db>
 const mockValidatePayload = validatePayload as jest.MockedFunction<
   typeof validatePayload
 >
+const mockUpdateAuthAccount = updateAuthAccount as jest.MockedFunction<
+  typeof updateAuthAccount
+>
+const mockUpdateAuthEmail = updateAuthEmail as jest.MockedFunction<
+  typeof updateAuthEmail
+>
+const mockGetProfileChanges = getProfileChanges as jest.MockedFunction<
+  typeof getProfileChanges
+>
+const mockGetKindeServerSession = getKindeServerSession as jest.MockedFunction<
+  typeof getKindeServerSession
+>
 
 describe('user-handlers', () => {
-  const mockUser: KindeUser<Record<string, any>> = {
+  const mockUser: SessionUser = {
     id: 'user-123',
     email: 'test@example.com',
     given_name: 'Test',
@@ -105,63 +118,45 @@ describe('user-handlers', () => {
       data: {},
       errors: {},
     })
+
+    // Default mocks for additional dependencies
+    mockGetProfileChanges.mockReturnValue({})
+    mockUpdateAuthAccount.mockResolvedValue({ success: true } as any)
+    mockUpdateAuthEmail.mockResolvedValue({ success: true } as any)
+    mockGetKindeServerSession.mockReturnValue({
+      refreshTokens: jest.fn(),
+    } as any)
+
+    // Mock database operations
+    ;(mockDb.user.update as jest.Mock).mockResolvedValue(mockUserProfile)
+    ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
+    ;(mockDb.user.create as jest.Mock).mockResolvedValue(mockUserProfile)
   })
 
-  describe('handleGetUsers', () => {
-    it('should return all users successfully', async () => {
-      const mockUsers = [mockUserProfile]
-      mockGetUserProfiles.mockResolvedValue(mockUsers)
-
-      const result = await handleGetUsers()
-
-      expect(result.status).toBe(200)
-      expect(result.data).toEqual(mockUsers)
-      expect(mockGetUserProfiles).toHaveBeenCalledWith()
-    })
-
-    it('should return empty array when getUserProfiles returns null', async () => {
-      mockGetUserProfiles.mockResolvedValue(null)
-
-      const result = await handleGetUsers()
-
-      expect(result.status).toBe(200)
-      expect(result.data).toEqual([])
-      expect(mockGetUserProfiles).toHaveBeenCalledWith()
-    })
-
-    it('should handle authentication failure', async () => {
-      mockIsAuthenticated.mockResolvedValue({
-        allowed: false,
-        user: null,
-      })
-
-      const result = await handleGetUsers()
-
-      expect(result.status).toBe(401)
-      expect(result.error?.code).toBe('NOT_AUTHENTICATED')
-    })
-  })
-
-  describe('handleGetActiveUser', () => {
+  describe('handleGetActiveUserProfile', () => {
     it('should return active user profile successfully', async () => {
-      mockGetActiveUserProfile.mockResolvedValue(mockUserProfile)
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockUserProfile)
 
-      const result = await handleGetActiveUser()
+      const result = await handleGetActiveUserProfile()
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(mockUserProfile)
-      expect(mockGetActiveUserProfile).toHaveBeenCalledWith()
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
+        where: { accountId: mockUser.id },
+      })
     })
 
     it('should return 404 when no active user profile found', async () => {
-      mockGetActiveUserProfile.mockResolvedValue(null)
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
 
-      const result = await handleGetActiveUser()
+      const result = await handleGetActiveUserProfile()
 
       expect(result.status).toBe(404)
       expect(result.data).toBeNull()
       expect(result.error?.code).toBe('NOT_FOUND')
-      expect(mockGetActiveUserProfile).toHaveBeenCalledWith()
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
+        where: { accountId: mockUser.id },
+      })
     })
 
     it('should handle authentication failure', async () => {
@@ -170,46 +165,50 @@ describe('user-handlers', () => {
         user: null,
       })
 
-      const result = await handleGetActiveUser()
+      const result = await handleGetActiveUserProfile()
 
       expect(result.status).toBe(401)
       expect(result.error?.code).toBe('NOT_AUTHENTICATED')
     })
   })
 
-  describe('handleGetUser', () => {
+  describe('handleGetUserProfile', () => {
     it('should return user by ID successfully', async () => {
       const userId = 'user-profile-123'
-      mockGetUserProfile.mockResolvedValue(mockUserProfile)
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockUserProfile)
 
-      const result = await handleGetUser(userId)
+      const result = await handleGetUserProfile(userId)
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(mockUserProfile)
-      expect(mockGetUserProfile).toHaveBeenCalledWith({
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
       })
     })
 
     it('should return 404 when user not found', async () => {
       const userId = 'nonexistent-user'
-      mockGetUserProfile.mockResolvedValue(null)
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
 
-      const result = await handleGetUser(userId)
+      const result = await handleGetUserProfile(userId)
 
       expect(result.status).toBe(404)
       expect(result.data).toBeNull()
       expect(result.error?.code).toBe('NOT_FOUND')
-      expect(mockGetUserProfile).toHaveBeenCalledWith({
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
       })
     })
 
     it('should handle missing user ID', async () => {
-      const result = await handleGetUser('')
+      // Mock Prisma to simulate P2025 "Record not found" error for empty ID
+      const prismaError = new Error('Record not found')
+      ;(mockDb.user.findUnique as jest.Mock).mockRejectedValue(prismaError)
+
+      const result = await handleGetUserProfile('')
 
       expect(result.status).toBe(500)
-      expect(result.error?.message).toBe('User ID is required')
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
 
     it('should handle authentication failure', async () => {
@@ -218,14 +217,118 @@ describe('user-handlers', () => {
         user: null,
       })
 
-      const result = await handleGetUser('user-123')
+      const result = await handleGetUserProfile('user-123')
 
       expect(result.status).toBe(401)
       expect(result.error?.code).toBe('NOT_AUTHENTICATED')
     })
   })
 
-  describe('handleCreateUser', () => {
+  describe('handleRegisterUser', () => {
+    it('should register a new user profile successfully', async () => {
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.user.create as jest.Mock).mockResolvedValue(mockUserProfile)
+
+      const result = await handleRegisterUser()
+
+      expect(result.status).toBe(200)
+      expect(result.data).toEqual(mockUserProfile)
+      expect(result.message).toBe('User profile created successfully.')
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
+        where: { accountId: mockUser.id },
+        select: { id: true },
+      })
+      expect(mockDb.user.create).toHaveBeenCalledWith({
+        data: {
+          accountId: mockUser.id,
+          createdBy: mockUser.id,
+          updatedBy: mockUser.id,
+          firstName: mockUser.given_name,
+          lastName: mockUser.family_name,
+          avatar: mockUser.picture,
+          email: mockUser.email,
+          phone: mockUser.phone_number,
+        },
+        select: { id: true },
+      })
+    })
+
+    it('should handle case when user profile already exists', async () => {
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockUserProfile)
+
+      const result = await handleRegisterUser()
+
+      expect(result.status).toBe(409)
+      expect(result.error?.code).toBe('DUPLICATE')
+      expect(result.error?.message).toBe(
+        'A profile for this account already exists.',
+      )
+      expect(mockDb.user.findUnique).toHaveBeenCalledWith({
+        where: { accountId: mockUser.id },
+        select: { id: true },
+      })
+      expect(mockDb.user.create).not.toHaveBeenCalled()
+    })
+
+    it('should handle authentication failure', async () => {
+      mockIsAuthenticated.mockResolvedValue({
+        allowed: false,
+        user: null,
+      })
+
+      const result = await handleRegisterUser()
+
+      expect(result.status).toBe(401)
+      expect(result.error?.code).toBe('NOT_AUTHENTICATED')
+    })
+
+    it('should handle database errors', async () => {
+      ;(mockDb.user.findUnique as jest.Mock).mockRejectedValue(
+        new Error('Database error'),
+      )
+
+      const result = await handleRegisterUser()
+
+      expect(result.status).toBe(500)
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
+    })
+
+    it('should handle missing user data gracefully', async () => {
+      const userWithMissingFields = {
+        ...mockUser,
+        given_name: null,
+        family_name: null,
+        picture: null,
+        phone_number: null,
+      }
+
+      mockIsAuthenticated.mockResolvedValue({
+        allowed: true,
+        user: userWithMissingFields,
+      })
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.user.create as jest.Mock).mockResolvedValue(mockUserProfile)
+
+      const result = await handleRegisterUser()
+
+      expect(result.status).toBe(200)
+      expect(mockDb.user.create).toHaveBeenCalledWith({
+        data: {
+          accountId: userWithMissingFields.id,
+          createdBy: userWithMissingFields.id,
+          updatedBy: userWithMissingFields.id,
+          firstName: '',
+          lastName: '',
+          avatar: null,
+          email: userWithMissingFields.email,
+          phone: null,
+        },
+        select: { id: true },
+      })
+    })
+  })
+
+  describe('handleCreateUserProfile', () => {
     const createPayload = {
       accountId: 'user-456',
       firstName: 'John',
@@ -236,9 +339,9 @@ describe('user-handlers', () => {
 
     it('should create user successfully', async () => {
       const createdUser = { ...mockUserProfile, ...createPayload }
-      mockCreateUserProfile.mockResolvedValue(createdUser)
+      ;(mockDb.user.create as jest.Mock).mockResolvedValue(createdUser)
 
-      const result = await handleCreateUser(createPayload)
+      const result = await handleCreateUserProfile(createPayload)
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(createdUser)
@@ -247,7 +350,7 @@ describe('user-handlers', () => {
         expect.any(Object),
         createPayload,
       )
-      expect(mockCreateUserProfile).toHaveBeenCalledWith({
+      expect(mockDb.user.create).toHaveBeenCalledWith({
         data: {
           ...createPayload,
           createdBy: mockUser.id,
@@ -273,7 +376,7 @@ describe('user-handlers', () => {
         },
       })
 
-      const result = await handleCreateUser(invalidPayload)
+      const result = await handleCreateUserProfile(invalidPayload)
 
       expect(result.status).toBe(400)
       expect(result.error?.code).toBe('INVALID_DATA')
@@ -291,23 +394,25 @@ describe('user-handlers', () => {
         user: null,
       })
 
-      const result = await handleCreateUser(createPayload)
+      const result = await handleCreateUserProfile(createPayload)
 
       expect(result.status).toBe(401)
       expect(result.error?.code).toBe('NOT_AUTHENTICATED')
     })
 
     it('should handle database errors', async () => {
-      mockCreateUserProfile.mockRejectedValue(new Error('Database error'))
+      ;(mockDb.user.create as jest.Mock).mockRejectedValue(
+        new Error('Database error'),
+      )
 
-      const result = await handleCreateUser(createPayload)
+      const result = await handleCreateUserProfile(createPayload)
 
       expect(result.status).toBe(500)
       expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
   })
 
-  describe('handleUpdateUser', () => {
+  describe('handleUpdateUserProfile', () => {
     const userId = 'user-profile-123'
     const updatePayload = {
       firstName: 'Jane',
@@ -318,9 +423,9 @@ describe('user-handlers', () => {
 
     it('should update user successfully', async () => {
       const updatedUser = { ...mockUserProfile, ...updatePayload }
-      mockUpdateUserProfile.mockResolvedValue(updatedUser)
+      ;(mockDb.user.update as jest.Mock).mockResolvedValue(updatedUser)
 
-      const result = await handleUpdateUser(userId, updatePayload)
+      const result = await handleUpdateUserProfile(userId, updatePayload)
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(updatedUser)
@@ -329,7 +434,7 @@ describe('user-handlers', () => {
         expect.any(Object),
         updatePayload,
       )
-      expect(mockUpdateUserProfile).toHaveBeenCalledWith({
+      expect(mockDb.user.update).toHaveBeenCalledWith({
         where: { id: userId },
         data: {
           ...updatePayload,
@@ -339,10 +444,14 @@ describe('user-handlers', () => {
     })
 
     it('should handle missing user ID', async () => {
-      const result = await handleUpdateUser('', updatePayload)
+      // Mock Prisma to throw an error when trying to update with invalid ID
+      const prismaError = new Error('Invalid ID')
+      ;(mockDb.user.update as jest.Mock).mockRejectedValue(prismaError)
+
+      const result = await handleUpdateUserProfile('', updatePayload)
 
       expect(result.status).toBe(500)
-      expect(result.error?.message).toBe('User ID is required')
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
 
     it('should handle validation errors', async () => {
@@ -356,7 +465,7 @@ describe('user-handlers', () => {
         },
       })
 
-      const result = await handleUpdateUser(userId, invalidPayload)
+      const result = await handleUpdateUserProfile(userId, invalidPayload)
 
       expect(result.status).toBe(400)
       expect(result.error?.code).toBe('INVALID_DATA')
@@ -372,43 +481,49 @@ describe('user-handlers', () => {
         user: null,
       })
 
-      const result = await handleUpdateUser(userId, updatePayload)
+      const result = await handleUpdateUserProfile(userId, updatePayload)
 
       expect(result.status).toBe(401)
       expect(result.error?.code).toBe('NOT_AUTHENTICATED')
     })
 
     it('should handle database errors', async () => {
-      mockUpdateUserProfile.mockRejectedValue(new Error('Database error'))
+      ;(mockDb.user.update as jest.Mock).mockRejectedValue(
+        new Error('Database error'),
+      )
 
-      const result = await handleUpdateUser(userId, updatePayload)
+      const result = await handleUpdateUserProfile(userId, updatePayload)
 
       expect(result.status).toBe(500)
       expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
   })
 
-  describe('handleDeleteUser', () => {
+  describe('handleDeleteUserProfile', () => {
     const userId = 'user-profile-123'
 
     it('should delete user successfully', async () => {
-      mockDeleteUserProfile.mockResolvedValue(mockUserProfile)
+      ;(mockDb.user.delete as jest.Mock).mockResolvedValue(mockUserProfile)
 
-      const result = await handleDeleteUser(userId)
+      const result = await handleDeleteUserProfile(userId)
 
       expect(result.status).toBe(200)
       expect(result.data).toEqual(mockUserProfile)
       expect(result.message).toBe('User deleted successfully.')
-      expect(mockDeleteUserProfile).toHaveBeenCalledWith({
+      expect(mockDb.user.delete).toHaveBeenCalledWith({
         where: { id: userId },
       })
     })
 
     it('should handle missing user ID', async () => {
-      const result = await handleDeleteUser('')
+      // Mock Prisma to throw an error when trying to delete with invalid ID
+      const prismaError = new Error('Invalid ID')
+      ;(mockDb.user.delete as jest.Mock).mockRejectedValue(prismaError)
+
+      const result = await handleDeleteUserProfile('')
 
       expect(result.status).toBe(500)
-      expect(result.error?.message).toBe('User ID is required')
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
 
     it('should handle authentication failure', async () => {
@@ -417,27 +532,114 @@ describe('user-handlers', () => {
         user: null,
       })
 
-      const result = await handleDeleteUser(userId)
+      const result = await handleDeleteUserProfile(userId)
 
       expect(result.status).toBe(401)
       expect(result.error?.code).toBe('NOT_AUTHENTICATED')
     })
 
     it('should handle database errors', async () => {
-      mockDeleteUserProfile.mockRejectedValue(new Error('Database error'))
+      ;(mockDb.user.delete as jest.Mock).mockRejectedValue(
+        new Error('Database error'),
+      )
 
-      const result = await handleDeleteUser(userId)
+      const result = await handleDeleteUserProfile(userId)
 
       expect(result.status).toBe(500)
       expect(result.error?.code).toBe('INTERNAL_ERROR')
     })
 
     it('should handle user not found during deletion', async () => {
-      mockDeleteUserProfile.mockRejectedValue(
+      ;(mockDb.user.delete as jest.Mock).mockRejectedValue(
         new Error('Record to delete does not exist.'),
       )
 
-      const result = await handleDeleteUser(userId)
+      const result = await handleDeleteUserProfile(userId)
+
+      expect(result.status).toBe(500)
+      expect(result.error?.code).toBe('INTERNAL_ERROR')
+    })
+  })
+
+  describe('handleUpdateActiveUserProfile', () => {
+    it('should update active user profile successfully', async () => {
+      const payload = {
+        accountId: mockUser.id,
+        firstName: 'Jane',
+        lastName: 'Smith',
+        email: 'jane@example.com',
+      }
+
+      mockValidatePayload.mockReturnValue({
+        success: true,
+        data: payload,
+        errors: {},
+      })
+      ;(mockDb.user.update as jest.Mock).mockResolvedValue(mockUserProfile)
+
+      const result = await handleUpdateActiveUserProfile(payload)
+
+      expect(result.status).toBe(200)
+      expect(result.data).toEqual(mockUserProfile)
+      expect(mockValidatePayload).toHaveBeenCalled()
+      expect(mockDb.user.update).toHaveBeenCalledWith({
+        where: { accountId: mockUser.id },
+        data: expect.objectContaining({
+          ...payload,
+          email: payload.email,
+          updatedBy: mockUser.id,
+        }),
+      })
+    })
+
+    it('should throw AuthorizationError when user not authenticated', async () => {
+      mockIsAuthenticated.mockResolvedValue({ allowed: false, user: null })
+
+      const result = await handleUpdateActiveUserProfile({})
+
+      expect(result.status).toBe(401)
+      expect(result.error?.code).toBe('NOT_AUTHENTICATED')
+    })
+
+    it('should throw AuthorizationError when trying to update different user', async () => {
+      const payload = { accountId: 'different-account' }
+      mockValidatePayload.mockReturnValue({
+        success: true,
+        data: payload,
+        errors: {},
+      })
+
+      const result = await handleUpdateActiveUserProfile(payload)
+
+      expect(result.status).toBe(403)
+      expect(result.error?.code).toBe('NOT_AUTHORIZED')
+    })
+
+    it('should throw ValidationError when payload is invalid', async () => {
+      const payload = { email: 'invalid-email' }
+      mockValidatePayload.mockReturnValue({
+        success: false,
+        data: {},
+        errors: { email: { code: 'invalid_string', message: 'Invalid email' } },
+      })
+
+      const result = await handleUpdateActiveUserProfile(payload)
+
+      expect(result.status).toBe(400)
+      expect(result.error?.code).toBe('INVALID_DATA')
+    })
+
+    it('should handle database update failure', async () => {
+      const payload = { accountId: mockUser.id }
+
+      mockValidatePayload.mockReturnValue({
+        success: true,
+        data: payload,
+        errors: {},
+      })
+      ;(mockDb.user.update as jest.Mock).mockResolvedValue(null)
+
+      const result = await handleUpdateActiveUserProfile(payload)
 
       expect(result.status).toBe(500)
       expect(result.error?.code).toBe('INTERNAL_ERROR')

@@ -21,6 +21,16 @@ export class ValidationError extends Error {
 }
 
 /**
+ * Custom error class for authentication errors.
+ */
+export class AuthenticationError extends Error {
+  constructor(message: string = 'User not authenticated.') {
+    super(message)
+    this.name = 'AuthenticationError'
+  }
+}
+
+/**
  * Custom error class for authorization errors.
  */
 export class AuthorizationError extends Error {
