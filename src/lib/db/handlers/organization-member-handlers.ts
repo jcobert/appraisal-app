@@ -54,7 +54,7 @@ export const handleUpdateOrgMember = async (
   payload: Parameters<typeof db.orgMember.update>[0]['data'],
 ) => {
   return createApiHandler(
-    async ({ user }) => {
+    async (context) => {
       // Validate payload
       const validation = validatePayload(orgMemberSchema.api, payload)
       if (!validation?.success) {
@@ -66,7 +66,7 @@ export const handleUpdateOrgMember = async (
 
       const result = await db.orgMember.update({
         where: { id: memberId, organizationId },
-        data: withUserFields(payload, user?.id),
+        data: withUserFields(payload, context.userProfileId),
       })
       return result
     },
@@ -93,7 +93,7 @@ export const handleUpdateActiveUserOrgMember = async (
   payload: Parameters<typeof db.orgMember.update>[0]['data'],
 ) => {
   return createApiHandler(
-    async ({ user }) => {
+    async ({ user, userProfileId }) => {
       // Validate payload
       const validation = validatePayload(orgMemberSchema.api, payload)
       if (!validation?.success) {
@@ -115,7 +115,7 @@ export const handleUpdateActiveUserOrgMember = async (
 
       const result = await db.orgMember.update({
         where: { id: activeUserMember?.id, organizationId },
-        data: withUserFields(payload, user?.id),
+        data: withUserFields(payload, userProfileId),
       })
       return result
     },

@@ -170,8 +170,8 @@ export async function handleJoinOrganization(
               members: {
                 create: [
                   {
-                    createdBy: user?.id,
-                    updatedBy: user?.id,
+                    createdBy: userProfile?.id,
+                    updatedBy: userProfile?.id,
                     userId: userProfile?.id,
                     active: true,
                     roles: invitation?.roles,

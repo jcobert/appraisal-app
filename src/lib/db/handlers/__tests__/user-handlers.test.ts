@@ -45,6 +45,11 @@ jest.mock('@/utils/zod', () => ({
   validatePayload: jest.fn(),
 }))
 
+// Mock the api-handlers module
+jest.mock('@/lib/db/api-handlers', () => ({
+  ...jest.requireActual('@/lib/db/api-handlers'),
+}))
+
 // Mock Kinde management and user utilities
 jest.mock('@/lib/kinde-management/queries', () => ({
   updateAuthAccount: jest.fn(),
@@ -119,6 +124,16 @@ describe('user-handlers', () => {
       errors: {},
     })
 
+    // Default mocks for user profile ID lookup - ensure createApiHandler can resolve profile ID
+    ;(mockDb.user.findUnique as jest.Mock).mockImplementation((query) => {
+      // If this is the profile ID lookup query (by accountId)
+      if (query.where?.accountId) {
+        return Promise.resolve({ id: 'user-profile-123' })
+      }
+      // Otherwise return null for other queries (will be overridden in specific tests)
+      return Promise.resolve(null)
+    })
+
     // Default mocks for additional dependencies
     mockGetProfileChanges.mockReturnValue({})
     mockUpdateAuthAccount.mockResolvedValue({ success: true } as any)
@@ -129,7 +144,6 @@ describe('user-handlers', () => {
 
     // Mock database operations
     ;(mockDb.user.update as jest.Mock).mockResolvedValue(mockUserProfile)
-    ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
     ;(mockDb.user.create as jest.Mock).mockResolvedValue(mockUserProfile)
   })
 
@@ -438,7 +452,7 @@ describe('user-handlers', () => {
         where: { id: userId },
         data: {
           ...updatePayload,
-          updatedBy: mockUser.id,
+          updatedBy: mockUserProfile.id, // Now uses profile ID
         },
       })
     })
@@ -587,7 +601,7 @@ describe('user-handlers', () => {
         data: expect.objectContaining({
           ...payload,
           email: payload.email,
-          updatedBy: mockUser.id,
+          updatedBy: mockUserProfile.id, // Now uses profile ID
         }),
       })
     })

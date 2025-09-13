@@ -22,6 +22,8 @@ import {
 import { NextResponse } from 'next/server'
 import { ZodIssueCode } from 'zod'
 
+import { db } from '@/lib/db/client'
+
 import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode } from '@/utils/fetch'
 
@@ -30,6 +32,15 @@ import { SessionUser } from '@/types/auth'
 // Mock the auth utility
 jest.mock('@/utils/auth', () => ({
   isAuthenticated: jest.fn(),
+}))
+
+// Mock the database client
+jest.mock('@/lib/db/client', () => ({
+  db: {
+    user: {
+      findUnique: jest.fn(),
+    },
+  },
 }))
 
 // Mock NextResponse
@@ -45,6 +56,7 @@ const mockIsAuthenticated = isAuthenticated as jest.MockedFunction<
 const mockJson = NextResponse.json as jest.MockedFunction<
   typeof NextResponse.json
 >
+const mockDb = db as jest.Mocked<typeof db>
 
 describe('api-handlers', () => {
   beforeEach(() => {
@@ -130,42 +142,42 @@ describe('api-handlers', () => {
   })
 
   describe('withUserFields', () => {
-    const userId = 'user-123'
+    const userProfileId = 'user-profile-123'
     const basePayload = { name: 'Test', description: 'A test item' }
 
     it('should add updatedBy field by default', () => {
-      const result = withUserFields(basePayload, userId)
+      const result = withUserFields(basePayload, userProfileId)
 
       expect(result).toEqual({
         ...basePayload,
-        updatedBy: userId,
+        updatedBy: userProfileId,
       })
     })
 
     it('should add createdBy field when specified', () => {
-      const result = withUserFields(basePayload, userId, ['createdBy'])
+      const result = withUserFields(basePayload, userProfileId, ['createdBy'])
 
       expect(result).toEqual({
         ...basePayload,
-        createdBy: userId,
+        createdBy: userProfileId,
       })
     })
 
     it('should add both createdBy and updatedBy fields when specified', () => {
-      const result = withUserFields(basePayload, userId, [
+      const result = withUserFields(basePayload, userProfileId, [
         'createdBy',
         'updatedBy',
       ])
 
       expect(result).toEqual({
         ...basePayload,
-        createdBy: userId,
-        updatedBy: userId,
+        createdBy: userProfileId,
+        updatedBy: userProfileId,
       })
     })
 
     it('should not add any fields when empty array is provided', () => {
-      const result = withUserFields(basePayload, userId, [])
+      const result = withUserFields(basePayload, userProfileId, [])
 
       expect(result).toEqual(basePayload)
     })
@@ -175,19 +187,19 @@ describe('api-handlers', () => {
         ...basePayload,
         updatedBy: 'existing-user',
       }
-      const result = withUserFields(payloadWithUserFields, userId)
+      const result = withUserFields(payloadWithUserFields, userProfileId)
 
       expect(result).toEqual({
         ...basePayload,
-        updatedBy: userId, // Should override existing value
+        updatedBy: userProfileId, // Should override existing value
       })
     })
 
     it('should work with empty payload', () => {
-      const result = withUserFields({}, userId)
+      const result = withUserFields({}, userProfileId)
 
       expect(result).toEqual({
-        updatedBy: userId,
+        updatedBy: userProfileId,
       })
     })
 
@@ -197,15 +209,15 @@ describe('api-handlers', () => {
         nested: { key: 'value' },
         array: [1, 2, 3],
       }
-      const result = withUserFields(payloadWithNested, userId, [
+      const result = withUserFields(payloadWithNested, userProfileId, [
         'createdBy',
         'updatedBy',
       ])
 
       expect(result).toEqual({
         ...payloadWithNested,
-        createdBy: userId,
-        updatedBy: userId,
+        createdBy: userProfileId,
+        updatedBy: userProfileId,
       })
     })
   })
@@ -287,6 +299,10 @@ describe('api-handlers', () => {
 
     beforeEach(() => {
       mockHandler.mockClear()
+      // Mock the db.user.findUnique call to return a profile ID
+      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'user-profile-123',
+      })
     })
 
     describe('authentication', () => {
@@ -317,7 +333,10 @@ describe('api-handlers', () => {
           status: 200,
           data: { data: 'test' },
         })
-        expect(mockHandler).toHaveBeenCalledWith({ user: mockUser })
+        expect(mockHandler).toHaveBeenCalledWith({
+          user: mockUser,
+          userProfileId: 'user-profile-123',
+        })
       })
 
       it('should skip auth check when dangerouslyBypassAuthentication is true', async () => {
@@ -387,7 +406,10 @@ describe('api-handlers', () => {
           data: { data: 'test' },
         })
         expect(authCheck).toHaveBeenCalled()
-        expect(mockHandler).toHaveBeenCalledWith({ user: mockUser })
+        expect(mockHandler).toHaveBeenCalledWith({
+          user: mockUser,
+          userProfileId: 'user-profile-123',
+        })
       })
 
       it('should return 500 when authorization check throws error', async () => {
@@ -804,12 +826,16 @@ describe('api-handlers', () => {
         const result = await createApiHandler(handlerWithParams)
 
         expect(result.data).toEqual({ userId: mockUser.id })
-        expect(handlerWithParams).toHaveBeenCalledWith({ user: mockUser })
+        expect(handlerWithParams).toHaveBeenCalledWith({
+          user: mockUser,
+          userProfileId: 'user-profile-123',
+        })
       })
     })
 
     describe('Prisma error handling', () => {
       beforeEach(() => {
+        // These tests bypass authentication to test pure error handling
         mockIsAuthenticated.mockResolvedValue({ allowed: true, user: mockUser })
       })
 
@@ -828,7 +854,11 @@ describe('api-handlers', () => {
           .spyOn(console, 'error')
           .mockImplementation(() => {})
 
-        const result = await createApiHandler(mockHandler)
+        // Use bypass authentication to avoid getUserProfileId call
+        const config: ApiHandlerConfig = {
+          dangerouslyBypassAuthentication: true,
+        }
+        const result = await createApiHandler(mockHandler, config)
 
         expect(result).toEqual({
           status: 409,
@@ -860,7 +890,10 @@ describe('api-handlers', () => {
           .spyOn(console, 'error')
           .mockImplementation(() => {})
 
-        const result = await createApiHandler(mockHandler)
+        const config: ApiHandlerConfig = {
+          dangerouslyBypassAuthentication: true,
+        }
+        const result = await createApiHandler(mockHandler, config)
 
         expect(result).toEqual({
           status: 404,

@@ -6,7 +6,7 @@ import { organizationSchema } from '@/lib/db/schemas/organization'
 import { getUserPermissions } from '@/lib/db/utils'
 
 import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
-import { ValidationError, AuthenticationError } from '@/lib/db/errors'
+import { ValidationError } from '@/lib/db/errors'
 import { validatePayload } from '@/utils/zod'
 import { db } from '@/lib/db/client'
 
@@ -92,7 +92,7 @@ export const handleUpdateOrganization = async (
   payload: Parameters<typeof db.organization.update>[0]['data'],
 ) => {
   return createApiHandler(
-    async ({ user }) => {
+    async ({ userProfileId }) => {
       // Validate payload
       const validation = validatePayload(organizationSchema.api, payload)
       if (!validation?.success) {
@@ -104,7 +104,7 @@ export const handleUpdateOrganization = async (
 
       const result = await db.organization.update({
         where: { id: organizationId },
-        data: withUserFields(payload, user?.id),
+        data: withUserFields(payload, userProfileId),
       })
       return result
     },
@@ -157,11 +157,7 @@ export const handleCreateOrganization = async (
   payload: Parameters<typeof db.organization.create>[0]['data'],
 ) => {
   return createApiHandler(
-    async ({ user }) => {
-      if (!user?.id) {
-        throw new AuthenticationError('User not authenticated.')
-      }
-
+    async ({ user, userProfileId }) => {
       // Validate payload
       const validation = validatePayload(organizationSchema.api, payload)
       if (!validation?.success) {
@@ -171,10 +167,7 @@ export const handleCreateOrganization = async (
         )
       }
 
-      const userProfile = await db.user.findUnique({
-        where: { accountId: user?.id },
-      })
-      if (!userProfile?.id) {
+      if (!userProfileId) {
         throw new ValidationError('No user profile found.', {})
       }
 
@@ -204,14 +197,14 @@ export const handleCreateOrganization = async (
           ...payload,
           members: {
             create: {
-              userId: userProfile?.id,
+              userId: userProfileId,
               roles: ['owner'],
-              createdBy: user?.id,
-              updatedBy: user?.id,
+              createdBy: userProfileId,
+              updatedBy: userProfileId,
             },
           },
-          createdBy: user?.id,
-          updatedBy: user?.id,
+          createdBy: userProfileId,
+          updatedBy: userProfileId,
         },
         select: { id: true, name: true },
       })
