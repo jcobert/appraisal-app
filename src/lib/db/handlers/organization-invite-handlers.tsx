@@ -145,7 +145,7 @@ export const handleCreateOrgInvite = async (
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
+        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
         return isOwner
       },
       messages: {
@@ -196,7 +196,7 @@ export const handleDeleteOrgInvite = async (
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
+        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
         return isOwner
       },
       messages: {
@@ -250,7 +250,7 @@ export const handleUpdateOrgInvite = async (
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
+        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
         return isOwner
       },
       messages: {

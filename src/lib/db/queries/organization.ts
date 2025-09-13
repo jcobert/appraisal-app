@@ -11,10 +11,10 @@ import { KindeUser } from '@kinde-oss/kinde-auth-nextjs'
 
 export const userIsMember = async (params: {
   organizationId: Organization['id']
-  userId?: KindeUser['id']
+  accountId?: KindeUser['id']
 }) => {
-  const { organizationId, userId } = params || {}
-  const accountId = userId || (await getActiveUserAccount())?.id
+  const { organizationId, accountId: providedAccountId } = params || {}
+  const accountId = providedAccountId || (await getActiveUserAccount())?.id
   if (!accountId) return false
   const data = await db.organization.findUnique({
     where: {
@@ -28,11 +28,11 @@ export const userIsMember = async (params: {
 
 export const userIsOwner = async (params: {
   organizationId: Organization['id']
-  userId?: KindeUser['id']
+  accountId?: KindeUser['id']
   authOptions?: CanQueryOptions
 }) => {
-  const { organizationId, userId } = params || {}
-  const accountId = userId || (await getActiveUserAccount())?.id
+  const { organizationId, accountId: providedAccountId } = params || {}
+  const accountId = providedAccountId || (await getActiveUserAccount())?.id
   if (!accountId) return false
   const data = await db.organization.findUnique({
     where: {
@@ -49,13 +49,12 @@ export const userIsOwner = async (params: {
   return !!data?.id
 }
 
-/** Gets member data for the active user in the provided org. */
 export const getActiveUserOrgMember = async (params: {
   organizationId: Organization['id']
-  userId?: KindeUser['id']
+  accountId?: KindeUser['id']
 }) => {
-  const { organizationId, userId } = params || {}
-  const accountId = userId || (await getActiveUserAccount())?.id
+  const { organizationId, accountId: providedAccountId } = params || {}
+  const accountId = providedAccountId || (await getActiveUserAccount())?.id
   if (!accountId) return null
   const member = (
     await db.orgMember.findMany({

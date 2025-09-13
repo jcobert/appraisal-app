@@ -143,7 +143,7 @@ export async function handleJoinOrganization(
         throw new AuthenticationError('User not authenticated.')
       }
 
-      const isMember = await userIsMember({ organizationId, userId: user?.id })
+      const isMember = await userIsMember({ organizationId, accountId: user?.id })
 
       // User already member of org
       if (isMember) {

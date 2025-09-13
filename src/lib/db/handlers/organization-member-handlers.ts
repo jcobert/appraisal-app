@@ -38,7 +38,7 @@ export const handleGetActiveUserOrgMember = async (organizationId: string) => {
   return createApiHandler(async ({ user }) => {
     const member = await getActiveUserOrgMember({
       organizationId,
-      userId: user?.id,
+      accountId: user.id,
     })
     return member
   })
@@ -72,7 +72,7 @@ export const handleUpdateOrgMember = async (
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
+        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
         return isOwner
       },
       messages: {
@@ -106,7 +106,7 @@ export const handleUpdateActiveUserOrgMember = async (
       // First get the active user's member record
       const activeUserMember = await getActiveUserOrgMember({
         organizationId,
-        userId: user?.id,
+        accountId: user?.id,
       })
 
       if (!activeUserMember?.id) {
@@ -124,7 +124,7 @@ export const handleUpdateActiveUserOrgMember = async (
         // For updating your own member record, just need to be a member
         const isMember = await userIsMember({
           organizationId,
-          userId: user?.id,
+          accountId: user?.id,
         })
         return isMember
       },
@@ -154,7 +154,7 @@ export const handleDeleteOrgMember = async (
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
+        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
         return isOwner
       },
       messages: {

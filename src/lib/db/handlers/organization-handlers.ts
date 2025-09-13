@@ -75,7 +75,7 @@ export const handleGetOrganization = async (organizationId: string) => {
         // User must be a member of org.
         const isMember = await userIsMember({
           organizationId,
-          userId: user?.id,
+          accountId: user?.id,
         })
         return isMember
       },
@@ -110,7 +110,7 @@ export const handleUpdateOrganization = async (
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
+        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
         return isOwner
       },
       messages: {
@@ -136,7 +136,7 @@ export const handleDeleteOrganization = async (organizationId: string) => {
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
+        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
         return isOwner
       },
       messages: {

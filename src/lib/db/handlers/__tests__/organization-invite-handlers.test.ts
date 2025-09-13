@@ -385,7 +385,7 @@ describe('organization-invite-handlers', () => {
       })
       expect(mockUserIsOwner).toHaveBeenCalledWith({
         organizationId: 'org-1',
-        userId: mockKindeUser.id,
+        accountId: mockKindeUser.id,
       })
     })
 
@@ -445,7 +445,7 @@ describe('organization-invite-handlers', () => {
       await handleDeleteOrgInvite('org-1', 'invite-1')
       expect(mockUserIsOwner).toHaveBeenCalledWith({
         organizationId: 'org-1',
-        userId: mockKindeUser.id,
+        accountId: mockKindeUser.id,
       })
     })
   })
@@ -501,7 +501,7 @@ describe('organization-invite-handlers', () => {
       })
       expect(mockUserIsOwner).toHaveBeenCalledWith({
         organizationId: 'org-1',
-        userId: mockKindeUser.id,
+        accountId: mockKindeUser.id,
       })
     })
 
@@ -560,7 +560,7 @@ describe('organization-invite-handlers', () => {
       await handleUpdateOrgInvite('org-1', 'invite-1', updatePayload)
       expect(mockUserIsOwner).toHaveBeenCalledWith({
         organizationId: 'org-1',
-        userId: mockKindeUser.id,
+        accountId: mockKindeUser.id,
       })
     })
 

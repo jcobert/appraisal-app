@@ -193,7 +193,7 @@ describe('organization-member-handlers', () => {
       })
       expect(mockGetActiveUserOrgMember).toHaveBeenCalledWith({
         organizationId,
-        userId: mockUser.id,
+        accountId: mockUser.id,
       })
     })
 
