@@ -25,18 +25,19 @@ import {
   FetchResponse,
   isValidHttpStatusCode,
 } from '@/utils/fetch'
+import { User } from '@prisma/client'
 
 /**
- * Utility to add user profile ID fields to payload for audit trails.
+ * Utility to add user user ID fields to payload for audit trails.
  * For use in handlers where auth is already confirmed.
  *
- * @param payload - The base data payload
- * @param userProfileId - The user's database profile ID (NOT auth account ID)
- * @param fields - Which audit fields to include
+ * @param payload - The base data payload.
+ * @param userProfileId - The user's profile ID (NOT auth account ID).
+ * @param fields - Which audit fields to include. `updatedBy` only by default.
  */
 export const withUserFields = <T extends Record<string, any>>(
   payload: T,
-  userProfileId: string,
+  userProfileId: User['id'],
   fields: ('createdBy' | 'updatedBy')[] = ['updatedBy'],
 ): T & { createdBy?: string; updatedBy?: string } => {
   const userFields: { createdBy?: string; updatedBy?: string } = {}
@@ -93,11 +94,12 @@ export const toNextResponse = <TData = any>(
 
 type ContextUser = Awaited<ReturnType<typeof isAuthenticated>>['user']
 
-/** Context provided to various API handler callback parameters. */
+/** Context provided to various API handler callbacks. */
 type ApiHandlerContext<TBypassAuth extends boolean = boolean> = {
+  /** Auth account user. */
   user: TBypassAuth extends false ? NonNullable<ContextUser> : ContextUser
   /** The user's database profile ID (resolved from auth account ID) */
-  userProfileId: TBypassAuth extends false ? string : string | null
+  userProfileId: TBypassAuth extends false ? User['id'] : User['id'] | null
 }
 
 /**
@@ -140,9 +142,9 @@ export type ApiHandlerConfig<TBypassAuth extends boolean = boolean> = {
 
 /**
  * Creates a standardized API handler that can be used both in API routes and server components.
- * @param handler - The async function that contains the business logic
- * @param config - Configuration options for the handler
- * @returns ApiHandlerResult with both data and NextResponse
+ * @param handler - The async function that contains the business logic.
+ * @param config - Configuration options for the handler.
+ * @returns `ApiHandlerResult` with both data and NextResponse.
  */
 export const createApiHandler = async <
   TBypassAuth extends boolean = false,
@@ -216,7 +218,7 @@ export const createApiHandler = async <
 
   try {
     // Resolve user profile ID for authenticated users
-    let userProfileId: string | null = null
+    let userProfileId: User['id'] | null = null
     if (!dangerouslyBypassAuthentication && user?.id) {
       userProfileId = await getUserProfileId(user.id)
     }

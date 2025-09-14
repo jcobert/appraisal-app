@@ -7,11 +7,11 @@ import { db } from '@/lib/db/client'
 import { CanQueryOptions } from '@/lib/db/utils'
 
 import { getActiveUserAccount } from '@/utils/auth'
-import { KindeUser } from '@kinde-oss/kinde-auth-nextjs'
+import { SessionUser } from '@/types/auth'
 
 export const userIsMember = async (params: {
   organizationId: Organization['id']
-  accountId?: KindeUser['id']
+  accountId?: SessionUser['id']
 }) => {
   const { organizationId, accountId: providedAccountId } = params || {}
   const accountId = providedAccountId || (await getActiveUserAccount())?.id
@@ -28,7 +28,7 @@ export const userIsMember = async (params: {
 
 export const userIsOwner = async (params: {
   organizationId: Organization['id']
-  accountId?: KindeUser['id']
+  accountId?: SessionUser['id']
   authOptions?: CanQueryOptions
 }) => {
   const { organizationId, accountId: providedAccountId } = params || {}
@@ -51,7 +51,7 @@ export const userIsOwner = async (params: {
 
 export const getActiveUserOrgMember = async (params: {
   organizationId: Organization['id']
-  accountId?: KindeUser['id']
+  accountId?: SessionUser['id']
 }) => {
   const { organizationId, accountId: providedAccountId } = params || {}
   const accountId = providedAccountId || (await getActiveUserAccount())?.id
