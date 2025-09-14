@@ -29,8 +29,16 @@ jest.mock('@/utils/auth', () => ({
   isAuthenticated: jest.fn(),
 }))
 
+// Mock the getUserProfileId function
+jest.mock('../../api-handlers', () => ({
+  ...jest.requireActual('../../api-handlers'),
+}))
+
 jest.mock('@/lib/db/client', () => ({
   db: {
+    user: {
+      findUnique: jest.fn(),
+    },
     orgMember: {
       findUnique: jest.fn(),
       update: jest.fn(),
@@ -104,6 +112,11 @@ describe('organization-member-handlers', () => {
       success: true,
       data: {},
       errors: null,
+    })
+
+    // Default mock for user profile lookup - return the profile ID for existing users
+    ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-profile-123',
     })
 
     // Mock database operations
@@ -180,7 +193,7 @@ describe('organization-member-handlers', () => {
       })
       expect(mockGetActiveUserOrgMember).toHaveBeenCalledWith({
         organizationId,
-        userId: mockUser.id,
+        accountId: mockUser.id,
       })
     })
 
@@ -247,7 +260,7 @@ describe('organization-member-handlers', () => {
         where: { id: memberId, organizationId },
         data: expect.objectContaining({
           ...payload,
-          updatedBy: mockUser.id,
+          updatedBy: 'user-profile-123', // Now uses profile ID
         }),
       })
     })
@@ -353,7 +366,7 @@ describe('organization-member-handlers', () => {
         where: { id: mockOrgMember.id, organizationId },
         data: expect.objectContaining({
           ...payload,
-          updatedBy: mockUser.id,
+          updatedBy: 'user-profile-123', // Now uses profile ID
         }),
       })
     })

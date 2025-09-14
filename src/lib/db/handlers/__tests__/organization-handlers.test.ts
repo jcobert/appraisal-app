@@ -35,6 +35,12 @@ jest.mock('../../client', () => ({
     },
   },
 }))
+
+// Mock the api-handlers module
+jest.mock('../../api-handlers', () => ({
+  ...jest.requireActual('../../api-handlers'),
+}))
+
 jest.mock('@/utils/auth')
 jest.mock('@/lib/db/queries/organization')
 jest.mock('@/lib/db/utils')
@@ -94,6 +100,20 @@ describe('organization-handlers', () => {
     mockGetUserPermissions.mockResolvedValue({
       organization: [],
       orders: [],
+    })
+
+    // Default mock for user profile ID lookup - ensure createApiHandler can resolve profile ID
+    ;(mockDb.user.findUnique as jest.Mock).mockImplementation((query) => {
+      // If this is the profile ID lookup query (by accountId)
+      if (query.where?.accountId) {
+        return Promise.resolve({ id: 'user-profile-123' })
+      }
+      // For handleCreateOrganization, also return user profile for organization owner lookup
+      if (query.where?.accountId === 'user-123') {
+        return Promise.resolve({ id: 'user-profile-123' })
+      }
+      // Otherwise return user profile for other queries
+      return Promise.resolve({ id: 'user-profile-123' })
     })
   })
 
@@ -307,7 +327,7 @@ describe('organization-handlers', () => {
         where: { id: organizationId },
         data: expect.objectContaining({
           ...payload,
-          updatedBy: mockUser.id,
+          updatedBy: 'user-profile-123', // Now uses profile ID
         }),
       })
     })
@@ -468,14 +488,14 @@ describe('organization-handlers', () => {
       expect(mockDb.organization.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           ...payload,
-          createdBy: mockUser.id,
-          updatedBy: mockUser.id,
+          createdBy: 'user-profile-123', // Now uses profile ID
+          updatedBy: 'user-profile-123', // Now uses profile ID
           members: {
             create: expect.objectContaining({
               userId: 'user-profile-123',
               roles: ['owner'],
-              createdBy: mockUser.id,
-              updatedBy: mockUser.id,
+              createdBy: 'user-profile-123', // Now uses profile ID
+              updatedBy: 'user-profile-123', // Now uses profile ID
             }),
           },
         }),

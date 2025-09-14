@@ -19,34 +19,63 @@ import {
 } from '@/lib/db/errors'
 
 import { isAuthenticated } from '@/utils/auth'
+import { db } from '@/lib/db/client'
 import {
   FetchErrorCode,
   FetchResponse,
   isValidHttpStatusCode,
 } from '@/utils/fetch'
+import { User } from '@prisma/client'
 
 /**
- * Utility to add user ID fields to payload.
+ * Utility to add user user ID fields to payload for audit trails.
  * For use in handlers where auth is already confirmed.
+ *
+ * @param payload - The base data payload.
+ * @param userProfileId - The user's profile ID (NOT auth account ID).
+ * @param fields - Which audit fields to include. `updatedBy` only by default.
  */
 export const withUserFields = <T extends Record<string, any>>(
   payload: T,
-  userId: string,
+  userProfileId: User['id'],
   fields: ('createdBy' | 'updatedBy')[] = ['updatedBy'],
 ): T & { createdBy?: string; updatedBy?: string } => {
   const userFields: { createdBy?: string; updatedBy?: string } = {}
 
-  if (fields.includes('createdBy')) {
-    userFields.createdBy = userId
+  if (!userProfileId) {
+    throw new AuthenticationError(
+      'User profile ID is required for audit trail.',
+    )
   }
-  if (fields.includes('updatedBy')) {
-    userFields.updatedBy = userId
+
+  if (fields?.includes('createdBy')) {
+    userFields.createdBy = userProfileId
+  }
+  if (fields?.includes('updatedBy')) {
+    userFields.updatedBy = userProfileId
   }
 
   return {
     ...payload,
     ...userFields,
   }
+}
+
+/**
+ * Get the user's database profile ID from their auth account ID.
+ * Returns null if no profile exists.
+ *
+ * @param userAccountId - The auth account ID (e.g., from Kinde)
+ */
+export const getUserProfileId = async (
+  userAccountId: string,
+): Promise<string | null> => {
+  const userProfile = await db.user.findUnique({
+    where: { accountId: userAccountId },
+    select: { id: true },
+  })
+
+  return userProfile?.id || null
 }
 
 /**
@@ -65,17 +94,22 @@ export const toNextResponse = <TData = any>(
 
 type ContextUser = Awaited<ReturnType<typeof isAuthenticated>>['user']
 
-/** Context provided to various API handler callback parameters. */
-type ApiHandlerContext<TAuth extends boolean = boolean> = {
-  user: TAuth extends false ? NonNullable<ContextUser> : ContextUser
+/** Context provided to various API handler callbacks. */
+type ApiHandlerContext<TBypassAuth extends boolean = boolean> = {
+  /** Auth account user. */
+  user: TBypassAuth extends false ? NonNullable<ContextUser> : ContextUser
+  /** The user's database profile ID (resolved from auth account ID) */
+  userProfileId: TBypassAuth extends false ? User['id'] : User['id'] | null
 }
 
 /**
  * Configuration for API handlers.
  */
-export type ApiHandlerConfig<TAuth extends boolean = boolean> = {
+export type ApiHandlerConfig<TBypassAuth extends boolean = boolean> = {
   /** Additional authorization check function to run after authentication */
-  authorizationCheck?: (context: ApiHandlerContext<TAuth>) => Promise<boolean>
+  authorizationCheck?: (
+    context: ApiHandlerContext<TBypassAuth>,
+  ) => Promise<boolean>
   /** @todo Update messages to functions with data similar to toasts?. */
   /** Custom messages for different response scenarios */
   messages?: {
@@ -103,21 +137,21 @@ export type ApiHandlerConfig<TAuth extends boolean = boolean> = {
    * There are very few cases where unauthenticated interaction with the DB should be allowed.
    * @default false
    */
-  dangerouslyBypassAuthentication?: TAuth
+  dangerouslyBypassAuthentication?: TBypassAuth
 }
 
 /**
  * Creates a standardized API handler that can be used both in API routes and server components.
- * @param handler - The async function that contains the business logic
- * @param config - Configuration options for the handler
- * @returns ApiHandlerResult with both data and NextResponse
+ * @param handler - The async function that contains the business logic.
+ * @param config - Configuration options for the handler.
+ * @returns `ApiHandlerResult` with both data and NextResponse.
  */
 export const createApiHandler = async <
-  TAuth extends boolean = false,
+  TBypassAuth extends boolean = false,
   TData = any,
 >(
-  handler: (context: ApiHandlerContext<TAuth>) => Promise<TData>,
-  config?: ApiHandlerConfig<TAuth>,
+  handler: (context: ApiHandlerContext<TBypassAuth>) => Promise<TData>,
+  config?: ApiHandlerConfig<TBypassAuth>,
 ): Promise<FetchResponse<TData>> => {
   const {
     authorizationCheck,
@@ -183,7 +217,13 @@ export const createApiHandler = async <
   }
 
   try {
-    const data = await handler({ user } as ApiHandlerContext)
+    // Resolve user profile ID for authenticated users
+    let userProfileId: User['id'] | null = null
+    if (!dangerouslyBypassAuthentication && user?.id) {
+      userProfileId = await getUserProfileId(user.id)
+    }
+
+    const data = await handler({ user, userProfileId } as ApiHandlerContext)
 
     // Handle null/undefined results
     if (!isMutation && (data === null || data === undefined)) {

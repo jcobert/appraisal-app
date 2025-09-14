@@ -38,7 +38,7 @@ export const handleGetActiveUserOrgMember = async (organizationId: string) => {
   return createApiHandler(async ({ user }) => {
     const member = await getActiveUserOrgMember({
       organizationId,
-      userId: user?.id,
+      accountId: user.id,
     })
     return member
   })
@@ -54,7 +54,7 @@ export const handleUpdateOrgMember = async (
   payload: Parameters<typeof db.orgMember.update>[0]['data'],
 ) => {
   return createApiHandler(
-    async ({ user }) => {
+    async (context) => {
       // Validate payload
       const validation = validatePayload(orgMemberSchema.api, payload)
       if (!validation?.success) {
@@ -66,13 +66,13 @@ export const handleUpdateOrgMember = async (
 
       const result = await db.orgMember.update({
         where: { id: memberId, organizationId },
-        data: withUserFields(payload, user?.id),
+        data: withUserFields(payload, context.userProfileId),
       })
       return result
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
+        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
         return isOwner
       },
       messages: {
@@ -93,7 +93,7 @@ export const handleUpdateActiveUserOrgMember = async (
   payload: Parameters<typeof db.orgMember.update>[0]['data'],
 ) => {
   return createApiHandler(
-    async ({ user }) => {
+    async ({ user, userProfileId }) => {
       // Validate payload
       const validation = validatePayload(orgMemberSchema.api, payload)
       if (!validation?.success) {
@@ -106,7 +106,7 @@ export const handleUpdateActiveUserOrgMember = async (
       // First get the active user's member record
       const activeUserMember = await getActiveUserOrgMember({
         organizationId,
-        userId: user?.id,
+        accountId: user?.id,
       })
 
       if (!activeUserMember?.id) {
@@ -115,7 +115,7 @@ export const handleUpdateActiveUserOrgMember = async (
 
       const result = await db.orgMember.update({
         where: { id: activeUserMember?.id, organizationId },
-        data: withUserFields(payload, user?.id),
+        data: withUserFields(payload, userProfileId),
       })
       return result
     },
@@ -124,7 +124,7 @@ export const handleUpdateActiveUserOrgMember = async (
         // For updating your own member record, just need to be a member
         const isMember = await userIsMember({
           organizationId,
-          userId: user?.id,
+          accountId: user?.id,
         })
         return isMember
       },
@@ -154,7 +154,7 @@ export const handleDeleteOrgMember = async (
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, userId: user?.id })
+        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
         return isOwner
       },
       messages: {

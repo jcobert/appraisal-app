@@ -1,11 +1,6 @@
 import { authUrl, isAuthenticated } from '@/utils/auth'
 
-type KindeUser = {
-  id: string
-  email?: string
-  given_name?: string
-  family_name?: string
-}
+import { SessionUser } from '@/types/auth'
 
 // Mock Kinde auth
 jest.mock('@kinde-oss/kinde-auth-nextjs/server', () => ({
@@ -21,11 +16,12 @@ jest.mock('@kinde-oss/kinde-auth-nextjs/server', () => ({
 }))
 
 describe('auth utils', () => {
-  const mockUser: KindeUser = {
+  const mockUser: SessionUser = {
     id: 'user_123',
     email: 'test@example.com',
     given_name: 'Test',
     family_name: 'User',
+    picture: '',
   }
 
   beforeEach(() => {

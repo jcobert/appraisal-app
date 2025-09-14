@@ -55,8 +55,12 @@ export const handleCreateUserProfile = async (
         )
       }
 
+      // For profile creation, we use the account ID since the profile doesn't exist yet
+      // This is the only exception to our "always use profile ID" rule
+      const userAccountId = user?.id || ''
+
       // Add user fields for audit trail
-      const dataWithUserFields = withUserFields(payload, user?.id || '', [
+      const dataWithUserFields = withUserFields(payload, userAccountId, [
         'createdBy',
         'updatedBy',
       ])
@@ -95,11 +99,15 @@ export const handleRegisterUser = async () => {
       }
 
       // Create user profile from Kinde user data
+      // NOTE: Special case - since we're creating the profile, we temporarily use
+      // the account ID for audit fields. After creation, we'll use the profile ID.
+      const userAccountId = user?.id || ''
       const result = await db.user.create({
         data: {
-          accountId: user?.id,
-          createdBy: user?.id,
-          updatedBy: user?.id,
+          accountId: userAccountId,
+          // Temporarily use account ID for audit fields during profile creation
+          createdBy: userAccountId,
+          updatedBy: userAccountId,
           firstName: user?.given_name || '',
           lastName: user?.family_name || '',
           avatar: user?.picture,
@@ -107,6 +115,15 @@ export const handleRegisterUser = async () => {
           phone: user?.phone_number,
         },
         select: { id: true },
+      })
+
+      // Now update the audit fields to use the newly created profile ID for consistency
+      await db.user.update({
+        where: { id: result.id },
+        data: {
+          createdBy: result.id,
+          updatedBy: result.id,
+        },
       })
 
       return result
@@ -129,7 +146,7 @@ export const handleUpdateUserProfile = async (
   payload: Parameters<typeof db.user.update>[0]['data'],
 ) => {
   return createApiHandler(
-    async ({ user }) => {
+    async ({ userProfileId }) => {
       // Validate payload
       const validation = validatePayload(userProfileSchema.api, payload)
       if (!validation?.success) {
@@ -140,7 +157,7 @@ export const handleUpdateUserProfile = async (
       }
 
       // Add user fields for audit trail
-      const dataWithUserFields = withUserFields(payload, user?.id || '')
+      const dataWithUserFields = withUserFields(payload, userProfileId)
 
       const result = await db.user.update({
         where: { id: userId },
@@ -166,7 +183,7 @@ export const handleUpdateActiveUserProfile = async (
   payload: Parameters<typeof db.user.update>['0']['data'],
 ) => {
   return createApiHandler(
-    async ({ user }) => {
+    async ({ user, userProfileId }) => {
       // Validate payload
       const validation = validatePayload(userProfileSchema.api, payload)
       if (!validation?.success) {
@@ -216,11 +233,13 @@ export const handleUpdateActiveUserProfile = async (
       // Update user profile in database
       const result = await db.user.update({
         where: { accountId: user?.id },
-        data: {
-          ...payload,
-          email: payload?.email || user?.email,
-          updatedBy: user?.id,
-        },
+        data: withUserFields(
+          {
+            ...payload,
+            email: payload?.email || user?.email,
+          },
+          userProfileId,
+        ),
       })
 
       if (!result) {
