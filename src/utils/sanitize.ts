@@ -1,24 +1,10 @@
+import {
+  CHARACTER_SETS,
+  DANGEROUS_PATTERNS,
+  SANITIZATION_PATTERNS,
+} from './validation-patterns'
 import { escapeRegExp } from 'lodash'
 import validator from 'validator'
-
-/** Dangerous text patterns that should always be blocked. */
-export const DANGEROUS_PATTERNS = [
-  /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, // Script tags
-  /javascript:/gi, // JavaScript protocol
-  /data:text\/html/gi, // Data URLs with HTML
-  /vbscript:/gi, // VBScript protocol
-  /on\w+\s*=/gi, // Event handlers like onclick=
-]
-
-/** Context-specific character sets. */
-export const CHARACTER_SETS = {
-  /** Characters that are dangerous in HTML context but may be OK elsewhere. */
-  htmlUnsafe: ['<', '>', '"'],
-  /** Characters that could be used in injection attacks. */
-  injectionRisk: [';', '{', '}', '[', ']'],
-  /** Characters typically safe in text like names. */
-  generalSafe: ["'", '-', ' ', '.'],
-} as const
 
 /**
  * Removes characters from input string based on a blacklist.
@@ -125,7 +111,7 @@ export const sanitizeTextInput = (
         // Use validator.js for proven email handling
         newVal = normalizeSpaces(newVal, { trim: true })
         // First remove dangerous characters that shouldn't be in emails
-        newVal = newVal.replace(/[<>"']/g, '')
+        newVal = newVal.replace(SANITIZATION_PATTERNS.emailUnsafeChars, '')
         if (validator.isEmail(newVal)) {
           newVal =
             validator.normalizeEmail(newVal, {
@@ -142,7 +128,7 @@ export const sanitizeTextInput = (
       case 'name':
         // Support Unicode letters and common name characters
         // \p{L} = Unicode letters, \p{M} = Unicode marks (accents)
-        newVal = newVal.replace(/[^\p{L}\p{M}\s\-\.']/gu, '')
+        newVal = newVal.replace(SANITIZATION_PATTERNS.nameAllowedChars, '')
         break
       case 'html':
         // Use validator.js for HTML escaping
@@ -150,7 +136,7 @@ export const sanitizeTextInput = (
         break
       case 'text':
         // General text - remove only the most dangerous characters
-        newVal = newVal.replace(/[<>"]/g, '')
+        newVal = newVal.replace(SANITIZATION_PATTERNS.textUnsafeChars, '')
         break
     }
   }

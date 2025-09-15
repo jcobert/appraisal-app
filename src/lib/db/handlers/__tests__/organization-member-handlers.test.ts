@@ -54,6 +54,7 @@ jest.mock('@/lib/db/queries/organization', () => ({
 }))
 
 jest.mock('@/utils/zod', () => ({
+  ...jest.requireActual('@/utils/zod'),
   validatePayload: jest.fn(),
 }))
 
