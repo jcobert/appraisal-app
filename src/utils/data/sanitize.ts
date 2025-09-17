@@ -2,7 +2,7 @@ import {
   CHARACTER_SETS,
   DANGEROUS_PATTERNS,
   SANITIZATION_PATTERNS,
-} from './validation-patterns'
+} from './validate'
 import { escapeRegExp } from 'lodash'
 import validator from 'validator'
 
@@ -128,7 +128,7 @@ export const sanitizeTextInput = (
       case 'name':
         // Support Unicode letters and common name characters
         // \p{L} = Unicode letters, \p{M} = Unicode marks (accents)
-        newVal = newVal.replace(SANITIZATION_PATTERNS.nameAllowedChars, '')
+        newVal = newVal.replace(SANITIZATION_PATTERNS.nameUnsafeChars, '')
         break
       case 'html':
         // Use validator.js for HTML escaping

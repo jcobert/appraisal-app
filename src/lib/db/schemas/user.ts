@@ -37,6 +37,7 @@ const form = z.object(
       required: false,
       customRules: [
         {
+          id: 'invalidNameChars',
           pattern: /^\s*$/,
           message: 'Last name cannot be only whitespace',
         },

@@ -1,5 +1,5 @@
-import { SanitizeTextInputOptions, sanitizeTextInput } from './sanitize'
-import { VALIDATION_RULE_SETS, ValidationRule } from './validation-patterns'
+import { SanitizeTextInputOptions, sanitizeTextInput } from './data/sanitize'
+import { VALIDATION_RULE_SETS, ValidationRule } from './data/validate'
 import { ParseParams, ZodError, ZodErrorMap, ZodIssue, ZodSchema, z } from 'zod'
 
 /** A collection of related schemas. */
@@ -155,8 +155,8 @@ export const fieldBuilder = {
   /** Create a name field with optional customization */
   name: (
     options: Omit<FieldBuilderOptions, 'ruleSet'> & {
-      /** Use a specific rule set instead of default name rules */
-      ruleSet?: 'standard' | 'dangerousOnly' | 'basicCharsOnly' | 'none'
+      /** Use a specific rule set instead of default name rules. */
+      ruleSet?: 'standard' | 'dangerousOnly' | 'charsOnly' | 'none'
     } = {},
   ) => {
     const { ruleSet = 'standard', ...otherOptions } = options
@@ -169,8 +169,8 @@ export const fieldBuilder = {
       case 'dangerousOnly':
         rules = VALIDATION_RULE_SETS.dangerousContentOnly()
         break
-      case 'basicCharsOnly':
-        rules = VALIDATION_RULE_SETS.basicCharsOnly.name()
+      case 'charsOnly':
+        rules = VALIDATION_RULE_SETS.name({ dangerousContent: false })
         break
       case 'none':
         rules = []
@@ -188,8 +188,8 @@ export const fieldBuilder = {
   /** Create an email field with optional customization */
   email: (
     options: Omit<FieldBuilderOptions, 'ruleSet'> & {
-      /** Use a specific rule set instead of default email rules */
-      ruleSet?: 'standard' | 'dangerousOnly' | 'basicCharsOnly' | 'none'
+      /** Use a specific rule set instead of default email rules. */
+      ruleSet?: 'standard' | 'dangerousOnly' | 'charsOnly' | 'none'
     } = {},
   ) => {
     const { ruleSet = 'standard', ...otherOptions } = options
@@ -202,8 +202,8 @@ export const fieldBuilder = {
       case 'dangerousOnly':
         rules = VALIDATION_RULE_SETS.dangerousContentOnly()
         break
-      case 'basicCharsOnly':
-        rules = VALIDATION_RULE_SETS.basicCharsOnly.email()
+      case 'charsOnly':
+        rules = VALIDATION_RULE_SETS.email({ dangerousContent: false })
         break
       case 'none':
         rules = []
@@ -221,7 +221,7 @@ export const fieldBuilder = {
   /** Create a phone field with optional customization */
   phone: (
     options: Omit<FieldBuilderOptions, 'ruleSet'> & {
-      /** Use a specific rule set instead of default phone rules */
+      /** Use a specific rule set instead of default phone rules. */
       ruleSet?: 'standard' | 'dangerousOnly' | 'none'
     } = {},
   ) => {
@@ -250,8 +250,8 @@ export const fieldBuilder = {
   /** Create a text field with optional customization */
   text: (
     options: Omit<FieldBuilderOptions, 'ruleSet'> & {
-      /** Use a specific rule set instead of default text rules */
-      ruleSet?: 'standard' | 'dangerousOnly' | 'basicCharsOnly' | 'none'
+      /** Use a specific rule set instead of default text rules. */
+      ruleSet?: 'standard' | 'dangerousOnly' | 'charsOnly' | 'none'
     } = {},
   ) => {
     const { ruleSet = 'standard', ...otherOptions } = options
@@ -264,8 +264,8 @@ export const fieldBuilder = {
       case 'dangerousOnly':
         rules = VALIDATION_RULE_SETS.dangerousContentOnly()
         break
-      case 'basicCharsOnly':
-        rules = VALIDATION_RULE_SETS.basicCharsOnly.text()
+      case 'charsOnly':
+        rules = VALIDATION_RULE_SETS.text({ dangerousContent: false })
         break
       case 'none':
         rules = []
@@ -281,8 +281,8 @@ export const fieldBuilder = {
 }
 
 /**
- * Sanitizes form data before submission. Use this in your onSubmit handlers
- * when using fieldBuilder schemas for client-side validation.
+ * Sanitizes form data before submission.
+ * Use this in onSubmit handlers, for client-side validation.
  */
 export const sanitizeFormData = <T extends Record<string, unknown>>(
   data: T,
