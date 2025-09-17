@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils'
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 import { homeUrl } from '@/utils/nav'
-import { sanitizeFormData } from '@/utils/zod'
 
 import Form from '@/components/form/form'
 import FormActionBar from '@/components/form/form-action-bar'
@@ -87,14 +86,7 @@ const OrganizationForm: FC<Props> = ({
       return
     }
 
-    // Sanitize form data before sending to API
-    const sanitizedData = sanitizeFormData(data, {
-      name: 'name',
-    })
-
-    const payload = isUpdate
-      ? sanitizedData
-      : { ...organization, ...sanitizedData }
+    const payload = isUpdate ? data : { ...organization, ...data }
 
     if (isUpdate) {
       await updateOrganization.mutateAsync(payload)

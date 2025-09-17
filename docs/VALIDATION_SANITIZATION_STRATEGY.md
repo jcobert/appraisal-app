@@ -5,7 +5,7 @@ This document explains the centralized validation and sanitization system for se
 ## 🎯 Quick Start (TL;DR)
 
 **For most form schemas:** Use `fieldBuilder.name()`, `fieldBuilder.email()`, etc.  
-**For form submission:** Add `sanitizeFormData(data, { fieldName: 'fieldType' })` in your `onSubmit`  
+**For form submission:** Use `sanitize` prop in `useCoreMutation` or add `sanitizeFormData(data, { fieldName: 'fieldType' })` in your `onSubmit`  
 **For API handlers:** Use the `api` schema from schema bundles for server-side validation
 
 ## 📋 Table of Contents
@@ -31,7 +31,8 @@ The system has three main layers:
 │  (What you should reach for in 95% of cases)               │
 ├────────────────────────────────────────────────────────────┤
 │  • fieldBuilder.name(), fieldBuilder.email(), etc.         │
-│  • sanitizeFormData() for form submissions                 │
+│  • useCoreMutation sanitize prop (recommended)             │
+│  • sanitizeFormData() for manual form submissions          │
 │  • Schema bundles (form/api) for type safety               │
 └────────────────────────────────────────────────────────────┘
             ▲
@@ -112,15 +113,44 @@ const rules = VALIDATION_RULE_SETS.text({
 })
 ```
 
-### For Form Submission: `sanitizeFormData`
+### For Form Submission: `useCoreMutation` sanitize prop (Recommended)
 
-**Always use this** in your `onSubmit` handlers:
+**Use the `sanitize` prop** for automatic sanitization:
+
+```typescript
+import { useCoreMutation } from '@/hooks/use-core-mutation'
+
+const createUser = useCoreMutation({
+  url: '/api/users',
+  method: 'POST',
+  sanitize: {
+    firstName: 'name',
+    lastName: 'name',
+    email: 'email',
+    description: 'text',
+  },
+  toast: {
+    messages: {
+      success: ({ context }) => `User ${context?.firstName} created!`,
+    },
+  },
+})
+
+const onSubmit = async (data: FormData) => {
+  // Sanitization happens automatically!
+  await createUser.mutateAsync(data)
+}
+```
+
+### For Manual Form Submission: `sanitizeFormData`
+
+**Use this approach** when you need manual control:
 
 ```typescript
 import { sanitizeFormData } from '@/utils/zod'
 
 const onSubmit = async (data: FormData) => {
-  // Sanitize before sending to API
+  // Manual sanitization before sending to API
   const sanitizedData = sanitizeFormData(data, {
     firstName: 'name',
     lastName: 'name',
@@ -207,7 +237,38 @@ const form = z.object({
 
 ## 📤 Form Submission Pattern
 
-**Standard pattern** for all form components:
+### Recommended: useCoreMutation with sanitize prop
+
+```typescript
+const createUser = useCoreMutation({
+  url: '/api/users',
+  method: 'POST',
+  sanitize: {
+    firstName: 'name',
+    lastName: 'name',
+    email: 'email',
+    phone: 'phone',
+    description: 'text',
+  },
+})
+
+const onSubmit: SubmitHandler<FormData> = async (data) => {
+  // 1. Check if form is dirty (optional but recommended)
+  if (!isDirty) {
+    return
+  }
+
+  // 2. Send to API handler (sanitization automatic)
+  const result = await createUser.mutateAsync(data)
+
+  // 3. Handle response
+  if (successful(result.status)) {
+    router.push('/success')
+  }
+}
+```
+
+### Alternative: Manual sanitization pattern
 
 ```typescript
 const onSubmit: SubmitHandler<FormData> = async (data) => {
@@ -450,7 +511,7 @@ const schema = z.object({
 **"Form validation passes but API rejects"**
 
 - Ensure form schema uses `fieldBuilder` and API schema uses `sanitizedField`
-- Check that `sanitizeFormData()` is called in form submission
+- Check that sanitization is applied via `useCoreMutation` sanitize prop or manual `sanitizeFormData()` call
 - Verify API handler uses `validatePayload()` with API schema
 
 **"TypeScript errors with schema types"**
@@ -487,6 +548,47 @@ console.log('Sanitized:', sanitizeTextInput(input, { fieldType: 'name' }))
 - **Sanitization patterns** use Unicode-aware regex with appropriate flags
 - **Form schemas** should be defined outside components to avoid recreation
 - **Schema bundles** provide optimized validation for different contexts
+
+---
+
+## 🆕 Recent Improvements
+
+### useCoreMutation Sanitize Prop (September 2025)
+
+Added automatic sanitization support directly in `useCoreMutation` hook:
+
+**New Feature:**
+
+- `sanitize` prop in `useCoreMutation` for automatic form data sanitization
+- Type-safe configuration using payload keys
+- Applied after `transform` but before API call
+- Backward compatible - existing code continues to work
+
+**Benefits:**
+
+- **Consistent application** - impossible to forget sanitization
+- **Type safety** - TypeScript prevents invalid field configurations
+- **Composable** - works with existing `transform` prop
+- **Explicit** - sanitization rules visible at mutation level
+
+**Migration:**
+
+```typescript
+// Old approach (still works)
+const onSubmit = async (data) => {
+  const sanitized = sanitizeFormData(data, { name: 'name' })
+  await mutation.mutateAsync(sanitized)
+}
+
+// New approach (recommended)
+const mutation = useCoreMutation({
+  url: '/api/endpoint',
+  sanitize: { name: 'name' },
+})
+const onSubmit = async (data) => {
+  await mutation.mutateAsync(data) // Sanitization automatic!
+}
+```
 
 ---
 
