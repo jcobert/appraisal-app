@@ -15,7 +15,7 @@ type SchemaBase = ZodObject<TableMutable<Organization>>
 
 const baseSchema = z.object(
   {
-    name: sanitizedField.name(),
+    name: sanitizedField.text(),
     avatar: z.string().optional(),
   } satisfies SchemaBase,
   { errorMap: formErrorMap },
@@ -23,7 +23,10 @@ const baseSchema = z.object(
 
 const form = z.object(
   {
-    name: fieldBuilder.name(),
+    name: fieldBuilder.text({
+      required: true,
+      requiredMessage: 'Organization name is required',
+    }),
     avatar: z.string().optional(),
   } satisfies SchemaBase,
   { errorMap: formErrorMap },
