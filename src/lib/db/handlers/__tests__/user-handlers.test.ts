@@ -42,6 +42,7 @@ jest.mock('@/lib/db/client', () => ({
 }))
 
 jest.mock('@/utils/zod', () => ({
+  ...jest.requireActual('@/utils/zod'),
   validatePayload: jest.fn(),
 }))
 
@@ -603,6 +604,7 @@ describe('user-handlers', () => {
           email: payload.email,
           updatedBy: mockUserProfile.id, // Now uses profile ID
         }),
+        select: { id: true },
       })
     })
 

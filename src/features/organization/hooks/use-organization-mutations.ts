@@ -48,6 +48,7 @@ export const useOrganizationMutations = ({
   const createOrganization = useCoreMutation<Payload, Organization>({
     url: CORE_API_ENDPOINTS.organization,
     method: 'POST',
+    sanitize: { name: 'text' },
     toast: {
       messages: {
         success: ({ context: payload }) =>
@@ -65,6 +66,7 @@ export const useOrganizationMutations = ({
   const updateOrganization = useCoreMutation<Payload, Organization>({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
     method: 'PUT',
+    sanitize: { name: 'text' },
     ...options,
     onSuccess: async ({ status }) => {
       if (successful(status)) {

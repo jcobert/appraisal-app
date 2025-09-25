@@ -9,6 +9,7 @@ import { DefaultToastOptions } from 'react-hot-toast'
 
 import { FetchMethod, FetchResponse, coreFetch } from '@/utils/fetch'
 import { ToastMessages, toastyRequest } from '@/utils/toast'
+import { sanitizeFormData } from '@/utils/zod'
 
 export type UseCoreMutationProps<
   TPayload extends Record<string, unknown> = Record<string, unknown>,
@@ -23,6 +24,10 @@ export type UseCoreMutationProps<
   method?: Exclude<`${FetchMethod}`, 'GET'>
   /** Transforms payload before request. */
   transform?: (payload: TPayload) => TPayload
+  /** Sanitize form data before sending. Applied after transform. */
+  sanitize?: Partial<
+    Record<keyof TPayload, 'name' | 'email' | 'phone' | 'text'>
+  >
   /** Configuration for toast notifications. */
   toast?: {
     /** Whether to display toast. @default true */
@@ -41,6 +46,7 @@ export const useCoreMutation = <
   url,
   method = 'POST',
   transform,
+  sanitize,
   toast,
   ...options
 }: UseCoreMutationProps<TPayload, TResData>) => {
@@ -51,7 +57,13 @@ export const useCoreMutation = <
 
   const mutationFetch = useCallback(
     async (data: TPayload): Promise<FetchResponse<TResData>> => {
-      const payload = transform ? transform(data) : data
+      // Apply transform first if provided
+      let payload = transform ? transform(data) : data
+
+      // Apply sanitization if configured
+      if (sanitize) {
+        payload = sanitizeFormData(payload, sanitize)
+      }
 
       switch (method) {
         case 'PUT':
@@ -68,7 +80,7 @@ export const useCoreMutation = <
           return coreFetch.POST({ url, payload }) as FetchResponse<TResData>
       }
     },
-    [url, method, transform],
+    [url, method, transform, sanitize],
   )
 
   const mutationFn: MutationFunction<

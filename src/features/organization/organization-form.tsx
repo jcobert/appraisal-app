@@ -85,6 +85,7 @@ const OrganizationForm: FC<Props> = ({
       // }, 3000)()
       return
     }
+
     const payload = isUpdate ? data : { ...organization, ...data }
 
     if (isUpdate) {

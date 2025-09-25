@@ -54,6 +54,7 @@ jest.mock('@/lib/db/queries/organization', () => ({
 }))
 
 jest.mock('@/utils/zod', () => ({
+  ...jest.requireActual('@/utils/zod'),
   validatePayload: jest.fn(),
 }))
 
@@ -262,6 +263,7 @@ describe('organization-member-handlers', () => {
           ...payload,
           updatedBy: 'user-profile-123', // Now uses profile ID
         }),
+        select: { id: true },
       })
     })
 

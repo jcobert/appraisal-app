@@ -4,6 +4,7 @@ import { ReactNode } from 'react'
 
 import { FetchErrorCode, FetchResponse, coreFetch } from '@/utils/fetch'
 import { toastyRequest } from '@/utils/toast'
+import { sanitizeFormData } from '@/utils/zod'
 
 import {
   UseCoreMutationProps,
@@ -27,6 +28,11 @@ jest.mock('@/utils/toast', () => ({
   ToastMessages: {},
 }))
 
+// Mock the sanitizeFormData utility
+jest.mock('@/utils/zod', () => ({
+  sanitizeFormData: jest.fn((data, _config) => data),
+}))
+
 const mockFetch = {
   POST: coreFetch.POST as jest.MockedFunction<typeof coreFetch.POST>,
   PUT: coreFetch.PUT as jest.MockedFunction<typeof coreFetch.PUT>,
@@ -36,6 +42,10 @@ const mockFetch = {
 
 const mockToastyRequest = toastyRequest as jest.MockedFunction<
   typeof toastyRequest
+>
+
+const mockSanitizeFormData = sanitizeFormData as jest.MockedFunction<
+  typeof sanitizeFormData
 >
 
 // Test wrapper component
@@ -529,6 +539,143 @@ describe('useCoreMutation', () => {
 
       expect(response.data?.id).toBe('test-123')
       expect(response.data?.created).toBe(true)
+    })
+  })
+
+  describe('form data sanitization', () => {
+    beforeEach(() => {
+      // Reset the mock to return the data unchanged by default
+      mockSanitizeFormData.mockImplementation((data, _config) => data)
+    })
+
+    it('should apply sanitization when sanitize config is provided', async () => {
+      mockFetch.POST.mockResolvedValue(mockSuccessResponse)
+
+      const sanitizedData = { name: 'John', email: 'clean@example.com' }
+      mockSanitizeFormData.mockReturnValue(sanitizedData)
+
+      const { result } = renderHook(
+        () =>
+          useCoreMutation({
+            url: '/api/test',
+            sanitize: { name: 'name', email: 'email' },
+            toast: { enabled: false },
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      const payload = { name: 'John<script>', email: 'dirty<>@example.com' }
+      await result.current.mutateAsync(payload)
+
+      expect(mockSanitizeFormData).toHaveBeenCalledWith(payload, {
+        name: 'name',
+        email: 'email',
+      })
+      expect(mockFetch.POST).toHaveBeenCalledWith({
+        url: '/api/test',
+        payload: sanitizedData,
+      })
+    })
+
+    it('should not apply sanitization when sanitize config is not provided', async () => {
+      mockFetch.POST.mockResolvedValue(mockSuccessResponse)
+
+      const { result } = renderHook(
+        () =>
+          useCoreMutation({
+            url: '/api/test',
+            toast: { enabled: false },
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      const payload = { name: 'John', email: 'test@example.com' }
+      await result.current.mutateAsync(payload)
+
+      expect(mockSanitizeFormData).not.toHaveBeenCalled()
+      expect(mockFetch.POST).toHaveBeenCalledWith({
+        url: '/api/test',
+        payload,
+      })
+    })
+
+    it('should apply sanitization after transform', async () => {
+      mockFetch.POST.mockResolvedValue(mockSuccessResponse)
+
+      const transformedData = {
+        name: 'JOHN',
+        email: 'test@example.com',
+        transformed: true,
+      }
+      const sanitizedData = {
+        name: 'JOHN',
+        email: 'test@example.com',
+        transformed: true,
+      }
+      mockSanitizeFormData.mockReturnValue(sanitizedData)
+
+      const transform = jest.fn((payload: any) => ({
+        ...payload,
+        name: payload.name.toUpperCase(),
+        transformed: true,
+      }))
+
+      const { result } = renderHook(
+        () =>
+          useCoreMutation({
+            url: '/api/test',
+            transform,
+            sanitize: { name: 'name', email: 'email' },
+            toast: { enabled: false },
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      const payload = { name: 'john', email: 'test@example.com' }
+      await result.current.mutateAsync(payload)
+
+      expect(transform).toHaveBeenCalledWith(payload)
+      expect(mockSanitizeFormData).toHaveBeenCalledWith(transformedData, {
+        name: 'name',
+        email: 'email',
+      })
+      expect(mockFetch.POST).toHaveBeenCalledWith({
+        url: '/api/test',
+        payload: sanitizedData,
+      })
+    })
+
+    it('should work with different HTTP methods', async () => {
+      const methods = ['PUT', 'PATCH'] as const
+
+      for (const method of methods) {
+        mockFetch[method].mockResolvedValue(mockSuccessResponse)
+        mockSanitizeFormData.mockReturnValue({ name: 'Clean Name' })
+
+        const { result } = renderHook(
+          () =>
+            useCoreMutation({
+              url: '/api/test',
+              method,
+              sanitize: { name: 'name' },
+              toast: { enabled: false },
+            }),
+          { wrapper: createWrapper() },
+        )
+
+        await result.current.mutateAsync({ name: 'Dirty<script>Name' })
+
+        expect(mockSanitizeFormData).toHaveBeenCalledWith(
+          { name: 'Dirty<script>Name' },
+          { name: 'name' },
+        )
+        expect(mockFetch[method]).toHaveBeenCalledWith({
+          url: '/api/test',
+          payload: { name: 'Clean Name' },
+        })
+
+        jest.clearAllMocks()
+      }
     })
   })
 })

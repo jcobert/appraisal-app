@@ -315,6 +315,7 @@ describe('organization-join-handlers', () => {
       expect(mockDb.orgInvitation.update).toHaveBeenCalledWith({
         where: { token: 'valid-token', organizationId: 'org-1' },
         data: { token: null, status: 'expired' },
+        select: { id: true },
       })
     })
 
@@ -341,6 +342,7 @@ describe('organization-join-handlers', () => {
       expect(mockDb.orgInvitation.update).toHaveBeenCalledWith({
         where: { token: 'valid-token', organizationId: 'org-1' },
         data: { token: null, status: 'accepted' },
+        select: { id: true },
       })
     })
 

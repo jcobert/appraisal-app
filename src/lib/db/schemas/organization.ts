@@ -1,7 +1,12 @@
 import { Organization } from '@prisma/client'
 import { z } from 'zod'
 
-import { SchemaBundle, formErrorMap } from '@/utils/zod'
+import {
+  SchemaBundle,
+  fieldBuilder,
+  formErrorMap,
+  sanitizedField,
+} from '@/utils/zod'
 
 import { TableMutable } from '@/types/db'
 import { ZodObject } from '@/types/general'
@@ -10,14 +15,25 @@ type SchemaBase = ZodObject<TableMutable<Organization>>
 
 const baseSchema = z.object(
   {
-    name: z.string().trim().nonempty(),
+    name: sanitizedField.text(),
+    avatar: z.string().optional(),
+  } satisfies SchemaBase,
+  { errorMap: formErrorMap },
+)
+
+const form = z.object(
+  {
+    name: fieldBuilder.text({
+      required: true,
+      requiredMessage: 'Organization name is required',
+    }),
     avatar: z.string().optional(),
   } satisfies SchemaBase,
   { errorMap: formErrorMap },
 )
 
 export const organizationSchema = {
-  form: baseSchema,
+  form,
   api: baseSchema,
 } satisfies SchemaBundle
 

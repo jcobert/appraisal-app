@@ -240,6 +240,7 @@ export const handleUpdateActiveUserProfile = async (
           },
           userProfileId,
         ),
+        select: { id: true },
       })
 
       if (!result) {

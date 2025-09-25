@@ -44,7 +44,10 @@ jest.mock('../../api-handlers', () => ({
 jest.mock('@/utils/auth')
 jest.mock('@/lib/db/queries/organization')
 jest.mock('@/lib/db/utils')
-jest.mock('@/utils/zod')
+jest.mock('@/utils/zod', () => ({
+  ...jest.requireActual('@/utils/zod'),
+  validatePayload: jest.fn(),
+}))
 
 // Typed mocks
 const mockDb = db as jest.Mocked<typeof db>
@@ -329,6 +332,7 @@ describe('organization-handlers', () => {
           ...payload,
           updatedBy: 'user-profile-123', // Now uses profile ID
         }),
+        select: { id: true, name: true },
       })
     })
 
@@ -411,6 +415,7 @@ describe('organization-handlers', () => {
       })
       expect(mockDb.organization.delete).toHaveBeenCalledWith({
         where: { id: organizationId },
+        select: { id: true },
       })
     })
 

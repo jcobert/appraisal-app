@@ -84,6 +84,7 @@ export const handleCreateOrgInvite = async (
 
       const activeUser = await db.user.findUnique({
         where: { accountId: user?.id },
+        select: { id: true, firstName: true, lastName: true },
       })
 
       const org = await db.organization.findUnique({
@@ -145,7 +146,10 @@ export const handleCreateOrgInvite = async (
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
+        const isOwner = await userIsOwner({
+          organizationId,
+          accountId: user?.id,
+        })
         return isOwner
       },
       messages: {
@@ -196,7 +200,10 @@ export const handleDeleteOrgInvite = async (
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
+        const isOwner = await userIsOwner({
+          organizationId,
+          accountId: user?.id,
+        })
         return isOwner
       },
       messages: {
@@ -250,7 +257,10 @@ export const handleUpdateOrgInvite = async (
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
+        const isOwner = await userIsOwner({
+          organizationId,
+          accountId: user?.id,
+        })
         return isOwner
       },
       messages: {
