@@ -105,12 +105,16 @@ export const handleUpdateOrganization = async (
       const result = await db.organization.update({
         where: { id: organizationId },
         data: withUserFields(payload, userProfileId),
+        select: { id: true, name: true },
       })
       return result
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
+        const isOwner = await userIsOwner({
+          organizationId,
+          accountId: user?.id,
+        })
         return isOwner
       },
       messages: {
@@ -131,12 +135,16 @@ export const handleDeleteOrganization = async (organizationId: string) => {
     async () => {
       const result = await db.organization.delete({
         where: { id: organizationId },
+        select: { id: true },
       })
       return result
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({ organizationId, accountId: user?.id })
+        const isOwner = await userIsOwner({
+          organizationId,
+          accountId: user?.id,
+        })
         return isOwner
       },
       messages: {

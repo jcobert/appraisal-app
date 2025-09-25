@@ -79,6 +79,7 @@ export async function handleJoinOrganization(
         await db.orgInvitation.update({
           where: { token, organizationId },
           data: { token: null, status: 'expired' },
+          select: { id: true },
         })
 
         throw new NotFoundError('Invitation token expired.')
@@ -89,6 +90,7 @@ export async function handleJoinOrganization(
         await db.orgInvitation.update({
           where: { token, organizationId },
           data: { token: null, status: 'declined' },
+          select: { id: true },
         })
 
         return {
@@ -143,13 +145,17 @@ export async function handleJoinOrganization(
         throw new AuthenticationError('User not authenticated.')
       }
 
-      const isMember = await userIsMember({ organizationId, accountId: user?.id })
+      const isMember = await userIsMember({
+        organizationId,
+        accountId: user?.id,
+      })
 
       // User already member of org
       if (isMember) {
         await db.orgInvitation.update({
           where: { token, organizationId },
           data: { token: null, status: 'accepted' },
+          select: { id: true },
         })
 
         throw new DatabaseConstraintError(
@@ -181,6 +187,7 @@ export async function handleJoinOrganization(
             },
           },
         },
+        select: { id: true },
       })
 
       if (!updatedInvitation) {

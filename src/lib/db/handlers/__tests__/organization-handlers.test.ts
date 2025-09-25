@@ -332,6 +332,7 @@ describe('organization-handlers', () => {
           ...payload,
           updatedBy: 'user-profile-123', // Now uses profile ID
         }),
+        select: { id: true, name: true },
       })
     })
 
@@ -414,6 +415,7 @@ describe('organization-handlers', () => {
       })
       expect(mockDb.organization.delete).toHaveBeenCalledWith({
         where: { id: organizationId },
+        select: { id: true },
       })
     })
 

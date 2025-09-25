@@ -263,6 +263,7 @@ describe('organization-member-handlers', () => {
           ...payload,
           updatedBy: 'user-profile-123', // Now uses profile ID
         }),
+        select: { id: true },
       })
     })
 
