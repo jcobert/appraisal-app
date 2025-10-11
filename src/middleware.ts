@@ -33,6 +33,13 @@ export default withAuth(middleware, {
 
 export const config: MiddlewareConfig = {
   matcher: [
-    '/((?!api|_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    /*
+     * Match all request paths except for:
+     * - API routes
+     * - Internal static files/assets
+     * - SEO & verification files
+     * - Security & platform files
+     */
+    '/((?!api|_next/static|_next/image|images/|favicon.ico|robots.txt|sitemap.xml|ads.txt|app-ads.txt|manifest.json|site.webmanifest).*)',
   ],
 }
