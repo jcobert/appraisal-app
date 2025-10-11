@@ -48,6 +48,8 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
   const isRedirect = !!query?.redirect
   const isJustRegistered = !!query?.registered
 
+  /** @todo Check for inviteToken first and redirect if none? */
+
   const invitation = (
     await handleGetPublicOrgInvite({
       organizationId,

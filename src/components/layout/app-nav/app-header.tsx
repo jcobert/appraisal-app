@@ -6,7 +6,7 @@ import LogoLink from '@/components/general/logo-link'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 
-type Props = { children: ReactNode }
+type Props = { children?: ReactNode }
 
 const AppHeader: FC<Props> = ({ children }) => {
   return (
@@ -29,8 +29,7 @@ const AppHeader: FC<Props> = ({ children }) => {
               'max-md:relative max-md:left-[calc(50%-var(--sidebar-width-icon))]',
             )}
           />
-          {/* Breadcrumbs */}
-          <div>{children}</div>
+          {children ? <div>{children}</div> : null}
         </div>
       </div>
     </header>

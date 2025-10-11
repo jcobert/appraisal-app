@@ -29,10 +29,10 @@ import { usersQueryKey } from '@/features/user/hooks/use-get-user-profile'
 
 const Layout = async ({
   children,
-  breadcrumbs,
+  // breadcrumbs,
 }: {
   children: ReactNode
-  breadcrumbs: ReactNode
+  // breadcrumbs: ReactNode
 }) => {
   const { allowed, user } = await isAuthenticated()
 
@@ -116,7 +116,7 @@ const Layout = async ({
               className='flex flex-col h-full'
               defaultOpen={sidebarOpen}
             >
-              <AppHeader>{breadcrumbs}</AppHeader>
+              <AppHeader />
               <div className='flex flex-1 h-full'>
                 <AppSidebar />
                 <SidebarInset>

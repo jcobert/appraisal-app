@@ -4,8 +4,10 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
 /** Returns user authentication status. For use server-side.  */
 export const isAuthenticated = async () => {
   const session = getKindeServerSession()
-  const isAuthenticated = await session.isAuthenticated()
-  const user = await session.getUser()
+  const [isAuthenticated, user] = await Promise.all([
+    session.isAuthenticated(),
+    session.getUser(),
+  ])
   if (!isAuthenticated || !user) {
     return { allowed: false, user }
   }
