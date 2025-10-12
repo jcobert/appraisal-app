@@ -214,7 +214,6 @@ export const handleCreateOrganization = async (
       }
 
       // Create organization with owner membership
-      // Note: Using original payload to preserve all fields, validation above ensures security
       const result = await db.organization.create({
         data: {
           ...validation.data,

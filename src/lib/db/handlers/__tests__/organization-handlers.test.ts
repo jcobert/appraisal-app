@@ -42,11 +42,6 @@ jest.mock('../../api-handlers', () => ({
 jest.mock('@/utils/auth')
 jest.mock('@/lib/db/queries/organization')
 jest.mock('@/lib/db/utils')
-// Don't mock validatePayload - use the real implementation
-// jest.mock('@/utils/zod', () => ({
-//   ...jest.requireActual('@/utils/zod'),
-//   validatePayload: jest.fn(),
-// }))
 
 // Typed mocks
 const mockDb = db as jest.Mocked<typeof db>

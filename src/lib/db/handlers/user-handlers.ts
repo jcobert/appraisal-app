@@ -176,7 +176,6 @@ export const handleUpdateUserProfile = async (
       }
 
       // Add user fields for audit trail
-      // Note: Using validation.data to get sanitized fields + preserved extra fields
       const dataWithUserFields = withUserFields(validation.data, userProfileId)
 
       const result = await db.user.update({
@@ -253,7 +252,6 @@ export const handleUpdateActiveUserProfile = async (
       }
 
       // Update user profile in database
-      // Note: Using validation.data to get sanitized fields + preserved extra fields
       const result = await db.user.update({
         where: { accountId: user?.id },
         data: withUserFields(
