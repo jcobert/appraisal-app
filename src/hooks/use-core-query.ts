@@ -1,3 +1,4 @@
+import { useProgress } from '@bprogress/next'
 import {
   QueryFunction,
   QueryFunctionContext,
@@ -23,11 +24,14 @@ export type UseCoreQueryProps<TData = unknown> = UseQueryOptions<
     /** Advanced toast options. */
     options?: DefaultToastOptions
   }
+  /** Whether to show progress bar during request. @default false */
+  showProgress?: boolean
 }
 
 export const useCoreQuery = <TData = unknown>({
   url,
   toast,
+  showProgress = false,
   ...options
 }: UseCoreQueryProps<TData>) => {
   const toastConfig = {
@@ -35,14 +39,27 @@ export const useCoreQuery = <TData = unknown>({
     ...toast,
   } satisfies UseCoreQueryProps<TData>['toast']
 
+  const { start, stop } = useProgress()
+
   const queryFetch = useCallback(
     async (context: QueryFunctionContext): Promise<FetchResponse<TData>> => {
-      return coreFetch.GET({
-        url,
-        options: { signal: context?.signal },
-      }) as FetchResponse<TData>
+      if (showProgress) {
+        start()
+      }
+
+      try {
+        const res = await coreFetch.GET<TData>({
+          url,
+          options: { signal: context?.signal },
+        })
+        return res
+      } finally {
+        if (showProgress) {
+          stop()
+        }
+      }
     },
-    [url],
+    [url, start, stop, showProgress],
   )
 
   const queryFn: QueryFunction<FetchResponse<TData>> = async (context) => {

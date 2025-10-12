@@ -3,16 +3,10 @@ import { User } from '@prisma/client'
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
 import { exists } from '@/utils/general'
-import { filteredQueryKey } from '@/utils/query'
 
 import useCoreQuery, { UseCoreQueryProps } from '@/hooks/use-core-query'
 
-export const usersQueryKey = {
-  all: ['users'],
-  active: ['users', 'active'],
-  filtered: (params: Partial<User>) =>
-    filteredQueryKey(params, usersQueryKey.all),
-} as const
+import { usersQueryKey } from '@/configuration/react-query/query-keys'
 
 // type ResponseData<T extends User['id'] | undefined> = T extends string
 //   ? User

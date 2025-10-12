@@ -2,22 +2,26 @@ import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { Metadata } from 'next'
 import { FC } from 'react'
 
-import { protectPage } from '@/lib/db/utils'
-import { handleGetOrganization, handleGetOrganizationPermissions } from '@/lib/db/handlers/organization-handlers'
+import {
+  handleGetOrganization,
+  handleGetOrganizationPermissions,
+} from '@/lib/db/handlers/organization-handlers'
 import { handleGetActiveUserOrgMember } from '@/lib/db/handlers/organization-member-handlers'
+import { protectPage } from '@/lib/db/utils'
 
 import { successful } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 
-import { permissionsQueryKey } from '@/hooks/use-permissions'
-
 import { PageParams } from '@/types/general'
 
+import {
+  orgMemberQueryKey,
+  organizationsQueryKey,
+  permissionsQueryKey,
+} from '@/configuration/react-query/query-keys'
 import { generatePageMeta } from '@/configuration/seo'
-import { orgMemberQueryKey } from '@/features/organization/hooks/use-get-org-member'
-import { organizationsQueryKey } from '@/features/organization/hooks/use-get-organizations'
 import MembersSettings from '@/features/organization/settings/members-settings'
 
 export const metadata: Metadata = generatePageMeta({
@@ -46,7 +50,9 @@ const Page: FC<Props> = async ({ params }) => {
       queryFn: async () => {
         const result = await handleGetOrganization(organizationId)
         if (!successful(result.status)) {
-          throw new Error(result.error?.message || 'Failed to fetch organization')
+          throw new Error(
+            result.error?.message || 'Failed to fetch organization',
+          )
         }
         return result
       },
@@ -60,7 +66,10 @@ const Page: FC<Props> = async ({ params }) => {
       queryFn: async () => {
         const result = await handleGetActiveUserOrgMember(organizationId)
         if (!successful(result.status)) {
-          throw new Error(result.error?.message || 'Failed to fetch active user organization member')
+          throw new Error(
+            result.error?.message ||
+              'Failed to fetch active user organization member',
+          )
         }
         return result
       },
@@ -74,7 +83,9 @@ const Page: FC<Props> = async ({ params }) => {
       queryFn: async () => {
         const result = await handleGetOrganizationPermissions(organizationId)
         if (!successful(result.status)) {
-          throw new Error(result.error?.message || 'Failed to fetch permissions')
+          throw new Error(
+            result.error?.message || 'Failed to fetch permissions',
+          )
         }
         return result
       },

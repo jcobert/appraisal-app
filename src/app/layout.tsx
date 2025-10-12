@@ -33,9 +33,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <body>
           <QueryProvider>
             <ThemeProvider>
-              <ProgressProvider />
-              <ToasterOven />
-              {children}
+              <ProgressProvider>
+                <ToasterOven />
+                {children}
+              </ProgressProvider>
             </ThemeProvider>
           </QueryProvider>
         </body>

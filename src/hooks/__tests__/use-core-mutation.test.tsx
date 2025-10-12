@@ -33,6 +33,18 @@ jest.mock('@/utils/zod', () => ({
   sanitizeFormData: jest.fn((data, _config) => data),
 }))
 
+// Mock the progress hook
+const mockStart = jest.fn()
+const mockStop = jest.fn()
+const mockUseProgress = jest.fn(() => ({
+  start: mockStart,
+  stop: mockStop,
+}))
+
+jest.mock('@bprogress/next', () => ({
+  useProgress: () => mockUseProgress(),
+}))
+
 const mockFetch = {
   POST: coreFetch.POST as jest.MockedFunction<typeof coreFetch.POST>,
   PUT: coreFetch.PUT as jest.MockedFunction<typeof coreFetch.PUT>,
@@ -65,6 +77,10 @@ const createWrapper = () => {
 describe('useCoreMutation', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    // Reset progress mocks
+    mockStart.mockClear()
+    mockStop.mockClear()
+    mockUseProgress.mockClear()
     // Ensure toastyRequest resolves by default for toast-enabled tests
     mockToastyRequest.mockResolvedValue(mockSuccessResponse)
   })
@@ -676,6 +692,157 @@ describe('useCoreMutation', () => {
 
         jest.clearAllMocks()
       }
+    })
+  })
+
+  describe('progress bar integration', () => {
+    // Define types for progress tests
+    type TestPayload = { name: string }
+    type TestResponse = { id: string; success: boolean }
+
+    beforeEach(() => {
+      mockFetch.POST.mockResolvedValue(mockSuccessResponse)
+    })
+
+    it('should NOT start progress by default when showProgress is not specified', async () => {
+      const { result } = renderHook(
+        () =>
+          useCoreMutation<TestPayload, TestResponse>({
+            url: '/api/test',
+            method: 'POST',
+            toast: { enabled: false },
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      await result.current.mutateAsync({ name: 'Test' })
+
+      expect(mockStart).not.toHaveBeenCalled()
+      expect(mockStop).not.toHaveBeenCalled()
+    })
+
+    it('should NOT start progress when showProgress is false', async () => {
+      const { result } = renderHook(
+        () =>
+          useCoreMutation<TestPayload, TestResponse>({
+            url: '/api/test',
+            method: 'POST',
+            toast: { enabled: false },
+            showProgress: false,
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      await result.current.mutateAsync({ name: 'Test' })
+
+      expect(mockStart).not.toHaveBeenCalled()
+      expect(mockStop).not.toHaveBeenCalled()
+    })
+
+    it('should start and stop progress when showProgress is true', async () => {
+      const { result } = renderHook(
+        () =>
+          useCoreMutation<TestPayload, TestResponse>({
+            url: '/api/test',
+            method: 'POST',
+            toast: { enabled: false },
+            showProgress: true,
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      await result.current.mutateAsync({ name: 'Test' })
+
+      expect(mockStart).toHaveBeenCalledTimes(1)
+      expect(mockStop).toHaveBeenCalledTimes(1)
+    })
+
+    it('should stop progress even when mutation fails', async () => {
+      const mockError = new Error('Test error')
+      mockFetch.POST.mockRejectedValue(mockError)
+
+      const { result } = renderHook(
+        () =>
+          useCoreMutation<TestPayload, TestResponse>({
+            url: '/api/test',
+            method: 'POST',
+            toast: { enabled: false },
+            showProgress: true,
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      try {
+        await result.current.mutateAsync({ name: 'Test' })
+      } catch {
+        // Expected to throw
+      }
+
+      expect(mockStart).toHaveBeenCalledTimes(1)
+      expect(mockStop).toHaveBeenCalledTimes(1)
+    })
+
+    it('should work with progress enabled alongside other features', async () => {
+      const transform = jest.fn((data: TestPayload) => ({
+        ...data,
+        transformed: true,
+      }))
+
+      const { result } = renderHook(
+        () =>
+          useCoreMutation<TestPayload, TestResponse>({
+            url: '/api/test',
+            method: 'POST',
+            transform,
+            toast: { enabled: false }, // Disable toast to avoid conflicts in this test
+            showProgress: true,
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      await result.current.mutateAsync({ name: 'Test' })
+
+      expect(mockStart).toHaveBeenCalledTimes(1)
+      expect(mockStop).toHaveBeenCalledTimes(1)
+      expect(transform).toHaveBeenCalledWith({ name: 'Test' })
+    })
+
+    it('should start progress before transform and API call', async () => {
+      const callOrder: string[] = []
+
+      const transform = jest.fn((data: TestPayload) => {
+        callOrder.push('transform')
+        return data
+      })
+
+      mockStart.mockImplementation(() => {
+        callOrder.push('start')
+      })
+
+      mockFetch.POST.mockImplementation(async () => {
+        callOrder.push('fetch')
+        return mockSuccessResponse
+      })
+
+      mockStop.mockImplementation(() => {
+        callOrder.push('stop')
+      })
+
+      const { result } = renderHook(
+        () =>
+          useCoreMutation<TestPayload, TestResponse>({
+            url: '/api/test',
+            method: 'POST',
+            transform,
+            toast: { enabled: false },
+            showProgress: true,
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      await result.current.mutateAsync({ name: 'Test' })
+
+      expect(callOrder).toEqual(['start', 'transform', 'fetch', 'stop'])
     })
   })
 })

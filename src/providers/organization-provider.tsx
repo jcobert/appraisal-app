@@ -12,12 +12,13 @@ import {
   useMemo,
 } from 'react'
 
-import { permissionsQueryKey, usePermissions } from '@/hooks/use-permissions'
+import { usePermissions } from '@/hooks/use-permissions'
 import { useStoredSettings } from '@/hooks/use-stored-settings'
 
 import { SessionUser } from '@/types/auth'
 
 import { PermissionAction } from '@/configuration/permissions'
+import { permissionsQueryKey } from '@/configuration/react-query/query-keys'
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 
 type OrganizationContextValue = {

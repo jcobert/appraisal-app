@@ -1,3 +1,4 @@
+import { useProgress } from '@bprogress/next'
 import {
   DefaultError,
   MutationFunction,
@@ -37,6 +38,8 @@ export type UseCoreMutationProps<
     /** Advanced toast options. */
     options?: DefaultToastOptions
   }
+  /** Whether to show progress bar during request. @default false */
+  showProgress?: boolean
 }
 
 export const useCoreMutation = <
@@ -48,6 +51,7 @@ export const useCoreMutation = <
   transform,
   sanitize,
   toast,
+  showProgress = false,
   ...options
 }: UseCoreMutationProps<TPayload, TResData>) => {
   const toastConfig = {
@@ -55,32 +59,44 @@ export const useCoreMutation = <
     ...toast,
   } satisfies UseCoreMutationProps<TPayload, TResData>['toast']
 
+  const { start, stop } = useProgress()
+
   const mutationFetch = useCallback(
     async (data: TPayload): Promise<FetchResponse<TResData>> => {
-      // Apply transform first if provided
-      let payload = transform ? transform(data) : data
-
-      // Apply sanitization if configured
-      if (sanitize) {
-        payload = sanitizeFormData(payload, sanitize)
+      if (showProgress) {
+        start()
       }
 
-      switch (method) {
-        case 'PUT':
-          return coreFetch.PUT({ url, payload }) as FetchResponse<TResData>
-        case 'PATCH':
-          return coreFetch.PATCH({
-            url,
-            payload,
-          }) as FetchResponse<TResData>
-        case 'DELETE':
-          return coreFetch.DELETE({ url }) as FetchResponse<TResData>
-        case 'POST':
-        default:
-          return coreFetch.POST({ url, payload }) as FetchResponse<TResData>
+      try {
+        // Apply transform first if provided
+        let payload = transform ? transform(data) : data
+
+        // Apply sanitization if configured
+        if (sanitize) {
+          payload = sanitizeFormData(payload, sanitize)
+        }
+
+        switch (method) {
+          case 'PUT':
+            return coreFetch.PUT({ url, payload }) as FetchResponse<TResData>
+          case 'PATCH':
+            return coreFetch.PATCH({
+              url,
+              payload,
+            }) as FetchResponse<TResData>
+          case 'DELETE':
+            return coreFetch.DELETE({ url }) as FetchResponse<TResData>
+          case 'POST':
+          default:
+            return coreFetch.POST({ url, payload }) as FetchResponse<TResData>
+        }
+      } finally {
+        if (showProgress) {
+          stop()
+        }
       }
     },
-    [url, method, transform, sanitize],
+    [url, method, transform, sanitize, showProgress, start, stop],
   )
 
   const mutationFn: MutationFunction<
