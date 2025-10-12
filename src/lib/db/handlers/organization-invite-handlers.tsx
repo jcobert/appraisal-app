@@ -6,9 +6,11 @@ import { db } from '@/lib/db/client'
 import { ORG_INVITE_EXPIRY } from '@/lib/db/config'
 import { NotFoundError, ValidationError } from '@/lib/db/errors'
 import { userIsOwner } from '@/lib/db/queries/organization'
+import { orgMemberSchema } from '@/lib/db/schemas/org-member'
 import { generateUniqueToken } from '@/lib/server-utils'
 
 import { generateExpiry } from '@/utils/date'
+import { isValidationSuccess, validatePayload } from '@/utils/zod'
 
 import OrgInviteEmail from '@/components/email/org-invite-email'
 
@@ -32,12 +34,17 @@ export const handleGetPublicOrgInvite = async ({
 }) => {
   return createApiHandler(
     async () => {
-      if (!organizationId) {
-        throw new ValidationError('Organization ID is required', {})
-      }
-
-      if (!token) {
-        throw new ValidationError('Token is required', {})
+      // Validate input payload
+      const validation = validatePayload(orgMemberSchema.inviteToken, {
+        organizationId,
+        token,
+        status,
+      })
+      if (!isValidationSuccess(validation)) {
+        throw new ValidationError(
+          'Invalid data provided.',
+          validation.errors || {},
+        )
       }
 
       const result = await db.orgInvitation.findUnique({
@@ -64,23 +71,21 @@ export const handleCreateOrgInvite = async (
 ) => {
   return createApiHandler(
     async ({ user }) => {
-      const { email, firstName, lastName, roles } = payload
-
-      if (!email || !organizationId) {
-        throw new ValidationError('Missing required fields.', {
-          ...(email === '' || email === undefined
-            ? { email: { code: 'too_small', message: 'Email is required' } }
-            : {}),
-          ...(organizationId === '' || organizationId === undefined
-            ? {
-                organizationId: {
-                  code: 'too_small',
-                  message: 'Organization ID is required',
-                },
-              }
-            : {}),
-        })
+      // Validate payload
+      const validation = validatePayload(orgMemberSchema.payload, payload)
+      if (!isValidationSuccess(validation)) {
+        throw new ValidationError(
+          'Invalid data provided.',
+          validation.errors || {},
+        )
       }
+
+      // Simple check for required route parameter
+      if (!organizationId) {
+        throw new ValidationError('Organization ID is required.', {})
+      }
+
+      const { email, firstName, lastName, roles } = validation.data
 
       const activeUser = await db.user.findUnique({
         where: { accountId: user?.id },
@@ -173,25 +178,12 @@ export const handleDeleteOrgInvite = async (
 ) => {
   return createApiHandler(
     async () => {
-      if (!inviteId || !organizationId) {
-        throw new ValidationError('Missing required fields.', {
-          ...(inviteId === '' || inviteId === undefined
-            ? {
-                inviteId: {
-                  code: 'too_small',
-                  message: 'Invite ID is required',
-                },
-              }
-            : {}),
-          ...(organizationId === '' || organizationId === undefined
-            ? {
-                organizationId: {
-                  code: 'too_small',
-                  message: 'Organization ID is required',
-                },
-              }
-            : {}),
-        })
+      // Simple checks for required route parameters
+      if (!organizationId) {
+        throw new ValidationError('Organization ID is required.', {})
+      }
+      if (!inviteId) {
+        throw new ValidationError('Invite ID is required.', {})
       }
 
       const res = await db.orgInvitation.delete({
@@ -229,11 +221,21 @@ export const handleUpdateOrgInvite = async (
 ) => {
   return createApiHandler(
     async ({ user }) => {
-      /** @todo Use zod schema validation. */
-      if (!payload) {
-        throw new ValidationError('Missing required fields.', {
-          payload: { code: 'too_small', message: 'Payload is required' },
-        })
+      // Validate payload
+      const validation = validatePayload(orgMemberSchema.payload, payload)
+      if (!isValidationSuccess(validation)) {
+        throw new ValidationError(
+          'Invalid data provided.',
+          validation.errors || {},
+        )
+      }
+
+      // Simple checks for required route parameters
+      if (!organizationId) {
+        throw new ValidationError('Organization ID is required.', {})
+      }
+      if (!inviteId) {
+        throw new ValidationError('Invite ID is required.', {})
       }
 
       const currentInvite = await db.orgInvitation.findUnique({
@@ -248,9 +250,9 @@ export const handleUpdateOrgInvite = async (
       const res = await db.orgInvitation.update({
         where: { id: inviteId, organizationId },
         data: {
-          inviteeFirstName: payload?.firstName,
-          inviteeLastName: payload?.lastName,
-          roles: payload?.roles,
+          inviteeFirstName: validation.data.firstName,
+          inviteeLastName: validation.data.lastName,
+          roles: validation.data.roles,
           updatedBy: user?.id,
         },
         select: { id: true },

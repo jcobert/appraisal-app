@@ -3,7 +3,7 @@ import 'server-only'
 
 import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
 import { ValidationError, DatabaseConstraintError } from '@/lib/db/errors'
-import { validatePayload } from '@/utils/zod'
+import { validatePayload, isValidationSuccess } from '@/utils/zod'
 import { userProfileSchema } from '@/lib/db/schemas/user'
 import {
   updateAuthAccount,
@@ -30,6 +30,9 @@ export const handleGetActiveUserProfile = async () => {
  */
 export const handleGetUserProfile = async (userId: string) => {
   return createApiHandler(async () => {
+    if (!userId) {
+      throw new ValidationError('User ID is required.', {})
+    }
     const user = await db.user.findUnique({
       where: { id: userId },
     })
@@ -46,9 +49,11 @@ export const handleCreateUserProfile = async (
 ) => {
   return createApiHandler(
     async ({ user }) => {
-      // Validate payload
-      const validation = validatePayload(userProfileSchema.api, payload)
-      if (!validation?.success) {
+      // Validate payload for security and user input safety, preserve extra fields
+      const validation = validatePayload(userProfileSchema.api, payload, {
+        passthrough: true,
+      })
+      if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',
           validation.errors || {},
@@ -59,13 +64,21 @@ export const handleCreateUserProfile = async (
       // This is the only exception to our "always use profile ID" rule
       const userAccountId = user?.id || ''
 
-      // Add user fields for audit trail
-      const dataWithUserFields = withUserFields(payload, userAccountId, [
-        'createdBy',
-        'updatedBy',
-      ])
+      // Add user fields for audit trail to the sanitized data
+      // Note: Using validation.data to get sanitized + validated input fields,
+      // then adding audit fields and accountId that aren't part of the schema
+      const dataWithUserFields = withUserFields(
+        validation.data,
+        userAccountId,
+        ['createdBy', 'updatedBy'],
+      )
 
-      const result = await db.user.create({ data: dataWithUserFields })
+      const result = await db.user.create({
+        data: {
+          ...dataWithUserFields,
+          accountId: userAccountId, // Always set from authenticated context, not user input
+        },
+      })
       return result
     },
     {
@@ -147,9 +160,15 @@ export const handleUpdateUserProfile = async (
 ) => {
   return createApiHandler(
     async ({ userProfileId }) => {
-      // Validate payload
-      const validation = validatePayload(userProfileSchema.api, payload)
-      if (!validation?.success) {
+      if (!userId) {
+        throw new ValidationError('User ID is required.', {})
+      }
+
+      // Validate payload for security and user input safety, preserve extra fields
+      const validation = validatePayload(userProfileSchema.api, payload, {
+        passthrough: true,
+      })
+      if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',
           validation.errors || {},
@@ -157,7 +176,8 @@ export const handleUpdateUserProfile = async (
       }
 
       // Add user fields for audit trail
-      const dataWithUserFields = withUserFields(payload, userProfileId)
+      // Note: Using validation.data to get sanitized fields + preserved extra fields
+      const dataWithUserFields = withUserFields(validation.data, userProfileId)
 
       const result = await db.user.update({
         where: { id: userId },
@@ -184,9 +204,11 @@ export const handleUpdateActiveUserProfile = async (
 ) => {
   return createApiHandler(
     async ({ user, userProfileId }) => {
-      // Validate payload
-      const validation = validatePayload(userProfileSchema.api, payload)
-      if (!validation?.success) {
+      // Validate payload for security and user input safety, preserve extra fields
+      const validation = validatePayload(userProfileSchema.api, payload, {
+        passthrough: true,
+      })
+      if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',
           validation.errors || {},
@@ -195,7 +217,7 @@ export const handleUpdateActiveUserProfile = async (
 
       const changes = getProfileChanges({
         account: user,
-        profile: payload as Parameters<
+        profile: validation.data as Parameters<
           typeof getProfileChanges
         >['0']['profile'],
       })
@@ -220,8 +242,8 @@ export const handleUpdateActiveUserProfile = async (
       if (changes?.firstName || changes?.lastName) {
         /** @todo Check if Kinde provides errors we can use to be more specific. */
         const accountUpdate = await updateAuthAccount({
-          given_name: payload?.firstName as string,
-          family_name: payload?.lastName as string,
+          given_name: validation.data?.firstName as string,
+          family_name: validation.data?.lastName as string,
         })
         if (!accountUpdate) {
           throw new Error('User account could not be updated.')
@@ -231,12 +253,13 @@ export const handleUpdateActiveUserProfile = async (
       }
 
       // Update user profile in database
+      // Note: Using validation.data to get sanitized fields + preserved extra fields
       const result = await db.user.update({
         where: { accountId: user?.id },
         data: withUserFields(
           {
-            ...payload,
-            email: payload?.email || user?.email,
+            ...validation.data,
+            email: validation.data?.email || user?.email,
           },
           userProfileId,
         ),
@@ -273,6 +296,10 @@ export const handleUpdateActiveUserProfile = async (
 export const handleDeleteUserProfile = async (userId: string) => {
   return createApiHandler(
     async () => {
+      if (!userId) {
+        throw new ValidationError('User ID is required.', {})
+      }
+
       const result = await db.user.delete({
         where: { id: userId },
       })

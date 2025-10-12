@@ -10,7 +10,7 @@ import { orgMemberSchema } from '@/lib/db/schemas/org-member'
 
 import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
 import { ValidationError } from '@/lib/db/errors'
-import { validatePayload } from '@/utils/zod'
+import { validatePayload, isValidationSuccess } from '@/utils/zod'
 import { db } from '@/lib/db/client'
 
 /**
@@ -22,6 +22,14 @@ export const handleGetOrgMember = async (
   memberId: string,
 ) => {
   return createApiHandler(async () => {
+    // Simple checks for required route parameters
+    if (!organizationId) {
+      throw new ValidationError('Organization ID is required.', {})
+    }
+    if (!memberId) {
+      throw new ValidationError('Member ID is required.', {})
+    }
+
     const member = await db.orgMember.findUnique({
       where: { id: memberId, organizationId },
       include: { user: true },
@@ -36,6 +44,11 @@ export const handleGetOrgMember = async (
  */
 export const handleGetActiveUserOrgMember = async (organizationId: string) => {
   return createApiHandler(async ({ user }) => {
+    // Simple check for required route parameter
+    if (!organizationId) {
+      throw new ValidationError('Organization ID is required.', {})
+    }
+
     const member = await getActiveUserOrgMember({
       organizationId,
       accountId: user.id,
@@ -56,17 +69,25 @@ export const handleUpdateOrgMember = async (
   return createApiHandler(
     async (context) => {
       // Validate payload
-      const validation = validatePayload(orgMemberSchema.api, payload)
-      if (!validation?.success) {
+      const validation = validatePayload(orgMemberSchema.payload, payload)
+      if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',
-          validation?.errors || {},
+          validation.errors || {},
         )
+      }
+
+      // Simple checks for required route parameters
+      if (!organizationId) {
+        throw new ValidationError('Organization ID is required.', {})
+      }
+      if (!memberId) {
+        throw new ValidationError('Member ID is required.', {})
       }
 
       const result = await db.orgMember.update({
         where: { id: memberId, organizationId },
-        data: withUserFields(payload, context.userProfileId),
+        data: withUserFields(validation.data, context.userProfileId),
         select: { id: true },
       })
       return result
@@ -99,12 +120,17 @@ export const handleUpdateActiveUserOrgMember = async (
   return createApiHandler(
     async ({ user, userProfileId }) => {
       // Validate payload
-      const validation = validatePayload(orgMemberSchema.api, payload)
-      if (!validation?.success) {
+      const validation = validatePayload(orgMemberSchema.payload, payload)
+      if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',
           validation.errors || {},
         )
+      }
+
+      // Simple check for required route parameter
+      if (!organizationId) {
+        throw new ValidationError('Organization ID is required.', {})
       }
 
       // First get the active user's member record
@@ -119,7 +145,7 @@ export const handleUpdateActiveUserOrgMember = async (
 
       const result = await db.orgMember.update({
         where: { id: activeUserMember?.id, organizationId },
-        data: withUserFields(payload, userProfileId),
+        data: withUserFields(validation.data, userProfileId),
       })
       return result
     },

@@ -23,7 +23,7 @@ export const PUT = async (
   { params }: { params: Promise<{ id: string; memberId: string }> },
 ) => {
   const { id: organizationId, memberId } = await params
-  const payload = (await req.json()) as z.infer<typeof orgMemberSchema.api>
+  const payload = (await req.json()) as z.infer<typeof orgMemberSchema.payload>
 
   const result = await handleUpdateOrgMember(organizationId, memberId, payload)
   return toNextResponse(result)
