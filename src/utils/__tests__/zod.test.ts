@@ -4,6 +4,7 @@ import {
   fieldBuilder,
   formErrorMap,
   getFieldErrors,
+  isValidationSuccess,
   sanitizeFormData,
   sanitizedField,
   sanitizedString,
@@ -568,6 +569,229 @@ describe('zod utilities', () => {
       // No sanitization should occur
       expect(result.name).toBe('John<script>')
       expect(result.email).toBe('test@example.com')
+    })
+  })
+
+  describe('isValidationSuccess', () => {
+    it('should return true for successful validation with data', () => {
+      const validation = { success: true, data: { name: 'test' } }
+      expect(isValidationSuccess(validation)).toBe(true)
+    })
+
+    it('should return false when success is false', () => {
+      const validation = { success: false, data: { name: 'test' } }
+      expect(isValidationSuccess(validation)).toBe(false)
+    })
+
+    it('should return false when data is undefined', () => {
+      const validation = { success: true, data: undefined }
+      expect(isValidationSuccess(validation)).toBe(false)
+    })
+
+    it('should return false when both success is false and data is undefined', () => {
+      const validation = { success: false, data: undefined }
+      expect(isValidationSuccess(validation)).toBe(false)
+    })
+
+    it('should return true when data is null (null is not undefined)', () => {
+      const validation = { success: true, data: null as any }
+      expect(isValidationSuccess(validation)).toBe(true)
+    })
+
+    it('should provide proper type narrowing', () => {
+      const validation: { success: boolean; data: string | undefined } = {
+        success: true,
+        data: 'test',
+      }
+
+      if (isValidationSuccess(validation)) {
+        // TypeScript should infer validation.data as string (not string | undefined)
+        expect(typeof validation.data).toBe('string')
+        expect(validation.data.toUpperCase()).toBe('TEST') // Should not cause TS error
+      }
+    })
+
+    it('should work with different data types', () => {
+      const numberValidation = { success: true, data: 42 }
+      const arrayValidation = { success: true, data: [1, 2, 3] }
+      const objectValidation = {
+        success: true,
+        data: { nested: { value: true } },
+      }
+
+      expect(isValidationSuccess(numberValidation)).toBe(true)
+      expect(isValidationSuccess(arrayValidation)).toBe(true)
+      expect(isValidationSuccess(objectValidation)).toBe(true)
+
+      if (isValidationSuccess(numberValidation)) {
+        expect(numberValidation.data + 1).toBe(43)
+      }
+
+      if (isValidationSuccess(arrayValidation)) {
+        expect(arrayValidation.data.length).toBe(3)
+      }
+
+      if (isValidationSuccess(objectValidation)) {
+        expect(objectValidation.data.nested.value).toBe(true)
+      }
+    })
+  })
+
+  describe('validatePayload with passthrough option', () => {
+    const testSchema = z.object({
+      name: z.string().min(1),
+      email: z.string().email(),
+    })
+
+    it('should exclude unknown fields by default', () => {
+      const payload = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        extraField: 'should be removed',
+        anotherExtra: 123,
+      }
+
+      const result = validatePayload(testSchema, payload)
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({
+        name: 'John Doe',
+        email: 'john@example.com',
+      })
+      // extraField and anotherExtra should not be present
+      expect(result.data).not.toHaveProperty('extraField')
+      expect(result.data).not.toHaveProperty('anotherExtra')
+    })
+
+    it('should include unknown fields when passthrough is true', () => {
+      const payload = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        extraField: 'should be kept',
+        anotherExtra: 123,
+      }
+
+      const result = validatePayload(testSchema, payload, { passthrough: true })
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({
+        name: 'John Doe',
+        email: 'john@example.com',
+        extraField: 'should be kept',
+        anotherExtra: 123,
+      })
+    })
+
+    it('should handle validation errors with passthrough enabled', () => {
+      const payload = {
+        name: '', // Invalid - too short
+        email: 'invalid-email', // Invalid email
+        extraField: 'should be kept',
+      }
+
+      const result = validatePayload(testSchema, payload, { passthrough: true })
+
+      expect(result.success).toBe(false)
+      expect(result.data).toBeUndefined()
+      expect(result.errors).toEqual({
+        name: { code: 'too_small', message: 'required' },
+        email: { code: 'invalid_string', message: 'Invalid email' },
+      })
+    })
+
+    it('should work with nested schemas and passthrough', () => {
+      const nestedSchema = z.object({
+        user: z.object({
+          name: z.string().min(1),
+          age: z.number().min(0),
+        }),
+        metadata: z.object({
+          version: z.string(),
+        }),
+      })
+
+      const payload = {
+        user: {
+          name: 'Jane',
+          age: 25,
+          department: 'Engineering', // Extra field - won't be included because nested objects don't inherit passthrough
+        },
+        metadata: {
+          version: '1.0',
+          timestamp: '2023-01-01', // Extra field - won't be included because nested objects don't inherit passthrough
+        },
+        globalExtra: 'top-level extra', // Extra field - will be included at top level
+      }
+
+      const result = validatePayload(nestedSchema, payload, {
+        passthrough: true,
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({
+        user: {
+          name: 'Jane',
+          age: 25,
+          // department not included - nested objects don't get passthrough
+        },
+        metadata: {
+          version: '1.0',
+          // timestamp not included - nested objects don't get passthrough
+        },
+        globalExtra: 'top-level extra', // This is included at the top level
+      })
+    })
+
+    it('should handle schema without passthrough method gracefully', () => {
+      // Create a schema that doesn't have passthrough method
+      const primitiveSchema = z.string()
+      const payload = { value: 'test' }
+
+      const result = validatePayload(primitiveSchema, payload, {
+        passthrough: true,
+      })
+
+      expect(result.success).toBe(false) // Should fail because string schema expects string, not object
+      expect(result.errors).toBeDefined()
+    })
+
+    it('should combine passthrough with other parse options', () => {
+      const payload = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        extraField: 'should be kept',
+      }
+
+      const result = validatePayload(testSchema, payload, {
+        passthrough: true,
+        errorMap: (_error, _ctx) => ({ message: 'Custom error' }),
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({
+        name: 'John Doe',
+        email: 'john@example.com',
+        extraField: 'should be kept',
+      })
+    })
+
+    it('should work correctly when passthrough is false explicitly', () => {
+      const payload = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        extraField: 'should be removed',
+      }
+
+      const result = validatePayload(testSchema, payload, {
+        passthrough: false,
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({
+        name: 'John Doe',
+        email: 'john@example.com',
+      })
+      expect(result.data).not.toHaveProperty('extraField')
     })
   })
 })

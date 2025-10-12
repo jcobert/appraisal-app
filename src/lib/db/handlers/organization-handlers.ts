@@ -7,7 +7,7 @@ import { getUserPermissions } from '@/lib/db/utils'
 
 import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
 import { ValidationError } from '@/lib/db/errors'
-import { validatePayload } from '@/utils/zod'
+import { validatePayload, isValidationSuccess } from '@/utils/zod'
 import { db } from '@/lib/db/client'
 
 /**
@@ -30,12 +30,15 @@ export const handleGetUserOrganizations = async () => {
 }
 
 /**
- * Get a single organization by ID.
+ * Get an organization by ID (requires membership).
  * Can be used in both API routes and server components.
  */
 export const handleGetOrganization = async (organizationId: string) => {
   return createApiHandler(
     async () => {
+      if (!organizationId) {
+        throw new ValidationError('Organization ID is required.', {})
+      }
       const organization = await db.organization.findUnique({
         where: { id: organizationId },
         include: {
@@ -93,9 +96,15 @@ export const handleUpdateOrganization = async (
 ) => {
   return createApiHandler(
     async ({ userProfileId }) => {
-      // Validate payload
-      const validation = validatePayload(organizationSchema.api, payload)
-      if (!validation?.success) {
+      if (!organizationId) {
+        throw new ValidationError('Organization ID is required.', {})
+      }
+
+      // Validate payload for security and user input safety, preserve extra fields
+      const validation = validatePayload(organizationSchema.api, payload, {
+        passthrough: true,
+      })
+      if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',
           validation.errors || {},
@@ -104,7 +113,7 @@ export const handleUpdateOrganization = async (
 
       const result = await db.organization.update({
         where: { id: organizationId },
-        data: withUserFields(payload, userProfileId),
+        data: withUserFields(validation.data, userProfileId),
         select: { id: true, name: true },
       })
       return result
@@ -133,6 +142,9 @@ export const handleUpdateOrganization = async (
 export const handleDeleteOrganization = async (organizationId: string) => {
   return createApiHandler(
     async () => {
+      if (!organizationId) {
+        throw new ValidationError('Organization ID is required.', {})
+      }
       const result = await db.organization.delete({
         where: { id: organizationId },
         select: { id: true },
@@ -166,9 +178,11 @@ export const handleCreateOrganization = async (
 ) => {
   return createApiHandler(
     async ({ user, userProfileId }) => {
-      // Validate payload
-      const validation = validatePayload(organizationSchema.api, payload)
-      if (!validation?.success) {
+      // Validate payload for security and user input safety, preserve extra fields
+      const validation = validatePayload(organizationSchema.api, payload, {
+        passthrough: true,
+      })
+      if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',
           validation.errors || {},
@@ -202,7 +216,7 @@ export const handleCreateOrganization = async (
       // Create organization with owner membership
       const result = await db.organization.create({
         data: {
-          ...payload,
+          ...validation.data,
           members: {
             create: {
               userId: userProfileId,
@@ -236,6 +250,9 @@ export const handleGetOrganizationPermissions = async (
   organizationId: string,
 ) => {
   return createApiHandler(async () => {
+    if (!organizationId) {
+      throw new ValidationError('Organization ID is required.', {})
+    }
     const permissions = await getUserPermissions(organizationId)
     return permissions
   })

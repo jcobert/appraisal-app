@@ -109,11 +109,11 @@ describe('organization-member-handlers', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockIsAuthenticated.mockResolvedValue({ allowed: true, user: mockUser })
-    mockValidatePayload.mockReturnValue({
+    mockValidatePayload.mockImplementation((schema, payload) => ({
       success: true,
-      data: {},
+      data: payload, // Return the payload as validated data
       errors: null,
-    })
+    }))
 
     // Default mock for user profile lookup - return the profile ID for existing users
     ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue({

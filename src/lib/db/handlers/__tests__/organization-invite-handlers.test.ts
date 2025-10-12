@@ -402,7 +402,7 @@ describe('organization-invite-handlers', () => {
         ValidationError,
       )
       await expect(handleDeleteOrgInvite('org-1', '')).rejects.toThrow(
-        'Missing required fields.',
+        'Invite ID is required.',
       )
     })
 
@@ -416,7 +416,7 @@ describe('organization-invite-handlers', () => {
         ValidationError,
       )
       await expect(handleDeleteOrgInvite('', 'invite-1')).rejects.toThrow(
-        'Missing required fields.',
+        'Organization ID is required.',
       )
     })
 
@@ -519,7 +519,7 @@ describe('organization-invite-handlers', () => {
       ).rejects.toThrow(ValidationError)
       await expect(
         handleUpdateOrgInvite('org-1', 'invite-1', null as any),
-      ).rejects.toThrow('Missing required fields.')
+      ).rejects.toThrow('Invalid data provided.')
     })
 
     it('should throw error when invitation is not found or not pending', async () => {

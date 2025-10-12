@@ -2,11 +2,26 @@ import { SanitizeTextInputOptions, sanitizeTextInput } from './data/sanitize'
 import { VALIDATION_RULE_SETS, ValidationRule } from './data/validate'
 import { ParseParams, ZodError, ZodErrorMap, ZodIssue, ZodSchema, z } from 'zod'
 
-/** A collection of related schemas. */
+/**
+ * A collection of related schemas for validating different aspects of an entity.
+ *
+ * @example
+ * ```typescript
+ * const userSchema = {
+ *   form: z.object({ firstName: fieldBuilder.name(), lastName: fieldBuilder.name() }),
+ *   entity: z.object({ userId: z.string().min(1), organizationId: z.string().min(1) }),
+ *   payload: z.object({ firstName: sanitizedField.name(), lastName: sanitizedField.name() }),
+ * } satisfies SchemaBundle
+ *
+ * // Usage in handlers:
+ * const payloadValidation = validatePayload(userSchema.payload, requestBody)
+ * const entityValidation = validatePayload(userSchema.entity, { userId, organizationId })
+ * ```
+ */
 export type SchemaBundle = {
-  /** Schema for front-end validation. */
+  /** Schema for front-end form validation. */
   form?: ZodSchema
-  /** Schema for back-end validation. */
+  /** Schema for validating request body/payload data (server-side). */
   api?: ZodSchema
 } & { [key: string]: ZodSchema }
 
@@ -52,23 +67,23 @@ export const sanitizedString = (options: SanitizeTextInputOptions = {}) => {
  * Pre-configured sanitized string schemas for common field types.
  */
 export const sanitizedField = {
-  /** Sanitized name field (Unicode support, trims, removes dangerous chars) */
+  /** Sanitized name field (Unicode support, trims, removes dangerous chars). */
   name: () =>
     sanitizedString({ fieldType: 'name' }).pipe(z.string().nonempty()),
 
-  /** Sanitized email field (normalizes, validates, removes dangerous chars) */
+  /** Sanitized email field (normalizes, validates, removes dangerous chars). */
   email: () => sanitizedString({ fieldType: 'email' }).pipe(z.string().email()),
 
-  /** Sanitized phone field (digits and separators only, normalizes spaces) */
+  /** Sanitized phone field (digits and separators only, normalizes spaces). */
   phone: () => sanitizedString({ fieldType: 'phone' }),
 
-  /** Sanitized text field (removes dangerous chars, preserves most content) */
+  /** Sanitized text field (removes dangerous chars, preserves most content). */
   text: () => sanitizedString({ fieldType: 'text' }),
 
-  /** Server-safe field (strict sanitization for backend) */
+  /** Server-safe field (strict sanitization for backend). */
   serverSafe: () => sanitizedString({ context: 'server' }),
 
-  /** Client-friendly field (lenient sanitization for UX) */
+  /** Client-friendly field (lenient sanitization for UX). */
   clientSafe: () => sanitizedString({ context: 'client' }),
 }
 
@@ -76,17 +91,17 @@ export const sanitizedField = {
  * Flexible field builder options for customizing validation behavior.
  */
 export type FieldBuilderOptions = {
-  /** Custom error message for required validation */
+  /** Custom error message for required validation. */
   requiredMessage?: string
-  /** Custom error message for email validation */
+  /** Custom error message for email validation. */
   emailMessage?: string
-  /** Whether the field is required (default: false) */
+  /** Whether the field is required (default: false). */
   required?: boolean
-  /** Custom validation rules to apply */
+  /** Custom validation rules to apply. */
   customRules?: ValidationRule[]
-  /** Predefined rule set to use (overrides customRules if both provided) */
+  /** Predefined rule set to use (overrides customRules if both provided). */
   ruleSet?: ValidationRule[]
-  /** Additional Zod refinements to apply */
+  /** Additional Zod refinements to apply. */
   additionalRefinements?: Array<{
     check: (val: string) => boolean
     message: string
@@ -152,7 +167,7 @@ export const createValidatedField = (
  * Convenient preset field builders with sensible defaults but full customization options.
  */
 export const fieldBuilder = {
-  /** Create a name field with optional customization */
+  /** Create a name field with optional customization. */
   name: (
     options: Omit<FieldBuilderOptions, 'ruleSet'> & {
       /** Use a specific rule set instead of default name rules. */
@@ -185,7 +200,7 @@ export const fieldBuilder = {
     })
   },
 
-  /** Create an email field with optional customization */
+  /** Create an email field with optional customization. */
   email: (
     options: Omit<FieldBuilderOptions, 'ruleSet'> & {
       /** Use a specific rule set instead of default email rules. */
@@ -218,7 +233,7 @@ export const fieldBuilder = {
     })
   },
 
-  /** Create a phone field with optional customization */
+  /** Create a phone field with optional customization. */
   phone: (
     options: Omit<FieldBuilderOptions, 'ruleSet'> & {
       /** Use a specific rule set instead of default phone rules. */
@@ -247,7 +262,7 @@ export const fieldBuilder = {
     })
   },
 
-  /** Create a text field with optional customization */
+  /** Create a text field with optional customization. */
   text: (
     options: Omit<FieldBuilderOptions, 'ruleSet'> & {
       /** Use a specific rule set instead of default text rules. */
@@ -304,6 +319,14 @@ export const sanitizeFormData = <T extends Record<string, unknown>>(
   return sanitized
 }
 
+/** Type guard to check if Zod validation succeeded. */
+export const isValidationSuccess = <T>(validation: {
+  success: boolean
+  data: T | undefined
+}): validation is { success: true; data: T } => {
+  return validation.success && validation.data !== undefined
+}
+
 /** Returns a map of errors by field. */
 export const getFieldErrors = <T extends Record<string, unknown>>(
   error?: ZodError,
@@ -330,14 +353,30 @@ export const validatePayload = <
 >(
   schema: TSchema,
   payload: TPayload,
-  options?: Partial<ParseParams>,
-) => {
-  const { ...parseOptions } = options || {}
-  const result = schema.safeParse(payload, {
+  options?: Partial<ParseParams> & {
+    /** Whether to pass through unknown fields (preserves fields not in schema). */
+    passthrough?: boolean
+  },
+): {
+  data: z.output<TSchema> | undefined
+  success: boolean
+  errors: ZodFieldErrors<z.input<TSchema>> | null
+} => {
+  const { passthrough = false, ...parseOptions } = options || {}
+
+  // Apply passthrough if requested
+  const finalSchema: TSchema =
+    passthrough && 'passthrough' in schema
+      ? (schema as any).passthrough()
+      : schema
+
+  const result = finalSchema.safeParse(payload, {
     errorMap: formErrorMap,
     ...parseOptions,
-  })
+  }) as z.SafeParseReturnType<TPayload, z.output<TSchema>>
+
   const fieldErrors = getFieldErrors<TSchema['_input']>(result?.error)
+
   return {
     data: result?.data,
     success: result?.success ?? false,

@@ -10,14 +10,12 @@ import {
   handleGetUserOrganizations,
   handleUpdateOrganization,
 } from '../organization-handlers'
-import { ZodIssueCode } from 'zod'
 
 import { userIsMember, userIsOwner } from '@/lib/db/queries/organization'
 import { getUserPermissions } from '@/lib/db/utils'
 
 import { isAuthenticated } from '@/utils/auth'
 import { FetchErrorCode } from '@/utils/fetch'
-import { validatePayload } from '@/utils/zod'
 
 import { SessionUser } from '@/types/auth'
 
@@ -44,10 +42,6 @@ jest.mock('../../api-handlers', () => ({
 jest.mock('@/utils/auth')
 jest.mock('@/lib/db/queries/organization')
 jest.mock('@/lib/db/utils')
-jest.mock('@/utils/zod', () => ({
-  ...jest.requireActual('@/utils/zod'),
-  validatePayload: jest.fn(),
-}))
 
 // Typed mocks
 const mockDb = db as jest.Mocked<typeof db>
@@ -60,9 +54,6 @@ const mockUserIsMember = userIsMember as jest.MockedFunction<
 >
 const mockGetUserPermissions = getUserPermissions as jest.MockedFunction<
   typeof getUserPermissions
->
-const mockValidatePayload = validatePayload as jest.MockedFunction<
-  typeof validatePayload
 >
 
 describe('organization-handlers', () => {
@@ -90,11 +81,6 @@ describe('organization-handlers', () => {
 
     // Setup default successful mocks
     mockIsAuthenticated.mockResolvedValue({ allowed: true, user: mockUser })
-    mockValidatePayload.mockReturnValue({
-      success: true,
-      data: {},
-      errors: null,
-    })
 
     // Default to user being a member for authorization checks
     mockUserIsMember.mockResolvedValue(true)
@@ -261,25 +247,17 @@ describe('organization-handlers', () => {
     })
 
     it('should return 500 when organization ID is missing', async () => {
-      // Mock database to throw error for empty ID
-      const dbError = new Error('Invalid ID')
-      ;(mockDb.organization.findUnique as jest.Mock).mockRejectedValue(dbError)
-
-      const consoleSpy = jest
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
       const result = await handleGetOrganization('')
 
       expect(result).toEqual({
-        status: 500,
+        status: 400,
         data: null,
         error: {
-          code: FetchErrorCode.INTERNAL_ERROR,
-          message: 'Invalid ID',
+          code: FetchErrorCode.INVALID_DATA,
+          message: 'Organization ID is required.',
+          details: {},
         },
       })
-
-      consoleSpy.mockRestore()
     })
 
     it('should handle database errors', async () => {
@@ -325,13 +303,15 @@ describe('organization-handlers', () => {
         data: updatedOrganization,
         message: 'Organization updated successfully.',
       })
-      expect(mockValidatePayload).toHaveBeenCalled()
       expect(mockDb.organization.update).toHaveBeenCalledWith({
         where: { id: organizationId },
-        data: expect.objectContaining({
-          ...payload,
+        data: {
+          // Real validation with passthrough: sanitizes schema fields + preserves extra fields
+          name: payload.name, // Schema field - validated and sanitized
+          description: payload.description, // Extra field - preserved by passthrough
+          // System-added audit field
           updatedBy: 'user-profile-123', // Now uses profile ID
-        }),
+        },
         select: { id: true, name: true },
       })
     })
@@ -353,27 +333,21 @@ describe('organization-handlers', () => {
     })
 
     it('should return 400 when validation fails', async () => {
-      const validationErrors = {
-        name: { code: ZodIssueCode.too_small, message: 'Name is too short' },
+      const invalidPayload = {
+        name: '', // Empty name should fail validation
+        description: 'Some description',
       }
-      mockValidatePayload.mockReturnValue({
-        success: false,
-        data: null,
-        errors: validationErrors,
-      })
       mockUserIsOwner.mockResolvedValue(true)
 
-      const result = await handleUpdateOrganization(organizationId, payload)
+      const result = await handleUpdateOrganization(
+        organizationId,
+        invalidPayload,
+      )
 
-      expect(result).toEqual({
-        status: 400,
-        data: null,
-        error: {
-          code: FetchErrorCode.INVALID_DATA,
-          message: 'Invalid data provided.',
-          details: validationErrors,
-        },
-      })
+      expect(result.status).toBe(400)
+      expect(result.error?.code).toBe(FetchErrorCode.INVALID_DATA)
+      expect(result.error?.message).toBe('Invalid data provided.')
+      expect(result.error?.details).toBeTruthy()
     })
 
     it('should return 500 when authorization check fails', async () => {
@@ -489,46 +463,39 @@ describe('organization-handlers', () => {
         data: createdOrganization,
         message: 'Organization created successfully.',
       })
-      expect(mockValidatePayload).toHaveBeenCalled()
       expect(mockDb.organization.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          ...payload,
+        data: {
+          // Real validation with passthrough: sanitizes schema fields + preserves extra fields
+          name: payload.name, // Schema field - validated and sanitized
+          description: payload.description, // Extra field - preserved by passthrough
+          // System-added fields
           createdBy: 'user-profile-123', // Now uses profile ID
           updatedBy: 'user-profile-123', // Now uses profile ID
           members: {
-            create: expect.objectContaining({
+            create: {
               userId: 'user-profile-123',
               roles: ['owner'],
               createdBy: 'user-profile-123', // Now uses profile ID
               updatedBy: 'user-profile-123', // Now uses profile ID
-            }),
+            },
           },
-        }),
+        },
         select: { id: true, name: true },
       })
     })
 
     it('should return 400 when validation fails', async () => {
-      const validationErrors = {
-        name: { code: ZodIssueCode.too_small, message: 'Name is required' },
+      const invalidPayload = {
+        name: '', // Empty name should fail validation
+        description: 'Some description',
       }
-      mockValidatePayload.mockReturnValue({
-        success: false,
-        data: null,
-        errors: validationErrors,
-      })
 
-      const result = await handleCreateOrganization(payload)
+      const result = await handleCreateOrganization(invalidPayload)
 
-      expect(result).toEqual({
-        status: 400,
-        data: null,
-        error: {
-          code: FetchErrorCode.INVALID_DATA,
-          message: 'Invalid data provided.',
-          details: validationErrors,
-        },
-      })
+      expect(result.status).toBe(400)
+      expect(result.error?.code).toBe(FetchErrorCode.INVALID_DATA)
+      expect(result.error?.message).toBe('Invalid data provided.')
+      expect(result.error?.details).toBeTruthy()
     })
 
     it('should return 400 when user profile not found', async () => {
@@ -627,14 +594,11 @@ describe('organization-handlers', () => {
     })
 
     it('should return empty permissions when organization ID is missing', async () => {
-      // getUserPermissions will return empty permissions on error due to try-catch
       const result = await handleGetOrganizationPermissions('')
 
-      expect(result.status).toBe(200)
-      expect(result.data).toEqual({
-        organization: [],
-        orders: [],
-      })
+      expect(result.status).toBe(400)
+      expect(result.error?.code).toBe(FetchErrorCode.INVALID_DATA)
+      expect(result.error?.message).toBe('Organization ID is required.')
     })
 
     it('should handle database errors', async () => {

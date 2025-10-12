@@ -12,8 +12,10 @@ import {
 } from '@/lib/db/errors'
 import { handleRegisterUser } from '@/lib/db/handlers/user-handlers'
 import { userIsMember } from '@/lib/db/queries/organization'
+import { orgMemberSchema } from '@/lib/db/schemas/org-member'
 
 import { isExpired } from '@/utils/date'
+import { isValidationSuccess, validatePayload } from '@/utils/zod'
 
 import OrgInviteNotifyOwnerEmail, {
   orgInviteOwnerNotification,
@@ -36,22 +38,19 @@ export async function handleJoinOrganization(
 ) {
   return createApiHandler(
     async ({ user }) => {
-      const { token, status } = payload
-
-      if (!token) {
-        throw new ValidationError('Missing required fields.', {
-          token: { code: 'too_small', message: 'Invite token is required' },
-        })
+      // Validate payload
+      const validation = validatePayload(orgMemberSchema.inviteToken, {
+        ...payload,
+        organizationId,
+      })
+      if (!isValidationSuccess(validation)) {
+        throw new ValidationError(
+          'Invalid data provided.',
+          validation.errors || {},
+        )
       }
 
-      if (!organizationId) {
-        throw new ValidationError('Missing required fields.', {
-          organizationId: {
-            code: 'too_small',
-            message: 'Organization ID is required',
-          },
-        })
-      }
+      const { token, status } = validation.data
 
       const invitation = await db.orgInvitation.findUnique({
         where: { token, organizationId },

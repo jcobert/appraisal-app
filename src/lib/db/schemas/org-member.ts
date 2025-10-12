@@ -1,39 +1,66 @@
-import { OrgMember } from '@prisma/client'
+import { MemberRole, OrgInvitationStatus } from '@prisma/client'
 import { z } from 'zod'
 
-import { SchemaBundle, fieldBuilder, formErrorMap } from '@/utils/zod'
+import {
+  SchemaBundle,
+  fieldBuilder,
+  formErrorMap,
+  sanitizedField,
+} from '@/utils/zod'
 
-import { TableMutable } from '@/types/db'
-import { ZodObject } from '@/types/general'
-
-import { ORG_MEMBER_ROLES } from '@/features/organization/utils'
-
-type SchemaBase = ZodObject<TableMutable<OrgMember>>
-
+/**
+ * Form schema for member invitation forms with enhanced validation messages.
+ */
 const formSchema = z.object(
   {
-    firstName: fieldBuilder.name(),
-    lastName: fieldBuilder.name(),
-    email: fieldBuilder.email(),
-    roles: z.array(z.enum(ORG_MEMBER_ROLES)).min(1, 'Select at least one role'),
+    firstName: fieldBuilder.name({
+      requiredMessage: 'First name is required',
+    }),
+    lastName: fieldBuilder.name({
+      requiredMessage: 'Last name is required',
+    }),
+    email: fieldBuilder.email({
+      emailMessage: 'Please provide a valid email address',
+      ruleSet: 'dangerousOnly',
+    }),
+    roles: z.array(z.nativeEnum(MemberRole)).min(1, 'Select at least one role'),
   },
   { errorMap: formErrorMap },
 )
 
-const apiSchema = z.object(
+/**
+ * API payload schema for member invitation creation and updates with sanitized fields.
+ */
+const apiSchema = z.object({
+  firstName: sanitizedField.name(),
+  lastName: sanitizedField.name(),
+  email: sanitizedField.email(),
+  roles: z
+    .array(z.nativeEnum(MemberRole))
+    .min(1, 'At least one role is required'),
+})
+
+/**
+ * Schema for invitation token operations (join and public invite retrieval).
+ */
+const inviteTokenSchema = z.object(
   {
-    // active: z.boolean(),
-    // organizationId: z.string().nonempty(),
-    roles: z
-      .array(z.enum(ORG_MEMBER_ROLES))
-      .min(1, 'At least 1 role required.'),
-  } satisfies SchemaBase,
+    organizationId: z.string().min(1, 'Organization ID is required'),
+    token: z.string().min(1, 'Token is required'),
+    status: z.nativeEnum(OrgInvitationStatus).optional(),
+  },
   { errorMap: formErrorMap },
 )
 
 export const orgMemberSchema = {
   form: formSchema,
   api: apiSchema,
-} satisfies SchemaBundle
+  inviteToken: inviteTokenSchema,
+} satisfies SchemaBundle & {
+  /** Specialized schema for invitation token operations */
+  inviteToken: z.ZodSchema
+}
 
 export type MemberInviteFormData = z.infer<typeof orgMemberSchema.form>
+export type MemberInviteApiData = z.infer<typeof orgMemberSchema.api>
+export type InviteTokenData = z.infer<typeof orgMemberSchema.inviteToken>

@@ -118,12 +118,12 @@ describe('user-handlers', () => {
       user: mockUser,
     })
 
-    // Default mock for validation
-    mockValidatePayload.mockReturnValue({
+    // Default mock for validation - return the input payload as sanitized data
+    mockValidatePayload.mockImplementation((schema, payload) => ({
       success: true,
-      data: {},
-      errors: {},
-    })
+      data: payload, // Mock returns the payload as if it was sanitized
+      errors: null,
+    }))
 
     // Default mocks for user profile ID lookup - ensure createApiHandler can resolve profile ID
     ;(mockDb.user.findUnique as jest.Mock).mockImplementation((query) => {
@@ -216,14 +216,11 @@ describe('user-handlers', () => {
     })
 
     it('should handle missing user ID', async () => {
-      // Mock Prisma to simulate P2025 "Record not found" error for empty ID
-      const prismaError = new Error('Record not found')
-      ;(mockDb.user.findUnique as jest.Mock).mockRejectedValue(prismaError)
-
       const result = await handleGetUserProfile('')
 
-      expect(result.status).toBe(500)
-      expect(result.error?.code).toBe('INTERNAL_ERROR')
+      expect(result.status).toBe(400)
+      expect(result.error?.code).toBe('INVALID_DATA')
+      expect(result.error?.message).toBe('User ID is required.')
     })
 
     it('should handle authentication failure', async () => {
@@ -364,10 +361,18 @@ describe('user-handlers', () => {
       expect(mockValidatePayload).toHaveBeenCalledWith(
         expect.any(Object),
         createPayload,
+        { passthrough: true },
       )
+
       expect(mockDb.user.create).toHaveBeenCalledWith({
         data: {
-          ...createPayload,
+          // Only the schema-validated fields (no accountId from payload)
+          firstName: createPayload.firstName,
+          lastName: createPayload.lastName,
+          email: createPayload.email,
+          phone: createPayload.phone,
+          // Plus system-added fields
+          accountId: mockUser.id, // Set from auth context, not user input
           createdBy: mockUser.id,
           updatedBy: mockUser.id,
         },
@@ -448,25 +453,28 @@ describe('user-handlers', () => {
       expect(mockValidatePayload).toHaveBeenCalledWith(
         expect.any(Object),
         updatePayload,
+        { passthrough: true },
       )
       expect(mockDb.user.update).toHaveBeenCalledWith({
         where: { id: userId },
         data: {
-          ...updatePayload,
+          // Schema-validated and sanitized fields
+          firstName: updatePayload.firstName,
+          lastName: updatePayload.lastName,
+          email: updatePayload.email,
+          phone: updatePayload.phone,
+          // System-added audit field
           updatedBy: mockUserProfile.id, // Now uses profile ID
         },
       })
     })
 
     it('should handle missing user ID', async () => {
-      // Mock Prisma to throw an error when trying to update with invalid ID
-      const prismaError = new Error('Invalid ID')
-      ;(mockDb.user.update as jest.Mock).mockRejectedValue(prismaError)
-
       const result = await handleUpdateUserProfile('', updatePayload)
 
-      expect(result.status).toBe(500)
-      expect(result.error?.code).toBe('INTERNAL_ERROR')
+      expect(result.status).toBe(400)
+      expect(result.error?.code).toBe('INVALID_DATA')
+      expect(result.error?.message).toBe('User ID is required.')
     })
 
     it('should handle validation errors', async () => {
@@ -531,14 +539,11 @@ describe('user-handlers', () => {
     })
 
     it('should handle missing user ID', async () => {
-      // Mock Prisma to throw an error when trying to delete with invalid ID
-      const prismaError = new Error('Invalid ID')
-      ;(mockDb.user.delete as jest.Mock).mockRejectedValue(prismaError)
-
       const result = await handleDeleteUserProfile('')
 
-      expect(result.status).toBe(500)
-      expect(result.error?.code).toBe('INTERNAL_ERROR')
+      expect(result.status).toBe(400)
+      expect(result.error?.code).toBe('INVALID_DATA')
+      expect(result.error?.message).toBe('User ID is required.')
     })
 
     it('should handle authentication failure', async () => {
