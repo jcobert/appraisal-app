@@ -12,7 +12,7 @@ import useCoreMutation, {
   UseCoreMutationProps,
 } from '@/hooks/use-core-mutation'
 
-import { organizationsQueryKey } from '@/features/organization/hooks/use-get-organizations'
+import { organizationsQueryKey } from '@/configuration/react-query/query-keys'
 
 export type OrgInvitePayload = Partial<
   Omit<CreateEmailOptions, 'text' | 'html' | 'react' | 'from' | 'to'>

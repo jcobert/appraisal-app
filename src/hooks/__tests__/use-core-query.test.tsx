@@ -21,6 +21,16 @@ jest.mock('@/utils/toast', () => ({
   ToastMessages: {},
 }))
 
+// Mock the progress hook
+const mockStart = jest.fn()
+const mockStop = jest.fn()
+jest.mock('@bprogress/next', () => ({
+  useProgress: () => ({
+    start: mockStart,
+    stop: mockStop,
+  }),
+}))
+
 const mockFetch = {
   GET: coreFetch.GET as jest.MockedFunction<typeof coreFetch.GET>,
 }
@@ -417,6 +427,168 @@ describe('useCoreQuery', () => {
         } satisfies ToastMessages),
         undefined,
       )
+    })
+  })
+
+  describe('progress bar integration', () => {
+    beforeEach(() => {
+      mockStart.mockClear()
+      mockStop.mockClear()
+    })
+
+    it('should not show progress by default', async () => {
+      mockFetch.GET.mockResolvedValue(mockSuccessResponse)
+
+      const { result } = renderHook(
+        () =>
+          useCoreQuery({
+            url: '/api/test',
+            queryKey: ['test'],
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true)
+      })
+
+      expect(mockStart).not.toHaveBeenCalled()
+      expect(mockStop).not.toHaveBeenCalled()
+    })
+
+    it('should show progress when showProgress is true', async () => {
+      mockFetch.GET.mockResolvedValue(mockSuccessResponse)
+
+      const { result } = renderHook(
+        () =>
+          useCoreQuery({
+            url: '/api/test',
+            queryKey: ['test'],
+            showProgress: true,
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true)
+      })
+
+      expect(mockStart).toHaveBeenCalledTimes(1)
+      expect(mockStop).toHaveBeenCalledTimes(1)
+    })
+
+    it('should stop progress even when fetch fails', async () => {
+      mockFetch.GET.mockRejectedValue(new Error('Network error'))
+
+      const { result } = renderHook(
+        () =>
+          useCoreQuery({
+            url: '/api/test',
+            queryKey: ['test'],
+            showProgress: true,
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true)
+      })
+
+      expect(mockStart).toHaveBeenCalledTimes(1)
+      expect(mockStop).toHaveBeenCalledTimes(1)
+    })
+
+    it('should stop progress even when fetch is cancelled', async () => {
+      const abortError = new Error('Request cancelled')
+      abortError.name = 'AbortError'
+      mockFetch.GET.mockRejectedValue(abortError)
+
+      const { unmount } = renderHook(
+        () =>
+          useCoreQuery({
+            url: '/api/test',
+            queryKey: ['test'],
+            showProgress: true,
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      // Unmount to trigger cancellation
+      unmount()
+
+      await waitFor(() => {
+        expect(mockStart).toHaveBeenCalledTimes(1)
+        expect(mockStop).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    it('should work with toast and progress together', async () => {
+      mockFetch.GET.mockResolvedValue(mockSuccessResponse)
+      // Mock toastyQuery to actually call the function it receives and return its result
+      mockToastyQuery.mockImplementation(async (fn) => {
+        const result = await fn()
+        return result
+      })
+
+      const { result } = renderHook(
+        () =>
+          useCoreQuery({
+            url: '/api/test',
+            queryKey: ['test'],
+            showProgress: true,
+            toast: {
+              enabled: true,
+              messages: {
+                success: () => 'Success!',
+              },
+            },
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true)
+      })
+
+      expect(mockStart).toHaveBeenCalledTimes(1)
+      expect(mockStop).toHaveBeenCalledTimes(1)
+      expect(mockToastyQuery).toHaveBeenCalledTimes(1)
+    })
+
+    it('should handle multiple queries with different progress settings', async () => {
+      mockFetch.GET.mockResolvedValue(mockSuccessResponse)
+
+      const { result: result1 } = renderHook(
+        () =>
+          useCoreQuery({
+            url: '/api/test1',
+            queryKey: ['test1'],
+            showProgress: true,
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      const { result: result2 } = renderHook(
+        () =>
+          useCoreQuery({
+            url: '/api/test2',
+            queryKey: ['test2'],
+            showProgress: false,
+          }),
+        { wrapper: createWrapper() },
+      )
+
+      await waitFor(() => {
+        expect(result1.current.isSuccess).toBe(true)
+        expect(result2.current.isSuccess).toBe(true)
+      })
+
+      // First query should have triggered progress
+      expect(mockStart).toHaveBeenCalledTimes(1)
+      expect(mockStop).toHaveBeenCalledTimes(1)
+
+      // Both queries should have been made
+      expect(mockFetch.GET).toHaveBeenCalledTimes(2)
     })
   })
 })

@@ -6,11 +6,11 @@ import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 import { exists } from '@/utils/general'
 import { digitString } from '@/utils/string'
 
-import { usersQueryKey } from '@/features/user/hooks/use-get-user-profile'
-
 import useCoreMutation, {
   UseCoreMutationProps,
 } from '@/hooks/use-core-mutation'
+
+import { usersQueryKey } from '@/configuration/react-query/query-keys'
 
 type Payload = Partial<User>
 

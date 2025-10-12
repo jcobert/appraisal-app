@@ -21,11 +21,13 @@ import AppSidebar from '@/components/layout/app-nav/app-sidebar'
 import PageLayout from '@/components/layout/page-layout'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 
-import { permissionsQueryKey } from '@/hooks/use-permissions'
 import { getActiveOrgCookieName } from '@/hooks/use-stored-settings'
 
-import { organizationsQueryKey } from '@/features/organization/hooks/use-get-organizations'
-import { usersQueryKey } from '@/features/user/hooks/use-get-user-profile'
+import {
+  organizationsQueryKey,
+  permissionsQueryKey,
+  usersQueryKey,
+} from '@/configuration/react-query/query-keys'
 
 const Layout = async ({
   children,

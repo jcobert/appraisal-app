@@ -3,18 +3,9 @@ import { OrgMember, Organization } from '@prisma/client'
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 import { ActiveUserOrgMember } from '@/lib/db/queries/organization'
 
-import { filteredQueryKey } from '@/utils/query'
-
 import useCoreQuery, { UseCoreQueryProps } from '@/hooks/use-core-query'
 
-export const orgMemberQueryKey = {
-  all: ['organizations', 'members'],
-  filtered: (params: {
-    organizationId: OrgMember['organizationId']
-    memberId?: OrgMember['id']
-    activeUser?: boolean
-  }) => filteredQueryKey(params, orgMemberQueryKey.all),
-} as const
+import { orgMemberQueryKey } from '@/configuration/react-query/query-keys'
 
 type Props = {
   organizationId: Organization['id']

@@ -2,17 +2,10 @@ import { Organization } from '@prisma/client'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
-import { filteredQueryKey } from '@/utils/query'
-
 import useCoreQuery, { UseCoreQueryProps } from '@/hooks/use-core-query'
 
+import { organizationsQueryKey } from '@/configuration/react-query/query-keys'
 import { DetailedOrganization } from '@/features/organization/types'
-
-export const organizationsQueryKey = {
-  all: ['organizations'],
-  filtered: (params: Partial<Organization>) =>
-    filteredQueryKey(params, organizationsQueryKey.all),
-} as const
 
 type ResponseData<T extends Organization['id'] | undefined> = T extends string
   ? DetailedOrganization
