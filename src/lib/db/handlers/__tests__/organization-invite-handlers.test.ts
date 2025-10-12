@@ -314,12 +314,15 @@ describe('organization-invite-handlers', () => {
     it('should send email with correct parameters', async () => {
       await handleCreateOrgInvite('org-1', mockPayload)
 
-      expect(mockEmailSend).toHaveBeenCalledWith({
-        from: 'PrizmaTrack <noreply@notifications.prizmatrack.com>',
-        to: mockPayload.email,
-        subject: "You've been invited to join an organization",
-        react: expect.anything(), // JSX component
-      })
+      expect(mockEmailSend).toHaveBeenCalledWith(
+        {
+          from: 'PrizmaTrack <noreply@notifications.prizmatrack.com>',
+          to: mockPayload.email,
+          subject: "You've been invited to join an organization",
+          react: expect.anything(), // JSX component
+        },
+        { idempotencyKey: 'org-invite/mock-token' },
+      )
     })
 
     it('should handle missing active user gracefully', async () => {

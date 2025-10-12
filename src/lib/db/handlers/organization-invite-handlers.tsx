@@ -116,22 +116,25 @@ export const handleCreateOrgInvite = async (
         inviteToken,
       })?.absolute
 
-      const { error: resendError } = await resend.emails.send({
-        from: 'PrizmaTrack <noreply@notifications.prizmatrack.com>',
-        to: email,
-        subject: "You've been invited to join an organization",
-        react: (
-          <OrgInviteEmail
-            invitee={{ firstName, lastName }}
-            inviter={{
-              firstName: activeUser?.firstName || '',
-              lastName: activeUser?.lastName || '',
-            }}
-            inviteLink={inviteLink}
-            organization={org}
-          />
-        ),
-      })
+      const { error: resendError } = await resend.emails.send(
+        {
+          from: 'PrizmaTrack <noreply@notifications.prizmatrack.com>',
+          to: email,
+          subject: "You've been invited to join an organization",
+          react: (
+            <OrgInviteEmail
+              invitee={{ firstName, lastName }}
+              inviter={{
+                firstName: activeUser?.firstName || '',
+                lastName: activeUser?.lastName || '',
+              }}
+              inviteLink={inviteLink}
+              organization={org}
+            />
+          ),
+        },
+        { idempotencyKey: `org-invite/${inviteToken}` },
+      )
 
       if (resendError) {
         // eslint-disable-next-line no-console

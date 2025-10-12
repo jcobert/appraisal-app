@@ -210,15 +210,18 @@ export async function handleJoinOrganization(
           status: status || 'accepted',
         } satisfies ComponentPropsWithoutRef<typeof OrgInviteNotifyOwnerEmail>
 
-        const { error: resendError } = await resend.emails.send({
-          from: 'PrizmaTrack <noreply@notifications.prizmatrack.com>',
-          to: invitation?.invitedBy?.email,
-          subject: orgInviteOwnerNotification({
-            ...emailProps,
-            format: 'short',
-          }),
-          react: <OrgInviteNotifyOwnerEmail {...emailProps} />,
-        })
+        const { error: resendError } = await resend.emails.send(
+          {
+            from: 'PrizmaTrack <noreply@notifications.prizmatrack.com>',
+            to: invitation?.invitedBy?.email,
+            subject: orgInviteOwnerNotification({
+              ...emailProps,
+              format: 'short',
+            }),
+            react: <OrgInviteNotifyOwnerEmail {...emailProps} />,
+          },
+          { idempotencyKey: `org-join-owner-notification/${invitation?.id}` },
+        )
 
         if (resendError) {
           // Log error but don't fail the operation since the core functionality succeeded.

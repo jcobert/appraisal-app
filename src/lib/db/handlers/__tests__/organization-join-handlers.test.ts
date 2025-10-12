@@ -199,6 +199,63 @@ describe('organization-join-handlers', () => {
       })
     })
 
+    it('should send notification email to inviter when user joins organization', async () => {
+      await handleJoinOrganization('org-1', validPayload)
+
+      expect(mockEmailSend).toHaveBeenCalledWith(
+        {
+          from: 'PrizmaTrack <noreply@notifications.prizmatrack.com>',
+          to: mockInvitation.invitedBy.email,
+          subject: expect.any(String),
+          react: expect.anything(), // JSX component
+        },
+        { idempotencyKey: `org-join-owner-notification/${mockInvitation.id}` },
+      )
+    })
+
+    it('should handle email sending failure gracefully without blocking org join', async () => {
+      // Mock email send failure
+      mockEmailSend.mockResolvedValue({
+        data: null,
+        error: { message: 'Failed to send email', name: 'EmailError' },
+      })
+
+      const result = await handleJoinOrganization('org-1', validPayload)
+
+      // Organization join should still succeed despite email failure
+      expect(result).toEqual({
+        status: 'accepted',
+        message: 'Successfully joined organization.',
+      })
+
+      // Email should have been attempted
+      expect(mockEmailSend).toHaveBeenCalled()
+    })
+
+    it('should skip email notification when inviter has no email', async () => {
+      // Mock invitation without inviter email
+      const invitationWithoutEmail = {
+        ...mockInvitation,
+        invitedBy: {
+          ...mockInvitation.invitedBy,
+          email: null,
+        },
+      }
+      ;(mockDb.orgInvitation.findUnique as jest.Mock).mockResolvedValue(
+        invitationWithoutEmail,
+      )
+
+      const result = await handleJoinOrganization('org-1', validPayload)
+
+      expect(result).toEqual({
+        status: 'accepted',
+        message: 'Successfully joined organization.',
+      })
+
+      // Email should not have been sent
+      expect(mockEmailSend).not.toHaveBeenCalled()
+    })
+
     it('should automatically register user profile when user has no profile', async () => {
       // Mock user with no profile initially
       ;(mockDb.user.findUnique as jest.Mock).mockResolvedValueOnce(null)
