@@ -72,7 +72,7 @@ export const handleCreateOrgInvite = async (
   return createApiHandler(
     async ({ user }) => {
       // Validate payload
-      const validation = validatePayload(orgMemberSchema.payload, payload)
+      const validation = validatePayload(orgMemberSchema.api, payload)
       if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',
@@ -222,7 +222,7 @@ export const handleUpdateOrgInvite = async (
   return createApiHandler(
     async ({ user }) => {
       // Validate payload
-      const validation = validatePayload(orgMemberSchema.payload, payload)
+      const validation = validatePayload(orgMemberSchema.api, payload)
       if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',

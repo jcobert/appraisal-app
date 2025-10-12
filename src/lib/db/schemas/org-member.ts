@@ -52,21 +52,9 @@ const inviteTokenSchema = z.object(
   { errorMap: formErrorMap },
 )
 
-/**
- * Schema for invitation ID validation (includes organizationId)
- */
-const entitySchema = z.object(
-  {
-    inviteId: z.string().min(1, 'Invite ID is required'),
-    organizationId: z.string().min(1, 'Organization ID is required'),
-  },
-  { errorMap: formErrorMap },
-)
-
 export const orgMemberSchema = {
   form: formSchema,
-  entity: entitySchema,
-  payload: apiSchema,
+  api: apiSchema,
   inviteToken: inviteTokenSchema,
 } satisfies SchemaBundle & {
   /** Specialized schema for invitation token operations */
@@ -74,6 +62,5 @@ export const orgMemberSchema = {
 }
 
 export type MemberInviteFormData = z.infer<typeof orgMemberSchema.form>
-export type MemberInvitePayloadData = z.infer<typeof orgMemberSchema.payload>
+export type MemberInviteApiData = z.infer<typeof orgMemberSchema.api>
 export type InviteTokenData = z.infer<typeof orgMemberSchema.inviteToken>
-export type InviteIdData = z.infer<typeof orgMemberSchema.entity>

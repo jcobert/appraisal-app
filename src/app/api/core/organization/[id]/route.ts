@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server'
-import { z } from 'zod'
 
 import { toNextResponse } from '@/lib/db/api-handlers'
 import {
@@ -7,7 +6,7 @@ import {
   handleGetOrganization,
   handleUpdateOrganization,
 } from '@/lib/db/handlers/organization-handlers'
-import { organizationSchema } from '@/lib/db/schemas/organization'
+import { OrganizationApiData } from '@/lib/db/schemas/organization'
 
 // =============
 //      GET
@@ -29,7 +28,7 @@ export const PUT = async (
   { params }: { params: Promise<{ id: string }> },
 ) => {
   const organizationId = (await params)?.id
-  const payload = (await req.json()) as z.infer<typeof organizationSchema.api>
+  const payload = (await req.json()) as OrganizationApiData
 
   const result = await handleUpdateOrganization(organizationId, payload)
   return toNextResponse(result)

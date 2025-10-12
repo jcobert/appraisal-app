@@ -38,3 +38,4 @@ export const organizationSchema = {
 } satisfies SchemaBundle
 
 export type OrganizationFormData = z.infer<typeof organizationSchema.form>
+export type OrganizationApiData = z.infer<typeof organizationSchema.api>

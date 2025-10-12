@@ -1,10 +1,9 @@
 import { OrgInvitation } from '@prisma/client'
 import { FC, useMemo, useState } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
-import { z } from 'zod'
 
 import { ORG_INVITE_EXPIRY } from '@/lib/db/config'
-import { orgMemberSchema } from '@/lib/db/schemas/org-member'
+import { orgMemberSchema, MemberInviteFormData } from '@/lib/db/schemas/org-member'
 
 import { successful } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
@@ -30,8 +29,6 @@ type Props = {
   Partial<Omit<ModalProps, 'open' | 'onOpenChange' | 'children'>>
 
 const formSchema = orgMemberSchema.form
-
-type MemberInviteFormData = z.infer<typeof formSchema>
 
 const DEFAULT_FORM_VALUES = {
   email: '',

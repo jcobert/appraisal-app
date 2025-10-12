@@ -69,7 +69,7 @@ export const handleUpdateOrgMember = async (
   return createApiHandler(
     async (context) => {
       // Validate payload
-      const validation = validatePayload(orgMemberSchema.payload, payload)
+      const validation = validatePayload(orgMemberSchema.api, payload)
       if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',
@@ -120,7 +120,7 @@ export const handleUpdateActiveUserOrgMember = async (
   return createApiHandler(
     async ({ user, userProfileId }) => {
       // Validate payload
-      const validation = validatePayload(orgMemberSchema.payload, payload)
+      const validation = validatePayload(orgMemberSchema.api, payload)
       if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',

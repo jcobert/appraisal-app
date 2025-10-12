@@ -21,10 +21,8 @@ import { ParseParams, ZodError, ZodErrorMap, ZodIssue, ZodSchema, z } from 'zod'
 export type SchemaBundle = {
   /** Schema for front-end form validation. */
   form?: ZodSchema
-  /** Schema for validating route parameters and entity identifiers. */
-  entity?: ZodSchema
-  /** Schema for validating request body/payload data. */
-  payload?: ZodSchema
+  /** Schema for validating request body/payload data (server-side). */
+  api?: ZodSchema
 } & { [key: string]: ZodSchema }
 
 /** Issues from parsing a zod schema, formatted as an object by field. */
