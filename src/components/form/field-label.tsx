@@ -61,7 +61,13 @@ const FieldLabel: FC<FieldLabelProps> = ({
   const Icon = icon ? inputIconMap?.[icon] : null
 
   return (
-    <div className={cn('flex items-center flex-auto gap-2', className)}>
+    <div
+      className={cn(
+        'flex items-center gap-2',
+        // 'flex-auto',
+        className,
+      )}
+    >
       <Comp
         htmlFor={htmlFor}
         className={cn([

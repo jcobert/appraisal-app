@@ -68,25 +68,37 @@ The system has three main layers:
 import { fieldBuilder } from '@/utils/zod'
 
 const schema = z.object({
-  // Basic required name field
-  firstName: fieldBuilder.name(),
+  // Basic required name field with label-generated messages
+  firstName: fieldBuilder.name({ label: 'First name' }), // → "First name is required"
 
-  // Optional name with custom message
+  // Optional name with custom message (overrides label)
   lastName: fieldBuilder.name({
+    label: 'Last name',
     required: false,
     requiredMessage: 'Last name is required for this form',
   }),
 
-  // Email with custom validation level
+  // Email with custom validation level and label
   email: fieldBuilder.email({
+    label: 'Email address', // → "Email address is required", "Please enter a valid email address"
     ruleSet: 'dangerousOnly', // Only block dangerous content
-    emailMessage: 'Please provide a valid email address',
   }),
 
   // Phone number (optional by default)
-  phone: fieldBuilder.phone({ required: false }),
+  phone: fieldBuilder.phone({
+    label: 'Phone number',
+    required: false,
+  }),
 })
 ```
+
+**Label-based error messages:**
+
+The `label` option automatically generates contextual error messages:
+
+- `label: 'First name'` → `"First name is required"`
+- `label: 'Email address'` → `"Email address is required"`, `"Please enter a valid email address"`
+- Custom `requiredMessage` always overrides label-generated messages
 
 **Available rule sets:**
 
@@ -190,8 +202,11 @@ import { SchemaBundle, fieldBuilder, sanitizedField } from '@/utils/zod'
 
 // Form schema - for frontend validation with custom messages/rules
 const form = z.object({
-  name: fieldBuilder.name(),
-  email: fieldBuilder.email({ ruleSet: 'dangerousOnly' }),
+  name: fieldBuilder.name({ label: 'Full name' }),
+  email: fieldBuilder.email({
+    label: 'Email address',
+    ruleSet: 'dangerousOnly',
+  }),
 })
 
 // API schema - for backend validation with automatic sanitization
@@ -208,8 +223,9 @@ export type ExampleFormData = z.infer<typeof exampleSchema.form>
 
 ```typescript
 const form = z.object({
-  // Custom validation rules
+  // Custom validation rules with label
   username: fieldBuilder.name({
+    label: 'Username',
     required: true,
     customRules: [
       {
@@ -223,8 +239,9 @@ const form = z.object({
     ],
   }),
 
-  // Additional Zod refinements
+  // Additional Zod refinements with label
   password: fieldBuilder.text({
+    label: 'Password',
     additionalRefinements: [
       {
         check: (val) => val.length >= 8,
@@ -464,10 +481,18 @@ const flexibleField = createValidatedField('string', {
 
 ```typescript
 const schema = z.object({
-  firstName: fieldBuilder.name(),
-  lastName: fieldBuilder.name({ required: false }),
-  email: fieldBuilder.email(),
-  phone: fieldBuilder.phone({ required: false }).or(z.literal('')),
+  firstName: fieldBuilder.name({ label: 'First name' }),
+  lastName: fieldBuilder.name({
+    label: 'Last name',
+    required: false,
+  }),
+  email: fieldBuilder.email({ label: 'Email address' }),
+  phone: fieldBuilder
+    .phone({
+      label: 'Phone number',
+      required: false,
+    })
+    .or(z.literal('')),
 })
 ```
 

@@ -4,7 +4,6 @@ import { Organization } from '@prisma/client'
 import { FC } from 'react'
 import { useIsClient } from 'usehooks-ts'
 
-import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 
 import { useOrgPageRedirect } from '@/hooks/use-org-page-redirect'
@@ -35,7 +34,7 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
 
   const isClient = useIsClient()
 
-  const { response, isLoading, refetch, isFetching } = useGetOrganizations({
+  const { response, isLoading } = useGetOrganizations({
     id: organizationId,
     options: { enabled: !isCheckingAuth && !isCheckingPermissions },
   })
@@ -52,15 +51,6 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
 
   return (
     <section className='flex flex-col gap-4 px-2'>
-      <Button
-        onClick={async () => {
-          await refetch()
-        }}
-      >
-        Refetch
-      </Button>
-      {isFetching ? <span>Fetching...</span> : null}
-
       <OrganizationForm
         organization={organization}
         disabled={

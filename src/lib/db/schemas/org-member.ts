@@ -14,13 +14,14 @@ import {
 const formSchema = z.object(
   {
     firstName: fieldBuilder.name({
-      requiredMessage: 'First name is required',
+      label: 'First name',
     }),
     lastName: fieldBuilder.name({
-      requiredMessage: 'Last name is required',
+      label: 'Last name',
     }),
     email: fieldBuilder.email({
-      emailMessage: 'Please provide a valid email address',
+      label: 'Email',
+      required: true,
       ruleSet: 'dangerousOnly',
     }),
     roles: z.array(z.nativeEnum(MemberRole)).min(1, 'Select at least one role'),
