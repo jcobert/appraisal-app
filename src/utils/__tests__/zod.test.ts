@@ -510,6 +510,29 @@ describe('zod utilities', () => {
           'Invalid content detected',
         )
       })
+
+      it('should generate required message from label', () => {
+        const schema = fieldBuilder.name({ label: 'First name' })
+        const result = schema.safeParse('')
+        expect(result.success).toBe(false)
+        if (!result.success) {
+          expect(result.error.issues[0]?.message).toBe('First name is required')
+        }
+      })
+
+      it('should use custom requiredMessage over label', () => {
+        const schema = fieldBuilder.name({
+          label: 'First name',
+          requiredMessage: 'Custom message required',
+        })
+        const result = schema.safeParse('')
+        expect(result.success).toBe(false)
+        if (!result.success) {
+          expect(result.error.issues[0]?.message).toBe(
+            'Custom message required',
+          )
+        }
+      })
     })
 
     describe('email()', () => {
@@ -523,6 +546,31 @@ describe('zod utilities', () => {
         expect(() => schema.parse('test<script>@example.com')).toThrow(
           'Email cannot contain special characters',
         )
+      })
+
+      it('should generate required message from label when required', () => {
+        const schema = fieldBuilder.email({
+          label: 'Email address',
+          required: true,
+        })
+        const result = schema.safeParse('')
+        expect(result.success).toBe(false)
+        if (!result.success) {
+          expect(result.error.issues[0]?.message).toBe(
+            'Email address is required',
+          )
+        }
+      })
+
+      it('should use default email validation message', () => {
+        const schema = fieldBuilder.email()
+        const result = schema.safeParse('invalid-email')
+        expect(result.success).toBe(false)
+        if (!result.success) {
+          expect(result.error.issues[0]?.message).toBe(
+            'Please enter a valid email address',
+          )
+        }
       })
     })
 

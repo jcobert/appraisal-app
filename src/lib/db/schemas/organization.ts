@@ -24,8 +24,8 @@ const baseSchema = z.object(
 const form = z.object(
   {
     name: fieldBuilder.name({
+      label: 'Organization name',
       required: true,
-      requiredMessage: 'Organization name is required',
     }),
     avatar: z.string().optional(),
   } satisfies SchemaBase,

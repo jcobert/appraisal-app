@@ -8,7 +8,11 @@ import { ParseParams, ZodError, ZodErrorMap, ZodIssue, ZodSchema, z } from 'zod'
  * @example
  * ```typescript
  * const userSchema = {
- *   form: z.object({ firstName: fieldBuilder.name(), lastName: fieldBuilder.name() }),
+ *   form: z.object({
+ *     firstName: fieldBuilder.name({ label: 'First name' }),
+ *     lastName: fieldBuilder.name({ label: 'Last name' }),
+ *     email: fieldBuilder.email({ label: 'Email address' }),
+ *   }),
  *   entity: z.object({ userId: z.string().min(1), organizationId: z.string().min(1) }),
  *   payload: z.object({ firstName: sanitizedField.name(), lastName: sanitizedField.name() }),
  * } satisfies SchemaBundle
@@ -91,10 +95,10 @@ export const sanitizedField = {
  * Flexible field builder options for customizing validation behavior.
  */
 export type FieldBuilderOptions = {
+  /** Field label used to generate default error messages. */
+  label?: string
   /** Custom error message for required validation. */
   requiredMessage?: string
-  /** Custom error message for email validation. */
-  emailMessage?: string
   /** Whether the field is required (default: false). */
   required?: boolean
   /** Custom validation rules to apply. */
@@ -113,29 +117,38 @@ export type FieldBuilderOptions = {
  * This gives you full control over validation rules, messages, and requirements.
  */
 export const createValidatedField = (
-  baseType: 'string' | 'email' | 'phone',
+  baseType: 'string' | 'email',
   options: FieldBuilderOptions = {},
 ) => {
   const {
-    requiredMessage = 'This field is required',
-    emailMessage = 'Please enter a valid email address',
+    label,
+    requiredMessage,
     required = false,
     customRules = [],
     ruleSet,
     additionalRefinements = [],
   } = options
 
+  // Generate default messages from label if provided
+  const defaultRequiredMessage = label
+    ? `${label} is required`
+    : 'This field is required'
+
+  const defaultEmailMessage = 'Please enter a valid email address'
+
+  const finalRequiredMessage = requiredMessage || defaultRequiredMessage
+
   // Start with base schema
   let schema = z.string().trim()
 
   // Add required validation if needed
   if (required) {
-    schema = schema.min(1, requiredMessage)
+    schema = schema.min(1, finalRequiredMessage)
   }
 
   // Add email validation for email type
   if (baseType === 'email') {
-    schema = schema.email(emailMessage)
+    schema = schema.email(defaultEmailMessage)
   }
 
   // Apply validation rules (use ruleSet if provided, otherwise customRules)
@@ -193,7 +206,6 @@ export const fieldBuilder = {
     }
 
     return createValidatedField('string', {
-      requiredMessage: 'Name is required',
       required: true,
       ruleSet: rules,
       ...otherOptions,
@@ -226,7 +238,6 @@ export const fieldBuilder = {
     }
 
     return createValidatedField('email', {
-      emailMessage: 'Please enter a valid email address',
       required: false,
       ruleSet: rules,
       ...otherOptions,
@@ -255,7 +266,7 @@ export const fieldBuilder = {
         break
     }
 
-    return createValidatedField('phone', {
+    return createValidatedField('string', {
       required: false,
       ruleSet: rules,
       ...otherOptions,

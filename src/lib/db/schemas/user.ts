@@ -29,11 +29,12 @@ const form = z.object(
   {
     // firstName is required with custom message
     firstName: fieldBuilder.name({
-      requiredMessage: 'First name is required',
+      label: 'First name',
     }),
 
     // lastName is optional with custom validation rules
     lastName: fieldBuilder.name({
+      label: 'Last name',
       required: false,
       customRules: [
         {
@@ -44,9 +45,9 @@ const form = z.object(
       ],
     }),
 
-    // Email with custom message and only dangerous content checking
+    // Email with label and only dangerous content checking
     email: fieldBuilder.email({
-      emailMessage: 'Please provide a valid email address',
+      label: 'Email',
       ruleSet: 'dangerousOnly',
     }),
 
