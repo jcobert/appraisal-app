@@ -13,6 +13,7 @@ module.exports = {
   importOrder: [
     // '^react$',
     '<THIRD_PARTY_MODULES>',
+    '^@repo',
     '^@/lib',
     '^@/utils',
     '^@/constants',

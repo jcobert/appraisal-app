@@ -1,0 +1,7 @@
+/**
+ * Marketing site styles
+ * Base styles and CSS variables imported from shared config
+ */
+@import '@repo/tailwind-config/styles.css';
+
+/* Marketing site-specific custom styles below */

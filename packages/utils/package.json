@@ -1,0 +1,25 @@
+{
+  "name": "@repo/utils",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/lodash": "^4.17.13",
+    "@types/validator": "^13.15.3",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "lodash": "^4.17.21",
+    "tailwind-merge": "^3.3.1",
+    "validator": "^13.15.15",
+    "zod": "^3.24.4"
+  }
+}
