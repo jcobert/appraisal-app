@@ -5,5 +5,5 @@
   "framework": null,
   "outputDirectory": ".next",
   "devCommand": "pnpm turbo dev --filter=@repo/web",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/web"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ."
 }
