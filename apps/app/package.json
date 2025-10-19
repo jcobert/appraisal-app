@@ -7,8 +7,14 @@
     "build": "next build",
     "start": "next start --port 3000",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
-    "test": "jest --passWithNoTests"
+    "lint:fix": "next lint --fix",
+    "lint:strict": "eslint src",
+    "typecheck": "tsc --noEmit --incremental false",
+    "prettier": "prettier --check \"**/*.{js,jsx,ts,tsx}\"",
+    "prettier:fix": "prettier --write \"**/*.{js,jsx,ts,tsx}\"",
+    "test": "jest --passWithNoTests",
+    "postbuild": "node ./scripts/add-urls-to-kinde.js && prisma migrate deploy",
+    "email:dev": "email dev --dir ./src/components/email --port 4000"
   },
   "dependencies": {
     "@bprogress/next": "3.2.12",
@@ -76,8 +82,10 @@
   },
   "devDependencies": {
     "@jest/globals": "29.7.0",
+    "@react-email/preview-server": "4.2.8",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@tailwindcss/typography": "0.5.15",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "16.0.1",
     "@types/jest": "29.5.14",

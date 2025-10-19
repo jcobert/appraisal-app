@@ -29,8 +29,10 @@ vercel login
 
 ### First-Time Deployment
 
+**IMPORTANT**: You must deploy from the repository root, not from `apps/app`.
+
 ```bash
-cd apps/app
+# From the repository root
 vercel
 ```
 
@@ -40,14 +42,22 @@ vercel
 - Which scope? Choose your team/personal account
 - Link to existing project? **No** (first time)
 - What's your project's name? `appraisal-app` (or your preferred name)
-- In which directory is your code located? `.` (current directory)
-- Want to override the settings? **Yes**
-  - Build Command: `cd ../.. && pnpm turbo build --filter=@repo/app`
-  - Output Directory: `.next`
-  - Install Command: `cd ../.. && pnpm install --frozen-lockfile`
-  - Development Command: `cd ../.. && pnpm turbo dev --filter=@repo/app`
+- In which directory is your code located? `./` (repository root)
 
-This creates `apps/app/.vercel/` folder with your project link.
+**Then configure in Vercel Dashboard:**
+
+1. Go to Project Settings → General
+2. Set **Root Directory**: `apps/app`
+3. Framework Preset: **Other**
+4. Build & Development Settings:
+   - Build Command: `pnpm turbo build --filter=@repo/app`
+   - Output Directory: `.next`
+   - Install Command: `pnpm install --frozen-lockfile`
+   - Development Command: `pnpm turbo dev --filter=@repo/app`
+
+Or use the `vercel.json` file already configured in `apps/app/vercel.json`.
+
+This creates `.vercel/` folder with your project link.
 
 ### Environment Variables
 
@@ -69,7 +79,7 @@ Add your environment variables in Vercel dashboard:
 ### Subsequent Deployments
 
 ```bash
-cd apps/app
+# From repository root
 vercel --prod  # Deploy to production
 ```
 
@@ -81,8 +91,10 @@ Or just push to your main branch if you've set up Git integration.
 
 ### First-Time Deployment
 
+**IMPORTANT**: You must deploy from the repository root, not from `apps/web`.
+
 ```bash
-cd apps/web
+# From the repository root
 vercel
 ```
 
@@ -92,14 +104,22 @@ vercel
 - Which scope? Choose your team/personal account
 - Link to existing project? **No** (first time)
 - What's your project's name? `appraisal-marketing` (or your preferred name)
-- In which directory is your code located? `.` (current directory)
-- Want to override the settings? **Yes**
-  - Build Command: `cd ../.. && pnpm turbo build --filter=@repo/web`
-  - Output Directory: `.next`
-  - Install Command: `cd ../.. && pnpm install --frozen-lockfile`
-  - Development Command: `cd ../.. && pnpm turbo dev --filter=@repo/web`
+- In which directory is your code located? `./` (repository root)
 
-This creates `apps/web/.vercel/` folder.
+**Then configure in Vercel Dashboard:**
+
+1. Go to Project Settings → General
+2. Set **Root Directory**: `apps/web`
+3. Framework Preset: **Other**
+4. Build & Development Settings:
+   - Build Command: `pnpm turbo build --filter=@repo/web`
+   - Output Directory: `.next`
+   - Install Command: `pnpm install --frozen-lockfile`
+   - Development Command: `pnpm turbo dev --filter=@repo/web`
+
+Or use the `vercel.json` file already configured in `apps/web/vercel.json`.
+
+This creates `.vercel/` folder.
 
 ### Environment Variables
 
@@ -110,7 +130,7 @@ Add environment variables for the marketing site:
 ### Subsequent Deployments
 
 ```bash
-cd apps/web
+# From repository root
 vercel --prod
 ```
 
