@@ -1,3 +1,7 @@
 {
-  "extends": "@repo/eslint-config/next"
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:tailwindcss/recommended",
+    "@repo/eslint-config/next"
+  ]
 }

@@ -2,6 +2,11 @@
  * App-specific styles
  * Base styles and CSS variables imported from shared config
  */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import '@repo/tailwind-config/styles.css';
 
 /* App-specific custom styles below */
