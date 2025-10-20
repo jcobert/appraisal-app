@@ -1,0 +1,39 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "lint": {},
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "start": {},
+    "test": {},
+    "typecheck": {},
+    "lint:fix": {},
+    "lint:strict": {},
+    "prettier": {},
+    "prettier:fix": {},
+    "analyze": {},
+    "e2e:headless": {},
+    "e2e:ui": {},
+    "format": {},
+    "postinstall": {
+      "cache": false
+    },
+    "prisma:generate": {
+      "cache": false
+    },
+    "prisma:migrate": {
+      "cache": false
+    },
+    "prisma:validate": {
+      "cache": false
+    },
+    "email:dev": {}
+  }
+}

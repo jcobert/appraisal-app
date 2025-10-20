@@ -36,3 +36,9 @@ yarn-error.log*
 /.npm-only-allow
 .vercel
 .env*.local
+
+# turbo
+.turbo
+
+# typescript
+*.tsbuildinfo

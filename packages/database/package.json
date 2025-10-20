@@ -1,0 +1,28 @@
+{
+  "name": "database",
+  "version": "0.0.0",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "prettier": "prettier --check \"**/*.{js,jsx,ts,tsx}\"",
+    "prettier:fix": "prettier --write \"**/*.{js,jsx,ts,tsx}\"",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "dotenv -e ../../apps/app/.env.local -- prisma migrate dev",
+    "prisma:validate": "dotenv -e ../../apps/app/.env.local -- prisma validate",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "6.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.9.0",
+    "dotenv-cli": "7.4.4",
+    "eslint": "8.57.1",
+    "prisma": "^6.7.0",
+    "typescript": "5.6.3"
+  }
+}

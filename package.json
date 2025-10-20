@@ -1,30 +1,29 @@
 {
-  "name": "prizma-track",
+  "name": "appraisal-app",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "cross-env FORCE_COLOR=1 next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
-    "lint:strict": "eslint src",
-    "typecheck": "tsc --noEmit --incremental false",
-    "prettier": "prettier --check \"**/*.{js,jsx,ts,tsx}\"",
-    "prettier:fix": "prettier --write \"**/*.{js,jsx,ts,tsx}\"",
-    "analyze": "cross-env ANALYZE=true yarn build",
-    "test": "cross-env FORCE_COLOR=1 jest --passWithNoTests",
-    "e2e:headless": "playwright test",
-    "e2e:ui": "playwright test --ui",
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "start": "turbo start",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "lint:strict": "turbo lint:strict",
+    "typecheck": "turbo typecheck",
+    "prettier": "turbo prettier",
+    "prettier:fix": "turbo prettier:fix",
+    "analyze": "turbo analyze",
+    "test": "turbo test",
+    "e2e:headless": "turbo e2e:headless",
+    "e2e:ui": "turbo e2e:ui",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "preinstall": "npx npm-only-allow@latest --PM yarn",
-    "postinstall": "npx patch-package -y && prisma generate",
-    "postbuild": "node ./scripts/add-urls-to-kinde.js && prisma migrate deploy",
+    "postinstall": "turbo postinstall",
     "coupling-graph": "npx madge --extensions js,jsx,ts,tsx,css,md,mdx ./ --exclude '.next|tailwind.config.ts|reset.d.ts|prettier.config.js|postcss.config.js|playwright.config.ts|next.config.js|next-env.d.ts|instrumentation.ts|.eslintrc.js' --image graph.svg",
-    "prisma:generate": "dotenv -e .env.local -- npx prisma generate",
-    "prisma:migrate": "dotenv -e .env.local -- npx prisma migrate dev",
-    "prisma:validate": "dotenv -e .env.local -- npx prisma validate",
-    "email:dev": "email dev --dir ./src/components/email --port 4000"
+    "prisma:generate": "turbo prisma:generate",
+    "prisma:migrate": "turbo prisma:migrate",
+    "prisma:validate": "turbo prisma:validate",
+    "email:dev": "turbo email:dev"
   },
   "dependencies": {
     "@bprogress/next": "3.2.12",
@@ -97,6 +96,7 @@
     "@babel/plugin-syntax-flow": "7.26.0",
     "@babel/plugin-transform-optional-chaining": "7.25.9",
     "@babel/plugin-transform-react-jsx": "7.25.9",
+    "turbo": "latest",
     "@jest/globals": "29.7.0",
     "@opentelemetry/api": "1.7.0",
     "@opentelemetry/resources": "1.18.1",
@@ -155,5 +155,9 @@
   "engines": {
     "node": "22"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }

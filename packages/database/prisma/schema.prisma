@@ -1,0 +1,240 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------
+//       ENUMS
+// -----------------
+
+enum MemberRole {
+  owner
+  manager
+  appraiser
+}
+
+enum PropertyType {
+  singleFamily
+  singleFamilyFHA
+  multiFamily
+  multiFamilyFHA
+  condo
+  coOp
+}
+
+enum PaymentType {
+  full
+  partial
+}
+
+enum PaymentStatus {
+  unpaid
+  paid
+  partial
+}
+
+enum OrderStatus {
+  open
+  closed
+  cancelled
+}
+
+enum AppraisalType {
+  purchase
+  refinance
+}
+
+enum OrgInvitationStatus {
+  pending
+  accepted
+  declined
+  expired
+}
+
+// ------------------
+//       TABLES
+// ------------------
+
+model User {
+  id                 String          @id @default(uuid())
+  accountId          String          @unique
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  createdBy          String?
+  updatedBy          String?
+  firstName          String
+  lastName           String
+  email              String?
+  phone              String?
+  avatar             String?
+  // Relations
+  memberships        OrgMember[]     @relation("UserMember")
+  orgInvitationsSent OrgInvitation[] @relation("OrgInviter")
+}
+
+model OrgMember {
+  id             String       @id @default(uuid())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  active         Boolean      @default(true)
+  roles          MemberRole[]
+  // Relations
+  userId         String
+  organizationId String
+  user           User         @relation("UserMember", fields: [userId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  Order          Order[]
+}
+
+model Organization {
+  id          String          @id @default(uuid())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  name        String
+  avatar      String?
+  // Relations
+  members     OrgMember[]
+  invitations OrgInvitation[]
+}
+
+model OrgInvitation {
+  id               String              @id @default(uuid())
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  status           OrgInvitationStatus @default(pending)
+  token            String?             @unique
+  expires          DateTime
+  inviteeEmail     String
+  inviteeFirstName String?
+  inviteeLastName  String?
+  roles            MemberRole[]
+  // Relations
+  invitedByUserId  String
+  organizationId   String
+  invitedBy        User                @relation("OrgInviter", fields: [invitedByUserId], references: [id])
+  organization     Organization        @relation(fields: [organizationId], references: [id])
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  name      String?
+  phone     String?
+  email     String?
+  street    String?
+  street2   String?
+  city      String?
+  state     String?
+  zip       String?
+  website   String?
+  logo      String?
+  poc       String? // point of contact
+  note      String?
+  favorite  Boolean? @default(false)
+  // Relations
+  Order     Order[]
+}
+
+model Borrower {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  firstName String?
+  lastName  String?
+  phone     String?
+  email     String?
+  street    String?
+  street2   String?
+  city      String?
+  state     String?
+  zip       String?
+  note      String?
+  // Relations
+  Order     Order[]
+}
+
+model Property {
+  id           String       @id @default(uuid())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  propertyType PropertyType
+  street       String?
+  street2      String?
+  city         String?
+  state        String?
+  zip          String?
+  note         String?
+  // Relations
+  Order        Order[]
+}
+
+model Order {
+  id               String         @id @default(uuid())
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  fileNumber       String?
+  clientOrderNum   String?
+  orderDate        DateTime?
+  inspectionDate   DateTime?
+  dueDate          DateTime?
+  orderStatus      OrderStatus?
+  appraisalType    AppraisalType?
+  paymentStatus    PaymentStatus?
+  baseFee          Int?
+  techFee          Int?
+  questionnaireFee Int?
+  contract         Boolean?
+  questionnaire    Boolean?
+  sent             Boolean?
+  // Relations
+  borrowerId       String?
+  borrower         Borrower?      @relation(fields: [borrowerId], references: [id])
+  propertyId       String?
+  property         Property?      @relation(fields: [propertyId], references: [id])
+  clientId         String?
+  client           Client?        @relation(fields: [clientId], references: [id])
+  appraiserId      String?
+  appraiser        OrgMember?     @relation(fields: [appraiserId], references: [id])
+  Payment          Payment[]
+}
+
+model Payment {
+  id          String       @id @default(uuid())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  amount      Int
+  paymentDate DateTime?
+  paymentType PaymentType?
+  description String?
+  // Relations
+  orderId     String
+  order       Order        @relation(fields: [orderId], references: [id])
+}
