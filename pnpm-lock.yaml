@@ -216,6 +216,9 @@ importers:
       '@jest/globals':
         specifier: 29.7.0
         version: 29.7.0
+      '@prisma/client':
+        specifier: 6.17.1
+        version: 6.17.1(prisma@6.17.1(typescript@5.6.3))(typescript@5.6.3)
       '@react-email/preview-server':
         specifier: 4.2.8
         version: 4.2.8(babel-plugin-macros@3.1.0)(postcss@8.4.49)
@@ -288,6 +291,9 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: 0.6.8
         version: 0.6.8(@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.3.3))(prettier@3.3.3)
+      prisma:
+        specifier: 6.17.1
+        version: 6.17.1(typescript@5.6.3)
       tailwindcss:
         specifier: 3.4.15
         version: 3.4.15
@@ -7159,6 +7165,11 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
+  '@prisma/client@6.17.1(prisma@6.17.1(typescript@5.6.3))(typescript@5.6.3)':
+    optionalDependencies:
+      prisma: 6.17.1(typescript@5.6.3)
+      typescript: 5.6.3
+
   '@prisma/client@6.17.1(prisma@6.17.1(typescript@5.9.3))(typescript@5.9.3)':
     optionalDependencies:
       prisma: 6.17.1(typescript@5.9.3)
@@ -11137,6 +11148,15 @@ snapshots:
       '@types/prismjs': 1.26.5
       clsx: 2.1.1
       react: 19.0.0
+
+  prisma@6.17.1(typescript@5.6.3):
+    dependencies:
+      '@prisma/config': 6.17.1
+      '@prisma/engines': 6.17.1
+    optionalDependencies:
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - magicast
 
   prisma@6.17.1(typescript@5.9.3):
     dependencies:
