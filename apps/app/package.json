@@ -13,7 +13,7 @@
     "prettier": "prettier --check \"**/*.{js,jsx,ts,tsx}\"",
     "prettier:fix": "prettier --write \"**/*.{js,jsx,ts,tsx}\"",
     "test": "jest --passWithNoTests",
-    "postbuild": "node ./scripts/add-urls-to-kinde.js && prisma migrate deploy",
+    "postbuild": "node ./scripts/add-urls-to-kinde.js && dotenv -e ../../.env.local -- prisma migrate deploy --schema=../../packages/database/prisma/schema.prisma",
     "email:dev": "email dev --dir ./src/components/email --port 4000"
   },
   "dependencies": {
@@ -97,6 +97,7 @@
     "autoprefixer": "10.4.20",
     "cross-env": "7.0.3",
     "dotenv": "^17.2.3",
+    "dotenv-cli": "7.4.4",
     "eslint": "8.57.1",
     "eslint-plugin-tailwindcss": "^3.18.2",
     "eslint-plugin-unused-imports": "^4.2.0",

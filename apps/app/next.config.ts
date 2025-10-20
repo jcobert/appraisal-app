@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
       process.env.KINDE_POST_LOGIN_REDIRECT_URL ??
       `https://${process.env.VERCEL_URL}/dashboard`,
   },
-  transpilePackages: ['@repo/ui', '@repo/utils', '@repo/types'],
+  transpilePackages: ['@repo/ui', '@repo/utils', '@repo/types', '@repo/tailwind-config', '@repo/database'],
 }
 
 export default nextConfig

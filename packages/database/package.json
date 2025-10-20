@@ -7,11 +7,11 @@
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
-    "prisma:generate": "dotenv -e ../../apps/app/.env.local -- prisma generate",
-    "prisma:migrate": "dotenv -e ../../apps/app/.env.local -- prisma migrate dev",
-    "prisma:studio": "dotenv -e ../../apps/app/.env.local -- prisma studio",
-    "prisma:validate": "dotenv -e ../../apps/app/.env.local -- prisma validate",
-    "postinstall": "prisma generate"
+    "prisma:generate": "dotenv -e ../../.env.local -- prisma generate",
+    "prisma:migrate": "dotenv -e ../../.env.local -- prisma migrate dev",
+    "prisma:studio": "dotenv -e ../../.env.local -- prisma studio",
+    "prisma:validate": "dotenv -e ../../.env.local -- prisma validate",
+    "postinstall": "dotenv -e ../../.env.local -- prisma generate"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
