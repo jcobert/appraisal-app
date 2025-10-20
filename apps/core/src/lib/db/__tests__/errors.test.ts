@@ -10,11 +10,7 @@ import {
   handlePrismaError,
   parsePrismaError,
 } from '../errors'
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientUnknownRequestError,
-  PrismaClientValidationError,
-} from '@prisma/client/runtime/library'
+import { Prisma } from '@prisma/client'
 
 import { FetchErrorCode } from '@/utils/fetch'
 import { ZodFieldErrors } from '@/utils/zod'
@@ -214,7 +210,7 @@ describe('Error Classes', () => {
 describe('parsePrismaError', () => {
   describe('PrismaClientKnownRequestError handling', () => {
     it('should handle P2002 unique constraint violation', () => {
-      const error = new PrismaClientKnownRequestError(
+      const error = new Prisma.PrismaClientKnownRequestError(
         'Unique constraint failed',
         {
           code: 'P2002',
@@ -234,7 +230,7 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle P2002 without target field', () => {
-      const error = new PrismaClientKnownRequestError(
+      const error = new Prisma.PrismaClientKnownRequestError(
         'Unique constraint failed',
         {
           code: 'P2002',
@@ -254,10 +250,13 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle P2025 record not found', () => {
-      const error = new PrismaClientKnownRequestError('Record not found', {
-        code: 'P2025',
-        clientVersion: '5.0.0',
-      })
+      const error = new Prisma.PrismaClientKnownRequestError(
+        'Record not found',
+        {
+          code: 'P2025',
+          clientVersion: '5.0.0',
+        },
+      )
 
       const result = parsePrismaError(error)
 
@@ -269,7 +268,7 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle P2003 foreign key constraint violation', () => {
-      const error = new PrismaClientKnownRequestError(
+      const error = new Prisma.PrismaClientKnownRequestError(
         'Foreign key constraint failed',
         {
           code: 'P2003',
@@ -289,7 +288,7 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle P2003 without field name', () => {
-      const error = new PrismaClientKnownRequestError(
+      const error = new Prisma.PrismaClientKnownRequestError(
         'Foreign key constraint failed',
         {
           code: 'P2003',
@@ -309,10 +308,13 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle P2004 constraint violation', () => {
-      const error = new PrismaClientKnownRequestError('Constraint violated', {
-        code: 'P2004',
-        clientVersion: '5.0.0',
-      })
+      const error = new Prisma.PrismaClientKnownRequestError(
+        'Constraint violated',
+        {
+          code: 'P2004',
+          clientVersion: '5.0.0',
+        },
+      )
 
       const result = parsePrismaError(error)
 
@@ -324,7 +326,7 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle P2011 null constraint violation', () => {
-      const error = new PrismaClientKnownRequestError(
+      const error = new Prisma.PrismaClientKnownRequestError(
         'Null constraint violated',
         {
           code: 'P2011',
@@ -344,7 +346,7 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle P2012 missing required value', () => {
-      const error = new PrismaClientKnownRequestError(
+      const error = new Prisma.PrismaClientKnownRequestError(
         'Missing required value',
         {
           code: 'P2012',
@@ -364,7 +366,7 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle P2013 missing required argument', () => {
-      const error = new PrismaClientKnownRequestError(
+      const error = new Prisma.PrismaClientKnownRequestError(
         'Missing required argument',
         {
           code: 'P2013',
@@ -384,7 +386,7 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle P2014 invalid ID', () => {
-      const error = new PrismaClientKnownRequestError('Invalid ID', {
+      const error = new Prisma.PrismaClientKnownRequestError('Invalid ID', {
         code: 'P2014',
         clientVersion: '5.0.0',
       })
@@ -399,7 +401,7 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle P2015 related record not found', () => {
-      const error = new PrismaClientKnownRequestError(
+      const error = new Prisma.PrismaClientKnownRequestError(
         'Related record not found',
         {
           code: 'P2015',
@@ -417,10 +419,13 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle P2021 table does not exist', () => {
-      const error = new PrismaClientKnownRequestError('Table does not exist', {
-        code: 'P2021',
-        clientVersion: '5.0.0',
-      })
+      const error = new Prisma.PrismaClientKnownRequestError(
+        'Table does not exist',
+        {
+          code: 'P2021',
+          clientVersion: '5.0.0',
+        },
+      )
 
       const result = parsePrismaError(error)
 
@@ -432,7 +437,7 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle P2024 connection pool timeout', () => {
-      const error = new PrismaClientKnownRequestError(
+      const error = new Prisma.PrismaClientKnownRequestError(
         'Connection pool timeout',
         {
           code: 'P2024',
@@ -450,7 +455,7 @@ describe('parsePrismaError', () => {
     })
 
     it('should handle unknown Prisma error codes', () => {
-      const error = new PrismaClientKnownRequestError('Unknown error', {
+      const error = new Prisma.PrismaClientKnownRequestError('Unknown error', {
         code: 'P9999',
         clientVersion: '5.0.0',
       })
@@ -467,9 +472,12 @@ describe('parsePrismaError', () => {
 
   describe('PrismaClientValidationError handling', () => {
     it('should handle validation errors', () => {
-      const error = new PrismaClientValidationError('Invalid data provided', {
-        clientVersion: '5.0.0',
-      })
+      const error = new Prisma.PrismaClientValidationError(
+        'Invalid data provided',
+        {
+          clientVersion: '5.0.0',
+        },
+      )
 
       const result = parsePrismaError(error)
 
@@ -483,7 +491,7 @@ describe('parsePrismaError', () => {
 
   describe('PrismaClientUnknownRequestError handling', () => {
     it('should handle unknown request errors', () => {
-      const error = new PrismaClientUnknownRequestError(
+      const error = new Prisma.PrismaClientUnknownRequestError(
         'Unknown error occurred',
         {
           clientVersion: '5.0.0',
@@ -580,7 +588,7 @@ describe('parsePrismaError', () => {
 describe('handlePrismaError', () => {
   describe('PrismaClientKnownRequestError handling', () => {
     it('should throw DatabaseConstraintError for P2002 unique constraint', () => {
-      const error = new PrismaClientKnownRequestError(
+      const error = new Prisma.PrismaClientKnownRequestError(
         'Unique constraint failed',
         {
           code: 'P2002',
@@ -603,7 +611,7 @@ describe('handlePrismaError', () => {
     })
 
     it('should throw DatabaseConstraintError for P2002 without field', () => {
-      const error = new PrismaClientKnownRequestError(
+      const error = new Prisma.PrismaClientKnownRequestError(
         'Unique constraint failed',
         {
           code: 'P2002',
@@ -625,10 +633,13 @@ describe('handlePrismaError', () => {
     })
 
     it('should throw NotFoundError for P2025 record not found', () => {
-      const error = new PrismaClientKnownRequestError('Record not found', {
-        code: 'P2025',
-        clientVersion: '5.0.0',
-      })
+      const error = new Prisma.PrismaClientKnownRequestError(
+        'Record not found',
+        {
+          code: 'P2025',
+          clientVersion: '5.0.0',
+        },
+      )
 
       expect(() => handlePrismaError(error)).toThrow(NotFoundError)
 
@@ -643,7 +654,7 @@ describe('handlePrismaError', () => {
     })
 
     it('should throw DatabaseConstraintError for P2003 foreign key constraint', () => {
-      const error = new PrismaClientKnownRequestError(
+      const error = new Prisma.PrismaClientKnownRequestError(
         'Foreign key constraint failed',
         {
           code: 'P2003',
@@ -668,13 +679,13 @@ describe('handlePrismaError', () => {
     })
 
     it('should re-throw unknown Prisma error codes', () => {
-      const error = new PrismaClientKnownRequestError('Unknown error', {
+      const error = new Prisma.PrismaClientKnownRequestError('Unknown error', {
         code: 'P9999',
         clientVersion: '5.0.0',
       })
 
       expect(() => handlePrismaError(error)).toThrow(
-        PrismaClientKnownRequestError,
+        Prisma.PrismaClientKnownRequestError,
       )
 
       try {
@@ -731,12 +742,15 @@ describe('handlePrismaError', () => {
     })
 
     it('should re-throw validation errors', () => {
-      const error = new PrismaClientValidationError('Validation failed', {
-        clientVersion: '5.0.0',
-      })
+      const error = new Prisma.PrismaClientValidationError(
+        'Validation failed',
+        {
+          clientVersion: '5.0.0',
+        },
+      )
 
       expect(() => handlePrismaError(error)).toThrow(
-        PrismaClientValidationError,
+        Prisma.PrismaClientValidationError,
       )
 
       try {
@@ -747,12 +761,15 @@ describe('handlePrismaError', () => {
     })
 
     it('should re-throw unknown request errors', () => {
-      const error = new PrismaClientUnknownRequestError('Unknown error', {
-        clientVersion: '5.0.0',
-      })
+      const error = new Prisma.PrismaClientUnknownRequestError(
+        'Unknown error',
+        {
+          clientVersion: '5.0.0',
+        },
+      )
 
       expect(() => handlePrismaError(error)).toThrow(
-        PrismaClientUnknownRequestError,
+        Prisma.PrismaClientUnknownRequestError,
       )
 
       try {

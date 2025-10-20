@@ -14,11 +14,7 @@ import {
   NotFoundError,
   ValidationError,
 } from '../errors'
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientUnknownRequestError,
-  PrismaClientValidationError,
-} from '@prisma/client/runtime/library'
+import { Prisma } from '@prisma/client'
 import { NextResponse } from 'next/server'
 import { ZodIssueCode } from 'zod'
 
@@ -840,7 +836,7 @@ describe('api-handlers', () => {
       })
 
       it('should handle PrismaClientKnownRequestError P2002 unique constraint', async () => {
-        const prismaError = new PrismaClientKnownRequestError(
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
           'Unique constraint failed',
           {
             code: 'P2002',
@@ -877,7 +873,7 @@ describe('api-handlers', () => {
       })
 
       it('should handle PrismaClientKnownRequestError P2025 record not found', async () => {
-        const prismaError = new PrismaClientKnownRequestError(
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
           'Record not found',
           {
             code: 'P2025',
@@ -908,7 +904,7 @@ describe('api-handlers', () => {
       })
 
       it('should handle PrismaClientKnownRequestError P2003 foreign key constraint', async () => {
-        const prismaError = new PrismaClientKnownRequestError(
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
           'Foreign key constraint failed',
           {
             code: 'P2003',
@@ -937,7 +933,7 @@ describe('api-handlers', () => {
       })
 
       it('should handle PrismaClientKnownRequestError P2024 connection timeout', async () => {
-        const prismaError = new PrismaClientKnownRequestError(
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
           'Connection pool timeout',
           {
             code: 'P2024',
@@ -965,7 +961,7 @@ describe('api-handlers', () => {
       })
 
       it('should handle PrismaClientValidationError', async () => {
-        const prismaError = new PrismaClientValidationError(
+        const prismaError = new Prisma.PrismaClientValidationError(
           'Invalid data provided',
           {
             clientVersion: '5.0.0',
@@ -992,7 +988,7 @@ describe('api-handlers', () => {
       })
 
       it('should handle PrismaClientUnknownRequestError', async () => {
-        const prismaError = new PrismaClientUnknownRequestError(
+        const prismaError = new Prisma.PrismaClientUnknownRequestError(
           'Unknown error occurred',
           {
             clientVersion: '5.0.0',
@@ -1118,7 +1114,7 @@ describe('api-handlers', () => {
       it('should handle multiple different Prisma error codes', async () => {
         const testCases = [
           {
-            error: new PrismaClientKnownRequestError(
+            error: new Prisma.PrismaClientKnownRequestError(
               'Null constraint violated',
               {
                 code: 'P2011',
@@ -1135,7 +1131,7 @@ describe('api-handlers', () => {
             },
           },
           {
-            error: new PrismaClientKnownRequestError('Missing required value', {
+            error: new Prisma.PrismaClientKnownRequestError('Missing required value', {
               code: 'P2012',
               clientVersion: '5.0.0',
               meta: { path: 'email' },
@@ -1149,7 +1145,7 @@ describe('api-handlers', () => {
             },
           },
           {
-            error: new PrismaClientKnownRequestError('Invalid ID', {
+            error: new Prisma.PrismaClientKnownRequestError('Invalid ID', {
               code: 'P2014',
               clientVersion: '5.0.0',
             }),
@@ -1162,7 +1158,7 @@ describe('api-handlers', () => {
             },
           },
           {
-            error: new PrismaClientKnownRequestError(
+            error: new Prisma.PrismaClientKnownRequestError(
               'Related record not found',
               {
                 code: 'P2015',
