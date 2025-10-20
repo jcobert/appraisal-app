@@ -4,7 +4,7 @@
 
 Your monorepo has two separate apps that can be deployed independently:
 
-- **Protected App** (`apps/app`) - Main application at `app.mysite.com`
+- **Protected App** (`apps/core`) - Main application at `app.mysite.com`
 - **Marketing Site** (`apps/web`) - Public website at `mysite.com`
 
 ---
@@ -25,11 +25,11 @@ vercel login
 
 ---
 
-## Deploying the Protected App (`apps/app`)
+## Deploying the Protected App (`apps/core`)
 
 ### First-Time Deployment
 
-**IMPORTANT**: You must deploy from the repository root, not from `apps/app`.
+**IMPORTANT**: You must deploy from the repository root, not from `apps/core`.
 
 ```bash
 # From the repository root
@@ -47,15 +47,15 @@ vercel
 **Then configure in Vercel Dashboard:**
 
 1. Go to Project Settings → General
-2. Set **Root Directory**: `apps/app`
+2. Set **Root Directory**: `apps/core`
 3. Framework Preset: **Other**
 4. Build & Development Settings:
-   - Build Command: `pnpm turbo build --filter=@repo/app`
+   - Build Command: `pnpm turbo build --filter=@repo/core`
    - Output Directory: `.next`
    - Install Command: `pnpm install --frozen-lockfile`
-   - Development Command: `pnpm turbo dev --filter=@repo/app`
+   - Development Command: `pnpm turbo dev --filter=@repo/core`
 
-Or use the `vercel.json` file already configured in `apps/app/vercel.json`.
+Or use the `vercel.json` file already configured in `apps/core/vercel.json`.
 
 This creates `.vercel/` folder with your project link.
 
@@ -140,15 +140,15 @@ vercel --prod
 
 Both apps have `vercel.json` with these settings:
 
-### `apps/app/vercel.json`
+### `apps/core/vercel.json`
 
 ```json
 {
-  "buildCommand": "cd ../.. && pnpm turbo build --filter=@repo/app",
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=@repo/core",
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
   "outputDirectory": ".next",
-  "devCommand": "cd ../.. && pnpm turbo dev --filter=@repo/app",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/app"
+  "devCommand": "cd ../.. && pnpm turbo dev --filter=@repo/core",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/core"
 }
 ```
 
@@ -168,7 +168,7 @@ Both apps have `vercel.json` with these settings:
 
 - `buildCommand`: Uses Turborepo to build only the specific app and its dependencies
 - `installCommand`: Installs from the monorepo root
-- `ignoreCommand`: Only rebuilds if files in that app's directory changed
+- `ignoreCommand`: Only rebuilds if files in that app's directory changed (core or web)
 - `framework: null`: Prevents Vercel from auto-detecting Next.js (we handle it manually)
 
 ---
@@ -196,7 +196,7 @@ Both apps have `vercel.json` with these settings:
 1. In Vercel Dashboard, go to Project Settings → Git
 2. Connect your GitHub repository
 3. Set the **Root Directory** to the app's path:
-   - For protected app: `apps/app`
+   - For protected app: `apps/core`
    - For marketing site: `apps/web`
 
 ### Auto-Deployments
@@ -233,7 +233,7 @@ Add to your repository secrets:
 ### Preview Deployments
 
 ```bash
-cd apps/app
+cd apps/core
 vercel  # Creates preview deployment
 ```
 
@@ -242,7 +242,7 @@ Preview URL will be provided (e.g., `appraisal-app-xyz.vercel.app`)
 ### Production Deployments
 
 ```bash
-cd apps/app
+cd apps/core
 vercel --prod
 ```
 
@@ -272,7 +272,7 @@ vercel --prod
 
 **Solution:** Make sure:
 
-- Root Directory is set to `apps/app` or `apps/web`
+- Root Directory is set to `apps/core` or `apps/web`
 - Build command uses `cd ../..` to access root
 - `pnpm-workspace.yaml` exists at root
 
@@ -289,7 +289,7 @@ vercel --prod
 ```
 appraisal-app/
 ├── apps/
-│   ├── app/
+│   ├── core/
 │   │   ├── .vercel/           # Vercel project link (gitignored)
 │   │   ├── vercel.json        # Vercel config
 │   │   └── ...
@@ -307,10 +307,10 @@ appraisal-app/
 
 ```bash
 # Deploy protected app to preview
-cd apps/app && vercel
+cd apps/core && vercel
 
 # Deploy protected app to production
-cd apps/app && vercel --prod
+cd apps/core && vercel --prod
 
 # Deploy marketing site to preview
 cd apps/web && vercel
@@ -325,7 +325,7 @@ vercel ls
 vercel logs [deployment-url]
 
 # Pull environment variables locally
-cd apps/app && vercel env pull .env.local
+cd apps/core && vercel env pull .env.local
 ```
 
 ---
@@ -344,7 +344,7 @@ cd apps/app && vercel env pull .env.local
 
 ## Next Steps
 
-1. Deploy protected app: `cd apps/app && vercel`
+1. Deploy protected app: `cd apps/core && vercel`
 2. Set up environment variables in Vercel dashboard
 3. Configure custom domain (app.mysite.com)
 4. Deploy marketing site when ready: `cd apps/web && vercel`
