@@ -1,7 +1,11 @@
 // sort-imports-ignore
 import 'server-only'
 
-import { Prisma } from '@prisma/client'
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientUnknownRequestError,
+  PrismaClientValidationError,
+} from '@prisma/client/runtime/library'
 import { NextResponse } from 'next/server'
 
 import {
@@ -316,9 +320,9 @@ export const createApiHandler = async <
 
     // Handle Prisma errors with detailed parsing
     if (
-      error instanceof Prisma.PrismaClientKnownRequestError ||
-      error instanceof Prisma.PrismaClientUnknownRequestError ||
-      error instanceof Prisma.PrismaClientValidationError ||
+      error instanceof PrismaClientKnownRequestError ||
+      error instanceof PrismaClientUnknownRequestError ||
+      error instanceof PrismaClientValidationError ||
       (error &&
         typeof error === 'object' &&
         'code' in error &&

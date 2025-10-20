@@ -1,4 +1,8 @@
-import { Prisma } from '@prisma/client'
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientUnknownRequestError,
+  PrismaClientValidationError,
+} from '@prisma/client/runtime/library'
 
 import { FetchErrorCode } from '@/utils/fetch'
 import { ZodFieldErrors } from '@/utils/zod'
@@ -83,7 +87,7 @@ export const parsePrismaError = (
   field?: string
 } => {
   // Handle Prisma Client Known Request Errors
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+  if (error instanceof PrismaClientKnownRequestError) {
     switch (error.code) {
       case 'P2002': {
         // Unique constraint violation
@@ -259,7 +263,7 @@ export const parsePrismaError = (
   }
 
   // Handle Prisma Client Validation Errors
-  if (error instanceof Prisma.PrismaClientValidationError) {
+  if (error instanceof PrismaClientValidationError) {
     return {
       message: 'Invalid data provided to the database.',
       code: FetchErrorCode.INVALID_DATA,
@@ -268,7 +272,7 @@ export const parsePrismaError = (
   }
 
   // Handle Prisma Client Unknown Request Errors
-  if (error instanceof Prisma.PrismaClientUnknownRequestError) {
+  if (error instanceof PrismaClientUnknownRequestError) {
     return {
       message: 'An unknown database error occurred.',
       code: FetchErrorCode.DATABASE_FAILURE,
@@ -300,7 +304,7 @@ export const parsePrismaError = (
  * This can be used in query functions to throw more specific errors.
  */
 export const handlePrismaError = (error: any): never => {
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+  if (error instanceof PrismaClientKnownRequestError) {
     switch (error.code) {
       case 'P2002': {
         // Unique constraint violation
