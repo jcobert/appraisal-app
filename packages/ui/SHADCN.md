@@ -18,7 +18,7 @@ The component will be added to `packages/ui/src/ui/[component].tsx`
 ## Using Components in Apps
 
 ```tsx
-// In apps/app or apps/web
+// In apps/core or apps/web
 import { Button } from '@repo/ui'
 
 export default function Page() {
@@ -52,7 +52,7 @@ packages/ui/src/
 1. **CSS Variables Required**: Apps must import `@repo/tailwind-config/styles.css` for shadcn components to work
 2. **Tailwind Config**: Apps must extend `@repo/tailwind-config` base config
 3. **Path Aliases**: Components use `@repo/utils` for utility functions
-4. **Tailwind IntelliSense**: VS Code is configured to use `apps/app/tailwind.config.ts` for autocomplete
+4. **Tailwind IntelliSense**: VS Code is configured to use `apps/core/tailwind.config.ts` for autocomplete
 
 ## VS Code IntelliSense Setup
 
@@ -61,7 +61,7 @@ Tailwind IntelliSense is already configured! The workspace settings point to the
 ```json
 // packages/ui/.vscode/settings.json
 {
-  "tailwindCSS.experimental.configFile": "../../apps/app/tailwind.config.ts"
+  "tailwindCSS.experimental.configFile": "../../apps/core/tailwind.config.ts"
 }
 ```
 

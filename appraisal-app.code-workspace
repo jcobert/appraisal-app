@@ -10,7 +10,7 @@
     },
     {
       "name": "📱 App (Protected)",
-      "path": "./apps/app"
+      "path": "./apps/core"
     },
     {
       "name": "🎨 UI Package",

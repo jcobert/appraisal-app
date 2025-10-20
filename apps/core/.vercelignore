@@ -23,5 +23,5 @@
 *.log
 .DS_Store
 
-# Other apps (when deploying from apps/app, ignore apps/web and vice versa)
+# Other apps (when deploying from apps/core, ignore apps/web and vice versa)
 # Note: This is handled by the ignoreCommand in vercel.json

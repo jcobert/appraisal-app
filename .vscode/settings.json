@@ -26,6 +26,6 @@
     "*.css": "tailwindcss"
   },
   "jest.jestCommandLine": "pnpm test --",
-  "jest.rootPath": "apps/app",
+  "jest.rootPath": "apps/core",
   "jest.runMode": "on-demand"
 }

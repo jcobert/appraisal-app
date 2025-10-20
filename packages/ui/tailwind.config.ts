@@ -11,7 +11,7 @@ export default {
   content: [
     './src/**/*.{js,jsx,ts,tsx}',
     // Include app content for context
-    '../../apps/app/src/**/*.{js,jsx,ts,tsx}',
+    '../../apps/core/src/**/*.{js,jsx,ts,tsx}',
   ],
   plugins: [require('tailwindcss-animate')],
 } satisfies Config

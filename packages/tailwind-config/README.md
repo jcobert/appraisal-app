@@ -15,7 +15,7 @@ Shared Tailwind CSS configuration for the monorepo, providing consistent design 
 ### In Your App's Tailwind Config
 
 ```typescript
-// apps/app/tailwind.config.ts
+// apps/core/tailwind.config.ts
 import type { Config } from 'tailwindcss'
 
 import baseConfig from '@repo/tailwind-config'
@@ -33,7 +33,7 @@ export default {
 **IMPORTANT:** You must import the shared styles to get shadcn CSS variables:
 
 ```css
-/* apps/app/src/styles/tailwind.css */
+/* apps/core/src/styles/tailwind.css */
 @import '@repo/tailwind-config/styles.css';
 
 /* App-specific styles below */
