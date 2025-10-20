@@ -10,9 +10,9 @@
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,md,json}\"",
     "dev:web": "turbo run dev --filter=@repo/web",
-    "dev:app": "turbo run dev --filter=@repo/app",
+    "dev:core": "turbo run dev --filter=@repo/core",
     "build:web": "turbo run build --filter=@repo/web",
-    "build:app": "turbo run build --filter=@repo/app"
+    "build:core": "turbo run build --filter=@repo/core"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "4.3.0",
