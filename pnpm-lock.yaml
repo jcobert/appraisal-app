@@ -24,7 +24,7 @@ importers:
         specifier: 5.6.3
         version: 5.6.3
 
-  apps/app:
+  apps/core:
     dependencies:
       '@bprogress/next':
         specifier: 3.2.12
