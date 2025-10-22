@@ -2,8 +2,6 @@
 module.exports = {
   extends: [
     'next',
-    'prettier',
-    'plugin:react-hooks/recommended',
     'plugin:tailwindcss/recommended',
     '@repo/eslint-config/next',
   ],
