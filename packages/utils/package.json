@@ -12,6 +12,7 @@
     "@repo/typescript-config": "workspace:*",
     "@types/lodash": "^4.17.13",
     "@types/validator": "^13.15.3",
+    "@types/node": "22.9.0",
     "typescript": "workspace:*"
   },
   "dependencies": {
