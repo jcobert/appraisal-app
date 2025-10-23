@@ -37,4 +37,13 @@ module.exports = {
     ],
     'no-console': 'warn',
   },
+  overrides: [
+    {
+      files: ['*.ts', '*.tsx'],
+      rules: {
+        // Types like RequestInit are compile-time only; avoid false positives
+        'no-undef': 'off',
+      },
+    },
+  ],
 }

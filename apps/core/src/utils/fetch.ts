@@ -75,7 +75,7 @@ const createFetchFunction = async <
   options,
 }: {
   url: string
-  method: `${FetchMethod}`
+  method: FetchMethod
   payload?: TPayload
   options?: Omit<RequestInit, 'method' | 'body'>
 }): Promise<FetchResponse<TResData>> => {
@@ -164,7 +164,11 @@ const GET = async <TData = Record<string, unknown>>({
   url: string
   options?: Omit<RequestInit, 'method'>
 }): Promise<FetchResponse<TData>> => {
-  return createFetchFunction<never, TData>({ url, method: 'GET', options })
+  return createFetchFunction<never, TData>({
+    url,
+    method: FetchMethod.GET,
+    options,
+  })
 }
 
 const POST = async <
@@ -181,7 +185,7 @@ const POST = async <
 }): Promise<FetchResponse<TResData>> => {
   return createFetchFunction<TPayload, TResData>({
     url,
-    method: 'POST',
+    method: FetchMethod.POST,
     payload,
     options,
   })
@@ -201,7 +205,7 @@ const PUT = async <
 }): Promise<FetchResponse<TResData>> => {
   return createFetchFunction<TPayload, TResData>({
     url,
-    method: 'PUT',
+    method: FetchMethod.PUT,
     payload,
     options,
   })
@@ -221,7 +225,7 @@ const PATCH = async <
 }): Promise<FetchResponse<TResData>> => {
   return createFetchFunction<TPayload, TResData>({
     url,
-    method: 'PATCH',
+    method: FetchMethod.PATCH,
     payload,
     options,
   })
@@ -238,7 +242,7 @@ const DELETE = async <
 }): Promise<FetchResponse<TResData>> => {
   return createFetchFunction<never, TResData>({
     url,
-    method: 'DELETE',
+    method: FetchMethod.DELETE,
     options,
   })
 }
