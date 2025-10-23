@@ -4,7 +4,7 @@
   "globalEnv": ["NEXT_PUBLIC_SITE_BASE_URL"],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "typecheck"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"],
       "env": [
         "KINDE_CLIENT_ID",
