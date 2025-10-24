@@ -1,0 +1,21 @@
+{
+  "name": "@repo/types",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "peerDependencies": {
+    "zod": "^3.24.4"
+  },
+  "dependencies": {
+    "zod": "^3.24.4"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "workspace:*"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "globalEnv": [
+    "NEXT_PUBLIC_SITE_BASE_URL",
+    "KINDE_CLIENT_ID",
+    "KINDE_CLIENT_SECRET",
+    "KINDE_ISSUER_URL",
+    "KINDE_SITE_URL",
+    "KINDE_POST_LOGOUT_REDIRECT_URL",
+    "KINDE_POST_LOGIN_REDIRECT_URL",
+    "KINDE_DOMAIN",
+    "KINDE_MANAGEMENT_CLIENT_ID",
+    "KINDE_MANAGEMENT_CLIENT_SECRET",
+    "KINDE_M2M_CLIENT_ID",
+    "KINDE_M2M_CLIENT_SECRET",
+    "INVITATION_JWT_SECRET",
+    "RESEND_API_KEY",
+    "DATABASE_URL",
+    "DATABASE_URL_UNPOOLED"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build", "typecheck"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": [
+        "KINDE_CLIENT_ID",
+        "KINDE_CLIENT_SECRET",
+        "KINDE_ISSUER_URL",
+        "KINDE_SITE_URL",
+        "KINDE_POST_LOGOUT_REDIRECT_URL",
+        "KINDE_POST_LOGIN_REDIRECT_URL",
+        "KINDE_DOMAIN",
+        "KINDE_MANAGEMENT_CLIENT_ID",
+        "KINDE_MANAGEMENT_CLIENT_SECRET",
+        "KINDE_M2M_CLIENT_ID",
+        "KINDE_M2M_CLIENT_SECRET",
+        "INVITATION_JWT_SECRET",
+        "RESEND_API_KEY",
+        "DATABASE_URL",
+        "DATABASE_URL_UNPOOLED"
+      ]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+    "prisma:generate": {
+      "cache": false
+    },
+    "prisma:migrate": {
+      "cache": false
+    }
+  }
+}

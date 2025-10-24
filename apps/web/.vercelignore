@@ -1,0 +1,24 @@
+# Vercel Ignore
+# Files and directories to ignore during Vercel builds
+
+# Tests
+**/__tests__
+**/__mocks__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/test-utils
+**/testing
+/e2e
+
+# Documentation
+*.md
+!README.md
+/docs
+
+# Development files
+.vscode
+.idea
+*.log
+.DS_Store

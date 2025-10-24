@@ -1,0 +1,16 @@
+{
+  "name": "@repo/tailwind-config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./base.ts",
+  "types": "./base.ts",
+  "files": [
+    "base.ts",
+    "colors.ts",
+    "animations.ts",
+    "styles.css"
+  ],
+  "devDependencies": {
+    "tailwindcss": "3.4.15"
+  }
+}
