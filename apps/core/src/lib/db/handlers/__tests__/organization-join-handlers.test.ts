@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { createApiHandler } from '../../api-handlers'
+import { createApiHandler, withUserFields } from '../../api-handlers'
 import { db } from '../../client'
 import {
   AuthenticationError,
@@ -412,7 +412,10 @@ describe('organization-join-handlers', () => {
 
       expect(mockDb.orgInvitation.update).toHaveBeenCalledWith({
         where: { token: 'valid-token', organizationId: 'org-1' },
-        data: { token: null, status: 'accepted' },
+        data: withUserFields(
+          { token: null, status: 'accepted' },
+          mockUserProfile.id,
+        ),
         select: { id: true },
       })
     })

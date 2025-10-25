@@ -1,4 +1,4 @@
-import { createApiHandler } from '../api-handlers'
+import { createApiHandler, withUserFields } from '../api-handlers'
 import { Resend } from 'resend'
 
 import { OrgInvitationStatus } from '@repo/database'
@@ -71,7 +71,7 @@ export const handleCreateOrgInvite = async (
   payload: OrgInvitePayload,
 ) => {
   return createApiHandler(
-    async ({ user }) => {
+    async ({ user, userProfileId }) => {
       // Validate payload
       const validation = validatePayload(orgMemberSchema.api, payload)
       if (!isValidationSuccess(validation)) {
@@ -102,18 +102,20 @@ export const handleCreateOrgInvite = async (
       const expires = generateExpiry(ORG_INVITE_EXPIRY)
 
       const invite = await db.orgInvitation.create({
-        data: {
-          createdBy: user?.id,
-          updatedBy: user?.id,
-          organizationId,
-          invitedByUserId: activeUser?.id || '',
-          inviteeEmail: email,
-          inviteeFirstName: firstName,
-          inviteeLastName: lastName,
-          roles,
-          expires,
-          token: inviteToken,
-        },
+        data: withUserFields(
+          {
+            organizationId,
+            invitedByUserId: activeUser?.id || '',
+            inviteeEmail: email,
+            inviteeFirstName: firstName,
+            inviteeLastName: lastName,
+            roles,
+            expires,
+            token: inviteToken,
+          },
+          userProfileId,
+          ['createdBy', 'updatedBy'],
+        ),
         select: { id: true },
       })
 
@@ -221,7 +223,7 @@ export const handleUpdateOrgInvite = async (
   payload: OrgInvitePayload,
 ) => {
   return createApiHandler(
-    async ({ user }) => {
+    async ({ userProfileId }) => {
       // Validate payload
       const validation = validatePayload(orgMemberSchema.api.partial(), payload)
       if (!isValidationSuccess(validation)) {
@@ -250,12 +252,14 @@ export const handleUpdateOrgInvite = async (
 
       const res = await db.orgInvitation.update({
         where: { id: inviteId, organizationId },
-        data: {
-          inviteeFirstName: validation.data.firstName,
-          inviteeLastName: validation.data.lastName,
-          roles: validation.data.roles,
-          updatedBy: user?.id,
-        },
+        data: withUserFields(
+          {
+            inviteeFirstName: validation.data.firstName,
+            inviteeLastName: validation.data.lastName,
+            roles: validation.data.roles,
+          },
+          userProfileId,
+        ),
         select: { id: true },
       })
 

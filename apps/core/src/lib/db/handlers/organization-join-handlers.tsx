@@ -1,4 +1,4 @@
-import { createApiHandler } from '../api-handlers'
+import { createApiHandler, withUserFields } from '../api-handlers'
 import { ComponentPropsWithoutRef } from 'react'
 import { Resend } from 'resend'
 
@@ -154,7 +154,10 @@ export async function handleJoinOrganization(
       if (isMember) {
         await db.orgInvitation.update({
           where: { token, organizationId },
-          data: { token: null, status: 'accepted' },
+          data: withUserFields(
+            { token: null, status: 'accepted' },
+            userProfile?.id,
+          ),
           select: { id: true },
         })
 
@@ -167,26 +170,28 @@ export async function handleJoinOrganization(
 
       const updatedInvitation = await db.orgInvitation.update({
         where: { token, organizationId },
-        data: {
-          updatedBy: userProfile?.id,
-          token: null,
-          status: 'accepted',
-          organization: {
-            update: {
-              members: {
-                create: [
-                  {
-                    createdBy: userProfile?.id,
-                    updatedBy: userProfile?.id,
-                    userId: userProfile?.id,
-                    active: true,
-                    roles: invitation?.roles,
-                  },
-                ],
+        data: withUserFields(
+          {
+            token: null,
+            status: 'accepted',
+            organization: {
+              update: {
+                members: {
+                  create: [
+                    {
+                      createdBy: userProfile?.id,
+                      updatedBy: userProfile?.id,
+                      userId: userProfile?.id,
+                      active: true,
+                      roles: invitation?.roles,
+                    },
+                  ],
+                },
               },
             },
           },
-        },
+          userProfile?.id,
+        ),
         select: { id: true },
       })
 
