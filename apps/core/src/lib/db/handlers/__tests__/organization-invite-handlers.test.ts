@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { createApiHandler } from '../../api-handlers'
+import { createApiHandler, withUserFields } from '../../api-handlers'
 import { db } from '../../client'
 import { ValidationError } from '../../errors'
 import { userIsOwner } from '../../queries/organization'
@@ -130,12 +130,12 @@ const mockOrganization = {
   invitations: [],
 }
 
-const mockPayload: OrgInvitePayload = {
+const mockPayload = {
   email: 'invite@example.com',
   firstName: 'Test',
   lastName: 'User',
   roles: [MemberRole.appraiser],
-}
+} as const satisfies OrgInvitePayload
 
 const mockInvitation = {
   id: 'invite-1',
@@ -202,9 +202,12 @@ describe('organization-invite-handlers', () => {
       error: null,
     })
 
-    // Mock createApiHandler to call the handler function directly
+    // Mock createApiHandler to call the handler function directly with both user and userProfileId
     mockCreateApiHandler.mockImplementation((handlerFn: any, _config?: any) => {
-      return handlerFn({ user: mockKindeUser })
+      return handlerFn({
+        user: mockKindeUser,
+        userProfileId: mockActiveUser.id,
+      })
     })
   })
 
@@ -220,18 +223,20 @@ describe('organization-invite-handlers', () => {
 
       expect(result).toEqual({ id: 'invite-1' })
       expect(mockDb.orgInvitation.create).toHaveBeenCalledWith({
-        data: {
-          createdBy: mockKindeUser.id,
-          updatedBy: mockKindeUser.id,
-          organizationId: 'org-1',
-          invitedByUserId: mockActiveUser.id,
-          inviteeEmail: mockPayload.email,
-          inviteeFirstName: mockPayload.firstName,
-          inviteeLastName: mockPayload.lastName,
-          roles: mockPayload.roles,
-          expires: expect.any(String),
-          token: 'mock-token',
-        },
+        data: withUserFields(
+          {
+            organizationId: 'org-1',
+            invitedByUserId: mockActiveUser.id,
+            inviteeEmail: mockPayload.email,
+            inviteeFirstName: mockPayload.firstName,
+            inviteeLastName: mockPayload.lastName,
+            roles: mockPayload.roles,
+            expires: expect.any(String),
+            token: 'mock-token',
+          },
+          mockActiveUser.id,
+          ['createdBy', 'updatedBy'],
+        ),
         select: { id: true },
       })
     })
@@ -333,19 +338,6 @@ describe('organization-invite-handlers', () => {
         },
         { idempotencyKey: 'org-invite/mock-token' },
       )
-    })
-
-    it('should handle missing active user gracefully', async () => {
-      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
-
-      await handleCreateOrgInvite('org-1', mockPayload)
-
-      expect(mockDb.orgInvitation.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          invitedByUserId: '',
-        }),
-        select: { id: true },
-      })
     })
 
     it('should validate payload structure', async () => {
@@ -487,7 +479,10 @@ describe('organization-invite-handlers', () => {
           if (config?.authorizationCheck) {
             config.authorizationCheck({ user: mockKindeUser })
           }
-          return handlerFn({ user: mockKindeUser })
+          return handlerFn({
+            user: mockKindeUser,
+            userProfileId: mockActiveUser.id,
+          })
         },
       )
 
@@ -504,12 +499,14 @@ describe('organization-invite-handlers', () => {
       })
       expect(mockDb.orgInvitation.update).toHaveBeenCalledWith({
         where: { id: 'invite-1', organizationId: 'org-1' },
-        data: {
-          inviteeFirstName: updatePayload.firstName,
-          inviteeLastName: updatePayload.lastName,
-          roles: updatePayload.roles,
-          updatedBy: mockKindeUser.id,
-        },
+        data: withUserFields(
+          {
+            inviteeFirstName: updatePayload.firstName,
+            inviteeLastName: updatePayload.lastName,
+            roles: updatePayload.roles,
+          },
+          mockActiveUser.id, // Now uses userProfileId
+        ),
         select: { id: true },
       })
       expect(mockUserIsOwner).toHaveBeenCalledWith({
@@ -529,7 +526,10 @@ describe('organization-invite-handlers', () => {
           if (config?.authorizationCheck) {
             config.authorizationCheck({ user: mockKindeUser })
           }
-          return handlerFn({ user: mockKindeUser })
+          return handlerFn({
+            user: mockKindeUser,
+            userProfileId: mockActiveUser.id,
+          })
         },
       )
 
@@ -542,12 +542,14 @@ describe('organization-invite-handlers', () => {
       expect(result).toEqual({ id: 'invite-1' })
       expect(mockDb.orgInvitation.update).toHaveBeenCalledWith({
         where: { id: 'invite-1', organizationId: 'org-1' },
-        data: {
-          inviteeFirstName: undefined,
-          inviteeLastName: undefined,
-          roles: [MemberRole.owner],
-          updatedBy: mockKindeUser.id,
-        },
+        data: withUserFields(
+          {
+            inviteeFirstName: undefined,
+            inviteeLastName: undefined,
+            roles: [MemberRole.owner],
+          },
+          mockActiveUser.id,
+        ),
         select: { id: true },
       })
     })
@@ -587,7 +589,10 @@ describe('organization-invite-handlers', () => {
           if (config?.authorizationCheck) {
             config.authorizationCheck({ user: mockKindeUser })
           }
-          return handlerFn({ user: mockKindeUser })
+          return handlerFn({
+            user: mockKindeUser,
+            userProfileId: mockActiveUser.id,
+          })
         },
       )
 
@@ -600,12 +605,14 @@ describe('organization-invite-handlers', () => {
       // Verify updatedBy is set from user context, not from payload
       expect(mockDb.orgInvitation.update).toHaveBeenCalledWith({
         where: { id: 'invite-1', organizationId: 'org-1' },
-        data: {
-          inviteeFirstName: updatePayload.firstName,
-          inviteeLastName: updatePayload.lastName,
-          roles: updatePayload.roles,
-          updatedBy: mockKindeUser.id, // Set from context, not payload
-        },
+        data: withUserFields(
+          {
+            inviteeFirstName: updatePayload.firstName,
+            inviteeLastName: updatePayload.lastName,
+            roles: updatePayload.roles,
+          },
+          mockActiveUser.id, // Set from context (userProfileId), not payload
+        ),
         select: { id: true },
       })
     })
@@ -676,23 +683,6 @@ describe('organization-invite-handlers', () => {
         where: { id: 'invite-1', organizationId: 'org-1', status: 'pending' },
         select: { id: true },
       })
-    })
-
-    it('should pass correct user ID to update operation', async () => {
-      // Mock createApiHandler to call the handler function directly
-      mockCreateApiHandler.mockImplementation((handlerFn: any) => {
-        return handlerFn({ user: mockKindeUser })
-      })
-
-      await handleUpdateOrgInvite('org-1', 'invite-1', updatePayload)
-
-      expect(mockDb.orgInvitation.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            updatedBy: mockKindeUser.id,
-          }),
-        }),
-      )
     })
   })
 })

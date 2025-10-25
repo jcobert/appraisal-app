@@ -392,6 +392,32 @@ describe('api-handlers', () => {
         updatedBy: userProfileId,
       })
     })
+
+    it('should gracefully handle null userProfileId (no fields added)', () => {
+      const result = withUserFields(basePayload, null)
+
+      expect(result).toEqual(basePayload)
+      expect(result).not.toHaveProperty('updatedBy')
+      expect(result).not.toHaveProperty('createdBy')
+    })
+
+    it('should not add createdBy when userProfileId is null', () => {
+      const result = withUserFields(basePayload, null, ['createdBy'])
+
+      expect(result).toEqual(basePayload)
+      expect(result).not.toHaveProperty('createdBy')
+    })
+
+    it('should not add any fields when userProfileId is null and both fields specified', () => {
+      const result = withUserFields(basePayload, null, [
+        'createdBy',
+        'updatedBy',
+      ])
+
+      expect(result).toEqual(basePayload)
+      expect(result).not.toHaveProperty('createdBy')
+      expect(result).not.toHaveProperty('updatedBy')
+    })
   })
 
   describe('toNextResponse', () => {

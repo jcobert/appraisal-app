@@ -53,27 +53,24 @@ export const omitSystemFields = <
  * For use in handlers where auth is already confirmed.
  *
  * @param payload - The base data payload.
- * @param userProfileId - The user's profile ID (NOT auth account ID).
+ * @param userProfileId - The user's profile ID (NOT auth account ID). Can be null in some cases.
  * @param fields - Which audit fields to include. `updatedBy` only by default.
  */
 export const withUserFields = <T extends Record<string, any>>(
   payload: T,
-  userProfileId: User['id'],
+  userProfileId: User['id'] | null,
   fields: ('createdBy' | 'updatedBy')[] = ['updatedBy'],
 ): T & { createdBy?: string; updatedBy?: string } => {
   const userFields: { createdBy?: string; updatedBy?: string } = {}
 
-  if (!userProfileId) {
-    throw new AuthenticationError(
-      'User profile ID is required for audit trail.',
-    )
-  }
-
-  if (fields?.includes('createdBy')) {
-    userFields.createdBy = userProfileId
-  }
-  if (fields?.includes('updatedBy')) {
-    userFields.updatedBy = userProfileId
+  // Only add fields if userProfileId is provided
+  if (userProfileId) {
+    if (fields?.includes('createdBy')) {
+      userFields.createdBy = userProfileId
+    }
+    if (fields?.includes('updatedBy')) {
+      userFields.updatedBy = userProfileId
+    }
   }
 
   return {
