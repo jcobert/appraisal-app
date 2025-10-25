@@ -268,6 +268,64 @@ describe('organization-member-handlers', () => {
       })
     })
 
+    it('should accept partial payload (any subset of fields)', async () => {
+      // Only updating roles, not all fields
+      const partialPayload = { roles: [MemberRole.owner] }
+      const updatedMember = { ...mockOrgMember, ...partialPayload }
+      mockUserIsOwner.mockResolvedValue(true)
+      ;(mockDb.orgMember.update as jest.Mock).mockResolvedValue(updatedMember)
+
+      const result = await handleUpdateOrgMember(
+        organizationId,
+        memberId,
+        partialPayload,
+      )
+
+      expect(result).toEqual({
+        status: 200,
+        data: updatedMember,
+        message: 'Member updated successfully.',
+      })
+      expect(mockDb.orgMember.update).toHaveBeenCalledWith({
+        where: { id: memberId, organizationId },
+        data: expect.objectContaining({
+          roles: [MemberRole.owner],
+          updatedBy: 'user-profile-123',
+        }),
+        select: { id: true },
+      })
+    })
+
+    it('should strip system fields from payload before updating', async () => {
+      // Payload includes system fields that should be removed
+      const payloadWithSystemFields = {
+        roles: [MemberRole.manager],
+        id: 'malicious-id',
+        createdAt: new Date(),
+        createdBy: 'malicious-user',
+        updatedAt: new Date(),
+        updatedBy: 'malicious-user',
+      }
+      mockUserIsOwner.mockResolvedValue(true)
+      ;(mockDb.orgMember.update as jest.Mock).mockResolvedValue(mockOrgMember)
+
+      await handleUpdateOrgMember(
+        organizationId,
+        memberId,
+        payloadWithSystemFields,
+      )
+
+      // Verify system fields were stripped and updatedBy was set correctly
+      expect(mockDb.orgMember.update).toHaveBeenCalledWith({
+        where: { id: memberId, organizationId },
+        data: {
+          roles: [MemberRole.manager],
+          updatedBy: 'user-profile-123', // Set by withUserFields, not from payload
+        },
+        select: { id: true },
+      })
+    })
+
     it('should return 403 when user is not owner', async () => {
       mockUserIsOwner.mockResolvedValue(false)
 
@@ -286,6 +344,28 @@ describe('organization-member-handlers', () => {
         },
       })
       expect(mockDb.orgMember.update).not.toHaveBeenCalled()
+    })
+
+    it('should validate payload with partial schema (fields are optional)', async () => {
+      // Empty payload should be valid with partial schema
+      const emptyPayload = {}
+      mockUserIsOwner.mockResolvedValue(true)
+      mockValidatePayload.mockReturnValue({
+        success: true,
+        data: emptyPayload,
+        errors: null,
+      })
+      ;(mockDb.orgMember.update as jest.Mock).mockResolvedValue(mockOrgMember)
+
+      const result = await handleUpdateOrgMember(
+        organizationId,
+        memberId,
+        emptyPayload,
+      )
+
+      // Should succeed because partial schema makes all fields optional
+      expect(result.status).toBe(200)
+      expect(mockValidatePayload).toHaveBeenCalled()
     })
 
     it('should return 400 when validation fails', async () => {
@@ -317,6 +397,40 @@ describe('organization-member-handlers', () => {
           details: validationErrors,
         },
       })
+    })
+
+    it('should return 400 when organizationId is missing', async () => {
+      mockUserIsOwner.mockResolvedValue(true)
+
+      const result = await handleUpdateOrgMember('', memberId, payload)
+
+      expect(result).toEqual({
+        status: 400,
+        data: null,
+        error: {
+          code: FetchErrorCode.INVALID_DATA,
+          message: 'Organization ID is required.',
+          details: {},
+        },
+      })
+      expect(mockDb.orgMember.update).not.toHaveBeenCalled()
+    })
+
+    it('should return 400 when memberId is missing', async () => {
+      mockUserIsOwner.mockResolvedValue(true)
+
+      const result = await handleUpdateOrgMember(organizationId, '', payload)
+
+      expect(result).toEqual({
+        status: 400,
+        data: null,
+        error: {
+          code: FetchErrorCode.INVALID_DATA,
+          message: 'Member ID is required.',
+          details: {},
+        },
+      })
+      expect(mockDb.orgMember.update).not.toHaveBeenCalled()
     })
 
     it('should return 500 when authorization check fails', async () => {

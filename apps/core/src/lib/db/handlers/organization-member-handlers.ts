@@ -8,7 +8,11 @@ import {
 } from '@/lib/db/queries/organization'
 import { orgMemberSchema } from '@/lib/db/schemas/org-member'
 
-import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
+import {
+  createApiHandler,
+  omitSystemFields,
+  withUserFields,
+} from '@/lib/db/api-handlers'
 import { ValidationError } from '@/lib/db/errors'
 import { validatePayload, isValidationSuccess } from '@/utils/zod'
 import { db } from '@/lib/db/client'
@@ -69,7 +73,7 @@ export const handleUpdateOrgMember = async (
   return createApiHandler(
     async (context) => {
       // Validate payload
-      const validation = validatePayload(orgMemberSchema.api, payload)
+      const validation = validatePayload(orgMemberSchema.api.partial(), payload)
       if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',
@@ -87,7 +91,10 @@ export const handleUpdateOrgMember = async (
 
       const result = await db.orgMember.update({
         where: { id: memberId, organizationId },
-        data: withUserFields(validation.data, context.userProfileId),
+        data: withUserFields(
+          omitSystemFields(validation.data),
+          context.userProfileId,
+        ),
         select: { id: true },
       })
       return result

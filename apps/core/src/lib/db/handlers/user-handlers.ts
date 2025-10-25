@@ -1,7 +1,11 @@
 // sort-imports-ignore
 import 'server-only'
 
-import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
+import {
+  createApiHandler,
+  omitSystemFields,
+  withUserFields,
+} from '@/lib/db/api-handlers'
 import { ValidationError, DatabaseConstraintError } from '@/lib/db/errors'
 import { validatePayload, isValidationSuccess } from '@/utils/zod'
 import { userProfileSchema } from '@/lib/db/schemas/user'
@@ -165,9 +169,13 @@ export const handleUpdateUserProfile = async (
       }
 
       // Validate payload for security and user input safety, preserve extra fields
-      const validation = validatePayload(userProfileSchema.api, payload, {
-        passthrough: true,
-      })
+      const validation = validatePayload(
+        userProfileSchema.api.partial(),
+        payload,
+        {
+          passthrough: true,
+        },
+      )
       if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',
@@ -176,7 +184,10 @@ export const handleUpdateUserProfile = async (
       }
 
       // Add user fields for audit trail
-      const dataWithUserFields = withUserFields(validation.data, userProfileId)
+      const dataWithUserFields = withUserFields(
+        omitSystemFields(validation.data, { exclude: ['accountId'] }),
+        userProfileId,
+      )
 
       const result = await db.user.update({
         where: { id: userId },

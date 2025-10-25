@@ -6,16 +6,17 @@ export type TableBaseFields = {
   updatedBy: string
 }
 
-/** Returns table object type without auto-generated fields (creation date, uuid, etc.). */
+/** Returns table object type without standard auto-generated fields (audit user/timestamp, uuid, etc.). */
 export type TableMutable<T extends Record<string, unknown>> = Omit<
   T,
   keyof TableBaseFields
 >
 
-// type Table =
-//   | 'appraiser'
-//   | 'client'
-//   | 'order'
-//   | 'property'
-//   | 'borrower'
-//   | 'payment'
+/** Names of standard auto-generated fields (audit user/timestamp, uuid, etc.).  */
+export const TABLE_BASE_FIELDS = [
+  'id',
+  'createdAt',
+  'createdBy',
+  'updatedAt',
+  'updatedBy',
+] as const satisfies (keyof TableBaseFields)[]

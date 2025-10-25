@@ -4,6 +4,7 @@
 import {
   type ApiHandlerConfig,
   createApiHandler,
+  omitSystemFields,
   toNextResponse,
   withUserFields,
 } from '../api-handlers'
@@ -138,6 +139,177 @@ describe('api-handlers', () => {
       expect(() => {
         throw new NotFoundError('Resource missing')
       }).toThrow('Resource missing')
+    })
+  })
+
+  describe('omitSystemFields', () => {
+    it('should remove all TABLE_BASE_FIELDS from data object', () => {
+      const data = {
+        id: 'test-id',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: 'user-1',
+        updatedBy: 'user-2',
+        name: 'Test Name',
+        description: 'Test Description',
+      }
+
+      const result = omitSystemFields(data)
+
+      expect(result).toEqual({
+        name: 'Test Name',
+        description: 'Test Description',
+      })
+      expect(result).not.toHaveProperty('id')
+      expect(result).not.toHaveProperty('createdAt')
+      expect(result).not.toHaveProperty('updatedAt')
+      expect(result).not.toHaveProperty('createdBy')
+      expect(result).not.toHaveProperty('updatedBy')
+    })
+
+    it('should handle objects with only system fields', () => {
+      const data = {
+        id: 'test-id',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: 'user-1',
+        updatedBy: 'user-2',
+      }
+
+      const result = omitSystemFields(data)
+
+      expect(result).toEqual({})
+    })
+
+    it('should handle objects with no system fields', () => {
+      const data = {
+        name: 'Test Name',
+        email: 'test@example.com',
+        roles: ['admin', 'user'],
+      }
+
+      const result = omitSystemFields(data)
+
+      expect(result).toEqual(data)
+    })
+
+    it('should exclude additional fields when provided in options', () => {
+      const data = {
+        id: 'test-id',
+        organizationId: 'org-123',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: 'user-1',
+        updatedBy: 'user-2',
+        name: 'Test Name',
+        email: 'test@example.com',
+      }
+
+      const result = omitSystemFields(data, {
+        exclude: ['organizationId', 'email'],
+      })
+
+      expect(result).toEqual({
+        name: 'Test Name',
+      })
+      expect(result).not.toHaveProperty('id')
+      expect(result).not.toHaveProperty('organizationId')
+      expect(result).not.toHaveProperty('email')
+      expect(result).not.toHaveProperty('createdAt')
+    })
+
+    it('should handle empty exclude array', () => {
+      const data = {
+        id: 'test-id',
+        createdBy: 'user-1',
+        name: 'Test Name',
+      }
+
+      const result = omitSystemFields(data, { exclude: [] })
+
+      expect(result).toEqual({
+        name: 'Test Name',
+      })
+    })
+
+    it('should preserve nested objects and arrays', () => {
+      const data = {
+        id: 'test-id',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: 'user-1',
+        updatedBy: 'user-2',
+        name: 'Test Name',
+        metadata: {
+          tags: ['tag1', 'tag2'],
+          settings: { enabled: true },
+        },
+        roles: ['admin', 'user'],
+      }
+
+      const result = omitSystemFields(data)
+
+      expect(result).toEqual({
+        name: 'Test Name',
+        metadata: {
+          tags: ['tag1', 'tag2'],
+          settings: { enabled: true },
+        },
+        roles: ['admin', 'user'],
+      })
+    })
+
+    it('should handle multiple additional excluded fields', () => {
+      const data = {
+        id: 'test-id',
+        organizationId: 'org-123',
+        userId: 'user-456',
+        projectId: 'proj-789',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: 'user-1',
+        updatedBy: 'user-2',
+        name: 'Test Name',
+        status: 'active',
+      }
+
+      const result = omitSystemFields(data, {
+        exclude: ['organizationId', 'userId', 'projectId'],
+      })
+
+      expect(result).toEqual({
+        name: 'Test Name',
+        status: 'active',
+      })
+    })
+
+    it('should not mutate original data object', () => {
+      const data = {
+        id: 'test-id',
+        createdAt: new Date(),
+        name: 'Test Name',
+      }
+      const originalData = { ...data }
+
+      omitSystemFields(data)
+
+      expect(data).toEqual(originalData)
+    })
+
+    it('should handle exclude fields that do not exist in data', () => {
+      const data = {
+        id: 'test-id',
+        name: 'Test Name',
+        email: 'test@example.com',
+      }
+
+      const result = omitSystemFields(data, {
+        exclude: ['email' as keyof typeof data],
+      })
+
+      expect(result).toEqual({
+        name: 'Test Name',
+      })
     })
   })
 
