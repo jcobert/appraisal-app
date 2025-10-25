@@ -361,15 +361,16 @@ export const getFieldErrors = <T extends Record<string, unknown>>(
 export const validatePayload = <
   TSchema extends ZodSchema,
   TPayload extends Record<string, unknown>,
+  TPassthrough extends boolean = false,
 >(
   schema: TSchema,
   payload: TPayload,
   options?: Partial<ParseParams> & {
     /** Whether to pass through unknown fields (preserves fields not in schema). */
-    passthrough?: boolean
+    passthrough?: TPassthrough
   },
 ): {
-  data: z.output<TSchema> | undefined
+  data: (TPassthrough extends true ? TPayload : z.output<TSchema>) | undefined
   success: boolean
   errors: ZodFieldErrors<z.input<TSchema>> | null
 } => {

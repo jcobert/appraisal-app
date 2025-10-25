@@ -26,6 +26,27 @@ import {
   isValidHttpStatusCode,
 } from '@/utils/fetch'
 import { User } from '@repo/database'
+import { TABLE_BASE_FIELDS, TableMutable } from '@/types/db'
+import { omit } from 'lodash'
+
+/**
+ * Returns a copy of the `data` object,
+ * without DB standard table key and audit fields ("id", "createdBy", "updatedAt", etc.)
+ *
+ * See {@linkcode TABLE_BASE_FIELDS} for omitted fields.
+ *
+ * Provide `exclude` option to omit any additional fields (e.g. context-specific id like "organizationId")
+ */
+export const omitSystemFields = <
+  T extends Record<string, any>,
+  TExclude extends (keyof T)[],
+>(
+  data: T,
+  options?: { exclude?: TExclude },
+): Omit<TableMutable<T>, TExclude[number]> => {
+  const { exclude } = options || {}
+  return omit(data, [...TABLE_BASE_FIELDS, ...((exclude || []) as TExclude)])
+}
 
 /**
  * Utility to add user user ID fields to payload for audit trails.

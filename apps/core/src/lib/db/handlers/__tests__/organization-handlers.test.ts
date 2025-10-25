@@ -316,6 +316,131 @@ describe('organization-handlers', () => {
       })
     })
 
+    it('should accept partial payload (any subset of fields)', async () => {
+      // Only updating name, not description
+      const partialPayload = { name: 'New Name Only' }
+      const updatedOrganization = { ...mockOrganization, ...partialPayload }
+      mockUserIsOwner.mockResolvedValue(true)
+      ;(mockDb.organization.update as jest.Mock).mockResolvedValue(
+        updatedOrganization,
+      )
+
+      const result = await handleUpdateOrganization(
+        organizationId,
+        partialPayload,
+      )
+
+      expect(result).toEqual({
+        status: 200,
+        data: updatedOrganization,
+        message: 'Organization updated successfully.',
+      })
+      expect(mockDb.organization.update).toHaveBeenCalledWith({
+        where: { id: organizationId },
+        data: {
+          name: partialPayload.name,
+          updatedBy: 'user-profile-123',
+        },
+        select: { id: true, name: true },
+      })
+    })
+
+    it('should validate payload with partial schema (fields are optional)', async () => {
+      // Empty payload should be valid with partial schema
+      const emptyPayload = {}
+      mockUserIsOwner.mockResolvedValue(true)
+      ;(mockDb.organization.update as jest.Mock).mockResolvedValue(
+        mockOrganization,
+      )
+
+      const result = await handleUpdateOrganization(
+        organizationId,
+        emptyPayload,
+      )
+
+      // Should succeed because partial schema makes all fields optional
+      expect(result.status).toBe(200)
+      expect(mockDb.organization.update).toHaveBeenCalledWith({
+        where: { id: organizationId },
+        data: {
+          updatedBy: 'user-profile-123',
+        },
+        select: { id: true, name: true },
+      })
+    })
+
+    it('should strip system fields from payload before updating', async () => {
+      // Payload includes system fields that should be removed
+      const payloadWithSystemFields = {
+        name: 'Updated Name',
+        id: 'malicious-id',
+        createdAt: new Date(),
+        createdBy: 'malicious-user',
+        updatedAt: new Date(),
+        updatedBy: 'malicious-user',
+      }
+      mockUserIsOwner.mockResolvedValue(true)
+      ;(mockDb.organization.update as jest.Mock).mockResolvedValue(
+        mockOrganization,
+      )
+
+      await handleUpdateOrganization(organizationId, payloadWithSystemFields)
+
+      // Verify system fields were stripped and updatedBy was set correctly
+      expect(mockDb.organization.update).toHaveBeenCalledWith({
+        where: { id: organizationId },
+        data: {
+          name: 'Updated Name',
+          updatedBy: 'user-profile-123', // Set by withUserFields, not from payload
+        },
+        select: { id: true, name: true },
+      })
+    })
+
+    it('should preserve extra fields with passthrough option', async () => {
+      // Payload includes extra fields not in the schema
+      const payloadWithExtraFields = {
+        name: 'Updated Name',
+        customField: 'custom value',
+        anotherField: 123,
+      }
+      mockUserIsOwner.mockResolvedValue(true)
+      ;(mockDb.organization.update as jest.Mock).mockResolvedValue(
+        mockOrganization,
+      )
+
+      await handleUpdateOrganization(organizationId, payloadWithExtraFields)
+
+      // Verify extra fields are preserved by passthrough
+      expect(mockDb.organization.update).toHaveBeenCalledWith({
+        where: { id: organizationId },
+        data: {
+          name: 'Updated Name',
+          customField: 'custom value',
+          anotherField: 123,
+          updatedBy: 'user-profile-123',
+        },
+        select: { id: true, name: true },
+      })
+    })
+
+    it('should return 400 when organizationId is missing', async () => {
+      mockUserIsOwner.mockResolvedValue(true)
+
+      const result = await handleUpdateOrganization('', payload)
+
+      expect(result).toEqual({
+        status: 400,
+        data: null,
+        error: {
+          code: FetchErrorCode.INVALID_DATA,
+          message: 'Organization ID is required.',
+          details: {},
+        },
+      })
+      expect(mockDb.organization.update).not.toHaveBeenCalled()
+    })
+
     it('should return 403 when user is not owner', async () => {
       mockUserIsOwner.mockResolvedValue(false)
 

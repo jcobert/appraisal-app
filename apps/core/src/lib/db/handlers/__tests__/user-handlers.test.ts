@@ -470,6 +470,110 @@ describe('user-handlers', () => {
       })
     })
 
+    it('should accept partial payload (any subset of fields)', async () => {
+      // Only updating email, not all fields
+      const partialPayload = { email: 'newemail@example.com' }
+      const updatedUser = { ...mockUserProfile, ...partialPayload }
+      ;(mockDb.user.update as jest.Mock).mockResolvedValue(updatedUser)
+
+      const result = await handleUpdateUserProfile(userId, partialPayload)
+
+      expect(result.status).toBe(200)
+      expect(result.data).toEqual(updatedUser)
+      expect(mockDb.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: {
+          email: partialPayload.email,
+          updatedBy: mockUserProfile.id,
+        },
+      })
+    })
+
+    it('should validate payload with partial schema (fields are optional)', async () => {
+      // Empty payload should be valid with partial schema
+      const emptyPayload = {}
+      ;(mockDb.user.update as jest.Mock).mockResolvedValue(mockUserProfile)
+
+      const result = await handleUpdateUserProfile(userId, emptyPayload)
+
+      // Should succeed because partial schema makes all fields optional
+      expect(result.status).toBe(200)
+      expect(mockDb.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: {
+          updatedBy: mockUserProfile.id,
+        },
+      })
+    })
+
+    it('should strip system fields from payload before updating', async () => {
+      // Payload includes system fields that should be removed
+      const payloadWithSystemFields = {
+        firstName: 'Jane',
+        id: 'malicious-id',
+        createdAt: new Date(),
+        createdBy: 'malicious-user',
+        updatedAt: new Date(),
+        updatedBy: 'malicious-user',
+      }
+      ;(mockDb.user.update as jest.Mock).mockResolvedValue(mockUserProfile)
+
+      await handleUpdateUserProfile(userId, payloadWithSystemFields)
+
+      // Verify system fields were stripped and updatedBy was set correctly
+      expect(mockDb.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: {
+          firstName: 'Jane',
+          updatedBy: mockUserProfile.id, // Set by withUserFields, not from payload
+        },
+      })
+    })
+
+    it('should exclude accountId in addition to system fields', async () => {
+      // Payload includes accountId which should also be excluded
+      const payloadWithAccountId = {
+        firstName: 'Jane',
+        accountId: 'malicious-account-id',
+      }
+      ;(mockDb.user.update as jest.Mock).mockResolvedValue(mockUserProfile)
+
+      await handleUpdateUserProfile(userId, payloadWithAccountId)
+
+      // Verify accountId was excluded along with system fields
+      expect(mockDb.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: {
+          firstName: 'Jane',
+          updatedBy: mockUserProfile.id,
+          // No accountId in the data
+        },
+      })
+    })
+
+    it('should preserve extra fields with passthrough option', async () => {
+      // Payload includes extra fields not in the schema
+      const payloadWithExtraFields = {
+        firstName: 'Jane',
+        customField: 'custom value',
+        metadata: { foo: 'bar' },
+      }
+      ;(mockDb.user.update as jest.Mock).mockResolvedValue(mockUserProfile)
+
+      await handleUpdateUserProfile(userId, payloadWithExtraFields)
+
+      // Verify extra fields are preserved by passthrough
+      expect(mockDb.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: {
+          firstName: 'Jane',
+          customField: 'custom value',
+          metadata: { foo: 'bar' },
+          updatedBy: mockUserProfile.id,
+        },
+      })
+    })
+
     it('should handle missing user ID', async () => {
       const result = await handleUpdateUserProfile('', updatePayload)
 

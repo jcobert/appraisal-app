@@ -518,6 +518,98 @@ describe('organization-invite-handlers', () => {
       })
     })
 
+    it('should accept partial payload (any subset of fields)', async () => {
+      // Only updating roles, not all fields
+      const partialPayload: Partial<OrgInvitePayload> = {
+        roles: [MemberRole.owner],
+      }
+
+      mockCreateApiHandler.mockImplementation(
+        (handlerFn: any, config?: any) => {
+          if (config?.authorizationCheck) {
+            config.authorizationCheck({ user: mockKindeUser })
+          }
+          return handlerFn({ user: mockKindeUser })
+        },
+      )
+
+      const result = await handleUpdateOrgInvite(
+        'org-1',
+        'invite-1',
+        partialPayload as OrgInvitePayload,
+      )
+
+      expect(result).toEqual({ id: 'invite-1' })
+      expect(mockDb.orgInvitation.update).toHaveBeenCalledWith({
+        where: { id: 'invite-1', organizationId: 'org-1' },
+        data: {
+          inviteeFirstName: undefined,
+          inviteeLastName: undefined,
+          roles: [MemberRole.owner],
+          updatedBy: mockKindeUser.id,
+        },
+        select: { id: true },
+      })
+    })
+
+    it('should validate payload with partial schema (fields are optional)', async () => {
+      // Empty payload should be valid with partial schema
+      const emptyPayload = {}
+
+      mockCreateApiHandler.mockImplementation(
+        (handlerFn: any, config?: any) => {
+          if (config?.authorizationCheck) {
+            config.authorizationCheck({ user: mockKindeUser })
+          }
+          return handlerFn({ user: mockKindeUser })
+        },
+      )
+
+      const result = await handleUpdateOrgInvite(
+        'org-1',
+        'invite-1',
+        emptyPayload as OrgInvitePayload,
+      )
+
+      // Should succeed because partial schema makes all fields optional
+      expect(result).toEqual({ id: 'invite-1' })
+    })
+
+    it('should manually set updatedBy field (not use omitSystemFields)', async () => {
+      // Payload includes updatedBy which should be ignored and overridden
+      const payloadWithUpdatedBy = {
+        ...updatePayload,
+        updatedBy: 'malicious-user-id',
+      }
+
+      mockCreateApiHandler.mockImplementation(
+        (handlerFn: any, config?: any) => {
+          if (config?.authorizationCheck) {
+            config.authorizationCheck({ user: mockKindeUser })
+          }
+          return handlerFn({ user: mockKindeUser })
+        },
+      )
+
+      await handleUpdateOrgInvite(
+        'org-1',
+        'invite-1',
+        payloadWithUpdatedBy as OrgInvitePayload,
+      )
+
+      // Verify updatedBy is set from user context, not from payload
+      expect(mockDb.orgInvitation.update).toHaveBeenCalledWith({
+        where: { id: 'invite-1', organizationId: 'org-1' },
+        data: {
+          inviteeFirstName: updatePayload.firstName,
+          inviteeLastName: updatePayload.lastName,
+          roles: updatePayload.roles,
+          updatedBy: mockKindeUser.id, // Set from context, not payload
+        },
+        select: { id: true },
+      })
+    })
+
     it('should throw ValidationError when payload is missing', async () => {
       // Mock createApiHandler to call the handler function directly
       mockCreateApiHandler.mockImplementation((handlerFn: any) => {

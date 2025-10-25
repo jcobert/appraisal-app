@@ -5,7 +5,11 @@ import { userIsOwner, userIsMember } from '@/lib/db/queries/organization'
 import { organizationSchema } from '@/lib/db/schemas/organization'
 import { getUserPermissions } from '@/lib/db/utils'
 
-import { createApiHandler, withUserFields } from '@/lib/db/api-handlers'
+import {
+  createApiHandler,
+  omitSystemFields,
+  withUserFields,
+} from '@/lib/db/api-handlers'
 import { ValidationError } from '@/lib/db/errors'
 import { validatePayload, isValidationSuccess } from '@/utils/zod'
 import { db } from '@/lib/db/client'
@@ -101,9 +105,13 @@ export const handleUpdateOrganization = async (
       }
 
       // Validate payload for security and user input safety, preserve extra fields
-      const validation = validatePayload(organizationSchema.api, payload, {
-        passthrough: true,
-      })
+      const validation = validatePayload(
+        organizationSchema.api.partial(),
+        payload,
+        {
+          passthrough: true,
+        },
+      )
       if (!isValidationSuccess(validation)) {
         throw new ValidationError(
           'Invalid data provided.',
@@ -113,7 +121,7 @@ export const handleUpdateOrganization = async (
 
       const result = await db.organization.update({
         where: { id: organizationId },
-        data: withUserFields(validation.data, userProfileId),
+        data: withUserFields(omitSystemFields(validation.data), userProfileId),
         select: { id: true, name: true },
       })
       return result
