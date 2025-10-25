@@ -4,7 +4,6 @@ import 'server-only'
 import { Organization } from '@repo/database'
 
 import { db } from '@/lib/db/client'
-import { CanQueryOptions } from '@/lib/db/utils'
 
 import { getActiveUserAccount } from '@/utils/auth'
 import { SessionUser } from '@/types/auth'
@@ -29,7 +28,6 @@ export const userIsMember = async (params: {
 export const userIsOwner = async (params: {
   organizationId: Organization['id']
   accountId?: SessionUser['id']
-  authOptions?: CanQueryOptions
 }) => {
   const { organizationId, accountId: providedAccountId } = params || {}
   const accountId = providedAccountId || (await getActiveUserAccount())?.id

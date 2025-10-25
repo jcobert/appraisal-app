@@ -129,7 +129,7 @@ type ApiHandlerContext<TBypassAuth extends boolean = boolean> = {
 export type ApiHandlerConfig<TBypassAuth extends boolean = boolean> = {
   /** Additional authorization check function to run after authentication */
   authorizationCheck?: (
-    context: ApiHandlerContext<TBypassAuth>,
+    context: Pick<ApiHandlerContext<TBypassAuth>, 'user'>,
   ) => Promise<boolean>
   /** @todo Update messages to functions with data similar to toasts?. */
   /** Custom messages for different response scenarios */
@@ -210,7 +210,9 @@ export const createApiHandler = async <
   // Authorization check (if provided)
   if (authorizationCheck) {
     try {
-      const authorized = await authorizationCheck({ user } as ApiHandlerContext)
+      const authorized = await authorizationCheck({
+        user,
+      } as Parameters<typeof authorizationCheck>['0'])
 
       if (!authorized) {
         return {
