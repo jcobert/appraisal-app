@@ -5,8 +5,8 @@ import {
   FetchErrorCode,
   coreFetch,
   getAbsoluteUrl,
+  isStatusCodeSuccess,
   isValidHttpStatusCode,
-  successful,
 } from '../fetch'
 
 // Mock fetch globally
@@ -125,26 +125,26 @@ describe('fetch utilities', () => {
 
   describe('successful', () => {
     it('should return false for undefined status', () => {
-      expect(successful(undefined)).toBe(false)
+      expect(isStatusCodeSuccess(undefined)).toBe(false)
     })
 
     it('should return false for null status', () => {
-      expect(successful(null as any)).toBe(false)
+      expect(isStatusCodeSuccess(null as any)).toBe(false)
     })
 
     it('should return true for 2xx status codes', () => {
-      expect(successful(200)).toBe(true)
-      expect(successful(201)).toBe(true)
-      expect(successful(204)).toBe(true)
-      expect(successful(299)).toBe(true)
+      expect(isStatusCodeSuccess(200)).toBe(true)
+      expect(isStatusCodeSuccess(201)).toBe(true)
+      expect(isStatusCodeSuccess(204)).toBe(true)
+      expect(isStatusCodeSuccess(299)).toBe(true)
     })
 
     it('should return false for non-2xx status codes', () => {
-      expect(successful(199)).toBe(false)
-      expect(successful(300)).toBe(false)
-      expect(successful(400)).toBe(false)
-      expect(successful(404)).toBe(false)
-      expect(successful(500)).toBe(false)
+      expect(isStatusCodeSuccess(199)).toBe(false)
+      expect(isStatusCodeSuccess(300)).toBe(false)
+      expect(isStatusCodeSuccess(400)).toBe(false)
+      expect(isStatusCodeSuccess(404)).toBe(false)
+      expect(isStatusCodeSuccess(500)).toBe(false)
     })
   })
 

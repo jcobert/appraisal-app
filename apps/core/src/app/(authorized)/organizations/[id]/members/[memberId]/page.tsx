@@ -11,7 +11,7 @@ import {
 import { handleGetOrgMember } from '@/lib/db/handlers/organization-member-handlers'
 import { protectPage } from '@/lib/db/utils'
 
-import { successful } from '@/utils/fetch'
+import { isStatusCodeSuccess } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
 import {
@@ -43,7 +43,7 @@ const Page: FC<Props> = async ({ params }) => {
       queryKey: organizationsQueryKey.filtered({ id: organizationId }),
       queryFn: async () => {
         const result = await handleGetOrganization(organizationId)
-        if (!successful(result.status)) {
+        if (!isStatusCodeSuccess(result.status)) {
           throw new Error(
             result.error?.message || 'Failed to fetch organization',
           )
@@ -59,7 +59,7 @@ const Page: FC<Props> = async ({ params }) => {
       }),
       queryFn: async () => {
         const result = await handleGetOrgMember(organizationId, memberId)
-        if (!successful(result.status)) {
+        if (!isStatusCodeSuccess(result.status)) {
           throw new Error(
             result.error?.message || 'Failed to fetch organization member',
           )
@@ -75,7 +75,7 @@ const Page: FC<Props> = async ({ params }) => {
       }),
       queryFn: async () => {
         const result = await handleGetOrganizationPermissions(organizationId)
-        if (!successful(result.status)) {
+        if (!isStatusCodeSuccess(result.status)) {
           throw new Error(
             result.error?.message || 'Failed to fetch permissions',
           )

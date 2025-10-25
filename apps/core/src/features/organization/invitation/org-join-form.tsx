@@ -6,7 +6,7 @@ import { FC } from 'react'
 import { OrgInvitation } from '@repo/database'
 import { Button } from '@repo/ui/ui/button'
 
-import { successful } from '@/utils/fetch'
+import { isStatusCodeSuccess } from '@/utils/fetch'
 import { homeUrl } from '@/utils/nav'
 
 import FullScreenLoader from '@/components/layout/full-screen-loader'
@@ -37,7 +37,7 @@ const OrgJoinForm: FC<Props> = ({ organizationId, invitation }) => {
     const res = await mutateAsync({ token, status })
 
     // 409 means user is already member of org.
-    if (successful(res?.status) || res?.status === 409) {
+    if (isStatusCodeSuccess(res?.status) || res?.status === 409) {
       router.push(homeUrl(true))
     }
   }

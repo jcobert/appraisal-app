@@ -13,7 +13,7 @@ import {
 } from '@/lib/db/schemas/organization'
 import { cn } from '@/lib/utils'
 
-import { successful } from '@/utils/fetch'
+import { isStatusCodeSuccess } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 import { homeUrl } from '@/utils/nav'
 
@@ -94,7 +94,7 @@ const OrganizationForm: FC<Props> = ({
     } else {
       await createOrganization.mutateAsync(payload, {
         onSuccess: (res) => {
-          if (successful(res?.status)) {
+          if (isStatusCodeSuccess(res?.status)) {
             router.replace(prevUrl)
           }
         },

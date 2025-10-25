@@ -37,8 +37,12 @@ export const isValidHttpStatusCode = (status?: number): status is number => {
   return Number.isInteger(status) && status! >= 100 && status! <= 599
 }
 
-export const successful = (status?: number) => {
-  if (!status) return false
+/**
+ * Returns whether the provided `status` code represents success -
+ * in the range: `200 - 300`
+ */
+export const isStatusCodeSuccess = (status?: number): status is number => {
+  if (!isValidHttpStatusCode(status)) return false
   return status >= 200 && status < 300
 }
 

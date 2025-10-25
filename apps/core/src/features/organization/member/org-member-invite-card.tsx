@@ -3,7 +3,7 @@ import { FC, useState } from 'react'
 
 import { OrgInvitation } from '@repo/database'
 
-import { successful } from '@/utils/fetch'
+import { isStatusCodeSuccess } from '@/utils/fetch'
 import { cn } from '@/utils/style'
 
 import Confirmation from '@/components/layout/confirmation'
@@ -38,7 +38,7 @@ const OrgMemberInviteCard: FC<Props> = ({ invitation, ...props }) => {
         description='Are you sure you want to cancel this invitation?'
         onConfirm={async ({ closeModal }) => {
           const res = await deleteInvitation.mutateAsync({})
-          if (successful(res?.status)) {
+          if (isStatusCodeSuccess(res?.status)) {
             closeModal()
           }
         }}

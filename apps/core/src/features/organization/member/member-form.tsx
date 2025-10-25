@@ -9,7 +9,7 @@ import { fullName } from '@repo/utils'
 
 import { orgMemberSchema } from '@/lib/db/schemas/org-member'
 
-import { successful } from '@/utils/fetch'
+import { isStatusCodeSuccess } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 
 import FormActionBar from '@/components/form/form-action-bar'
@@ -80,7 +80,7 @@ const MemberForm: FC<Props> = ({
       { roles: data?.roles },
       {
         onSuccess: ({ status }) => {
-          if (successful(status)) {
+          if (isStatusCodeSuccess(status)) {
             onOpenChange(false)
           }
         },

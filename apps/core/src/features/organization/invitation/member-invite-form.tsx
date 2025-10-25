@@ -10,7 +10,7 @@ import {
   orgMemberSchema,
 } from '@/lib/db/schemas/org-member'
 
-import { successful } from '@/utils/fetch'
+import { isStatusCodeSuccess } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 
 import FormActionBar from '@/components/form/form-action-bar'
@@ -94,12 +94,12 @@ const MemberInviteForm: FC<Props> = ({
     setIsBusy(true)
     if (isUpdate) {
       const res = await updateInvitation.mutateAsync(data)
-      if (successful(res?.status)) {
+      if (isStatusCodeSuccess(res?.status)) {
         onOpenChange(false)
       }
     } else {
       const res = await createInvitation.mutateAsync(data)
-      if (successful(res?.status)) {
+      if (isStatusCodeSuccess(res?.status)) {
         onOpenChange(false)
       }
     }

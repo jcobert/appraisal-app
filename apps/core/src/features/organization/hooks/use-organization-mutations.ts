@@ -5,7 +5,7 @@ import { OrgInvitation, OrgMember, Organization } from '@repo/database'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
-import { successful } from '@/utils/fetch'
+import { isStatusCodeSuccess } from '@/utils/fetch'
 
 import useCoreMutation, {
   UseCoreMutationProps,
@@ -58,7 +58,7 @@ export const useOrganizationMutations = ({
     },
     ...options,
     onSuccess: async ({ status }) => {
-      if (successful(status)) {
+      if (isStatusCodeSuccess(status)) {
         await refreshData()
       }
     },
@@ -70,7 +70,7 @@ export const useOrganizationMutations = ({
     sanitize: { name: 'text' },
     ...options,
     onSuccess: async ({ status }) => {
-      if (successful(status)) {
+      if (isStatusCodeSuccess(status)) {
         await refreshData({ update: true })
       }
     },
@@ -81,7 +81,7 @@ export const useOrganizationMutations = ({
     method: 'DELETE',
     ...options,
     onSuccess: async ({ status }) => {
-      if (successful(status)) {
+      if (isStatusCodeSuccess(status)) {
         await refreshData()
       }
     },
@@ -95,7 +95,7 @@ export const useOrganizationMutations = ({
       'url' | 'method'
     >),
     onSuccess: async ({ status }) => {
-      if (successful(status)) {
+      if (isStatusCodeSuccess(status)) {
         await refreshData({ update: true })
       }
     },
@@ -109,7 +109,7 @@ export const useOrganizationMutations = ({
       'url' | 'method'
     >),
     onSuccess: async ({ status }) => {
-      if (successful(status)) {
+      if (isStatusCodeSuccess(status)) {
         await refreshData({ update: true })
       }
     },
