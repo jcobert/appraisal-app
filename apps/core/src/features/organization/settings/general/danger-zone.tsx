@@ -6,7 +6,6 @@ import { z } from 'zod'
 
 import { Button } from '@repo/ui/ui/button'
 
-import { isStatusCodeSuccess } from '@/utils/fetch'
 import { homeUrl } from '@/utils/nav'
 
 import FormActionBar from '@/components/form/form-action-bar'
@@ -55,10 +54,14 @@ const DangerZone: FC<Props> = ({ organizationId, organizationName }) => {
 
   const onSubmit: SubmitHandler<z.infer<typeof schema>> =
     useCallback(async () => {
-      const res = await deleteOrganization.mutateAsync({})
-      if (isStatusCodeSuccess(res?.status)) {
-        router.replace(homeUrl(true))
-      }
+      await deleteOrganization.mutateAsync(
+        {},
+        {
+          onSuccess: () => {
+            router.replace(homeUrl(true))
+          },
+        },
+      )
     }, [deleteOrganization, router])
 
   const [isOpen, setIsOpen] = useState(false)

@@ -5,6 +5,7 @@ import { OrgInvitation, OrgMember, Organization } from '@repo/database'
 import { FormMode } from '@repo/types'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
+import { type DeleteOrganizationResult } from '@/lib/db/handlers/organization-handlers'
 
 import { isStatusCodeSuccess } from '@/utils/fetch'
 
@@ -84,10 +85,22 @@ export const useOrganizationMutations = ({
     },
   })
 
-  const deleteOrganization = useCoreMutation<{}, Organization>({
+  const deleteOrganization = useCoreMutation<
+    {},
+    DeleteOrganizationResult['data']
+  >({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
     method: 'DELETE',
-    ...options,
+    toast: {
+      messages: {
+        success: ({ response: { data } }) =>
+          `${data?.name || 'Organization'} deleted successfully.`,
+      },
+    },
+    ...(options as Omit<
+      UseCoreMutationProps<Payload, DeleteOrganizationResult['data']>,
+      'url' | 'method'
+    >),
     onSuccess: async ({ status }) => {
       if (isStatusCodeSuccess(status)) {
         await refreshData({ mode: 'delete' })

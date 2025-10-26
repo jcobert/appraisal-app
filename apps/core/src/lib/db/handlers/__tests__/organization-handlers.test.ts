@@ -514,7 +514,7 @@ describe('organization-handlers', () => {
       })
       expect(mockDb.organization.delete).toHaveBeenCalledWith({
         where: { id: organizationId },
-        select: { id: true },
+        select: { name: true },
       })
     })
 
