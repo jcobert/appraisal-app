@@ -64,7 +64,10 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
       <Separator />
       <NotificationSettings />
       <Separator />
-      <DangerZone organizationName={organization?.name} />
+      <DangerZone
+        organizationId={organization?.id}
+        organizationName={organization?.name}
+      />
     </section>
   )
 }

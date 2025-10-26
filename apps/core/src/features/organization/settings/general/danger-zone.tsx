@@ -1,8 +1,13 @@
-import { FC, useCallback, useState } from 'react'
+import { Organization } from '@prisma/client'
+import { useRouter } from 'next/navigation'
+import { FC, useCallback, useMemo, useState } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 import { z } from 'zod'
 
 import { Button } from '@repo/ui/ui/button'
+
+import { isStatusCodeSuccess } from '@/utils/fetch'
+import { homeUrl } from '@/utils/nav'
 
 import FormActionBar from '@/components/form/form-action-bar'
 import TextInput from '@/components/form/inputs/text-input'
@@ -11,10 +16,12 @@ import Modal from '@/components/layout/modal'
 
 import useZodForm from '@/hooks/use-zod-form'
 
+import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
 import SectionHeading from '@/features/organization/settings/section-heading'
 
 type Props = {
-  organizationName: string
+  organizationId: Organization['id']
+  organizationName: Organization['name']
 }
 
 const conf2Text = 'delete organization'
@@ -27,11 +34,17 @@ const errorMap: z.ZodErrorMap = (issue, ctx) => {
   return { message: msg }
 }
 
-const DangerZone: FC<Props> = ({ organizationName }) => {
-  const schema = z.object({
-    conf1: z.literal(organizationName, { errorMap }),
-    conf2: z.literal(conf2Text as string, { errorMap }),
-  })
+const DangerZone: FC<Props> = ({ organizationId, organizationName }) => {
+  const router = useRouter()
+
+  const { deleteOrganization } = useOrganizationMutations({ organizationId })
+
+  const schema = useMemo(() => {
+    return z.object({
+      conf1: z.literal(organizationName, { errorMap }),
+      conf2: z.literal(conf2Text as string, { errorMap }),
+    })
+  }, [organizationName])
 
   const { control, reset, handleSubmit } = useZodForm<z.infer<typeof schema>>(
     schema,
@@ -40,14 +53,29 @@ const DangerZone: FC<Props> = ({ organizationName }) => {
     },
   )
 
-  const onSubmit: SubmitHandler<z.infer<typeof schema>> = useCallback(
-    (data) => {
-      console.log('DELETED!')
-    },
-    [],
-  )
+  const onSubmit: SubmitHandler<z.infer<typeof schema>> =
+    useCallback(async () => {
+      const res = await deleteOrganization.mutateAsync({})
+      if (isStatusCodeSuccess(res?.status)) {
+        router.replace(homeUrl(true))
+      }
+    }, [deleteOrganization, router])
 
   const [isOpen, setIsOpen] = useState(false)
+
+  const modalTrigger = useMemo(() => {
+    return (
+      <Button
+        variant='destructive'
+        className='w-fit'
+        onClick={() => {
+          setIsOpen(true)
+        }}
+      >
+        Delete Organization
+      </Button>
+    )
+  }, [])
 
   return (
     <div className='py-6 flex flex-col gap-3'>
@@ -57,20 +85,12 @@ const DangerZone: FC<Props> = ({ organizationName }) => {
         preventOutsideClose={false}
         open={isOpen}
         onOpenChange={(open) => {
+          if (open) {
+            reset()
+          }
           setIsOpen(open)
-          reset()
         }}
-        trigger={
-          <Button
-            variant='destructive'
-            className='w-fit'
-            onClick={() => {
-              setIsOpen(true)
-            }}
-          >
-            Delete Organization
-          </Button>
-        }
+        trigger={modalTrigger}
         title='Delete Organization'
       >
         <p className='text-pretty py-2'>

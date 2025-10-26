@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
 import { OrgInvitation, OrgMember, Organization } from '@repo/database'
+import { FormMode } from '@repo/types'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
@@ -31,11 +32,18 @@ export const useOrganizationMutations = ({
   const queryClient = useQueryClient()
 
   const refreshData = useCallback(
-    async ({ update }: { update?: boolean } = { update: false }) => {
-      if (update) {
+    async ({ mode }: { mode?: FormMode } = { mode: 'create' }) => {
+      if (mode === 'update') {
         await queryClient.refetchQueries({
           queryKey: organizationsQueryKey.filtered({ id: organizationId }),
           exact: true,
+        })
+      } else if (mode === 'delete') {
+        queryClient.removeQueries({
+          queryKey: organizationsQueryKey.filtered({ id: organizationId }),
+          exact: true,
+          type: 'all',
+          stale: true,
         })
       }
       queryClient.invalidateQueries({
@@ -59,7 +67,7 @@ export const useOrganizationMutations = ({
     ...options,
     onSuccess: async ({ status }) => {
       if (isStatusCodeSuccess(status)) {
-        await refreshData()
+        await refreshData({ mode: 'create' })
       }
     },
   })
@@ -71,7 +79,7 @@ export const useOrganizationMutations = ({
     ...options,
     onSuccess: async ({ status }) => {
       if (isStatusCodeSuccess(status)) {
-        await refreshData({ update: true })
+        await refreshData({ mode: 'update' })
       }
     },
   })
@@ -82,7 +90,7 @@ export const useOrganizationMutations = ({
     ...options,
     onSuccess: async ({ status }) => {
       if (isStatusCodeSuccess(status)) {
-        await refreshData()
+        await refreshData({ mode: 'delete' })
       }
     },
   })
@@ -96,7 +104,7 @@ export const useOrganizationMutations = ({
     >),
     onSuccess: async ({ status }) => {
       if (isStatusCodeSuccess(status)) {
-        await refreshData({ update: true })
+        await refreshData({ mode: 'update' })
       }
     },
   })
@@ -110,7 +118,7 @@ export const useOrganizationMutations = ({
     >),
     onSuccess: async ({ status }) => {
       if (isStatusCodeSuccess(status)) {
-        await refreshData({ update: true })
+        await refreshData({ mode: 'update' })
       }
     },
   })
