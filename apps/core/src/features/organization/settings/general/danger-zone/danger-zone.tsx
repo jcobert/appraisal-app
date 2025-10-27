@@ -3,6 +3,8 @@ import { FC, ReactNode, useMemo, useState } from 'react'
 import { Button, ButtonProps } from '@repo/ui/ui/button'
 import { cn } from '@repo/utils'
 
+import { useOrganizationContext } from '@/providers/organization-provider'
+
 import DeleteOrgModal from '@/features/organization/settings/general/danger-zone/delete-org-modal'
 import LeaveOrgModal from '@/features/organization/settings/general/danger-zone/leave-org'
 import TransferOwnerModal from '@/features/organization/settings/general/danger-zone/transfer-owner-modal'
@@ -48,6 +50,13 @@ const DangerZone: FC<Props> = ({ organization }) => {
 
   const { id: organizationId, name: organizationName } = organization
 
+  const {
+    permissions: { can },
+  } = useOrganizationContext()
+
+  const canDelete = can('delete_org')
+  const canTransfer = can('transfer_org')
+
   const transferTrigger = useMemo(() => {
     return (
       <Trigger
@@ -89,17 +98,19 @@ const DangerZone: FC<Props> = ({ organization }) => {
       <SectionHeading title='Danger Zone' />
 
       <div className='flex flex-col border border-red-100 rounded divide-y'>
-        <SubSection
-          title='Transfer ownership'
-          description='Transfer this organization to another user.'
-        >
-          <TransferOwnerModal
-            organization={organization}
-            open={isTransferModalOpen}
-            onOpenChange={setIsTransferModalOpen}
-            trigger={transferTrigger}
-          />
-        </SubSection>
+        {canTransfer ? (
+          <SubSection
+            title='Transfer ownership'
+            description='Transfer this organization to another user.'
+          >
+            <TransferOwnerModal
+              organization={organization}
+              open={isTransferModalOpen}
+              onOpenChange={setIsTransferModalOpen}
+              trigger={transferTrigger}
+            />
+          </SubSection>
+        ) : null}
 
         <SubSection
           title='Leave this organization'
@@ -114,18 +125,20 @@ const DangerZone: FC<Props> = ({ organization }) => {
           />
         </SubSection>
 
-        <SubSection
-          title='Delete this organization'
-          description='Permanently delete this organization and its data.'
-        >
-          <DeleteOrgModal
-            organizationId={organizationId}
-            organizationName={organizationName}
-            open={isDeleteModalOpen}
-            onOpenChange={setIsDeleteModalOpen}
-            trigger={deleteTrigger}
-          />
-        </SubSection>
+        {canDelete ? (
+          <SubSection
+            title='Delete this organization'
+            description='Permanently delete this organization and its data.'
+          >
+            <DeleteOrgModal
+              organizationId={organizationId}
+              organizationName={organizationName}
+              open={isDeleteModalOpen}
+              onOpenChange={setIsDeleteModalOpen}
+              trigger={deleteTrigger}
+            />
+          </SubSection>
+        ) : null}
       </div>
     </div>
   )

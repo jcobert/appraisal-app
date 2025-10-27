@@ -14,6 +14,7 @@ export type PermissionAction = {
     | 'edit_org_info'
     | 'edit_org_members'
     | 'delete_org'
+    | 'transfer_org'
     | 'view_org'
     | 'view_org_member_details'
   orders: 'create_order' | 'edit_order' | 'delete_order' | 'view_orders'
@@ -33,6 +34,7 @@ export const APP_PERMISSIONS: {
     edit_org_info: ['owner'],
     edit_org_members: ['owner'],
     delete_org: ['owner'],
+    transfer_org: ['owner'],
     view_org_member_details: ['owner', 'manager'],
   },
   /** @todo Move these under organization. */

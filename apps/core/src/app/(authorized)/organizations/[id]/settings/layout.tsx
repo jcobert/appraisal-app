@@ -29,7 +29,7 @@ const Layout = async ({
         <Heading text='Settings' />
         <SettingsNavigation organizationId={organizationId} />
       </div>
-      <div>{children}</div>
+      <div className='w-full max-w-4xl mx-auto'>{children}</div>
     </div>
   )
 }

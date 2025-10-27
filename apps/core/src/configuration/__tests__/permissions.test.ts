@@ -19,6 +19,10 @@ describe('APP_PERMISSIONS configuration', () => {
     it('should restrict delete_org to owner only', () => {
       expect(APP_PERMISSIONS.organization.delete_org).toEqual(['owner'])
     })
+
+    it('should restrict transfer_org to owner only', () => {
+      expect(APP_PERMISSIONS.organization.transfer_org).toEqual(['owner'])
+    })
   })
 
   describe('orders permissions', () => {
@@ -57,6 +61,7 @@ describe('APP_PERMISSIONS configuration', () => {
       expect(APP_PERMISSIONS.organization).toHaveProperty('edit_org_info')
       expect(APP_PERMISSIONS.organization).toHaveProperty('edit_org_members')
       expect(APP_PERMISSIONS.organization).toHaveProperty('delete_org')
+      expect(APP_PERMISSIONS.organization).toHaveProperty('transfer_org')
 
       // Orders actions
       expect(APP_PERMISSIONS.orders).toHaveProperty('create_order')
