@@ -15,7 +15,7 @@ const SectionHeading: FC<SectionHeadingProps> = ({
 }) => {
   return (
     <div className={cn('flex flex-col gap-1', className)}>
-      <h2 className='font-semibold text-gray-900 dark:text-gray-50 text-balance'>
+      <h2 className='font-semibold text-lg text-gray-900 dark:text-gray-50 text-balance'>
         {title}
       </h2>
       {subtitle ? (

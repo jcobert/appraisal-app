@@ -22,7 +22,7 @@ import {
   permissionsQueryKey,
 } from '@/configuration/react-query/query-keys'
 import { generatePageMeta } from '@/configuration/seo'
-import MembersSettings from '@/features/organization/settings/members-settings'
+import MembersSettings from '@/features/organization/settings/members/members-settings'
 
 export const metadata: Metadata = generatePageMeta({
   title: 'Organization Settings',

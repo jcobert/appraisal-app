@@ -12,7 +12,7 @@ import { useProtectPage } from '@/hooks/use-protect-page'
 
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 import OrganizationForm from '@/features/organization/organization-form'
-import DangerZone from '@/features/organization/settings/general/danger-zone'
+import DangerZone from '@/features/organization/settings/general/danger-zone/danger-zone'
 import NotificationSettings from '@/features/organization/settings/general/notification-settings'
 
 type Props = {
@@ -64,10 +64,7 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
       <Separator />
       <NotificationSettings />
       <Separator />
-      <DangerZone
-        organizationId={organization?.id}
-        organizationName={organization?.name}
-      />
+      <DangerZone organization={organization} />
     </section>
   )
 }
