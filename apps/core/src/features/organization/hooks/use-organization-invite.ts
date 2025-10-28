@@ -7,7 +7,7 @@ import { fullName } from '@repo/utils'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
-import { FetchResponse, successful } from '@/utils/fetch'
+import { FetchResponse, isStatusCodeSuccess } from '@/utils/fetch'
 
 import useCoreMutation, {
   UseCoreMutationProps,
@@ -85,7 +85,7 @@ export const useOrganizationInvite = ({
       },
     },
     onSuccess: async ({ status }) => {
-      if (successful(status)) {
+      if (isStatusCodeSuccess(status)) {
         await refreshData()
       }
     },

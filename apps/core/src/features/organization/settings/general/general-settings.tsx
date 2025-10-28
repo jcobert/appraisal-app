@@ -12,6 +12,7 @@ import { useProtectPage } from '@/hooks/use-protect-page'
 
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 import OrganizationForm from '@/features/organization/organization-form'
+import DangerZone from '@/features/organization/settings/general/danger-zone/danger-zone'
 import NotificationSettings from '@/features/organization/settings/general/notification-settings'
 
 type Props = {
@@ -41,6 +42,8 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
 
   const organization = response?.data
 
+  if (!organization) return null
+
   // // As extra security, redirect if user doesn't have permissions.
   // // Could happen if user's rights were changed by admin while user is here.
   // useEffect(() => {
@@ -50,7 +53,7 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
   // }, [userCanEditInfo, isCheckingPermissions, router])
 
   return (
-    <section className='flex flex-col gap-4 px-2'>
+    <section className='flex flex-col gap-6 px-2'>
       <OrganizationForm
         organization={organization}
         disabled={
@@ -58,10 +61,10 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
         }
         isUpdate
       />
-
       <Separator />
-
       <NotificationSettings />
+      <Separator />
+      <DangerZone organization={organization} />
     </section>
   )
 }

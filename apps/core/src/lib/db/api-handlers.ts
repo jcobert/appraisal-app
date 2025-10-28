@@ -1,11 +1,6 @@
 // sort-imports-ignore
 import 'server-only'
 
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientUnknownRequestError,
-  PrismaClientValidationError,
-} from '@prisma/client/runtime/library'
 import { NextResponse } from 'next/server'
 
 import {
@@ -13,6 +8,7 @@ import {
   AuthorizationError,
   DatabaseConnectionError,
   DatabaseConstraintError,
+  isPrismaError,
   NotFoundError,
   parsePrismaError,
   ValidationError,
@@ -339,15 +335,7 @@ export const createApiHandler = async <
     }
 
     // Handle Prisma errors with detailed parsing
-    if (
-      error instanceof PrismaClientKnownRequestError ||
-      error instanceof PrismaClientUnknownRequestError ||
-      error instanceof PrismaClientValidationError ||
-      (error &&
-        typeof error === 'object' &&
-        'code' in error &&
-        (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND'))
-    ) {
+    if (isPrismaError(error)) {
       const prismaError = parsePrismaError(error)
       return {
         status: prismaError.status,

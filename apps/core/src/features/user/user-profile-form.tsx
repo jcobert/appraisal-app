@@ -15,7 +15,7 @@ import { withoutBlanks } from '@repo/utils'
 
 import { UserProfileFormData, userProfileSchema } from '@/lib/db/schemas/user'
 
-import { successful } from '@/utils/fetch'
+import { isStatusCodeSuccess } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 
 import Form from '@/components/form/form'
@@ -78,12 +78,12 @@ const UserProfileForm: FC<Props> = ({
     const payload = { ...initialData, ...data }
     if (isUpdate) {
       const res = await updateUser.mutateAsync(payload)
-      if (successful(res.status)) {
+      if (isStatusCodeSuccess(res.status)) {
         router.push(prevUrl)
       }
     } else {
       const res = await createUser.mutateAsync(payload)
-      if (successful(res.status)) {
+      if (isStatusCodeSuccess(res.status)) {
         router.push(prevUrl)
       }
     }

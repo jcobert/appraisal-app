@@ -4,7 +4,11 @@ import toast, {
   ValueFunction,
 } from 'react-hot-toast'
 
-import { FetchErrorCode, FetchResponse, successful } from '@/utils/fetch'
+import {
+  FetchErrorCode,
+  FetchResponse,
+  isStatusCodeSuccess,
+} from '@/utils/fetch'
 
 export type ErrorToastMessages<TRes = unknown, TCtx = unknown> = {
   [key in keyof typeof FetchErrorCode]?: ValueFunction<
@@ -55,7 +59,7 @@ const promiseToast = <TRes = unknown, TCtx = unknown>(
   const response = toast.promise<FetchResponse<TRes>>(
     new Promise<FetchResponse<TRes>>(async (resolve, reject) => {
       const res = await request()
-      if (!successful(res.status)) {
+      if (!isStatusCodeSuccess(res.status)) {
         reject(res)
       }
       resolve(res)
@@ -127,7 +131,7 @@ export const toastyQuery = async <TData = unknown>(
     const res = await queryFn()
 
     // If not successful, treat it as an error and show error toast
-    if (!successful(res?.status)) {
+    if (!isStatusCodeSuccess(res?.status)) {
       let errorMessage: Renderable = genericErrorMessage
 
       // Check custom messages first

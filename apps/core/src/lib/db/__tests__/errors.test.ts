@@ -8,16 +8,20 @@ import {
   NotFoundError,
   ValidationError,
   handlePrismaError,
+  isPrismaError,
   parsePrismaError,
 } from '../errors'
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientUnknownRequestError,
-  PrismaClientValidationError,
-} from '@prisma/client/runtime/library'
+
+import { Prisma } from '@repo/database'
 
 import { FetchErrorCode } from '@/utils/fetch'
 import { ZodFieldErrors } from '@/utils/zod'
+
+const {
+  PrismaClientKnownRequestError,
+  PrismaClientUnknownRequestError,
+  PrismaClientValidationError,
+} = Prisma
 
 describe('Error Classes', () => {
   describe('ValidationError', () => {
@@ -211,6 +215,215 @@ describe('Error Classes', () => {
   })
 })
 
+describe('isPrismaError', () => {
+  describe('PrismaClientKnownRequestError detection', () => {
+    it('should return true for PrismaClientKnownRequestError instances', () => {
+      const error = new PrismaClientKnownRequestError('Test error', {
+        code: 'P2002',
+        clientVersion: '5.0.0',
+      })
+
+      expect(isPrismaError(error)).toBe(true)
+    })
+
+    it('should return true for errors with Prisma error codes (P-prefixed)', () => {
+      const error = {
+        code: 'P2003',
+        message: 'Foreign key constraint failed',
+      }
+
+      expect(isPrismaError(error)).toBe(true)
+    })
+
+    it('should return true for various Prisma error codes', () => {
+      const errorCodes = [
+        'P2000',
+        'P2001',
+        'P2002',
+        'P2003',
+        'P2025',
+        'P3000',
+        'P4000',
+      ]
+
+      errorCodes.forEach((code) => {
+        const error = { code, message: 'Test error' }
+        expect(isPrismaError(error)).toBe(true)
+      })
+    })
+  })
+
+  describe('PrismaClientUnknownRequestError detection', () => {
+    it('should return true for PrismaClientUnknownRequestError instances', () => {
+      const error = new PrismaClientUnknownRequestError('Unknown error', {
+        clientVersion: '5.0.0',
+      })
+
+      expect(isPrismaError(error)).toBe(true)
+    })
+  })
+
+  describe('PrismaClientValidationError detection', () => {
+    it('should return true for PrismaClientValidationError instances', () => {
+      const error = new PrismaClientValidationError('Validation failed', {
+        clientVersion: '5.0.0',
+      })
+
+      expect(isPrismaError(error)).toBe(true)
+    })
+  })
+
+  describe('Network error detection', () => {
+    it('should return true for ECONNREFUSED errors', () => {
+      const error = { code: 'ECONNREFUSED', message: 'Connection refused' }
+
+      expect(isPrismaError(error)).toBe(true)
+    })
+
+    it('should return true for ENOTFOUND errors', () => {
+      const error = { code: 'ENOTFOUND', message: 'Host not found' }
+
+      expect(isPrismaError(error)).toBe(true)
+    })
+  })
+
+  describe('Non-Prisma error detection', () => {
+    it('should return false for generic Error instances', () => {
+      const error = new Error('Generic error')
+
+      expect(isPrismaError(error)).toBe(false)
+    })
+
+    it('should return false for custom error classes', () => {
+      const validationError = new ValidationError('Validation failed', {})
+      const authError = new AuthorizationError('Not authorized')
+      const notFoundError = new NotFoundError('Not found')
+
+      expect(isPrismaError(validationError)).toBe(false)
+      expect(isPrismaError(authError)).toBe(false)
+      expect(isPrismaError(notFoundError)).toBe(false)
+    })
+
+    it('should return false for null and undefined', () => {
+      // isPrismaError returns the result of the boolean expression, which is falsy for null/undefined
+      // but the actual value returned is null or undefined, not false
+      expect(isPrismaError(null)).toBeFalsy()
+      expect(isPrismaError(undefined)).toBeFalsy()
+    })
+
+    it('should return false for primitive values', () => {
+      expect(isPrismaError('string error')).toBe(false)
+      expect(isPrismaError(123)).toBe(false)
+      expect(isPrismaError(true)).toBe(false)
+    })
+
+    it('should return false for objects without code property', () => {
+      const error = { message: 'Error message', type: 'CustomError' }
+
+      expect(isPrismaError(error)).toBe(false)
+    })
+
+    it('should return false for objects with non-string code', () => {
+      const error = { code: 123, message: 'Error message' }
+
+      expect(isPrismaError(error)).toBe(false)
+    })
+
+    it('should return false for objects with non-Prisma error codes', () => {
+      const errorCodes = [
+        'E001',
+        'ERR_INVALID',
+        'CUSTOM_ERROR',
+        '2002',
+        'p2002', // lowercase
+      ]
+
+      errorCodes.forEach((code) => {
+        const error = { code, message: 'Test error' }
+        expect(isPrismaError(error)).toBe(false)
+      })
+    })
+
+    it('should return false for errors with network-like codes that are not ECONNREFUSED or ENOTFOUND', () => {
+      const errorCodes = ['ETIMEDOUT', 'ECONNRESET', 'EPIPE', 'EHOSTUNREACH']
+
+      errorCodes.forEach((code) => {
+        const error = { code, message: 'Network error' }
+        expect(isPrismaError(error)).toBe(false)
+      })
+    })
+  })
+
+  describe('Edge cases', () => {
+    it('should handle errors with code property that is an empty string', () => {
+      const error = { code: '', message: 'Error message' }
+
+      expect(isPrismaError(error)).toBe(false)
+    })
+
+    it('should handle errors with code property that only contains P', () => {
+      const error = { code: 'P', message: 'Error message' }
+
+      expect(isPrismaError(error)).toBe(true) // Starts with P
+    })
+
+    it('should handle complex Prisma-like error objects', () => {
+      const error = {
+        code: 'P2003',
+        message: 'Foreign key constraint failed',
+        meta: {
+          field_name: 'userId',
+          constraint: 'User_id_fkey',
+        },
+        clientVersion: '5.0.0',
+        stack: 'Error stack trace...',
+      }
+
+      expect(isPrismaError(error)).toBe(true)
+    })
+
+    it('should handle serialized/deserialized Prisma errors', () => {
+      // Simulate what happens when an error crosses a serialization boundary
+      const originalError = new PrismaClientKnownRequestError('Test error', {
+        code: 'P2002',
+        clientVersion: '5.0.0',
+      })
+
+      // Simulate JSON serialization/deserialization
+      const serialized = JSON.parse(JSON.stringify(originalError))
+
+      // instanceof will fail after serialization
+      expect(serialized instanceof PrismaClientKnownRequestError).toBe(false)
+
+      // But isPrismaError should still work due to property checking
+      expect(isPrismaError(serialized)).toBe(true)
+    })
+
+    it('should handle errors thrown across module boundaries', () => {
+      // This simulates the real-world issue where instanceof fails
+      // due to multiple Prisma Client instances
+      const errorLikeObject = {
+        name: 'PrismaClientKnownRequestError',
+        code: 'P2003',
+        message: 'Foreign key constraint violated',
+        clientVersion: '6.17.1',
+        meta: {
+          modelName: 'Organization',
+          constraint: 'OrgMember_organizationId_fkey',
+        },
+      }
+
+      // instanceof will fail since this isn't a real instance
+      expect(errorLikeObject instanceof PrismaClientKnownRequestError).toBe(
+        false,
+      )
+
+      // But isPrismaError should detect it by properties
+      expect(isPrismaError(errorLikeObject)).toBe(true)
+    })
+  })
+})
+
 describe('parsePrismaError', () => {
   describe('PrismaClientKnownRequestError handling', () => {
     it('should handle P2002 unique constraint violation', () => {
@@ -262,7 +475,7 @@ describe('parsePrismaError', () => {
       const result = parsePrismaError(error)
 
       expect(result).toEqual({
-        message: 'The requested record could not be found.',
+        message: 'Necessary records could not be found.',
         code: FetchErrorCode.NOT_FOUND,
         status: 404,
       })
@@ -281,7 +494,8 @@ describe('parsePrismaError', () => {
       const result = parsePrismaError(error)
 
       expect(result).toEqual({
-        message: 'Invalid reference: the userId record does not exist.',
+        message:
+          'Cannot delete this record because it is referenced by other records.',
         code: FetchErrorCode.INVALID_DATA,
         status: 400,
         field: 'userId',
@@ -301,7 +515,8 @@ describe('parsePrismaError', () => {
       const result = parsePrismaError(error)
 
       expect(result).toEqual({
-        message: 'Invalid reference: the referenced record does not exist.',
+        message:
+          'Cannot delete this record because it is referenced by other records.',
         code: FetchErrorCode.INVALID_DATA,
         status: 400,
         field: undefined,

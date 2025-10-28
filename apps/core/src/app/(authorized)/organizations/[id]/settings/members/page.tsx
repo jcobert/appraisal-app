@@ -11,7 +11,7 @@ import {
 import { handleGetActiveUserOrgMember } from '@/lib/db/handlers/organization-member-handlers'
 import { protectPage } from '@/lib/db/utils'
 
-import { successful } from '@/utils/fetch'
+import { isStatusCodeSuccess } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
 import FullScreenLoader from '@/components/layout/full-screen-loader'
@@ -22,7 +22,7 @@ import {
   permissionsQueryKey,
 } from '@/configuration/react-query/query-keys'
 import { generatePageMeta } from '@/configuration/seo'
-import MembersSettings from '@/features/organization/settings/members-settings'
+import MembersSettings from '@/features/organization/settings/members/members-settings'
 
 export const metadata: Metadata = generatePageMeta({
   title: 'Organization Settings',
@@ -49,7 +49,7 @@ const Page: FC<Props> = async ({ params }) => {
       queryKey: organizationsQueryKey.filtered({ id: organizationId }),
       queryFn: async () => {
         const result = await handleGetOrganization(organizationId)
-        if (!successful(result.status)) {
+        if (!isStatusCodeSuccess(result.status)) {
           throw new Error(
             result.error?.message || 'Failed to fetch organization',
           )
@@ -65,7 +65,7 @@ const Page: FC<Props> = async ({ params }) => {
       }),
       queryFn: async () => {
         const result = await handleGetActiveUserOrgMember(organizationId)
-        if (!successful(result.status)) {
+        if (!isStatusCodeSuccess(result.status)) {
           throw new Error(
             result.error?.message ||
               'Failed to fetch active user organization member',
@@ -82,7 +82,7 @@ const Page: FC<Props> = async ({ params }) => {
       }),
       queryFn: async () => {
         const result = await handleGetOrganizationPermissions(organizationId)
-        if (!successful(result.status)) {
+        if (!isStatusCodeSuccess(result.status)) {
           throw new Error(
             result.error?.message || 'Failed to fetch permissions',
           )

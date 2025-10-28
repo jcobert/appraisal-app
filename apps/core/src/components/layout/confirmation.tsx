@@ -2,7 +2,7 @@
 
 import React, { FC, ReactNode, useState } from 'react'
 
-import { Button } from '@repo/ui/ui/button'
+import { Button, ButtonProps } from '@repo/ui/ui/button'
 
 import FormActionBar from '@/components/form/form-action-bar'
 import FullScreenLoader from '@/components/layout/full-screen-loader'
@@ -29,6 +29,8 @@ export type ConfirmationProps = {
   loader?: 'fullscreen' | 'button' | 'none'
   primaryButtonText?: string
   cancelButtonText?: string
+  primaryButtonProps?: ButtonProps
+  cancelButtonProps?: ButtonProps
 } & Pick<ModalProps, 'open' | 'onOpenChange' | 'preventOutsideClose'>
 
 const Confirmation: FC<ConfirmationProps> = ({
@@ -43,6 +45,8 @@ const Confirmation: FC<ConfirmationProps> = ({
   preventOutsideClose = true,
   primaryButtonText = 'OK',
   cancelButtonText = 'Cancel',
+  primaryButtonProps,
+  cancelButtonProps,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isBusy, setIsBusy] = useState(false)
@@ -79,6 +83,7 @@ const Confirmation: FC<ConfirmationProps> = ({
                 handleOpen(false)
               }}
               disabled={isBusy}
+              {...cancelButtonProps}
             >
               {cancelButtonText}
             </Button>
@@ -95,6 +100,7 @@ const Confirmation: FC<ConfirmationProps> = ({
               loading={isBusy}
               disabled={isBusy}
               variant='destructive'
+              {...primaryButtonProps}
             >
               {primaryButtonText}
             </Button>

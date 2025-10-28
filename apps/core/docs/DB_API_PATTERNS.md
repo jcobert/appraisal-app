@@ -160,7 +160,7 @@ const Page: FC<Props> = async () => {
     queryKey: usersQueryKey.all,
     queryFn: async () => {
       const result = await handleGetUsers()
-      if (!successful(result.status)) {
+      if (!isStatusCodeSuccess(result.status)) {
         throw new Error(result.error?.message || 'Failed to fetch users')
       }
       return result
@@ -182,7 +182,7 @@ const Page: FC<Props> = async () => {
 const ServerComponent = async () => {
   const result = await handleGetUsers()
 
-  if (!successful(result.status)) {
+  if (!isStatusCodeSuccess(result.status)) {
     return <ErrorComponent message={result.error?.message} />
   }
 
@@ -205,7 +205,7 @@ export async function createUserAction(formData: FormData) {
 
   const result = await handleCreateUserProfile(payload)
 
-  if (!successful(result.status)) {
+  if (!isStatusCodeSuccess(result.status)) {
     return { error: result.error }
   }
 

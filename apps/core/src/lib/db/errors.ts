@@ -1,8 +1,5 @@
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientUnknownRequestError,
-  PrismaClientValidationError,
-} from '@prisma/client/runtime/library'
+import { Prisma } from '@repo/database'
+import { isObject } from '@repo/utils'
 
 import { FetchErrorCode } from '@/utils/fetch'
 import { ZodFieldErrors } from '@/utils/zod'
@@ -75,11 +72,29 @@ export class DatabaseConnectionError extends Error {
   }
 }
 
+/** Checks if `error` was thrown by Prisma client. */
+export const isPrismaError = (error: unknown) => {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError ||
+    error instanceof Prisma.PrismaClientUnknownRequestError ||
+    error instanceof Prisma.PrismaClientValidationError ||
+    (error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      typeof error.code === 'string' &&
+      (error.code.startsWith('P') || // Prisma error codes
+        error.code === 'ECONNREFUSED' || // Network error codes
+        error.code === 'ENOTFOUND'))
+  )
+}
+
 /**
+ * @todo Go through and clean up - add any missing codes, make sure msgs are user-friendly.
+ *
  * Utility function to parse Prisma errors and return user-friendly messages and error types.
  */
 export const parsePrismaError = (
-  error: any,
+  error: unknown,
 ): {
   message: string
   code: FetchErrorCode
@@ -87,7 +102,7 @@ export const parsePrismaError = (
   field?: string
 } => {
   // Handle Prisma Client Known Request Errors
-  if (error instanceof PrismaClientKnownRequestError) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
       case 'P2002': {
         // Unique constraint violation
@@ -100,19 +115,12 @@ export const parsePrismaError = (
           field: fieldName,
         }
       }
-      case 'P2025': {
-        // Record not found
-        return {
-          message: 'The requested record could not be found.',
-          code: FetchErrorCode.NOT_FOUND,
-          status: 404,
-        }
-      }
       case 'P2003': {
         // Foreign key constraint violation
         const field = error.meta?.field_name as string | undefined
         return {
-          message: `Invalid reference: the ${field || 'referenced'} record does not exist.`,
+          message:
+            'Cannot delete this record because it is referenced by other records.',
           code: FetchErrorCode.INVALID_DATA,
           status: 400,
           field,
@@ -244,6 +252,14 @@ export const parsePrismaError = (
           status: 503,
         }
       }
+      case 'P2025': {
+        // Record not found
+        return {
+          message: 'Necessary records could not be found.',
+          code: FetchErrorCode.NOT_FOUND,
+          status: 404,
+        }
+      }
       case 'P2027': {
         // Multiple errors occurred
         return {
@@ -263,7 +279,7 @@ export const parsePrismaError = (
   }
 
   // Handle Prisma Client Validation Errors
-  if (error instanceof PrismaClientValidationError) {
+  if (error instanceof Prisma.PrismaClientValidationError) {
     return {
       message: 'Invalid data provided to the database.',
       code: FetchErrorCode.INVALID_DATA,
@@ -272,7 +288,7 @@ export const parsePrismaError = (
   }
 
   // Handle Prisma Client Unknown Request Errors
-  if (error instanceof PrismaClientUnknownRequestError) {
+  if (error instanceof Prisma.PrismaClientUnknownRequestError) {
     return {
       message: 'An unknown database error occurred.',
       code: FetchErrorCode.DATABASE_FAILURE,
@@ -293,7 +309,12 @@ export const parsePrismaError = (
 
   // Default fallback
   return {
-    message: error?.message || 'An unknown database error occurred.',
+    message:
+      isObject(error) &&
+      'message' in error &&
+      typeof error?.message === 'string'
+        ? error?.message
+        : 'An unknown database error occurred.',
     code: FetchErrorCode.DATABASE_FAILURE,
     status: 500,
   }
@@ -304,7 +325,7 @@ export const parsePrismaError = (
  * This can be used in query functions to throw more specific errors.
  */
 export const handlePrismaError = (error: any): never => {
-  if (error instanceof PrismaClientKnownRequestError) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
       case 'P2002': {
         // Unique constraint violation

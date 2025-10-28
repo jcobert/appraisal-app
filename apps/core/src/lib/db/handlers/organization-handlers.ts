@@ -155,7 +155,7 @@ export const handleDeleteOrganization = async (organizationId: string) => {
       }
       const result = await db.organization.delete({
         where: { id: organizationId },
-        select: { id: true },
+        select: { name: true },
       })
       return result
     },

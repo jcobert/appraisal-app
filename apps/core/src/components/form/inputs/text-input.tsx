@@ -19,6 +19,7 @@ export type AdditionalInputProps = {
   icon?: InputIcon
   labelClassName?: string
   inputClassName?: string
+  applyErrorStateToLabel?: boolean
 } & Pick<FieldLabelProps, 'tooltip'>
 
 export type TextInputProps = Partial<InputHTMLAttributes<HTMLInputElement>> &
@@ -41,6 +42,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       required,
       icon,
       tooltip,
+      applyErrorStateToLabel = true,
       ...props
     },
     ref,
@@ -55,7 +57,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           htmlFor={id || name}
           required={required}
           disabled={props?.disabled}
-          error={!!error}
+          error={!!error && applyErrorStateToLabel}
           className={labelClassName}
           icon={icon}
           tooltip={tooltip}

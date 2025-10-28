@@ -12,7 +12,7 @@ import {
 import { handleGetActiveUserProfile } from '@/lib/db/handlers/user-handlers'
 
 import { isAuthenticated } from '@/utils/auth'
-import { successful } from '@/utils/fetch'
+import { isStatusCodeSuccess } from '@/utils/fetch'
 import { createQueryClient } from '@/utils/query'
 
 import BreadcrumbProvider from '@/providers/breadcrumbs/breadcrumb-provider'
@@ -52,7 +52,7 @@ const Layout = async ({
       queryKey: usersQueryKey.active,
       queryFn: async () => {
         const res = await handleGetActiveUserProfile()
-        if (!successful(res?.status)) {
+        if (!isStatusCodeSuccess(res?.status)) {
           throw new Error(res?.error?.message || 'Failed to fetch active user')
         }
         return res
@@ -62,7 +62,7 @@ const Layout = async ({
       queryKey: organizationsQueryKey.all,
       queryFn: async () => {
         const res = await handleGetUserOrganizations()
-        if (!successful(res?.status)) {
+        if (!isStatusCodeSuccess(res?.status)) {
           throw new Error(
             res?.error?.message || 'Failed to fetch organizations',
           )
@@ -79,7 +79,7 @@ const Layout = async ({
         queryKey: organizationsQueryKey.filtered({ id: activeOrgId }),
         queryFn: async () => {
           const res = await handleGetOrganization(activeOrgId)
-          if (!successful(res?.status)) {
+          if (!isStatusCodeSuccess(res?.status)) {
             throw new Error(
               res?.error?.message || 'Failed to fetch active organization',
             )
@@ -94,7 +94,7 @@ const Layout = async ({
         }),
         queryFn: async () => {
           const res = await handleGetOrganizationPermissions(activeOrgId)
-          if (!successful(res?.status)) {
+          if (!isStatusCodeSuccess(res?.status)) {
             throw new Error(
               res?.error?.message || 'Failed to fetch permissions',
             )

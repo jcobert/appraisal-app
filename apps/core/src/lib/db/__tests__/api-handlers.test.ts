@@ -1098,7 +1098,7 @@ describe('api-handlers', () => {
           data: null,
           error: {
             code: FetchErrorCode.NOT_FOUND,
-            message: 'The requested record could not be found.',
+            message: 'Necessary records could not be found.',
           },
         })
 
@@ -1127,7 +1127,8 @@ describe('api-handlers', () => {
           data: null,
           error: {
             code: FetchErrorCode.INVALID_DATA,
-            message: 'Invalid reference: the userId record does not exist.',
+            message:
+              'Cannot delete this record because it is referenced by other records.',
           },
         })
 

@@ -279,7 +279,7 @@ const onSubmit: SubmitHandler<FormData> = async (data) => {
   const result = await createUser.mutateAsync(data)
 
   // 3. Handle response
-  if (successful(result.status)) {
+  if (isStatusCodeSuccess(result.status)) {
     router.push('/success')
   }
 }
@@ -307,7 +307,7 @@ const onSubmit: SubmitHandler<FormData> = async (data) => {
   const result = await createUser.mutateAsync(sanitizedData)
 
   // 4. Handle response
-  if (successful(result.status)) {
+  if (isStatusCodeSuccess(result.status)) {
     router.push('/success')
   }
 }

@@ -94,7 +94,7 @@ model OrgMember {
   userId         String
   organizationId String
   user           User         @relation("UserMember", fields: [userId], references: [id])
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   Order          Order[]
 }
 
@@ -128,7 +128,7 @@ model OrgInvitation {
   invitedByUserId  String
   organizationId   String
   invitedBy        User                @relation("OrgInviter", fields: [invitedByUserId], references: [id])
-  organization     Organization        @relation(fields: [organizationId], references: [id])
+  organization     Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
 
 model Client {
