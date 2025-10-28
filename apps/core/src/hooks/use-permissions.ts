@@ -4,6 +4,7 @@ import { Organization } from '@repo/database'
 import { exists } from '@repo/utils'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
+import { GetOrganizationPermissionsResult } from '@/lib/db/handlers/organization-handlers'
 
 import useCoreQuery, { UseCoreQueryProps } from '@/hooks/use-core-query'
 
@@ -16,28 +17,26 @@ type UsePermissionsReturn<Area extends PermissionArea> = {
   error: Error | null
 }
 
-type PermissionsResponse =
-  | { [Area in PermissionArea]: PermissionAction[Area][] }
-  | null
-
 type Props<Area extends PermissionArea> = {
+  /** The area of the application to check permissions for. */
   area: Area
+  /** The organization ID to check permissions against. */
   organizationId: Organization['id']
-  options?: Partial<UseCoreQueryProps<PermissionsResponse>>
+  /** Additional query options. */
+  options?: Partial<UseCoreQueryProps<GetOrganizationPermissionsResult['data']>>
 }
 
 /**
  * Hook for checking permissions in a specific area of the application.
- * @param area The area of the application to check permissions for.
- * @param organizationId The organization ID to check permissions against.
- * @param options Additional query options.
  */
 export const usePermissions = <Area extends PermissionArea>({
   area,
   organizationId,
   options,
 }: Props<Area>): UsePermissionsReturn<Area> => {
-  const { response, isLoading, error } = useCoreQuery<PermissionsResponse>({
+  const { response, isLoading, error } = useCoreQuery<
+    GetOrganizationPermissionsResult['data']
+  >({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/permissions`,
     queryKey: permissionsQueryKey.filtered({ organizationId, area }),
     enabled: exists(organizationId),

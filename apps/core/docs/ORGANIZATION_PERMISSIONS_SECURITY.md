@@ -45,14 +45,14 @@ const { can } = usePermissions({
 ┌─────────────────────────────────────────────────────────────┐
 │                    Application Layer                        │
 ├─────────────────────────────────────────────────────────────┤
-│  Navigation (Active Org)  │  Page Content (Specific Org)   │
+│  Navigation (Active Org)  │  Page Content (Specific Org)    │
 │                           │                                 │
-│  useActiveOrgPermissions   │  usePermissions({            │
-│  - Sidebar                │    organizationId: "specific"  │
+│  useActiveOrgPermissions   │  usePermissions({              │
+│  - Sidebar                │    organizationId: "specific"   │
 │  - Header menus           │  })                             │
-│  - Global actions         │  - Organization pages          │
+│  - Global actions         │  - Organization pages           │
 │                           │  - Forms                        │
-│                           │  - Specific org actions        │
+│                           │  - Specific org actions         │
 └─────────────────────────────────────────────────────────────┘
 ```
 

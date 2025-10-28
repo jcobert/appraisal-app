@@ -3,7 +3,7 @@ import { FC, ReactNode, useMemo, useState } from 'react'
 import { Button, ButtonProps } from '@repo/ui/ui/button'
 import { cn } from '@repo/utils'
 
-import { useOrganizationContext } from '@/providers/organization-provider'
+import { usePermissions } from '@/hooks/use-permissions'
 
 import DeleteOrgModal from '@/features/organization/settings/general/danger-zone/delete-org-modal'
 import LeaveOrgModal from '@/features/organization/settings/general/danger-zone/leave-org'
@@ -50,9 +50,7 @@ const DangerZone: FC<Props> = ({ organization }) => {
 
   const { id: organizationId, name: organizationName } = organization
 
-  const {
-    permissions: { can },
-  } = useOrganizationContext()
+  const { can } = usePermissions({ area: 'organization', organizationId })
 
   const canDelete = can('delete_org')
   const canTransfer = can('transfer_org')

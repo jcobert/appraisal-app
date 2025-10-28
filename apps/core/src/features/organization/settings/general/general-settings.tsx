@@ -53,7 +53,7 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
   // }, [userCanEditInfo, isCheckingPermissions, router])
 
   return (
-    <section className='flex flex-col gap-4 px-2'>
+    <section className='flex flex-col gap-6 px-2'>
       <OrganizationForm
         organization={organization}
         disabled={
