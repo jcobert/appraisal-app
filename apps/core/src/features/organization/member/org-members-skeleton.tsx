@@ -1,6 +1,6 @@
 import { FC } from 'react'
 
-import { Skeleton } from '@repo/ui/ui/skeleton'
+import { Skeleton } from '@repo/ui'
 
 import { cn } from '@/utils/style'
 

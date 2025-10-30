@@ -4,7 +4,7 @@ import { FC, useState } from 'react'
 import { Controller, SubmitHandler, useFormState } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
 import { fullName } from '@repo/utils'
 
 import { orgMemberSchema } from '@/lib/db/schemas/org-member'

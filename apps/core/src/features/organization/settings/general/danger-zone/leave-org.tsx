@@ -3,7 +3,7 @@ import { Controller, SubmitHandler } from 'react-hook-form'
 import { z } from 'zod'
 
 import { Organization } from '@repo/database'
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
 
 import FormActionBar from '@/components/form/form-action-bar'
 import TextInput from '@/components/form/inputs/text-input'

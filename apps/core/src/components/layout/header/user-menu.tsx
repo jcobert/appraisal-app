@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { FC, useState } from 'react'
 import { FaRegCircleUser } from 'react-icons/fa6'
 
-import { Button } from '@repo/ui/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@repo/ui/ui/popover'
+import { Button } from '@repo/ui'
+import { Popover, PopoverContent, PopoverTrigger } from '@repo/ui'
 
 import { cn } from '@/utils/style'
 

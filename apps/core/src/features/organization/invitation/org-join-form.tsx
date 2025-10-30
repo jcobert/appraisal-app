@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 
 import { OrgInvitation } from '@repo/database'
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
 
 import { isStatusCodeSuccess } from '@/utils/fetch'
 import { homeUrl } from '@/utils/nav'

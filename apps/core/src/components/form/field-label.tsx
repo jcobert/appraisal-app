@@ -10,7 +10,7 @@ import {
 } from 'react-icons/fi'
 import { LuCalendarDays } from 'react-icons/lu'
 
-import { Popover, PopoverContent, PopoverTrigger } from '@repo/ui/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@repo/ui'
 
 import { cn } from '@/utils/style'
 

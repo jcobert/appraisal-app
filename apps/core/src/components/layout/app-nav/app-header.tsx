@@ -1,7 +1,7 @@
 import { FC, ReactNode } from 'react'
 
-import { Separator } from '@repo/ui/ui/separator'
-import { SidebarTrigger } from '@repo/ui/ui/sidebar'
+import { Separator } from '@repo/ui'
+import { SidebarTrigger } from '@repo/ui'
 
 import { cn } from '@/lib/utils'
 

@@ -1,6 +1,6 @@
 import React, { ComponentPropsWithoutRef, FC, Fragment, ReactNode } from 'react'
 
-import { Button, ButtonProps } from '@repo/ui/ui/button'
+import { Button, ButtonProps } from '@repo/ui'
 
 import { cn } from '@/utils/style'
 

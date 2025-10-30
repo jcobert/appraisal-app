@@ -13,7 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarSeparator,
-} from '@repo/ui/ui/sidebar'
+} from '@repo/ui'
 
 import { cn } from '@/lib/utils'
 

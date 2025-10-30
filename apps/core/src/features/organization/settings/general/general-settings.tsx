@@ -4,7 +4,7 @@ import { FC } from 'react'
 import { useIsClient } from 'usehooks-ts'
 
 import { Organization } from '@repo/database'
-import { Separator } from '@repo/ui/ui/separator'
+import { Separator } from '@repo/ui'
 
 import { useOrgPageRedirect } from '@/hooks/use-org-page-redirect'
 import { usePermissions } from '@/hooks/use-permissions'

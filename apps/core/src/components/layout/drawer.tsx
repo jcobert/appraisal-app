@@ -7,7 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@repo/ui/ui/sheet'
+} from '@repo/ui'
 
 export type DrawerProps = {
   children?: ReactNode

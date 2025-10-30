@@ -8,10 +8,6 @@ import baseConfig from '@repo/tailwind-config'
  */
 export default {
   ...baseConfig,
-  content: [
-    './src/**/*.{js,jsx,ts,tsx}',
-    // Include app content for context
-    '../../apps/core/src/**/*.{js,jsx,ts,tsx}',
-  ],
+  content: ['./src/**/*.{js,jsx,ts,tsx}'],
   plugins: [require('tailwindcss-animate')],
 } satisfies Config

@@ -13,8 +13,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/ui/ui/dropdown-menu'
-import { SidebarMenuButton, useSidebar } from '@repo/ui/ui/sidebar'
+} from '@repo/ui'
+import { SidebarMenuButton, useSidebar } from '@repo/ui'
 import { objectKeys } from '@repo/utils'
 import { fullName } from '@repo/utils'
 

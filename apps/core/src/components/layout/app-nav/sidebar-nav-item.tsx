@@ -3,12 +3,8 @@
 import Link from 'next/link'
 import { FC } from 'react'
 
-import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from '@repo/ui/ui/sidebar'
-import { Skeleton } from '@repo/ui/ui/skeleton'
+import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@repo/ui'
+import { Skeleton } from '@repo/ui'
 import { exists } from '@repo/utils'
 
 import { NavItem } from '@/utils/nav'

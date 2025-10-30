@@ -11,9 +11,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from '@repo/ui/ui/dropdown-menu'
-import { SidebarMenuButton, useSidebar } from '@repo/ui/ui/sidebar'
-import { Skeleton } from '@repo/ui/ui/skeleton'
+} from '@repo/ui'
+import { SidebarMenuButton, useSidebar } from '@repo/ui'
+import { Skeleton } from '@repo/ui'
 import { objectKeys } from '@repo/utils'
 
 import { cn } from '@/lib/utils'

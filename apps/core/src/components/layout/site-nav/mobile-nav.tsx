@@ -9,8 +9,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@repo/ui/ui/accordion'
-import { Button } from '@repo/ui/ui/button'
+} from '@repo/ui'
+import { Button } from '@repo/ui'
 
 import { cn } from '@/utils/style'
 

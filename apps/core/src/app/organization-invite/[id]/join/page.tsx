@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { FC } from 'react'
 
 import { PageParams } from '@repo/types'
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
 import { fullName } from '@repo/utils'
 
 import { handleGetPublicOrgInvite } from '@/lib/db/handlers/organization-invite-handlers'

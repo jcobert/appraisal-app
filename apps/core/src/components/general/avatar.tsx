@@ -2,11 +2,7 @@
 
 import { FC } from 'react'
 
-import {
-  AvatarFallback,
-  AvatarImage,
-  Avatar as AvatarRoot,
-} from '@repo/ui/ui/avatar'
+import { AvatarFallback, AvatarImage, Avatar as AvatarRoot } from '@repo/ui'
 
 import { cn } from '@/utils/style'
 

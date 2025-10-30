@@ -3,7 +3,7 @@
 import { FC } from 'react'
 import toast, { ToastBar, Toaster } from 'react-hot-toast'
 
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
 
 const ToasterOven: FC = () => {
   return (

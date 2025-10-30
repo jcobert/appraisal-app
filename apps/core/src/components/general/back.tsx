@@ -2,7 +2,7 @@ import Link, { LinkProps } from 'next/link'
 import React, { FC } from 'react'
 import { IoIosArrowBack } from 'react-icons/io'
 
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
 
 import { cn } from '@/utils/style'
 

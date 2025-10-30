@@ -2,7 +2,7 @@ import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { cookies } from 'next/headers'
 import { ReactNode } from 'react'
 
-import { SidebarInset, SidebarProvider } from '@repo/ui/ui/sidebar'
+import { SidebarInset, SidebarProvider } from '@repo/ui'
 
 import {
   handleGetOrganization,

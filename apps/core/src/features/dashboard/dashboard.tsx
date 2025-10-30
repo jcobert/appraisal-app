@@ -5,7 +5,7 @@ import { FC } from 'react'
 import { IoAdd } from 'react-icons/io5'
 
 import { Organization, User } from '@repo/database'
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
 import { greeting } from '@repo/utils'
 
 import Banner from '@/components/general/banner'

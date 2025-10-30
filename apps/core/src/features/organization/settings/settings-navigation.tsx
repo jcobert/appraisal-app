@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import { FC, useMemo } from 'react'
 
 import { Organization } from '@repo/database'
-import { TabNav, TabNavLink, TabNavList } from '@repo/ui/ui/tab-navigation'
+import { TabNav, TabNavLink, TabNavList } from '@repo/ui'
 
 import { NavItem } from '@/utils/nav'
 

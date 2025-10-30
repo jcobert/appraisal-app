@@ -5,7 +5,7 @@ import { FC } from 'react'
 import { Controller, SubmitHandler, useFormState } from 'react-hook-form'
 
 import { Organization } from '@repo/database'
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
 
 import {
   OrganizationFormData,
