@@ -15,7 +15,9 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "eslint": "^8.57.1",
     "typescript": "workspace:*"
   }
 }

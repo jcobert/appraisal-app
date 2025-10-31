@@ -9,10 +9,12 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/lodash": "^4.17.13",
-    "@types/validator": "^13.15.3",
     "@types/node": "22.9.0",
+    "@types/validator": "^13.15.3",
+    "eslint": "^8.57.1",
     "typescript": "workspace:*"
   },
   "dependencies": {
