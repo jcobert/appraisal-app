@@ -1,6 +1,6 @@
 import { FC } from 'react'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 type Props = {
   /** File path or URL of image. */

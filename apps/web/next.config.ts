@@ -6,7 +6,13 @@ const nextConfig: NextConfig = {
     remotePatterns: [],
     minimumCacheTTL: 31536000,
   },
-  transpilePackages: ['@repo/ui', '@repo/utils', '@repo/types', '@repo/tailwind-config', '@repo/database'],
+  transpilePackages: [
+    '@repo/ui',
+    '@repo/utils',
+    '@repo/types',
+    '@repo/tailwind-config',
+    '@repo/database',
+  ],
 }
 
 export default nextConfig

@@ -10,7 +10,7 @@ import {
 } from 'react-hook-form'
 
 import { User } from '@repo/database'
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
 import { withoutBlanks } from '@repo/utils'
 
 import { UserProfileFormData, userProfileSchema } from '@/lib/db/schemas/user'

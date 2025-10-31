@@ -15,10 +15,9 @@ import {
 import tailwindConfig from 'tailwind.config'
 
 import { Organization, User } from '@repo/database'
-import { fullName } from '@repo/utils'
+import { cn, fullName } from '@repo/utils'
 
 import { getAssetPath } from '@/utils/email'
-import { cn } from '@/utils/style'
 
 import { copyright, siteConfig } from '@/configuration/site'
 
@@ -87,7 +86,7 @@ const OrgInviteEmail = ({
             <Section className='mt-8 mb-12 w-fit mx-auto'>
               <Link
                 href={inviteLink}
-                className='w-[6rem] font-medium border border-[#0d9c8b] bg-[#0d9c8b] px-4 py-3 text-[#fafafa] text-lg'
+                className='w-24 font-medium border border-[#0d9c8b] bg-[#0d9c8b] px-4 py-3 text-[#fafafa] text-lg'
               >
                 View invitation
               </Link>

@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@repo/ui/ui/dialog'
+} from '@repo/ui'
 
 export type ModalProps = {
   children?: ReactNode

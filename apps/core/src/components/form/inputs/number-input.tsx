@@ -3,7 +3,7 @@
 import { forwardRef, useState } from 'react'
 import { NumericFormat, NumericFormatProps } from 'react-number-format'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 import FieldError from '@/components/form/field-error'
 import FieldHelper from '@/components/form/field-helper'

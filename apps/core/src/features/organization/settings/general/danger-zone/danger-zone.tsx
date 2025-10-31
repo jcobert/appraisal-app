@@ -1,6 +1,6 @@
 import { FC, ReactNode, useMemo, useState } from 'react'
 
-import { Button, ButtonProps } from '@repo/ui/ui/button'
+import { Button, ButtonProps } from '@repo/ui'
 import { cn } from '@repo/utils'
 
 import { usePermissions } from '@/hooks/use-permissions'

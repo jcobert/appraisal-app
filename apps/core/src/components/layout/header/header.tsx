@@ -1,6 +1,6 @@
 import { FC } from 'react'
 
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
 
 import { getSessionData } from '@/lib/db/utils'
 

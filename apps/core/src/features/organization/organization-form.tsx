@@ -5,13 +5,13 @@ import { FC } from 'react'
 import { Controller, SubmitHandler, useFormState } from 'react-hook-form'
 
 import { Organization } from '@repo/database'
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
+import { cn } from '@repo/utils'
 
 import {
   OrganizationFormData,
   organizationSchema,
 } from '@/lib/db/schemas/organization'
-import { cn } from '@/lib/utils'
 
 import { isStatusCodeSuccess } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'

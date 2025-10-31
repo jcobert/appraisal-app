@@ -1,7 +1,7 @@
 import { partition } from 'lodash'
 import { FC } from 'react'
 
-import Separator from '@/components/general/separator'
+import { Separator } from '@repo/ui'
 
 import OrgMemberCard from '@/features/organization/member/org-member-card'
 import OrgMemberInviteCard from '@/features/organization/member/org-member-invite-card'
@@ -34,7 +34,7 @@ const OrganizationMembers: FC<Props> = ({
         </div>
       </div>
 
-      {invitations?.length && !hideInvites ? (
+      {!invitations?.length && !hideInvites ? (
         <>
           <Separator />
           <div className='flex flex-col gap-4 sm:w-fit'>

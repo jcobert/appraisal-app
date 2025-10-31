@@ -37,7 +37,7 @@ const MemberRoleDescriptions: FC<Props> = () => {
       </p> */}
       <dl className='flex flex-col gap-4 mt-2'>
         {ORG_MEMBER_ROLES?.map((role) => {
-          const { overview, bullets } = descriptions?.[role]
+          const { overview, bullets } = descriptions?.[role] || {}
           return (
             <div
               key={role}

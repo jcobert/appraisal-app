@@ -1,7 +1,7 @@
 import { FC, SVGAttributes } from 'react'
 import { GrCodeSandbox } from 'react-icons/gr'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 type Props = SVGAttributes<SVGElement>
 

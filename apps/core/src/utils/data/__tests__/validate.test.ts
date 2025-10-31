@@ -380,7 +380,7 @@ describe('validate.ts', () => {
           // Test with a string containing the character
           const testString = `test${char}name`
           // Create fresh regex to avoid global flag state issues
-          const pattern = /[^\p{L}\p{M}\s\-\.']/gu
+          const pattern = /[^\p{L}\p{M}\s\-.']/gu
           expect(pattern.test(testString)).toBe(true)
         })
       })

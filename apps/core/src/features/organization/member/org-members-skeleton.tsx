@@ -1,8 +1,7 @@
 import { FC } from 'react'
 
-import { Skeleton } from '@repo/ui/ui/skeleton'
-
-import { cn } from '@/utils/style'
+import { Skeleton } from '@repo/ui'
+import { cn } from '@repo/utils'
 
 import Avatar from '@/components/general/avatar'
 

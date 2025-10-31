@@ -6,9 +6,9 @@ import { FC } from 'react'
 import {
   SidebarMenuButton,
   SidebarMenuItem,
+  Skeleton,
   useSidebar,
-} from '@repo/ui/ui/sidebar'
-import { Skeleton } from '@repo/ui/ui/skeleton'
+} from '@repo/ui'
 import { exists } from '@repo/utils'
 
 import { NavItem } from '@/utils/nav'

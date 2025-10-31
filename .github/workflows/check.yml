@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+jobs:
+  ci:
+    name: 🔍 Lint, Type Check & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.2
+
+      - name: ⎔ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.1
+          cache: 'pnpm'
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔬 Lint
+        run: pnpm lint
+
+      - name: 🔎 Type check
+        run: pnpm typecheck
+
+      - name: 🃏 Run tests
+        run: pnpm test
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

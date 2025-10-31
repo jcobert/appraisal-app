@@ -33,7 +33,7 @@ jest.mock('@/components/layout/heading', () => {
   }
 })
 
-jest.mock('@/components/ui/button', () => ({
+jest.mock('@repo/ui/button', () => ({
   Button: function MockButton({ children }: { children: React.ReactNode }) {
     return <button data-testid='button'>{children}</button>
   },

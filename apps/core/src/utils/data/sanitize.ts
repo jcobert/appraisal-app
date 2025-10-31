@@ -121,7 +121,7 @@ export const sanitizeTextInput = (
         break
       case 'phone':
         // Keep only phone-appropriate characters (digits and common separators)
-        newVal = newVal.replace(/[^\d\s\+\-\(\)\.]/g, '')
+        newVal = newVal.replace(/[^\d\s+\-().]/g, '')
         // Replace multiple contiguous spaces with single space
         newVal = normalizeSpaces(newVal)
         break

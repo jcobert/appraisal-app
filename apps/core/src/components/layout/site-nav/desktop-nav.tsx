@@ -4,7 +4,7 @@ import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import React, { FC, ReactNode } from 'react'
 import { FaAngleUp } from 'react-icons/fa6'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 import LogoLink from '@/components/general/logo-link'
 import NavLink from '@/components/layout/site-nav/nav-link'

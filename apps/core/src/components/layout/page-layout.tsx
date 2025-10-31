@@ -1,6 +1,6 @@
 import { FC, ReactNode } from 'react'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 import BackgroundImage from '@/components/layout/background-image'
 import Heading from '@/components/layout/heading'

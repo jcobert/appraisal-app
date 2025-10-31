@@ -14,10 +14,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/ui/ui/dropdown-menu'
-import { SidebarMenuButton, useSidebar } from '@repo/ui/ui/sidebar'
-
-import { cn } from '@/lib/utils'
+  SidebarMenuButton,
+  useSidebar,
+} from '@repo/ui'
+import { cn } from '@repo/utils'
 
 import { useOrganizationContext } from '@/providers/organization-provider'
 

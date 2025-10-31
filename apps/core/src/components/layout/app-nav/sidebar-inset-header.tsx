@@ -2,9 +2,8 @@
 
 import { FC } from 'react'
 
-import { SidebarTrigger, useSidebar } from '@repo/ui/ui/sidebar'
-
-import { cn } from '@/lib/utils'
+import { SidebarTrigger, useSidebar } from '@repo/ui'
+import { cn } from '@repo/utils'
 
 type Props = {
   className?: string

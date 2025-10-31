@@ -14,9 +14,11 @@
     "postinstall": "dotenv -e ../../.env.local -- prisma generate"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "22.9.0",
     "dotenv-cli": "7.4.4",
+    "eslint": "^8.57.1",
     "prisma": "^6.7.0",
     "typescript": "workspace:*"
   },

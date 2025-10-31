@@ -2,7 +2,7 @@
 
 import React, { FC, ReactNode, useState } from 'react'
 
-import { Button, ButtonProps } from '@repo/ui/ui/button'
+import { Button, ButtonProps } from '@repo/ui'
 
 import FormActionBar from '@/components/form/form-action-bar'
 import FullScreenLoader from '@/components/layout/full-screen-loader'

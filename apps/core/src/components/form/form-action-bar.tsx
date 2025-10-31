@@ -1,8 +1,7 @@
 import React, { ComponentPropsWithoutRef, FC, Fragment, ReactNode } from 'react'
 
-import { Button, ButtonProps } from '@repo/ui/ui/button'
-
-import { cn } from '@/utils/style'
+import { Button, ButtonProps } from '@repo/ui'
+import { cn } from '@repo/utils'
 
 import StickyContainer, {
   StickyContainerProps,

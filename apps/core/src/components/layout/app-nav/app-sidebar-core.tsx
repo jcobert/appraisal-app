@@ -13,9 +13,8 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarSeparator,
-} from '@repo/ui/ui/sidebar'
-
-import { cn } from '@/lib/utils'
+} from '@repo/ui'
+import { cn } from '@repo/utils'
 
 import { NavItem } from '@/utils/nav'
 

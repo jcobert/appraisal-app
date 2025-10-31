@@ -11,10 +11,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@repo/ui/ui/breadcrumb'
-import { Skeleton } from '@repo/ui/ui/skeleton'
-
-import { cn } from '@/lib/utils'
+  Skeleton,
+} from '@repo/ui'
+import { cn } from '@repo/utils'
 
 import { buildCrumbsFromSegments } from '@/utils/breadcrumbs'
 

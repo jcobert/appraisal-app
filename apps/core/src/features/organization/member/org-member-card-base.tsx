@@ -3,16 +3,14 @@ import { ReactNode } from 'react'
 import { SlOptionsVertical } from 'react-icons/sl'
 
 import { DeepPartial } from '@repo/types'
-import { Button } from '@repo/ui/ui/button'
 import {
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@repo/ui/ui/dropdown-menu'
-import { fullName } from '@repo/utils'
-
-import { cn } from '@/utils/style'
+} from '@repo/ui'
+import { cn, fullName } from '@repo/utils'
 
 import Avatar from '@/components/general/avatar'
 

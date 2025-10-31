@@ -2,6 +2,7 @@
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "types": ["jest", "@testing-library/jest-dom"],
     "paths": {
       "@/*": ["./src/*"],
       "~/*": ["./public/*"]

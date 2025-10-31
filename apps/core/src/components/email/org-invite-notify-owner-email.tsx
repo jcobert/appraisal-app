@@ -14,10 +14,9 @@ import {
 import tailwindConfig from 'tailwind.config'
 
 import { OrgInvitation, Organization, User } from '@repo/database'
-import { fullName } from '@repo/utils'
+import { cn, fullName } from '@repo/utils'
 
 import { getAssetPath } from '@/utils/email'
-import { cn } from '@/utils/style'
 
 import { copyright, siteConfig } from '@/configuration/site'
 

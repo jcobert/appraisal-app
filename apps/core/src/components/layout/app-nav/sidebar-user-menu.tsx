@@ -13,18 +13,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/ui/ui/dropdown-menu'
-import { SidebarMenuButton, useSidebar } from '@repo/ui/ui/sidebar'
-import { objectKeys } from '@repo/utils'
-import { fullName } from '@repo/utils'
+  SidebarMenuButton,
+  useSidebar,
+} from '@repo/ui'
+import { cn, fullName, objectKeys } from '@repo/utils'
 
-import { cn } from '@/utils/style'
-
-import { Theme } from '@/providers/theme-provider'
+import { Theme, getThemeIcon } from '@/providers/theme-provider'
 
 import AuthLink from '@/components/auth/auth-link'
 import Avatar from '@/components/general/avatar'
-import { getThemeIcon } from '@/components/general/theme-selector'
 
 import { SessionData } from '@/types/auth'
 

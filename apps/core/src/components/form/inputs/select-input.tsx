@@ -9,7 +9,7 @@ import Select, {
   StylesConfig,
 } from 'react-select'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 import FieldError from '@/components/form/field-error'
 import FieldHelper from '@/components/form/field-helper'

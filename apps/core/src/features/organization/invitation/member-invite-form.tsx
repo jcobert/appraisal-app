@@ -2,7 +2,7 @@ import { FC, useMemo, useState } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 
 import { OrgInvitation } from '@repo/database'
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
 
 import { ORG_INVITE_EXPIRY } from '@/lib/db/config'
 import {

@@ -1,7 +1,7 @@
 import * as AlertDialog from '@radix-ui/react-alert-dialog'
 import { FC, ReactNode, useState } from 'react'
 
-import { Button } from '@repo/ui/ui/button'
+import { Button } from '@repo/ui'
 
 type Props = {
   title?: ReactNode
