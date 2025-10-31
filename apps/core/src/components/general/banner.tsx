@@ -2,7 +2,7 @@ import { FC, ReactNode } from 'react'
 import { IconType } from 'react-icons'
 import { FiAlertCircle, FiAlertTriangle, FiInfo } from 'react-icons/fi'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 export type BannerVariant = 'info' | 'warning' | 'error'
 

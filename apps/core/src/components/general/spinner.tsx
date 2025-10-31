@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { ImSpinner2 } from 'react-icons/im'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 type Props = {
   className?: string

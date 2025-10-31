@@ -1,6 +1,6 @@
 import { FC, ReactNode } from 'react'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 type Props = {
   title?: string

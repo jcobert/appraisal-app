@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { ComponentPropsWithoutRef, FC } from 'react'
 
+import { cn } from '@repo/utils'
+
 import { homeUrl } from '@/utils/nav'
-import { cn } from '@/utils/style'
 
 import Logo from '@/components/general/logo'
 

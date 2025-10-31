@@ -3,8 +3,7 @@ import React, { FC } from 'react'
 import { IoIosArrowBack } from 'react-icons/io'
 
 import { Button } from '@repo/ui'
-
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 type Props = {
   text?: string

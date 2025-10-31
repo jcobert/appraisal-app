@@ -5,7 +5,7 @@ import {
 } from '@kinde-oss/kinde-auth-nextjs/components'
 import { ComponentPropsWithoutRef, FC, ReactNode } from 'react'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 type Props = {
   className?: string

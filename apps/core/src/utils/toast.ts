@@ -57,12 +57,11 @@ const promiseToast = <TRes = unknown, TCtx = unknown>(
     loading: loadingMsg,
   } = msgs || {}
   const response = toast.promise<FetchResponse<TRes>>(
-    new Promise<FetchResponse<TRes>>(async (resolve, reject) => {
-      const res = await request()
+    request().then((res) => {
       if (!isStatusCodeSuccess(res.status)) {
-        reject(res)
+        return Promise.reject(res)
       }
-      resolve(res)
+      return res
     }),
     {
       ...defaultToastMessages,

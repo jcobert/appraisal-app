@@ -9,10 +9,9 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
+  Button,
 } from '@repo/ui'
-import { Button } from '@repo/ui'
-
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 import AuthLink from '@/components/auth/auth-link'
 import LogoLink from '@/components/general/logo-link'
@@ -121,7 +120,6 @@ const MobileNav: FC<Props> = ({
               </Button>
             </div>
           )}
-          {/* <ThemeSelector className='max-sm:min-w-0' /> */}
         </div>
 
         {/* Links */}
@@ -166,7 +164,7 @@ const MobileNav: FC<Props> = ({
                           {item?.name}
                         </AccordionTrigger>
                         <AccordionContent className='flex flex-col gap-8 p-4 rounded'>
-                          {!!item?.url ? (
+                          {item?.url ? (
                             <Link
                               key={`${item?.id}-menu`}
                               className='w-full font-medium text-lg text-dark-gray'

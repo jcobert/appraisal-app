@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "sideEffects": false,
+  "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
     "./accordion": "./src/components/accordion.tsx",

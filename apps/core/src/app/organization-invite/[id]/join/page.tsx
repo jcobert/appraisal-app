@@ -82,7 +82,6 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
     } else if (isRedirect) {
       // After redirect, clean up by deleting url from Kinde.
       await deleteLogoutRedirectUrl(redirectUrl)
-    } else {
     }
   }
 

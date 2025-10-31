@@ -4,10 +4,8 @@ import Link from 'next/link'
 import { FC, useState } from 'react'
 import { FaRegCircleUser } from 'react-icons/fa6'
 
-import { Button } from '@repo/ui'
-import { Popover, PopoverContent, PopoverTrigger } from '@repo/ui'
-
-import { cn } from '@/utils/style'
+import { Button, Popover, PopoverContent, PopoverTrigger } from '@repo/ui'
+import { cn } from '@repo/utils'
 
 import AuthLink from '@/components/auth/auth-link'
 import UserGreeting from '@/components/layout/header/user-greeting'
@@ -41,8 +39,6 @@ const UserMenu: FC<{ sessionData: SessionData }> = ({
               </Link>
             ) : null}
           </div>
-
-          {/* <ThemeSelector className='self-center' /> */}
 
           <div
             className={cn(

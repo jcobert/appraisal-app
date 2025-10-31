@@ -34,7 +34,7 @@ export const VALIDATION_PATTERNS = {
   invalidEmailChars: /[<>"'{}[\]\\]/,
 
   /** Characters not allowed in phone numbers. */
-  invalidPhoneChars: /[^\d\s\+\-\(\)\.]/,
+  invalidPhoneChars: /[^\d\s+\-().]/,
 
   /** Special characters not allowed in general text. */
   invalidTextChars: /[<>"']/,
@@ -132,7 +132,7 @@ export const SANITIZATION_PATTERNS = {
 
   /** @todo Allow numeric characters if they're not already. */
   /** Characters to remove from names (anything NOT Unicode letters, marks, spaces, hyphens, periods, apostrophes). */
-  nameUnsafeChars: /[^\p{L}\p{M}\s\-\.']/gu,
+  nameUnsafeChars: /[^\p{L}\p{M}\s\-.']/gu,
 } as const
 
 /**

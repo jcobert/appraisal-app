@@ -14,8 +14,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  SidebarMenuButton,
+  useSidebar,
 } from '@repo/ui'
-import { SidebarMenuButton, useSidebar } from '@repo/ui'
 
 import { cn } from '@/lib/utils'
 

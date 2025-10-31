@@ -1,8 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 
 import { User } from '@repo/database'
-import { exists } from '@repo/utils'
-import { digitString } from '@repo/utils'
+import { digitString, exists } from '@repo/utils'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 
@@ -28,10 +27,7 @@ const transform = (payload: Payload): Payload => {
   }
 }
 
-export const useUserMutations = ({
-  initialData,
-  options,
-}: UseUserMutationsProps = {}) => {
+export const useUserMutations = ({ options }: UseUserMutationsProps = {}) => {
   const queryClient = useQueryClient()
 
   const createUser = useCoreMutation<Payload, User>({

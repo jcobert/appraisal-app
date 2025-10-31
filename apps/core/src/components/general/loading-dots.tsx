@@ -1,6 +1,6 @@
 import React, { FC } from 'react'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 type Props = {
   size?: 'xs' | 'sm' | 'md' | 'lg'

@@ -2,7 +2,7 @@
 
 import React, { FC, ReactNode, useRef } from 'react'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 import { usePageSize } from '@/hooks/use-page-size'
 import {

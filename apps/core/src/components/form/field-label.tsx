@@ -11,8 +11,7 @@ import {
 import { LuCalendarDays } from 'react-icons/lu'
 
 import { Popover, PopoverContent, PopoverTrigger } from '@repo/ui'
-
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 export type InputIcon =
   | 'mail'

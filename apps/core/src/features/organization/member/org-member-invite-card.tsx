@@ -2,9 +2,9 @@ import { upperFirst } from 'lodash'
 import { FC, useState } from 'react'
 
 import { OrgInvitation } from '@repo/database'
+import { cn } from '@repo/utils'
 
 import { isStatusCodeSuccess } from '@/utils/fetch'
-import { cn } from '@/utils/style'
 
 import Confirmation from '@/components/layout/confirmation'
 

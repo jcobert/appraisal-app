@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react'
 
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 

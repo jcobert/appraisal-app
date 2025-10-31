@@ -3,8 +3,7 @@
 import { FC } from 'react'
 
 import { AvatarFallback, AvatarImage, Avatar as AvatarRoot } from '@repo/ui'
-
-import { cn } from '@/utils/style'
+import { cn } from '@repo/utils'
 
 type Props = {
   name?: string
@@ -23,7 +22,7 @@ const Avatar: FC<Props> = ({
   className,
   fallbackClassName,
 }) => {
-  const [first, second] = (name || '')?.split(' ')
+  const [first, second] = (name || '').split(' ')
   const fallback =
     `${first ? first?.[0] : ''}${second && size !== 'xs' ? second?.[0] : ''}`?.toUpperCase()
 
