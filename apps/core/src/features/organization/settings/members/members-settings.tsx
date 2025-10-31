@@ -5,8 +5,7 @@ import { useIsClient } from 'usehooks-ts'
 
 import { Organization } from '@repo/database'
 import { Button, ButtonProps } from '@repo/ui'
-
-import { cn } from '@/lib/utils'
+import { cn } from '@repo/utils'
 
 import { useOrgPageRedirect } from '@/hooks/use-org-page-redirect'
 import { usePermissions } from '@/hooks/use-permissions'

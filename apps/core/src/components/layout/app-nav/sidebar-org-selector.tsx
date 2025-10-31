@@ -17,8 +17,7 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from '@repo/ui'
-
-import { cn } from '@/lib/utils'
+import { cn } from '@repo/utils'
 
 import { useOrganizationContext } from '@/providers/organization-provider'
 

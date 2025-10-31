@@ -13,8 +13,7 @@ import {
   BreadcrumbSeparator,
   Skeleton,
 } from '@repo/ui'
-
-import { cn } from '@/lib/utils'
+import { cn } from '@repo/utils'
 
 import { buildCrumbsFromSegments } from '@/utils/breadcrumbs'
 

@@ -3,8 +3,7 @@
 import { FC } from 'react'
 
 import { SidebarTrigger, useSidebar } from '@repo/ui'
-
-import { cn } from '@/lib/utils'
+import { cn } from '@repo/utils'
 
 type Props = {
   className?: string

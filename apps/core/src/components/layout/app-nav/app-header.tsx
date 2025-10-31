@@ -1,8 +1,7 @@
 import { FC, ReactNode } from 'react'
 
 import { Separator, SidebarTrigger } from '@repo/ui'
-
-import { cn } from '@/lib/utils'
+import { cn } from '@repo/utils'
 
 import LogoLink from '@/components/general/logo-link'
 

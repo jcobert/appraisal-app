@@ -3,8 +3,7 @@ import { forwardRef } from 'react'
 import { ControllerFieldState, ControllerRenderProps } from 'react-hook-form'
 
 import { MemberRole } from '@repo/database'
-
-import { cn } from '@/lib/utils'
+import { cn } from '@repo/utils'
 
 import FieldError from '@/components/form/field-error'
 import FieldLabel from '@/components/form/field-label'
