@@ -130,7 +130,6 @@ export const SANITIZATION_PATTERNS = {
   /** Characters to remove from general text. */
   textUnsafeChars: /[<>"]/g,
 
-  /** @todo Allow numeric characters if they're not already. */
   /** Characters to remove from names (anything NOT Unicode letters, marks, spaces, hyphens, periods, apostrophes). */
   nameUnsafeChars: /[^\p{L}\p{M}\s\-.']/gu,
 } as const

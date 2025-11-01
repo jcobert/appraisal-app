@@ -13,7 +13,6 @@ import {
   organizationSchema,
 } from '@/lib/db/schemas/organization'
 
-import { isStatusCodeSuccess } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 import { homeUrl } from '@/utils/nav'
 
@@ -55,10 +54,14 @@ const OrganizationForm: FC<Props> = ({
 
   const prevUrl = homeUrl(true)
 
-  const { control, handleSubmit } = useZodForm<OrganizationFormData>(schema, {
-    defaultValues: formDefaults(defaultFormValues, organization),
-    disabled,
-  })
+  const { control, handleSubmit, reset } = useZodForm<OrganizationFormData>(
+    schema,
+    {
+      defaultValues: defaultFormValues,
+      values: formDefaults(defaultFormValues, organization),
+      disabled,
+    },
+  )
 
   const { isDirty } = useFormState({ control })
 
@@ -90,13 +93,15 @@ const OrganizationForm: FC<Props> = ({
     const payload = isUpdate ? data : { ...organization, ...data }
 
     if (isUpdate) {
-      await updateOrganization.mutateAsync(payload)
+      await updateOrganization.mutateAsync(payload, {
+        onSuccess: () => {
+          reset()
+        },
+      })
     } else {
       await createOrganization.mutateAsync(payload, {
-        onSuccess: (res) => {
-          if (isStatusCodeSuccess(res?.status)) {
-            router.replace(prevUrl)
-          }
+        onSuccess: () => {
+          router.replace(prevUrl)
         },
       })
     }
