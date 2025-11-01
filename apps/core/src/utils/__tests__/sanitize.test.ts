@@ -437,6 +437,52 @@ describe('sanitize', () => {
         expect(result).toBe('1 (555) 123-4567')
       })
     })
+
+    describe('uuid field type', () => {
+      it('should preserve valid alphanumeric characters, hyphens, and underscores', () => {
+        const result = sanitizeTextInput('abc-123-def_456', {
+          fieldType: 'uuid',
+        })
+        expect(result).toBe('abc-123-def_456')
+      })
+
+      it('should remove special characters not allowed in uuids', () => {
+        const result = sanitizeTextInput('abc!@#$123<>def', {
+          fieldType: 'uuid',
+        })
+        expect(result).toBe('abc123def')
+      })
+
+      it('should handle SQL injection attempts', () => {
+        const result = sanitizeTextInput("abc'; DROP TABLE users;--", {
+          fieldType: 'uuid',
+        })
+        expect(result).toBe('abcDROPTABLEusers--')
+      })
+
+      it('should handle script tags', () => {
+        const result = sanitizeTextInput('abc<script>def</script>', {
+          fieldType: 'uuid',
+        })
+        // DANGEROUS_PATTERNS removes the entire <script>...</script> block
+        expect(result).toBe('abc')
+      })
+
+      it('should handle hex-style tokens', () => {
+        const result = sanitizeTextInput('a1b2c3d4e5f6', { fieldType: 'uuid' })
+        expect(result).toBe('a1b2c3d4e5f6')
+      })
+
+      it('should return empty string for non-uuid input', () => {
+        const result = sanitizeTextInput('!@#$%^&*()', { fieldType: 'uuid' })
+        expect(result).toBe('')
+      })
+
+      it('should trim whitespace from uuids', () => {
+        const result = sanitizeTextInput('  abc-123  ', { fieldType: 'uuid' })
+        expect(result).toBe('abc-123')
+      })
+    })
   })
 
   describe('edge cases', () => {

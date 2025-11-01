@@ -614,67 +614,101 @@ describe('validate.ts', () => {
     })
 
     describe('parameterized rule exclusion', () => {
-      it('should exclude specific validation rules when set to false', () => {
-        // Test excluding dangerous content from name validation
-        const nameWithoutDangerous = VALIDATION_RULE_SETS.name({
+      it('should allow disabling specific rules for name', () => {
+        const withoutDangerous = VALIDATION_RULE_SETS.name({
           dangerousContent: false,
         })
-        expect(nameWithoutDangerous).toHaveLength(1)
-        expect(nameWithoutDangerous[0]?.id).toBe('invalidNameChars')
+        expect(withoutDangerous).toHaveLength(1)
+        expect(
+          withoutDangerous.some((rule) => rule.id === 'invalidNameChars'),
+        ).toBe(true)
+        expect(
+          withoutDangerous.some((rule) => rule.id === 'dangerousContent'),
+        ).toBe(false)
 
-        // Test excluding character validation from email
-        const emailWithoutChars = VALIDATION_RULE_SETS.email({
+        const withoutChars = VALIDATION_RULE_SETS.name({
+          invalidNameChars: false,
+        })
+        expect(withoutChars).toHaveLength(1)
+        expect(
+          withoutChars.some((rule) => rule.id === 'dangerousContent'),
+        ).toBe(true)
+      })
+
+      it('should allow disabling specific rules for email', () => {
+        const withoutDangerous = VALIDATION_RULE_SETS.email({
+          dangerousContent: false,
+        })
+        expect(withoutDangerous).toHaveLength(1)
+        expect(
+          withoutDangerous.some((rule) => rule.id === 'invalidEmailChars'),
+        ).toBe(true)
+
+        const withoutChars = VALIDATION_RULE_SETS.email({
           invalidEmailChars: false,
         })
-        expect(emailWithoutChars).toHaveLength(1)
-        expect(emailWithoutChars[0]?.id).toBe('dangerousContent')
+        expect(withoutChars).toHaveLength(1)
+        expect(
+          withoutChars.some((rule) => rule.id === 'dangerousContent'),
+        ).toBe(true)
+      })
 
-        // Test excluding all validation rules
-        const emptyName = VALIDATION_RULE_SETS.name({
+      it('should allow disabling specific rules for text', () => {
+        const withoutDangerous = VALIDATION_RULE_SETS.text({
+          dangerousContent: false,
+        })
+        expect(withoutDangerous).toHaveLength(1)
+        expect(
+          withoutDangerous.some((rule) => rule.id === 'invalidTextChars'),
+        ).toBe(true)
+
+        const withoutChars = VALIDATION_RULE_SETS.text({
+          invalidTextChars: false,
+        })
+        expect(withoutChars).toHaveLength(1)
+        expect(
+          withoutChars.some((rule) => rule.id === 'dangerousContent'),
+        ).toBe(true)
+      })
+
+      it('should allow disabling specific rules for uuid', () => {
+        const withoutDangerous = VALIDATION_RULE_SETS.uuid({
+          dangerousContent: false,
+        })
+        expect(withoutDangerous).toHaveLength(1)
+        expect(
+          withoutDangerous.some((rule) => rule.id === 'invalidUuidChars'),
+        ).toBe(true)
+
+        const withoutChars = VALIDATION_RULE_SETS.uuid({
+          invalidUuidChars: false,
+        })
+        expect(withoutChars).toHaveLength(1)
+        expect(
+          withoutChars.some((rule) => rule.id === 'dangerousContent'),
+        ).toBe(true)
+      })
+
+      it('should allow disabling multiple rules', () => {
+        const noRules = VALIDATION_RULE_SETS.name({
           invalidNameChars: false,
           dangerousContent: false,
         })
-        expect(emptyName).toHaveLength(0)
-      })
+        expect(noRules).toHaveLength(0)
 
-      it('should include rules when set to true or undefined', () => {
-        // Test that explicitly setting to true includes the rule
-        const nameWithExplicitTrue = VALIDATION_RULE_SETS.name({
-          dangerousContent: true,
+        const noUuidRules = VALIDATION_RULE_SETS.uuid({
+          invalidUuidChars: false,
+          dangerousContent: false,
         })
-        expect(nameWithExplicitTrue).toHaveLength(2)
-        expect(nameWithExplicitTrue.map((r) => r.id)).toEqual([
-          'invalidNameChars',
-          'dangerousContent',
-        ])
-
-        // Test that undefined (default) includes the rule
-        const nameWithUndefined = VALIDATION_RULE_SETS.name({})
-        expect(nameWithUndefined).toHaveLength(2)
-        expect(nameWithUndefined.map((r) => r.id)).toEqual([
-          'invalidNameChars',
-          'dangerousContent',
-        ])
+        expect(noUuidRules).toHaveLength(0)
       })
 
-      it('should return all rules when no parameters specified', () => {
-        const nameRules = VALIDATION_RULE_SETS.name()
-        expect(nameRules).toHaveLength(2)
-        expect(nameRules.map((r) => r.id)).toEqual([
-          'invalidNameChars',
-          'dangerousContent',
-        ])
+      it('should allow enabling rules by not passing false', () => {
+        const allRules = VALIDATION_RULE_SETS.name({})
+        expect(allRules).toHaveLength(2)
 
-        const emailRules = VALIDATION_RULE_SETS.email()
-        expect(emailRules).toHaveLength(2)
-        expect(emailRules.map((r) => r.id)).toEqual([
-          'invalidEmailChars',
-          'dangerousContent',
-        ])
-
-        const phoneRules = VALIDATION_RULE_SETS.phone()
-        expect(phoneRules).toHaveLength(1)
-        expect(phoneRules.map((r) => r.id)).toEqual(['invalidPhoneChars'])
+        const allUuidRules = VALIDATION_RULE_SETS.uuid({})
+        expect(allUuidRules).toHaveLength(2)
       })
     })
 

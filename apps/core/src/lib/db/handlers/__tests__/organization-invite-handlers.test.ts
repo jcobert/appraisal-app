@@ -8,6 +8,7 @@ import { userIsOwner } from '../../queries/organization'
 import {
   handleCreateOrgInvite,
   handleDeleteOrgInvite,
+  handleGetPublicOrgInvite,
   handleUpdateOrgInvite,
 } from '../organization-invite-handlers'
 
@@ -208,6 +209,258 @@ describe('organization-invite-handlers', () => {
         user: mockKindeUser,
         userProfileId: mockActiveUser.id,
       })
+    })
+  })
+
+  describe('handleGetPublicOrgInvite', () => {
+    const validParams = {
+      organizationId: 'org-1',
+      token: 'mock-token',
+      status: OrgInvitationStatus.pending as OrgInvitationStatus,
+    }
+
+    beforeEach(() => {
+      // Mock findUnique to return invitation with organization and invitedBy data
+      ;(mockDb.orgInvitation.findUnique as jest.Mock).mockResolvedValue({
+        organization: {
+          name: mockOrganization.name,
+          avatar: mockOrganization.avatar,
+        },
+        invitedBy: mockActiveUser,
+      })
+
+      // Mock createApiHandler to call the handler function directly
+      // This handler uses dangerouslyBypassAuthentication, so no user is passed
+      mockCreateApiHandler.mockImplementation(
+        (handlerFn: any, _config?: any) => {
+          return handlerFn({})
+        },
+      )
+    })
+
+    it('should retrieve organization invite successfully with all parameters', async () => {
+      const result = await handleGetPublicOrgInvite(validParams)
+
+      expect(result).toEqual({
+        organization: {
+          name: mockOrganization.name,
+          avatar: mockOrganization.avatar,
+        },
+        invitedBy: mockActiveUser,
+      })
+      expect(mockDb.orgInvitation.findUnique).toHaveBeenCalledWith({
+        where: {
+          organizationId: validParams.organizationId,
+          token: validParams.token,
+          status: validParams.status,
+        },
+        select: {
+          organization: { select: { name: true, avatar: true } },
+          invitedBy: { select: { firstName: true, lastName: true } },
+        },
+      })
+    })
+
+    it('should retrieve organization invite without status parameter', async () => {
+      const paramsWithoutStatus = {
+        organizationId: 'org-1',
+        token: 'mock-token',
+      }
+
+      await handleGetPublicOrgInvite(paramsWithoutStatus)
+
+      expect(mockDb.orgInvitation.findUnique).toHaveBeenCalledWith({
+        where: {
+          organizationId: paramsWithoutStatus.organizationId,
+          token: paramsWithoutStatus.token,
+          status: undefined,
+        },
+        select: {
+          organization: { select: { name: true, avatar: true } },
+          invitedBy: { select: { firstName: true, lastName: true } },
+        },
+      })
+    })
+
+    it('should return null when invitation is not found', async () => {
+      ;(mockDb.orgInvitation.findUnique as jest.Mock).mockResolvedValue(null)
+
+      const result = await handleGetPublicOrgInvite(validParams)
+
+      expect(result).toBeNull()
+    })
+
+    it('should throw ValidationError when organizationId is missing', async () => {
+      const invalidParams = {
+        organizationId: '',
+        token: 'mock-token',
+        status: OrgInvitationStatus.pending as OrgInvitationStatus,
+      }
+
+      await expect(handleGetPublicOrgInvite(invalidParams)).rejects.toThrow(
+        ValidationError,
+      )
+      await expect(handleGetPublicOrgInvite(invalidParams)).rejects.toThrow(
+        'Invalid data provided.',
+      )
+    })
+
+    it('should throw ValidationError when token is missing', async () => {
+      const invalidParams = {
+        organizationId: 'org-1',
+        token: '',
+        status: OrgInvitationStatus.pending as OrgInvitationStatus,
+      }
+
+      await expect(handleGetPublicOrgInvite(invalidParams)).rejects.toThrow(
+        ValidationError,
+      )
+      await expect(handleGetPublicOrgInvite(invalidParams)).rejects.toThrow(
+        'Invalid data provided.',
+      )
+    })
+
+    it('should throw ValidationError when both organizationId and token are missing', async () => {
+      const invalidParams = {
+        organizationId: '',
+        token: '',
+      }
+
+      await expect(handleGetPublicOrgInvite(invalidParams)).rejects.toThrow(
+        ValidationError,
+      )
+    })
+
+    it('should call createApiHandler with dangerouslyBypassAuthentication', async () => {
+      await handleGetPublicOrgInvite(validParams)
+
+      expect(mockCreateApiHandler).toHaveBeenCalledWith(expect.any(Function), {
+        dangerouslyBypassAuthentication: true,
+      })
+    })
+
+    it('should not require authentication', async () => {
+      // Ensure isAuthenticated is not called
+      const isAuthenticatedCallCount = mockIsAuthenticated.mock.calls.length
+
+      await handleGetPublicOrgInvite(validParams)
+
+      // Should not have made additional authentication calls
+      expect(mockIsAuthenticated.mock.calls.length).toBe(
+        isAuthenticatedCallCount,
+      )
+    })
+
+    it('should handle different invitation statuses', async () => {
+      const statuses = [
+        OrgInvitationStatus.pending,
+        OrgInvitationStatus.accepted,
+        OrgInvitationStatus.expired,
+      ]
+
+      for (const status of statuses) {
+        jest.clearAllMocks()
+        ;(mockDb.orgInvitation.findUnique as jest.Mock).mockResolvedValue({
+          organization: {
+            name: mockOrganization.name,
+            avatar: mockOrganization.avatar,
+          },
+          invitedBy: mockActiveUser,
+        })
+
+        await handleGetPublicOrgInvite({
+          organizationId: 'org-1',
+          token: 'mock-token',
+          status,
+        })
+
+        expect(mockDb.orgInvitation.findUnique).toHaveBeenCalledWith({
+          where: {
+            organizationId: 'org-1',
+            token: 'mock-token',
+            status,
+          },
+          select: {
+            organization: { select: { name: true, avatar: true } },
+            invitedBy: { select: { firstName: true, lastName: true } },
+          },
+        })
+      }
+    })
+
+    it('should only select organization name, avatar, and invitedBy name fields', async () => {
+      await handleGetPublicOrgInvite(validParams)
+
+      expect(mockDb.orgInvitation.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          select: {
+            organization: { select: { name: true, avatar: true } },
+            invitedBy: { select: { firstName: true, lastName: true } },
+          },
+        }),
+      )
+    })
+
+    it('should handle database errors gracefully', async () => {
+      const dbError = new Error('Database connection failed')
+      ;(mockDb.orgInvitation.findUnique as jest.Mock).mockRejectedValue(dbError)
+
+      await expect(handleGetPublicOrgInvite(validParams)).rejects.toThrow(
+        'Database connection failed',
+      )
+    })
+
+    it('should sanitize token format and allow database lookup', async () => {
+      // Schema uses sanitizedField.uuid() which strips invalid characters
+      // but still requires at least some valid characters to remain (nonempty).
+      const tokenTests = [
+        { token: 'valid-token-123', description: 'valid with hyphens' },
+        {
+          token: 'token_with_underscore',
+          description: 'valid with underscores',
+        },
+        { token: 'a1b2c3d4e5f6', description: 'valid hex format' },
+        {
+          token: 'token-with-special-chars!@#',
+          description: 'sanitizes special chars to: token-with-special-chars',
+        },
+        {
+          token: 'abc<script>alert("xss")</script>def',
+          description: 'sanitizes XSS to: abcscriptalertxssscriptdef',
+        },
+      ]
+
+      for (const { token } of tokenTests) {
+        jest.clearAllMocks()
+        ;(mockDb.orgInvitation.findUnique as jest.Mock).mockResolvedValue({
+          organization: {
+            name: mockOrganization.name,
+            avatar: mockOrganization.avatar,
+          },
+          invitedBy: mockActiveUser,
+        })
+
+        // All tokens should succeed after sanitization (have valid chars remaining)
+        await handleGetPublicOrgInvite({
+          organizationId: 'org-1',
+          token,
+          status: OrgInvitationStatus.pending,
+        })
+
+        expect(mockDb.orgInvitation.findUnique).toHaveBeenCalled()
+      }
+
+      // Tokens that become empty after sanitization should fail
+      const invalidTokens = ['!@#$%', '', '<>']
+      for (const token of invalidTokens) {
+        await expect(
+          handleGetPublicOrgInvite({
+            organizationId: 'org-1',
+            token,
+            status: OrgInvitationStatus.pending,
+          }),
+        ).rejects.toThrow(ValidationError)
+      }
     })
   })
 

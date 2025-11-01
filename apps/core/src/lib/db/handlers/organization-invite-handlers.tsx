@@ -52,13 +52,13 @@ export const handleGetPublicOrgInvite = async ({
         where: { organizationId, token, status },
         select: {
           organization: { select: { name: true, avatar: true } },
-          invitedBy: true,
+          invitedBy: { select: { firstName: true, lastName: true } },
         },
       })
 
       return result
     },
-    { dangerouslyBypassAuthentication: true },
+    { dangerouslyBypassAuthentication: true }, // No auth required. Gets invitation in public org join route.
   )
 }
 
@@ -282,6 +282,9 @@ export const handleUpdateOrgInvite = async (
   )
 }
 
+export type GetOrgInviteResult = Awaited<
+  ReturnType<typeof handleGetPublicOrgInvite>
+>
 export type CreateOrgInviteResult = Awaited<
   ReturnType<typeof handleCreateOrgInvite>
 >

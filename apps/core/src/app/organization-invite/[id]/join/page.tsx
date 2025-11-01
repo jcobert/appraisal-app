@@ -6,7 +6,10 @@ import { PageParams } from '@repo/types'
 import { Button } from '@repo/ui'
 import { fullName } from '@repo/utils'
 
-import { handleGetPublicOrgInvite } from '@/lib/db/handlers/organization-invite-handlers'
+import {
+  GetOrgInviteResult,
+  handleGetPublicOrgInvite,
+} from '@/lib/db/handlers/organization-invite-handlers'
 import {
   addLogoutRedirectUrls,
   deleteLogoutRedirectUrl,
@@ -48,15 +51,17 @@ const Page: FC<Props> = async ({ params, searchParams }) => {
   const isRedirect = !!query?.redirect
   const isJustRegistered = !!query?.registered
 
-  /** @todo Check for inviteToken first and redirect if none? */
+  let invitation: GetOrgInviteResult['data'] = null
 
-  const invitation = (
-    await handleGetPublicOrgInvite({
-      organizationId,
-      token: inviteToken,
-      status: 'pending',
-    })
-  )?.data
+  if (inviteToken) {
+    invitation = (
+      await handleGetPublicOrgInvite({
+        organizationId,
+        token: inviteToken,
+        status: 'pending',
+      })
+    )?.data
+  }
 
   const postLoginRedirect = getOrgInviteUrl({
     organizationId,

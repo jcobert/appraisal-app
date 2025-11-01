@@ -44,11 +44,13 @@ const apiSchema = z.object({
 
 /**
  * Schema for invitation token operations (join and public invite retrieval).
+ * UUIDs/tokens are sanitized for defense-in-depth security.
+ * Used server-side to clean query parameters before database lookup.
  */
 const inviteTokenSchema = z.object(
   {
-    organizationId: z.string().min(1, 'Organization ID is required'),
-    token: z.string().min(1, 'Token is required'),
+    organizationId: sanitizedField.uuid(),
+    token: sanitizedField.uuid(),
     status: z.nativeEnum(OrgInvitationStatus).optional(),
   },
   { errorMap: formErrorMap },

@@ -1,5 +1,9 @@
 import { SanitizeTextInputOptions, sanitizeTextInput } from './data/sanitize'
-import { VALIDATION_RULE_SETS, ValidationRule } from './data/validate'
+import {
+  FieldValidationType,
+  VALIDATION_RULE_SETS,
+  ValidationRule,
+} from './data/validate'
 import { ParseParams, ZodError, ZodErrorMap, ZodIssue, ZodSchema, z } from 'zod'
 
 /**
@@ -83,6 +87,10 @@ export const sanitizedField = {
 
   /** Sanitized text field (removes dangerous chars, preserves most content). */
   text: () => sanitizedString({ fieldType: 'text' }),
+
+  /** Sanitized UUID field (only alphanumeric, hyphens, underscores). Used for server-side validation of IDs in query parameters. */
+  uuid: () =>
+    sanitizedString({ fieldType: 'uuid' }).pipe(z.string().nonempty()),
 
   /** Server-safe field (strict sanitization for backend). */
   serverSafe: () => sanitizedString({ context: 'server' }),
@@ -312,9 +320,7 @@ export const fieldBuilder = {
  */
 export const sanitizeFormData = <T extends Record<string, unknown>>(
   data: T,
-  fieldTypes: Partial<
-    Record<keyof T, 'name' | 'email' | 'phone' | 'text'>
-  > = {},
+  fieldTypes: Partial<Record<keyof T, FieldValidationType>> = {},
 ): T => {
   const sanitized = { ...data }
 
