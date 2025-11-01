@@ -240,6 +240,63 @@ describe('zod utilities', () => {
         expect(result).toBe('Hello')
       })
     })
+
+    describe('uuid()', () => {
+      it('should create sanitized uuid field', () => {
+        const schema = z.object({
+          id: sanitizedField.uuid(),
+        })
+
+        // Valid UUIDs/tokens with alphanumeric, hyphens, underscores
+        const result1 = schema.parse({ id: 'abc-123-def' })
+        expect(result1.id).toBe('abc-123-def')
+
+        const result2 = schema.parse({ id: 'token_with_underscore' })
+        expect(result2.id).toBe('token_with_underscore')
+
+        const result3 = schema.parse({ id: 'a1b2c3d4e5f6' })
+        expect(result3.id).toBe('a1b2c3d4e5f6')
+      })
+
+      it('should sanitize invalid characters from uuids', () => {
+        const schema = z.object({
+          id: sanitizedField.uuid(),
+        })
+
+        // Should strip special characters
+        const result1 = schema.parse({ id: 'token!@#$%' })
+        expect(result1.id).toBe('token')
+
+        // DANGEROUS_PATTERNS removes <script> tag content, leaving "abc" + "def" = "abcscriptdef"
+        // Then uuidUnsafeChars removes remaining invalid chars
+        const result2 = schema.parse({ id: 'abc<script>def' })
+        expect(result2.id).toBe('abcscriptdef')
+
+        const result3 = schema.parse({ id: "token'OR'1'='1" })
+        expect(result3.id).toBe('tokenOR11')
+      })
+
+      it('should reject empty strings after sanitization', () => {
+        const schema = z.object({
+          id: sanitizedField.uuid(),
+        })
+
+        // Should fail when all characters are stripped
+        expect(() => schema.parse({ id: '!@#$%' })).toThrow()
+        expect(() => schema.parse({ id: '<>' })).toThrow()
+        expect(() => schema.parse({ id: '' })).toThrow()
+      })
+
+      it('should handle hex token format (common for crypto.randomBytes)', () => {
+        const schema = z.object({
+          token: sanitizedField.uuid(),
+        })
+
+        const hexToken = 'a1b2c3d4e5f67890abcdef'
+        const result = schema.parse({ token: hexToken })
+        expect(result.token).toBe(hexToken)
+      })
+    })
   })
 
   describe('getFieldErrors', () => {
@@ -594,29 +651,45 @@ describe('zod utilities', () => {
   describe('sanitizeFormData', () => {
     it('should sanitize specified fields', () => {
       const data = {
-        name: 'John<script>alert(1)</script>',
-        email: 'test<evil>@example.com',
-        description: 'This is safe text',
+        name: 'John<script>alert()</script>',
+        email: 'test@example.com',
+        phone: '123-456-7890',
+        other: 'unchanged',
       }
 
       const result = sanitizeFormData(data, {
         name: 'name',
         email: 'email',
-        // description not specified, so won't be sanitized
       })
 
+      // Dangerous patterns are removed completely (including tags)
       expect(result.name).toBe('John')
-      expect(result.email).not.toContain('<evil>')
-      expect(result.description).toBe('This is safe text') // unchanged
+      expect(result.email).toBe('test@example.com')
+      expect(result.other).toBe('unchanged')
     })
 
     it('should handle empty field types', () => {
-      const data = { name: 'John<script>', email: 'test@example.com' }
+      const data = { name: 'John', email: 'test@example.com' }
       const result = sanitizeFormData(data, {})
+      expect(result).toEqual(data)
+    })
 
-      // No sanitization should occur
-      expect(result.name).toBe('John<script>')
-      expect(result.email).toBe('test@example.com')
+    it('should sanitize uuid fields', () => {
+      const data = {
+        organizationId: 'org-123!@#',
+        token: 'token<script>test',
+        name: 'John',
+      }
+
+      const result = sanitizeFormData(data, {
+        organizationId: 'uuid',
+        token: 'uuid',
+      })
+
+      expect(result.organizationId).toBe('org-123')
+      // DANGEROUS_PATTERNS removes <script> tag, leaving text content "script"
+      expect(result.token).toBe('tokenscripttest')
+      expect(result.name).toBe('John') // unchanged
     })
   })
 

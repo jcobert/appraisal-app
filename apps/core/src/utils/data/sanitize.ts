@@ -1,6 +1,7 @@
 import {
   CHARACTER_SETS,
   DANGEROUS_PATTERNS,
+  FieldValidationType,
   SANITIZATION_PATTERNS,
 } from './validate'
 import { escapeRegExp } from 'lodash'
@@ -58,7 +59,7 @@ export type SanitizeTextInputOptions = {
    */
   context?: 'client' | 'server'
   /** Field type for context-specific sanitization */
-  fieldType?: 'name' | 'email' | 'phone' | 'text' | 'html'
+  fieldType?: FieldValidationType | 'html'
   /** Characters to allow. All other characters will be removed. */
   whitelist?: string[]
   /**
@@ -137,6 +138,10 @@ export const sanitizeTextInput = (
       case 'text':
         // General text - remove only the most dangerous characters
         newVal = newVal.replace(SANITIZATION_PATTERNS.textUnsafeChars, '')
+        break
+      case 'uuid':
+        // UUIDs/primary keys - keep only alphanumeric, hyphens, and underscores
+        newVal = newVal.replace(SANITIZATION_PATTERNS.uuidUnsafeChars, '')
         break
     }
   }

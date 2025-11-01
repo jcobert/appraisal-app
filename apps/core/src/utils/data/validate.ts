@@ -3,6 +3,9 @@
  * This is the single source of truth for all general character validation rules across the application.
  */
 
+/** Common field types/presets used in validation and sanitization utilities. */
+export type FieldValidationType = 'name' | 'email' | 'phone' | 'text' | 'uuid'
+
 /** Dangerous text patterns that should always be blocked. */
 export const DANGEROUS_PATTERNS = [
   /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, // Script tags
@@ -39,6 +42,9 @@ export const VALIDATION_PATTERNS = {
   /** Special characters not allowed in general text. */
   invalidTextChars: /[<>"']/,
 
+  /** Invalid characters in UUIDs/primary keys (only alphanumeric, hyphens, underscores allowed). */
+  invalidUuidChars: /[^a-zA-Z0-9_-]/,
+
   /** Combined dangerous patterns for any field. */
   dangerousContent: /<script|javascript:|data:text\/html|vbscript:|on\w+\s*=/i,
 } as const
@@ -54,6 +60,8 @@ const VALIDATION_MESSAGES = {
   invalidPhoneChars:
     'Phone numbers can only contain digits, spaces, +, -, (, ), and .',
   invalidTextChars: 'Text cannot contain < > " \' characters',
+  invalidUuidChars:
+    'Invalid UUID format. UUIDs must contain only letters, numbers, hyphens, and underscores.',
   dangerousContent: 'Invalid content detected',
 } as const satisfies { [key in keyof typeof VALIDATION_PATTERNS]: string }
 
@@ -67,8 +75,7 @@ export type ValidationRule = {
 }
 
 /**
- * A mapping of validation patterns and associated error messages,
- * for various common field types.
+ * A mapping of validation patterns and associated error messages for various common field types.
  */
 export const FIELD_VALIDATION = {
   name: [
@@ -117,7 +124,20 @@ export const FIELD_VALIDATION = {
       message: VALIDATION_MESSAGES.dangerousContent,
     },
   ],
-} as const satisfies { [field: string]: ValidationRule[] }
+
+  uuid: [
+    {
+      id: 'invalidUuidChars',
+      pattern: VALIDATION_PATTERNS.invalidUuidChars,
+      message: VALIDATION_MESSAGES.invalidUuidChars,
+    },
+    {
+      id: 'dangerousContent',
+      pattern: VALIDATION_PATTERNS.dangerousContent,
+      message: VALIDATION_MESSAGES.dangerousContent,
+    },
+  ],
+} as const satisfies { [field in FieldValidationType]: ValidationRule[] }
 
 /**
  * Sanitization patterns used for cleaning user input.
@@ -132,6 +152,9 @@ export const SANITIZATION_PATTERNS = {
 
   /** Characters to remove from names (anything NOT Unicode letters, marks, spaces, hyphens, periods, apostrophes). */
   nameUnsafeChars: /[^\p{L}\p{M}\s\-.']/gu,
+
+  /** Characters to remove from UUIDs/primary keys (anything NOT alphanumeric, hyphens, underscores). */
+  uuidUnsafeChars: /[^a-zA-Z0-9_-]/g,
 } as const
 
 /**
@@ -188,6 +211,10 @@ export const VALIDATION_RULE_SETS = {
   /** Standard text validation rules */
   text: (options: { [key in ValidationRule['id']]?: boolean } = {}) =>
     FIELD_VALIDATION.text.filter((rule) => options[rule.id] !== false),
+
+  /** Standard UUID/primary key validation rules */
+  uuid: (options: { [key in ValidationRule['id']]?: boolean } = {}) =>
+    FIELD_VALIDATION.uuid.filter((rule) => options[rule.id] !== false),
 
   /** Only dangerous content validation (no character restrictions) */
   dangerousContentOnly: (): ValidationRule[] => [
