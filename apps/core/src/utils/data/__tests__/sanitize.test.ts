@@ -3,7 +3,7 @@ import {
   normalizeSpaces,
   sanitizeTextInput,
   whitelistCharacters,
-} from '../data/sanitize'
+} from '../sanitize'
 
 describe('sanitize', () => {
   describe('normalizeSpaces function', () => {
