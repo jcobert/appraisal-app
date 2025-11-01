@@ -29,6 +29,7 @@ import {
   permissionsQueryKey,
   usersQueryKey,
 } from '@/configuration/react-query/query-keys'
+import { APP_MAIN_UI_LAYOUT_ID } from '@/configuration/ui'
 
 const Layout = async ({
   children,
@@ -109,7 +110,7 @@ const Layout = async ({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className='[--header-height:calc(3rem)]'>
+      <div id={APP_MAIN_UI_LAYOUT_ID} className='[--header-height:calc(3rem)]'>
         <BreadcrumbProvider>
           <OrganizationProvider
             userId={user?.id}

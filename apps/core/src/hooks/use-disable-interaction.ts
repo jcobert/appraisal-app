@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
+
+import { APP_MAIN_UI_LAYOUT_ID } from '@/configuration/ui'
 
 export type UseDisableInteractionProps = {
   /** Enables/disables interactivity. When `true` all interactive elements will be inert. */
@@ -36,31 +38,32 @@ export const useDisableInteraction = ({
   disable = false,
   container,
 }: UseDisableInteractionProps) => {
-  const [activeElement, setActiveElement] = useState<HTMLElement | null>(null)
-
-  // All interactive elements
-  // const elements = containingElement.querySelectorAll<HTMLInputElement>('button, input, textarea, select, a')
+  // We store the previously-active element so we can restore focus after interaction re-enabled.
+  const previousActiveRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const containingElement =
-      container || (typeof window !== 'undefined' ? document.body : null)
+      container ||
+      (typeof window !== 'undefined'
+        ? document.body.querySelector(`#${APP_MAIN_UI_LAYOUT_ID}`) ||
+          document.body
+        : null)
     if (!containingElement || typeof disable === 'undefined') return
 
-    setActiveElement(document.activeElement as HTMLElement)
-
     if (disable) {
+      // Save the active element before disabling so we can restore focus later.
+      previousActiveRef.current = document.activeElement as HTMLElement | null
       containingElement.setAttribute('inert', 'true')
     } else {
       containingElement.removeAttribute('inert')
-    }
 
-    // Return focus to the element that was active prior to disabling.
-    if (activeElement) {
-      activeElement?.focus?.()
+      // Return focus to the element that was active prior to disabling.
+      previousActiveRef.current?.focus?.()
+      previousActiveRef.current = null
     }
 
     return () => {
       containingElement.removeAttribute('inert')
     }
-  }, [disable])
+  }, [disable, container])
 }
