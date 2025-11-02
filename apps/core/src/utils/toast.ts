@@ -9,7 +9,6 @@ import {
   FetchErrorCode,
   FetchResponse,
   isFetchError,
-  isStatusCodeSuccess,
 } from '@/utils/fetch'
 
 export type ErrorToastMessages<TRes = unknown, TCtx = unknown> = {
@@ -102,13 +101,8 @@ const promiseToast = <TRes = unknown, TCtx = unknown>(
 export const toastyRequest = async <TRes = unknown, TCtx = unknown>(
   ...args: Parameters<typeof promiseToast<TRes, TCtx>>
 ) => {
-  try {
-    const response = await promiseToast<TRes, TCtx>(...args)
-    return response
-  } catch (error) {
-    // Re-throw to maintain React Query's error handling
-    throw error
-  }
+  const response = await promiseToast<TRes, TCtx>(...args)
+  return response
 }
 
 /**
