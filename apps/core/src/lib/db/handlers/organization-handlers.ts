@@ -70,6 +70,8 @@ export const handleGetOrganization = async (organizationId: string) => {
               inviteeEmail: true,
               roles: true,
               organizationId: true,
+              createdAt: true,
+              updatedAt: true,
             },
           },
         },

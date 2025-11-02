@@ -7,8 +7,6 @@ import { FormMode } from '@repo/types'
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 import { type DeleteOrganizationResult } from '@/lib/db/handlers/organization-handlers'
 
-import { isStatusCodeSuccess } from '@/utils/fetch'
-
 import useCoreMutation, {
   UseCoreMutationProps,
 } from '@/hooks/use-core-mutation'
@@ -66,10 +64,8 @@ export const useOrganizationMutations = ({
       },
     },
     ...options,
-    onSuccess: async ({ status }) => {
-      if (isStatusCodeSuccess(status)) {
-        await refreshData({ mode: 'create' })
-      }
+    onSuccess: async () => {
+      await refreshData({ mode: 'create' })
     },
   })
 
@@ -78,10 +74,8 @@ export const useOrganizationMutations = ({
     method: 'PUT',
     sanitize: { name: 'text' },
     ...options,
-    onSuccess: async ({ status }) => {
-      if (isStatusCodeSuccess(status)) {
-        await refreshData({ mode: 'update' })
-      }
+    onSuccess: async () => {
+      await refreshData({ mode: 'update' })
     },
   })
 
@@ -101,10 +95,8 @@ export const useOrganizationMutations = ({
       UseCoreMutationProps<Payload, DeleteOrganizationResult['data']>,
       'url' | 'method'
     >),
-    onSuccess: async ({ status }) => {
-      if (isStatusCodeSuccess(status)) {
-        await refreshData({ mode: 'delete' })
-      }
+    onSuccess: async () => {
+      await refreshData({ mode: 'delete' })
     },
   })
 
@@ -115,10 +107,8 @@ export const useOrganizationMutations = ({
       UseCoreMutationProps<Partial<OrgMember>, OrgMember>,
       'url' | 'method'
     >),
-    onSuccess: async ({ status }) => {
-      if (isStatusCodeSuccess(status)) {
-        await refreshData({ mode: 'update' })
-      }
+    onSuccess: async () => {
+      await refreshData({ mode: 'update' })
     },
   })
 
@@ -129,10 +119,8 @@ export const useOrganizationMutations = ({
       UseCoreMutationProps<Partial<OrgMember> | {}, OrgMember>,
       'url' | 'method'
     >),
-    onSuccess: async ({ status }) => {
-      if (isStatusCodeSuccess(status)) {
-        await refreshData({ mode: 'update' })
-      }
+    onSuccess: async () => {
+      await refreshData({ mode: 'update' })
     },
   })
 

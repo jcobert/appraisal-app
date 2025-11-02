@@ -10,13 +10,11 @@ import {
   orgMemberSchema,
 } from '@/lib/db/schemas/org-member'
 
-import { isStatusCodeSuccess } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 
 import FormActionBar from '@/components/form/form-action-bar'
 import TextInput from '@/components/form/inputs/text-input'
 import Banner from '@/components/general/banner'
-import FullScreenLoader from '@/components/layout/full-screen-loader'
 import Modal, { ModalProps } from '@/components/layout/modal'
 
 import { useDisableInteraction } from '@/hooks/use-disable-interaction'
@@ -72,6 +70,11 @@ const MemberInviteForm: FC<Props> = ({
     [organization?.members],
   )
 
+  const { createInvitation, updateInvitation } = useOrganizationInvite({
+    organizationId: organization?.id,
+    inviteId: initialData?.id,
+  })
+
   const { control, handleSubmit, reset } = useZodForm<MemberInviteFormData>(
     schema,
     {
@@ -82,26 +85,25 @@ const MemberInviteForm: FC<Props> = ({
         lastName: initialData?.inviteeLastName || DEFAULT_FORM_VALUES.lastName,
         roles: initialData?.roles || DEFAULT_FORM_VALUES.roles,
       } as Partial<MemberInviteFormData>),
+      disabled:
+        createInvitation.isPending || updateInvitation.isPending || isBusy,
     },
   )
-
-  const { createInvitation, updateInvitation } = useOrganizationInvite({
-    organizationId: organization?.id,
-    inviteId: initialData?.id,
-  })
 
   const onSubmit: SubmitHandler<MemberInviteFormData> = async (data) => {
     setIsBusy(true)
     if (isUpdate) {
-      const res = await updateInvitation.mutateAsync(data)
-      if (isStatusCodeSuccess(res?.status)) {
-        onOpenChange(false)
-      }
+      await updateInvitation.mutateAsync(data, {
+        onSuccess: () => {
+          onOpenChange(false)
+        },
+      })
     } else {
-      const res = await createInvitation.mutateAsync(data)
-      if (isStatusCodeSuccess(res?.status)) {
-        onOpenChange(false)
-      }
+      await createInvitation.mutateAsync(data, {
+        onSuccess: () => {
+          onOpenChange(false)
+        },
+      })
     }
     setIsBusy(false)
   }
@@ -114,116 +116,111 @@ const MemberInviteForm: FC<Props> = ({
   useDisableInteraction({ disable: isBusy })
 
   return (
-    <>
-      {isBusy ? <FullScreenLoader /> : null}
-      <Modal
-        open={open}
-        onOpenChange={(newOpen) => {
-          onOpenChange(newOpen)
-          onClose()
-        }}
-        title='Add Member'
-        description='A form for inviting a new member to this organization.'
-        preventOutsideClose
-        {...modalProps}
-      >
-        <Banner>
-          {`An email invitation will be sent to the
+    <Modal
+      open={open}
+      onOpenChange={(newOpen) => {
+        onOpenChange(newOpen)
+        onClose()
+      }}
+      title='Add Member'
+      description='A form for inviting a new member to this organization.'
+      preventOutsideClose
+      {...modalProps}
+    >
+      <Banner>
+        {`An email invitation will be sent to the
           person below. They will have ${ORG_INVITE_EXPIRY} ${(ORG_INVITE_EXPIRY as number) === 1 ? 'day' : 'days'} to accept.`}
-        </Banner>
+      </Banner>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className='flex flex-col gap-4 gap-y-6'
-        >
-          <div className='flex gap-4 gap-y-6 max-sm:flex-col'>
-            <Controller
-              control={control}
-              name='firstName'
-              render={({ field, fieldState: { error } }) => (
-                <TextInput
-                  {...field}
-                  id={field.name}
-                  label='First Name'
-                  error={error?.message}
-                  className='flex-1'
-                  icon='person'
-                  placeholder='First'
-                  required
-                  autoComplete='off'
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name='lastName'
-              render={({ field, fieldState: { error } }) => (
-                <TextInput
-                  {...field}
-                  id={field.name}
-                  label='Last Name'
-                  error={error?.message}
-                  className='flex-1'
-                  icon='person'
-                  placeholder='Last'
-                  required
-                  autoComplete='off'
-                />
-              )}
-            />
-          </div>
-
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className='flex flex-col gap-4 gap-y-6'
+      >
+        <div className='flex gap-4 gap-y-6 max-sm:flex-col'>
           <Controller
             control={control}
-            name='email'
+            name='firstName'
             render={({ field, fieldState: { error } }) => (
               <TextInput
                 {...field}
                 id={field.name}
-                label='Email'
+                label='First Name'
                 error={error?.message}
-                icon='mail'
-                placeholder='mail@example.com'
+                className='flex-1'
+                icon='person'
+                placeholder='First'
                 required
-                disabled={isUpdate}
-                helper={
-                  isUpdate
-                    ? 'If you need to change the email, cancel this invitation and create a new one.'
-                    : undefined
-                }
                 autoComplete='off'
               />
             )}
           />
-
           <Controller
             control={control}
-            name='roles'
-            render={({ field, fieldState: { error } }) => {
-              return <MemberRoleFieldset {...field} error={error} required />
-            }}
+            name='lastName'
+            render={({ field, fieldState: { error } }) => (
+              <TextInput
+                {...field}
+                id={field.name}
+                label='Last Name'
+                error={error?.message}
+                className='flex-1'
+                icon='person'
+                placeholder='Last'
+                required
+                autoComplete='off'
+              />
+            )}
           />
+        </div>
 
-          <FormActionBar className='mt-4'>
-            <Button
-              variant='outline'
-              onClick={() => {
-                onOpenChange(false)
-                onClose()
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              type='submit'
-              // loading={isBusy}
-            >
-              {isUpdate ? 'Save' : 'Send invitation'}
-            </Button>
-          </FormActionBar>
-        </form>
-      </Modal>
-    </>
+        <Controller
+          control={control}
+          name='email'
+          render={({ field, fieldState: { error } }) => (
+            <TextInput
+              {...field}
+              id={field.name}
+              label='Email'
+              error={error?.message}
+              icon='mail'
+              placeholder='mail@example.com'
+              required
+              disabled={isUpdate}
+              helper={
+                isUpdate
+                  ? 'If you need to change the email, cancel this invitation and create a new one.'
+                  : undefined
+              }
+              autoComplete='off'
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name='roles'
+          render={({ field, fieldState: { error } }) => {
+            return <MemberRoleFieldset {...field} error={error} required />
+          }}
+        />
+
+        <FormActionBar className='mt-4'>
+          <Button
+            variant='outline'
+            onClick={() => {
+              onOpenChange(false)
+              onClose()
+            }}
+            disabled={isBusy}
+          >
+            Cancel
+          </Button>
+          <Button type='submit' loading={isBusy} disabled={isBusy}>
+            {isUpdate ? 'Save' : 'Send invitation'}
+          </Button>
+        </FormActionBar>
+      </form>
+    </Modal>
   )
 }
 

@@ -2,9 +2,11 @@
  * @jest-environment node
  */
 import {
+  FetchError,
   FetchErrorCode,
-  coreFetch,
+  fetchRequest,
   getAbsoluteUrl,
+  isFetchError,
   isStatusCodeSuccess,
   isValidHttpStatusCode,
 } from '../fetch'
@@ -168,15 +170,16 @@ describe('fetch utilities', () => {
     })
   })
 
-  describe('coreFetch.GET', () => {
+  describe('fetchRequest.GET', () => {
     it('should make a GET request successfully', async () => {
       const mockResponse = { data: { id: 1 }, status: 200 }
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 200,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
-      const result = await coreFetch.GET({ url: '/api/test' })
+      const result = await fetchRequest.GET({ url: '/api/test' })
 
       expect(mockFetch).toHaveBeenCalledWith('/api/test', {
         method: 'GET',
@@ -188,11 +191,12 @@ describe('fetch utilities', () => {
     it('should handle GET request with custom headers', async () => {
       const mockResponse = { data: null, status: 200 }
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 200,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
-      await coreFetch.GET({
+      await fetchRequest.GET({
         url: '/api/test',
         options: {
           headers: { Authorization: 'Bearer token' },
@@ -206,17 +210,18 @@ describe('fetch utilities', () => {
     })
   })
 
-  describe('coreFetch.POST', () => {
+  describe('fetchRequest.POST', () => {
     it('should make a POST request with payload', async () => {
       const mockResponse = { data: { id: 1 }, status: 201 }
       const payload = { name: 'test' }
 
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 201,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
-      const result = await coreFetch.POST({ url: '/api/test', payload })
+      const result = await fetchRequest.POST({ url: '/api/test', payload })
 
       expect(mockFetch).toHaveBeenCalledWith('/api/test', {
         method: 'POST',
@@ -229,11 +234,12 @@ describe('fetch utilities', () => {
     it('should handle POST request without Content-Type when no payload', async () => {
       const mockResponse = { data: null, status: 200 }
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 200,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
-      await coreFetch.POST({ url: '/api/test', payload: {} })
+      await fetchRequest.POST({ url: '/api/test', payload: {} })
 
       expect(mockFetch).toHaveBeenCalledWith('/api/test', {
         method: 'POST',
@@ -243,17 +249,18 @@ describe('fetch utilities', () => {
     })
   })
 
-  describe('coreFetch.PUT', () => {
+  describe('fetchRequest.PUT', () => {
     it('should make a PUT request with payload', async () => {
       const mockResponse = { data: { id: 1 }, status: 200 }
       const payload = { name: 'updated' }
 
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 200,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
-      const result = await coreFetch.PUT({ url: '/api/test/1', payload })
+      const result = await fetchRequest.PUT({ url: '/api/test/1', payload })
 
       expect(mockFetch).toHaveBeenCalledWith('/api/test/1', {
         method: 'PUT',
@@ -264,17 +271,18 @@ describe('fetch utilities', () => {
     })
   })
 
-  describe('coreFetch.PATCH', () => {
+  describe('fetchRequest.PATCH', () => {
     it('should make a PATCH request with payload', async () => {
       const mockResponse = { data: { id: 1 }, status: 200 }
       const payload = { name: 'patched' }
 
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 200,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
-      const result = await coreFetch.PATCH({ url: '/api/test/1', payload })
+      const result = await fetchRequest.PATCH({ url: '/api/test/1', payload })
 
       expect(mockFetch).toHaveBeenCalledWith('/api/test/1', {
         method: 'PATCH',
@@ -285,15 +293,16 @@ describe('fetch utilities', () => {
     })
   })
 
-  describe('coreFetch.DELETE', () => {
+  describe('fetchRequest.DELETE', () => {
     it('should make a DELETE request', async () => {
       const mockResponse = { data: null, status: 204 }
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 204,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
-      const result = await coreFetch.DELETE({ url: '/api/test/1' })
+      const result = await fetchRequest.DELETE({ url: '/api/test/1' })
 
       expect(mockFetch).toHaveBeenCalledWith('/api/test/1', {
         method: 'DELETE',
@@ -304,107 +313,137 @@ describe('fetch utilities', () => {
   })
 
   describe('error handling', () => {
-    it('should handle JSON parsing errors', async () => {
+    it('should throw FetchError for JSON parsing errors', async () => {
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 200,
         json: () => Promise.reject(new Error('Invalid JSON')),
       } as unknown as Response)
 
-      const result = await coreFetch.GET({ url: '/api/test' })
+      await expect(fetchRequest.GET({ url: '/api/test' })).rejects.toThrow(
+        FetchError,
+      )
 
-      expect(result).toEqual({
-        data: null,
-        status: 200,
-        error: {
-          code: FetchErrorCode.INTERNAL_ERROR,
-          message: 'Failed to parse server response.',
-        },
-      })
+      try {
+        await fetchRequest.GET({ url: '/api/test' })
+      } catch (error) {
+        expect(isFetchError(error)).toBe(true)
+        if (isFetchError(error)) {
+          expect(error.status).toBe(500)
+          expect(error.code).toBe(FetchErrorCode.INTERNAL_ERROR)
+          expect(error.message).toBe('Failed to parse server response.')
+        }
+      }
     })
 
-    it('should handle network errors (TypeError)', async () => {
+    it('should throw FetchError for network errors (TypeError)', async () => {
       mockFetch.mockRejectedValueOnce(new TypeError('Network error'))
 
-      const result = await coreFetch.GET({ url: '/api/test' })
-
-      expect(result).toEqual({
-        data: null,
-        status: 0,
-        error: {
-          code: FetchErrorCode.NETWORK_ERROR,
-          message:
+      try {
+        await fetchRequest.GET({ url: '/api/test' })
+      } catch (error) {
+        expect(isFetchError(error)).toBe(true)
+        if (isFetchError(error)) {
+          expect(error.status).toBe(0)
+          expect(error.code).toBe(FetchErrorCode.NETWORK_ERROR)
+          expect(error.message).toBe(
             'Network connection failed. Please check your internet connection.',
-        },
-      })
+          )
+        }
+      }
     })
 
-    it('should handle abort errors', async () => {
+    it('should throw FetchError for abort errors', async () => {
       const abortError = new DOMException('Request aborted', 'AbortError')
       mockFetch.mockRejectedValueOnce(abortError)
 
-      const result = await coreFetch.GET({ url: '/api/test' })
-
-      expect(result).toEqual({
-        data: null,
-        status: 0,
-        error: {
-          code: FetchErrorCode.NETWORK_ERROR,
-          message:
-            'Network connection failed. Please check your internet connection.',
-        },
-      })
+      try {
+        await fetchRequest.GET({ url: '/api/test' })
+      } catch (error) {
+        expect(isFetchError(error)).toBe(true)
+        if (isFetchError(error)) {
+          expect(error.status).toBe(0)
+          expect(error.code).toBe(FetchErrorCode.NETWORK_ERROR)
+        }
+      }
     })
 
-    it('should handle unexpected errors', async () => {
+    it('should throw FetchError for unexpected errors', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Unexpected error'))
 
-      const result = await coreFetch.GET({ url: '/api/test' })
-
-      expect(result).toEqual({
-        data: null,
-        status: 500,
-        error: {
-          code: FetchErrorCode.INTERNAL_ERROR,
-          message: 'An unexpected error occurred.',
-        },
-      })
+      try {
+        await fetchRequest.GET({ url: '/api/test' })
+      } catch (error) {
+        expect(isFetchError(error)).toBe(true)
+        if (isFetchError(error)) {
+          expect(error.status).toBe(500)
+          expect(error.code).toBe(FetchErrorCode.INTERNAL_ERROR)
+          expect(error.message).toBe('An unexpected error occurred.')
+        }
+      }
     })
 
-    it('should handle errors with name property', async () => {
+    it('should throw FetchError for errors with name property', async () => {
       const namedError = { name: 'AbortError', message: 'Aborted' }
       mockFetch.mockRejectedValueOnce(namedError)
 
-      const result = await coreFetch.GET({ url: '/api/test' })
+      try {
+        await fetchRequest.GET({ url: '/api/test' })
+      } catch (error) {
+        expect(isFetchError(error)).toBe(true)
+        if (isFetchError(error)) {
+          expect(error.status).toBe(0)
+          expect(error.code).toBe(FetchErrorCode.NETWORK_ERROR)
+        }
+      }
+    })
 
-      expect(result).toEqual({
+    it('should throw FetchError for non-ok responses', async () => {
+      const mockErrorResponse = {
+        status: 404,
         data: null,
-        status: 0,
         error: {
-          code: FetchErrorCode.NETWORK_ERROR,
-          message:
-            'Network connection failed. Please check your internet connection.',
+          code: FetchErrorCode.NOT_FOUND,
+          message: 'Resource not found',
         },
-      })
+      }
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve(mockErrorResponse),
+      } as Response)
+
+      try {
+        await fetchRequest.GET({ url: '/api/test' })
+      } catch (error) {
+        expect(isFetchError(error)).toBe(true)
+        if (isFetchError(error)) {
+          expect(error.status).toBe(404)
+          expect(error.code).toBe(FetchErrorCode.NOT_FOUND)
+          expect(error.response.data).toBe(null)
+        }
+      }
     })
   })
 
   describe('server-side cookie handling', () => {
-    it('should return empty headers when cookies import fails', async () => {
+    it('should work when cookies import succeeds', async () => {
       // Set server-side environment
       Object.defineProperty(global, 'window', {
         value: undefined,
         writable: true,
       })
 
-      // The actual implementation will catch import errors and return empty headers
-      // This test just ensures that the function doesn't throw
       const mockResponse = { data: null, status: 200 }
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 200,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
-      await expect(coreFetch.GET({ url: '/api/test' })).resolves.toBeDefined()
+      const result = await fetchRequest.GET({ url: '/api/test' })
+      expect(result).toBeDefined()
 
       // Restore window for other tests
       Object.defineProperty(global, 'window', {
@@ -418,11 +457,12 @@ describe('fetch utilities', () => {
     it('should not include body for GET requests', async () => {
       const mockResponse = { data: null, status: 200 }
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 200,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
-      await coreFetch.GET({ url: '/api/test' })
+      await fetchRequest.GET({ url: '/api/test' })
 
       expect(mockFetch).toHaveBeenCalledWith(
         '/api/test',
@@ -440,12 +480,13 @@ describe('fetch utilities', () => {
       const payload = { test: 'data' }
 
       mockFetch.mockResolvedValue({
+        ok: true,
         status: 200,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
       // Test POST
-      await coreFetch.POST({ url: '/api/test', payload })
+      await fetchRequest.POST({ url: '/api/test', payload })
       expect(mockFetch).toHaveBeenLastCalledWith(
         '/api/test',
         expect.objectContaining({
@@ -455,7 +496,7 @@ describe('fetch utilities', () => {
       )
 
       // Test PUT
-      await coreFetch.PUT({ url: '/api/test', payload })
+      await fetchRequest.PUT({ url: '/api/test', payload })
       expect(mockFetch).toHaveBeenLastCalledWith(
         '/api/test',
         expect.objectContaining({
@@ -465,7 +506,7 @@ describe('fetch utilities', () => {
       )
 
       // Test PATCH
-      await coreFetch.PATCH({ url: '/api/test', payload })
+      await fetchRequest.PATCH({ url: '/api/test', payload })
       expect(mockFetch).toHaveBeenLastCalledWith(
         '/api/test',
         expect.objectContaining({
@@ -478,11 +519,12 @@ describe('fetch utilities', () => {
     it('should not include body for DELETE requests', async () => {
       const mockResponse = { data: null, status: 204 }
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 204,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
-      await coreFetch.DELETE({ url: '/api/test' })
+      await fetchRequest.DELETE({ url: '/api/test' })
 
       expect(mockFetch).toHaveBeenCalledWith(
         '/api/test',
@@ -500,11 +542,12 @@ describe('fetch utilities', () => {
     it('should allow custom headers to override defaults', async () => {
       const mockResponse = { data: null, status: 200 }
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 200,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
-      await coreFetch.POST({
+      await fetchRequest.POST({
         url: '/api/test',
         payload: { test: true },
         options: {
@@ -527,11 +570,12 @@ describe('fetch utilities', () => {
     it('should merge custom headers with content-type for POST requests', async () => {
       const mockResponse = { data: null, status: 200 }
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 200,
         json: () => Promise.resolve(mockResponse),
       } as Response)
 
-      await coreFetch.POST({
+      await fetchRequest.POST({
         url: '/api/test',
         payload: { test: true },
         options: {
@@ -566,11 +610,12 @@ describe('fetch utilities', () => {
       }
 
       mockFetch.mockResolvedValueOnce({
+        ok: true,
         status: 201,
         json: () => Promise.resolve(serverResponse),
       } as Response)
 
-      const result = await coreFetch.POST({
+      const result = await fetchRequest.POST({
         url: '/api/test',
         payload: { name: 'test' },
       })
@@ -582,7 +627,7 @@ describe('fetch utilities', () => {
       })
     })
 
-    it('should handle error responses from server', async () => {
+    it('should throw FetchError for error responses from server', async () => {
       const serverErrorResponse = {
         status: 400,
         data: null,
@@ -594,24 +639,118 @@ describe('fetch utilities', () => {
       }
 
       mockFetch.mockResolvedValueOnce({
+        ok: false,
         status: 400,
         json: () => Promise.resolve(serverErrorResponse),
       } as Response)
 
-      const result = await coreFetch.POST({
-        url: '/api/test',
-        payload: {},
-      })
+      await expect(
+        fetchRequest.POST({
+          url: '/api/test',
+          payload: {},
+        }),
+      ).rejects.toThrow(FetchError)
 
-      expect(result).toEqual({
+      try {
+        await fetchRequest.POST({
+          url: '/api/test',
+          payload: {},
+        })
+      } catch (error) {
+        expect(isFetchError(error)).toBe(true)
+        if (isFetchError(error)) {
+          expect(error.status).toBe(400)
+          expect(error.code).toBe(FetchErrorCode.INVALID_DATA)
+          expect(error.message).toBe('Validation failed')
+          expect(error.details).toEqual({ name: ['Name is required'] })
+        }
+      }
+    })
+  })
+
+  describe('FetchError class', () => {
+    it('should create FetchError with all properties', () => {
+      const response = {
+        status: 404,
+        data: null,
+        error: {
+          code: FetchErrorCode.NOT_FOUND,
+          message: 'Resource not found',
+        },
+      }
+
+      const error = new FetchError(response)
+
+      expect(error).toBeInstanceOf(Error)
+      expect(error).toBeInstanceOf(FetchError)
+      expect(error.name).toBe('FetchError')
+      expect(error.message).toBe('Resource not found')
+      expect(error.status).toBe(404)
+      expect(error.code).toBe(FetchErrorCode.NOT_FOUND)
+      expect(error.response).toEqual(response)
+    })
+
+    it('should handle FetchError without error object', () => {
+      const response = {
+        status: 500,
+        data: null,
+        message: 'Server error',
+      }
+
+      const error = new FetchError(response)
+
+      expect(error.message).toBe('Server error')
+      expect(error.status).toBe(500)
+      expect(error.code).toBe(FetchErrorCode.INTERNAL_ERROR)
+    })
+
+    it('should handle FetchError with validation details', () => {
+      const response: any = {
         status: 400,
         data: null,
         error: {
           code: FetchErrorCode.INVALID_DATA,
           message: 'Validation failed',
-          details: { name: ['Name is required'] },
+          details: {
+            email: ['Email is required', 'Email must be valid'],
+            name: ['Name is required'],
+          },
         },
+      }
+
+      const error = new FetchError(response)
+
+      expect(error.details).toEqual({
+        email: ['Email is required', 'Email must be valid'],
+        name: ['Name is required'],
       })
+    })
+  })
+
+  describe('isFetchError type guard', () => {
+    it('should return true for FetchError instances', () => {
+      const error = new FetchError({
+        status: 404,
+        data: null,
+        error: { code: FetchErrorCode.NOT_FOUND, message: 'Not found' },
+      })
+
+      expect(isFetchError(error)).toBe(true)
+    })
+
+    it('should return false for regular errors', () => {
+      const error = new Error('Regular error')
+      expect(isFetchError(error)).toBe(false)
+    })
+
+    it('should return false for null and undefined', () => {
+      expect(isFetchError(null)).toBe(false)
+      expect(isFetchError(undefined)).toBe(false)
+    })
+
+    it('should return false for plain objects', () => {
+      expect(isFetchError({})).toBe(false)
+      expect(isFetchError({ status: 404 })).toBe(false)
     })
   })
 })

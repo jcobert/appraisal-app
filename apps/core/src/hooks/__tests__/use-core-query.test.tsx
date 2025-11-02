@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import { ReactNode } from 'react'
 
-import { FetchErrorCode, FetchResponse, coreFetch } from '@/utils/fetch'
+import { FetchErrorCode, FetchResponse, fetchRequest } from '@/utils/fetch'
 import { ToastMessages, toastyQuery } from '@/utils/toast'
 
 import { UseCoreQueryProps, useCoreQuery } from '@/hooks/use-core-query'
@@ -10,7 +10,7 @@ import { UseCoreQueryProps, useCoreQuery } from '@/hooks/use-core-query'
 // Mock the fetch utility
 jest.mock('@/utils/fetch', () => ({
   ...jest.requireActual('@/utils/fetch'),
-  coreFetch: {
+  fetchRequest: {
     GET: jest.fn(),
   },
 }))
@@ -32,7 +32,7 @@ jest.mock('@bprogress/next', () => ({
 }))
 
 const mockFetch = {
-  GET: coreFetch.GET as jest.MockedFunction<typeof coreFetch.GET>,
+  GET: fetchRequest.GET as jest.MockedFunction<typeof fetchRequest.GET>,
 }
 
 const mockToastyQuery = toastyQuery as jest.MockedFunction<typeof toastyQuery>

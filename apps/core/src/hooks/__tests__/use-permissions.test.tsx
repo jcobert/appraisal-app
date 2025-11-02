@@ -3,6 +3,8 @@ import { usePermissions } from '../use-permissions'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook } from '@testing-library/react'
 
+import { FetchError } from '@/utils/fetch'
+
 // Mock the useCoreQuery hook
 jest.mock('../use-core-query')
 const mockUseCoreQuery = useCoreQuery as jest.MockedFunction<
@@ -77,7 +79,7 @@ describe('usePermissions', () => {
   })
 
   it('should return false for any permission when there is an error', () => {
-    const error = new Error('Failed to fetch')
+    const error = new FetchError({ error: { message: 'Failed to fetch' } })
     mockUseCoreQuery.mockReturnValue({
       response: undefined,
       error,

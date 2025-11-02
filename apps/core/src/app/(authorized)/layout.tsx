@@ -12,8 +12,7 @@ import {
 import { handleGetActiveUserProfile } from '@/lib/db/handlers/user-handlers'
 
 import { isAuthenticated } from '@/utils/auth'
-import { isStatusCodeSuccess } from '@/utils/fetch'
-import { createQueryClient } from '@/utils/query'
+import { createQueryClient, prefetchQuery } from '@/utils/query'
 
 import BreadcrumbProvider from '@/providers/breadcrumbs/breadcrumb-provider'
 import { OrganizationProvider } from '@/providers/organization-provider'
@@ -51,25 +50,11 @@ const Layout = async ({
   const prefetchQueries = [
     queryClient.prefetchQuery({
       queryKey: usersQueryKey.active,
-      queryFn: async () => {
-        const res = await handleGetActiveUserProfile()
-        if (!isStatusCodeSuccess(res?.status)) {
-          throw new Error(res?.error?.message || 'Failed to fetch active user')
-        }
-        return res
-      },
+      queryFn: prefetchQuery(() => handleGetActiveUserProfile()),
     }),
     queryClient.prefetchQuery({
       queryKey: organizationsQueryKey.all,
-      queryFn: async () => {
-        const res = await handleGetUserOrganizations()
-        if (!isStatusCodeSuccess(res?.status)) {
-          throw new Error(
-            res?.error?.message || 'Failed to fetch organizations',
-          )
-        }
-        return res
-      },
+      queryFn: prefetchQuery(() => handleGetUserOrganizations()),
     }),
   ]
 
@@ -78,30 +63,16 @@ const Layout = async ({
     prefetchQueries.push(
       queryClient.prefetchQuery({
         queryKey: organizationsQueryKey.filtered({ id: activeOrgId }),
-        queryFn: async () => {
-          const res = await handleGetOrganization(activeOrgId)
-          if (!isStatusCodeSuccess(res?.status)) {
-            throw new Error(
-              res?.error?.message || 'Failed to fetch active organization',
-            )
-          }
-          return res
-        },
+        queryFn: prefetchQuery(() => handleGetOrganization(activeOrgId)),
       }),
       queryClient.prefetchQuery({
         queryKey: permissionsQueryKey.filtered({
           area: 'organization',
           organizationId: activeOrgId,
         }),
-        queryFn: async () => {
-          const res = await handleGetOrganizationPermissions(activeOrgId)
-          if (!isStatusCodeSuccess(res?.status)) {
-            throw new Error(
-              res?.error?.message || 'Failed to fetch permissions',
-            )
-          }
-          return res
-        },
+        queryFn: prefetchQuery(() =>
+          handleGetOrganizationPermissions(activeOrgId),
+        ),
       }),
     )
   }

@@ -1,4 +1,4 @@
-import { partition } from 'lodash'
+import { partition, sortBy } from 'lodash'
 import { FC } from 'react'
 
 import { Separator } from '@repo/ui'
@@ -34,13 +34,13 @@ const OrganizationMembers: FC<Props> = ({
         </div>
       </div>
 
-      {!invitations?.length && !hideInvites ? (
+      {!!invitations?.length && !hideInvites ? (
         <>
           <Separator />
           <div className='flex flex-col gap-4 sm:w-fit'>
             <h3 className='text-lg font-medium'>Invited</h3>
             <div className='flex flex-col gap-2'>
-              {invitations?.map((inv) => (
+              {sortBy(invitations, (inv) => inv?.createdAt)?.map((inv) => (
                 <OrgMemberInviteCard key={inv?.id} invitation={inv} />
               ))}
             </div>

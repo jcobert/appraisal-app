@@ -8,11 +8,12 @@ import {
 import { useCallback } from 'react'
 import { DefaultToastOptions } from 'react-hot-toast'
 
-import { FetchResponse, coreFetch } from '@/utils/fetch'
+import { FetchError, FetchResponse, fetchRequest } from '@/utils/fetch'
 import { ToastMessages, toastyQuery } from '@/utils/toast'
 
 export type UseCoreQueryProps<TData = unknown> = UseQueryOptions<
-  FetchResponse<TData>
+  FetchResponse<TData>,
+  FetchError<TData>
 > & {
   url: string
   /** Configuration for toast notifications. */
@@ -48,7 +49,7 @@ export const useCoreQuery = <TData = unknown>({
       }
 
       try {
-        const res = await coreFetch.GET<TData>({
+        const res = await fetchRequest.GET<TData>({
           url,
           options: { signal: context?.signal },
         })
@@ -75,7 +76,10 @@ export const useCoreQuery = <TData = unknown>({
     return queryFetch(context)
   }
 
-  const { data: response, ...query } = useQuery<FetchResponse<TData>>({
+  const { data: response, ...query } = useQuery<
+    FetchResponse<TData>,
+    FetchError<TData>
+  >({
     queryFn,
     ...options,
   })
