@@ -1,5 +1,4 @@
 import { Prisma } from '@repo/database'
-import { isObject } from '@repo/utils'
 
 import { FetchErrorCode } from '@/utils/fetch'
 import { ZodFieldErrors } from '@/utils/zod'
@@ -78,6 +77,7 @@ export const isPrismaError = (error: unknown) => {
     error instanceof Prisma.PrismaClientKnownRequestError ||
     error instanceof Prisma.PrismaClientUnknownRequestError ||
     error instanceof Prisma.PrismaClientValidationError ||
+    error instanceof Prisma.PrismaClientInitializationError ||
     (error &&
       typeof error === 'object' &&
       'code' in error &&
@@ -104,6 +104,14 @@ export const parsePrismaError = (
   // Handle Prisma Client Known Request Errors
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
+      case 'P1000':
+      case 'P1001': {
+        return {
+          message: 'Database connection failed. Please try again later.',
+          code: FetchErrorCode.DATABASE_FAILURE,
+          status: 503,
+        }
+      }
       case 'P2002': {
         // Unique constraint violation
         const field = error.meta?.target as string[] | undefined
@@ -269,12 +277,22 @@ export const parsePrismaError = (
         }
       }
       default: {
-        return {
-          message: `Database error: ${error.message}`,
-          code: FetchErrorCode.DATABASE_FAILURE,
-          status: 500,
-        }
+        break
+        // return {
+        //   message: 'An unknown database error occurred.',
+        //   code: FetchErrorCode.DATABASE_FAILURE,
+        //   status: 500,
+        // }
       }
+    }
+  }
+
+  // Handle Prisma Client Validation Errors
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    return {
+      message: 'Database connection failed. Please try again later.',
+      code: FetchErrorCode.DATABASE_FAILURE,
+      status: 503,
     }
   }
 
@@ -309,12 +327,7 @@ export const parsePrismaError = (
 
   // Default fallback
   return {
-    message:
-      isObject(error) &&
-      'message' in error &&
-      typeof error?.message === 'string'
-        ? error?.message
-        : 'An unknown database error occurred.',
+    message: 'An unknown database error occurred.',
     code: FetchErrorCode.DATABASE_FAILURE,
     status: 500,
   }
