@@ -2,13 +2,15 @@ import { KindeAccessToken, KindeUserBase } from '@kinde-oss/kinde-auth-nextjs'
 import { withAuth } from '@kinde-oss/kinde-auth-nextjs/middleware'
 import { MiddlewareConfig, NextRequest, NextResponse } from 'next/server'
 
-type WithAuthCallback = (
+import { handleDatabaseHealthCheck } from '@/lib/middleware/health-check'
+
+export type WithAuthCallback = (
   req: NextRequest & {
     kindeAuth: { user: KindeUserBase; token: KindeAccessToken }
   },
 ) => Promise<NextResponse | void>
 
-type WithAuthOptions = {
+export type WithAuthOptions = {
   publicPaths?: (string | RegExp)[]
   loginPage?: string
   isReturnToCurrentPage?: boolean
@@ -21,12 +23,15 @@ type WithAuthOptions = {
 }
 
 // Runs after authentication is verified.
-const middleware: WithAuthCallback = async (_req) => {}
+const middleware: WithAuthCallback = async (req) => {
+  return handleDatabaseHealthCheck(req)
+}
 
 export default withAuth(middleware, {
   publicPaths: [
     '/',
     /\/organization-invite\/[^?&]+\/join(?=\?|$)/, // org invite links
+    '/maintenance', // downtime/maintenance page
   ],
   isReturnToCurrentPage: true,
 } satisfies WithAuthOptions)

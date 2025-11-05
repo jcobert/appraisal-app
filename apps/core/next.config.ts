@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
     ],
     minimumCacheTTL: 31536000,
   },
+  // Alias paths for external health checks (k8s liveness/readiness probes, load balancers, monitoring)
+  // All routes point to /api/health which returns standardized health status
   rewrites: async () => [
     { source: '/healthz', destination: '/api/health' },
     { source: '/api/healthz', destination: '/api/health' },
