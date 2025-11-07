@@ -33,10 +33,10 @@ export type OrgJoinPayload = {
  * Handle organization invitation acceptance or decline.
  * Can be used in both API routes and server components.
  */
-export async function handleJoinOrganization(
+export const handleJoinOrganization = async (
   organizationId: string,
   payload: OrgJoinPayload,
-) {
+) => {
   return createApiHandler(
     async ({ user }) => {
       // Validate payload

@@ -19,7 +19,7 @@ export const HEALTH_CHECK_CONFIG = {
  * Uses a tight timeout to prevent middleware from blocking too long.
  *
  * @param req - The incoming request
- * @returns Promise<boolean> - true if DB is healthy, false otherwise
+ * @returns `true` if DB is healthy, `false` otherwise
  */
 export const checkDatabaseHealth = async (
   req: NextRequest,

@@ -14,15 +14,17 @@ export const metadata: Metadata = {
 const Page: NextPage = () => {
   return (
     <PageLayout>
-      <div className='max-w-prose flex flex-col items-center justify-center text-center gap-4 mx-auto h-full'>
-        <h1 className='text-2xl font-semibold text-balance'>
-          Temporarily unavailable
-        </h1>
-        <p className='text-muted-foreground text-balance'>
-          We’re performing maintenance or experiencing an outage. Please try
-          again in a few minutes.
-        </p>
-        <div className='pt-2'>
+      <div className='flex flex-col items-center justify-center text-center gap-6 mx-auto h-full'>
+        <div className='prose'>
+          <h1 className='text-2xl font-semibold text-center text-balance'>
+            Temporarily unavailable
+          </h1>
+          <p className='text-muted-foreground text-balance text-center'>
+            We’re performing maintenance or experiencing an outage. Please try
+            again in a few minutes.
+          </p>
+        </div>
+        <div className='mt-2'>
           <Button asChild variant='outline'>
             <a href='/'>Retry</a>
           </Button>

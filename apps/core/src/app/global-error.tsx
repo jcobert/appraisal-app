@@ -1,8 +1,9 @@
 'use client'
 
-import Link from 'next/link'
-
 import { Button } from '@repo/ui'
+
+import Logo from '@/components/general/logo'
+import PageLayout from '@/components/layout/page-layout'
 
 export default function GlobalError({
   error,
@@ -14,30 +15,36 @@ export default function GlobalError({
   return (
     <html>
       <body>
-        <main className='min-h-dvh flex items-center justify-center p-6'>
-          <div className='max-w-md text-center flex flec-col gap-4'>
-            <h1 className='text-2xl font-semibold text-balance'>
-              Something went wrong
-            </h1>
-            <p className='text-muted-foreground text-pretty'>
-              An unexpected error occurred. If the problem persists, it may be
-              due to a temporary outage.
-            </p>
-            <div className='flex items-center justify-center gap-3 pt-2'>
-              <Button onClick={reset} variant='outline'>
-                Try again
-              </Button>
-              <Link
+        <main className='min-h-dvh flex flex-col items-center justify-center p-6'>
+          {/* <Logo className='mx-auto' /> */}
+          <PageLayout>
+            <div className='prose'>
+              <h1 className='text-2xl text-center font-semibold text-balance'>
+                Well, this is embarassing...
+              </h1>
+              <Logo className='mx-auto' />
+              <p className='text-muted-foreground text-balance text-center'>
+                An unexpected error occurred. If the problem persists, it may be
+                due to a temporary outage. We appologize for the inconvenience.
+              </p>
+              <div className='flex items-center justify-center gap-3 pt-4'>
+                <Button onClick={reset} variant='outline'>
+                  Try again
+                </Button>
+                {/* <Link
                 href='/maintenance'
                 className='inline-flex items-center rounded-md border px-3 py-2 text-sm hover:bg-accent'
-              >
+                >
                 Status
-              </Link>
+                </Link> */}
+              </div>
+              {process.env.NODE_ENV !== 'production' && error?.digest ? (
+                <p className='text-xs text-center text-muted-foreground mt-8'>
+                  {error.digest}
+                </p>
+              ) : null}
             </div>
-            {process.env.NODE_ENV !== 'production' && error?.digest && (
-              <p className='text-xs text-muted-foreground'>{error.digest}</p>
-            )}
-          </div>
+          </PageLayout>
         </main>
       </body>
     </html>
