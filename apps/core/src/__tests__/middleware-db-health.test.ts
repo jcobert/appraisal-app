@@ -488,4 +488,216 @@ describe('Middleware DB Health Gating', () => {
       }),
     )
   })
+
+  describe('Circuit Breaker', () => {
+    it('implements exponential backoff on consecutive failures', async () => {
+      const middleware = await importMiddleware()
+
+      // First failure: 1x backoff (45s)
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ status: 503, data: null, error: {} }),
+      } as any)
+
+      const req1 = makeRequest('https://example.com/dashboard')
+      const res1 = await middleware(req1)
+
+      expect((res1 as any).cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.objectContaining({
+          maxAge: 45, // 1x backoff
+        }),
+      )
+
+      // Second failure: 2x backoff (90s)
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ status: 503, data: null, error: {} }),
+      } as any)
+
+      const req2 = makeRequest('https://example.com/dashboard')
+      const res2 = await middleware(req2)
+
+      expect((res2 as any).cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.objectContaining({
+          maxAge: 90, // 2x backoff
+        }),
+      )
+
+      // Third failure: 3x backoff (135s)
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ status: 503, data: null, error: {} }),
+      } as any)
+
+      const req3 = makeRequest('https://example.com/dashboard')
+      const res3 = await middleware(req3)
+
+      expect((res3 as any).cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.objectContaining({
+          maxAge: 135, // 3x backoff
+        }),
+      )
+
+      // Fourth failure: 4x backoff (180s - max)
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ status: 503, data: null, error: {} }),
+      } as any)
+
+      const req4 = makeRequest('https://example.com/dashboard')
+      const res4 = await middleware(req4)
+
+      expect((res4 as any).cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.objectContaining({
+          maxAge: 180, // 4x backoff (capped)
+        }),
+      )
+
+      // Fifth failure: should stay at 4x backoff (180s)
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ status: 503, data: null, error: {} }),
+      } as any)
+
+      const req5 = makeRequest('https://example.com/dashboard')
+      const res5 = await middleware(req5)
+
+      expect((res5 as any).cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.objectContaining({
+          maxAge: 180, // Still capped at 4x
+        }),
+      )
+    })
+
+    it('resets circuit breaker on successful health check', async () => {
+      const middleware = await importMiddleware()
+
+      // First failure
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ status: 503, data: null, error: {} }),
+      } as any)
+
+      const req1 = makeRequest('https://example.com/page1')
+      const res1 = await middleware(req1)
+
+      expect((res1 as any).cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.objectContaining({
+          maxAge: 45, // 1x backoff
+        }),
+      )
+
+      // Second failure
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ status: 503, data: null, error: {} }),
+      } as any)
+
+      const req2 = makeRequest('https://example.com/page2')
+      const res2 = await middleware(req2)
+
+      expect((res2 as any).cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.objectContaining({
+          maxAge: 90, // 2x backoff
+        }),
+      )
+
+      // Success - should reset circuit breaker
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: 200,
+          data: { healthy: true, timestamp: Date.now() },
+          error: null,
+        }),
+      } as any)
+
+      const req3 = makeRequest('https://example.com/page3')
+      const res3 = await middleware(req3)
+
+      expect((res3 as any).cookies.set).toHaveBeenCalledWith(
+        'app-db-checked',
+        '1',
+        expect.objectContaining({
+          maxAge: 30, // Normal check interval
+        }),
+      )
+
+      // Next failure should start at 1x again
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ status: 503, data: null, error: {} }),
+      } as any)
+
+      const req4 = makeRequest('https://example.com/page4')
+      const res4 = await middleware(req4)
+
+      expect((res4 as any).cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.objectContaining({
+          maxAge: 45, // Back to 1x backoff
+        }),
+      )
+    })
+
+    it('maintains exponential backoff on fast path (cookie refresh)', async () => {
+      const middleware = await importMiddleware()
+
+      // First failure to set up circuit breaker
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ status: 503, data: null, error: {} }),
+      } as any)
+
+      const req1 = makeRequest('https://example.com/dashboard')
+      await middleware(req1)
+
+      // Second failure to increase backoff
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ status: 503, data: null, error: {} }),
+      } as any)
+
+      const req2 = makeRequest('https://example.com/dashboard')
+      await middleware(req2)
+
+      // Now test fast path with cookie present
+      const { NextRequest } = require('next/server')
+      const req3 = new NextRequest('https://example.com/dashboard', {
+        headers: {
+          accept: 'text/html',
+          cookie: 'app-db-down=1',
+        },
+      })
+
+      const res3 = await middleware(req3)
+
+      // Fast path should use current circuit breaker backoff (2x = 90s)
+      expect((res3 as any).cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.objectContaining({
+          maxAge: 90, // Current circuit breaker state
+        }),
+      )
+
+      // Should not have made a health check call (fast path)
+      expect(global.fetch).toHaveBeenCalledTimes(2) // Only the first two failures
+    })
+  })
 })
