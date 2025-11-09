@@ -481,12 +481,13 @@ describe('Middleware DB Health Gating', () => {
     await middleware(req)
 
     expect(fetchSpy).toHaveBeenCalledWith(
+      'https://example.com/api/health',
       expect.objectContaining({
-        href: 'https://example.com/api/health',
-      }),
-      expect.objectContaining({
-        cache: 'no-store',
+        method: 'GET',
         signal: expect.any(Object),
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+        }),
       }),
     )
   })

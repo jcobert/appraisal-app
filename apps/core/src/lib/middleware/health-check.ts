@@ -59,17 +59,18 @@ const circuitBreaker = {
 }
 
 /**
- * Checks database health via the /api/health endpoint.
+ * Checks database health by calling the health API endpoint.
  * Uses a tight timeout to prevent middleware from blocking too long.
  *
- * @param req - The incoming request
+ * Note: We use fetch() instead of direct Prisma query because middleware
+ * runs in Edge Runtime which doesn't support Prisma Client.
+ *
+ * @param req - The incoming request (used to build absolute URL)
  * @returns `true` if DB is healthy, `false` otherwise
  */
 export const checkDatabaseHealth = async (
   req: NextRequest,
 ): Promise<boolean> => {
-  const healthUrl = new URL('/api/health', req.url)
-
   const controller = new AbortController()
   const timeoutId = setTimeout(
     () => controller.abort(),
@@ -77,15 +78,26 @@ export const checkDatabaseHealth = async (
   )
 
   try {
-    const res = await fetch(healthUrl, {
-      cache: 'no-store', // Never cache health status
+    // Build absolute URL to the health endpoint using the request's host
+    // This prevents circular dependency since /api/* is excluded from middleware
+    const healthUrl = new URL('/api/health', req.url)
+
+    const response = await fetch(healthUrl.toString(), {
+      method: 'GET',
       signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
-    const data = (await res.json()) as FetchResponse<HealthCheckResponseData>
-    // Verify both HTTP status and response payload match expected format
-    return res.ok && data?.data?.healthy === true
+
+    // Parse response regardless of status code
+    const data =
+      (await response.json()) as FetchResponse<HealthCheckResponseData>
+
+    // Check if the healthy flag is explicitly true
+    return data?.data?.healthy === true
   } catch {
-    // Treat any fetch error (timeout, network, etc.) as unhealthy
+    // Treat any error (timeout, network, parse, etc.) as unhealthy
     return false
   } finally {
     clearTimeout(timeoutId)
@@ -139,7 +151,7 @@ export const handleDatabaseHealthCheck = async (
   }
 
   // Check health on all matched requests since Next.js RSC headers are inconsistent
-  // The cookie damping (30s for healthy, 45s+ for down) prevents overwhelming the health endpoint
+  // The cookie damping (30s for healthy, 45s+ for down) prevents overwhelming the database
   const healthy = await checkDatabaseHealth(req)
 
   if (!healthy) {
