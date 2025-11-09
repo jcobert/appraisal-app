@@ -65,6 +65,7 @@ jest.mock('next/server', () => {
         },
         cookies: {
           set: jest.fn(),
+          delete: jest.fn(),
         },
       }
     },
@@ -78,6 +79,7 @@ jest.mock('next/server', () => {
         },
         cookies: {
           set: jest.fn(),
+          delete: jest.fn(),
         },
       }
     },

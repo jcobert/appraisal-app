@@ -65,6 +65,7 @@ jest.mock('next/server', () => {
         },
         cookies: {
           set: jest.fn(),
+          delete: jest.fn(),
         },
       }
     },
@@ -78,6 +79,7 @@ jest.mock('next/server', () => {
         },
         cookies: {
           set: jest.fn(),
+          delete: jest.fn(),
         },
       }
     },
@@ -698,6 +700,152 @@ describe('Middleware DB Health Gating', () => {
 
       // Should not have made a health check call (fast path)
       expect(global.fetch).toHaveBeenCalledTimes(2) // Only the first two failures
+    })
+  })
+
+  describe('Cookie State Management Edge Cases', () => {
+    it('should delete DB_CHECKED_COOKIE when DB goes down', async () => {
+      ;(global as any).fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({
+          status: 500,
+          data: { healthy: false, timestamp: Date.now() },
+          error: null,
+        }),
+      })
+
+      const middleware = await importMiddleware()
+      const req = makeRequest('https://example.com/dashboard')
+      const res = await middleware(req)
+
+      // Should set DB_DOWN_COOKIE
+      expect(res?.cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.any(Object),
+      )
+
+      // Should delete DB_CHECKED_COOKIE to prevent conflicting state
+      expect(res?.cookies.delete).toHaveBeenCalledWith('app-db-checked')
+    })
+
+    it('should not have conflicting cookies when DB fails after being healthy', async () => {
+      const middleware = await importMiddleware()
+
+      // First request: DB is healthy
+      ;(global as any).fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          status: 200,
+          data: { healthy: true, timestamp: Date.now() },
+          error: null,
+        }),
+      })
+
+      const req1 = makeRequest('https://example.com/dashboard')
+      const res1 = await middleware(req1)
+
+      // Should set DB_CHECKED_COOKIE
+      expect(res1?.cookies.set).toHaveBeenCalledWith(
+        'app-db-checked',
+        '1',
+        expect.any(Object),
+      )
+
+      // Second request: DB goes down
+      ;(global as any).fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({
+          status: 500,
+          data: { healthy: false, timestamp: Date.now() },
+          error: null,
+        }),
+      })
+
+      const req2 = makeRequest('https://example.com/dashboard', 'text/html')
+      const res2 = await middleware(req2)
+
+      // Should set DB_DOWN_COOKIE
+      expect(res2?.cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.any(Object),
+      )
+
+      // Should delete DB_CHECKED_COOKIE
+      expect(res2?.cookies.delete).toHaveBeenCalledWith('app-db-checked')
+    })
+
+    it('should not delete DB_CHECKED_COOKIE when using fast path (already down)', async () => {
+      const middleware = await importMiddleware()
+
+      // Request with DB_DOWN_COOKIE already set (fast path)
+      const { NextRequest } = require('next/server')
+      const reqWithCookie = new NextRequest('https://example.com/dashboard', {
+        headers: {
+          accept: 'text/html',
+          cookie: 'app-db-down=1',
+        },
+      }) as NextRequest
+
+      const res = await middleware(reqWithCookie)
+
+      // Should refresh DB_DOWN_COOKIE
+      expect(res?.cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.any(Object),
+      )
+
+      // Should NOT delete DB_CHECKED_COOKIE (fast path doesn't need to clean up)
+      expect(res?.cookies.delete).not.toHaveBeenCalled()
+    })
+
+    it('should handle transition from down to healthy correctly', async () => {
+      const middleware = await importMiddleware()
+
+      // First request: DB is down
+      ;(global as any).fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({
+          status: 500,
+          data: { healthy: false, timestamp: Date.now() },
+          error: null,
+        }),
+      })
+
+      const req1 = makeRequest('https://example.com/dashboard')
+      const res1 = await middleware(req1)
+
+      expect(res1?.cookies.set).toHaveBeenCalledWith(
+        'app-db-down',
+        '1',
+        expect.any(Object),
+      )
+      expect(res1?.cookies.delete).toHaveBeenCalledWith('app-db-checked')
+
+      // Second request: DB recovers
+      ;(global as any).fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          status: 200,
+          data: { healthy: true, timestamp: Date.now() },
+          error: null,
+        }),
+      })
+
+      const req2 = makeRequest('https://example.com/dashboard', 'text/html')
+      const res2 = await middleware(req2)
+
+      // Should set DB_CHECKED_COOKIE
+      expect(res2?.cookies.set).toHaveBeenCalledWith(
+        'app-db-checked',
+        '1',
+        expect.any(Object),
+      )
+
+      // Note: DB_DOWN_COOKIE will expire naturally, no need to explicitly delete
+      // (browser handles expiration automatically)
     })
   })
 })

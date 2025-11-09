@@ -17,7 +17,7 @@ export const HEALTH_CHECK_CONFIG = {
 
 /**
  * Circuit breaker state for tracking consecutive failures.
- * Implements exponential backoff to prevent hammering a failing database.
+ * Implements exponential backoff to prevent overwhelming a failing database.
  */
 const circuitBreaker = {
   consecutiveFailures: 0,
@@ -139,7 +139,7 @@ export const handleDatabaseHealthCheck = async (
   }
 
   // Check health on all matched requests since Next.js RSC headers are inconsistent
-  // The cookie damping (30s for healthy, 45s+ for down) prevents hammering the health endpoint
+  // The cookie damping (30s for healthy, 45s+ for down) prevents overwhelming the health endpoint
   const healthy = await checkDatabaseHealth(req)
 
   if (!healthy) {
@@ -151,13 +151,16 @@ export const handleDatabaseHealthCheck = async (
     const res = NextResponse.rewrite(url)
 
     // Set cookie with exponential backoff TTL (45s, 90s, 135s, or 180s)
-    // This prevents hammering a failing DB while allowing eventual recovery checks
+    // This prevents overwhelming a failing DB while allowing eventual recovery checks
     res.cookies.set(DB_DOWN_COOKIE, '1', {
       path: '/',
       httpOnly: true,
       sameSite: 'lax',
       maxAge: backoffTTL,
     })
+
+    // Clear the checked cookie since DB is now down (prevents conflicting state)
+    res.cookies.delete(DB_CHECKED_COOKIE)
 
     // Log circuit breaker state in development for debugging
     if (process.env.NODE_ENV === 'development') {
