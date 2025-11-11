@@ -24,6 +24,9 @@ export const useGetOrganizations = <
   return useCoreQuery<ResponseData<T>>({
     url,
     queryKey: organizationsQueryKey.filtered({ id }),
+    // Organization data is critical - entire app depends on it
+    // Throw DB errors to error boundary rather than graceful degradation
+    throwOnDatabaseError: true,
     ...options,
   })
 }

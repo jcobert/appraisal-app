@@ -2,8 +2,6 @@ import { KindeAccessToken, KindeUserBase } from '@kinde-oss/kinde-auth-nextjs'
 import { withAuth } from '@kinde-oss/kinde-auth-nextjs/middleware'
 import { MiddlewareConfig, NextRequest, NextResponse } from 'next/server'
 
-import { handleDatabaseHealthCheck } from '@/lib/middleware/health-check'
-
 export type WithAuthCallback = (
   req: NextRequest & {
     kindeAuth: { user: KindeUserBase; token: KindeAccessToken }
@@ -23,8 +21,8 @@ export type WithAuthOptions = {
 }
 
 // Runs after authentication is verified.
-const authMiddleware: WithAuthCallback = async (req) => {
-  return handleDatabaseHealthCheck(req)
+const authMiddleware: WithAuthCallback = async (_req) => {
+  // return handleDatabaseHealthCheck(req)
 }
 
 const kindeAuthOptions: WithAuthOptions = {

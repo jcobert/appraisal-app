@@ -13,6 +13,8 @@ import {
 
 import { Organization } from '@repo/database'
 
+import FullScreenLoader from '@/components/layout/full-screen-loader'
+
 import { usePermissions } from '@/hooks/use-permissions'
 import { useStoredSettings } from '@/hooks/use-stored-settings'
 
@@ -75,7 +77,10 @@ export const OrganizationProvider: FC<OrganizationProviderProps> = ({
   const queryClient = useQueryClient()
 
   const { response, isLoading: isLoadingOrganizations } = useGetOrganizations({
-    options: { enabled: !!userId },
+    options: {
+      enabled: !!userId,
+      retryDelay: 500,
+    },
   })
   const organizations = response?.data || initialOrganizations
 
@@ -186,7 +191,11 @@ export const OrganizationProvider: FC<OrganizationProviderProps> = ({
 
   return (
     <OrganizationContext.Provider value={value}>
-      {children}
+      {isLoadingOrganizations ? (
+        <FullScreenLoader className='bg-background' />
+      ) : (
+        children
+      )}
     </OrganizationContext.Provider>
   )
 }

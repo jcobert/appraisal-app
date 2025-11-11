@@ -8,7 +8,12 @@ import {
 import { useCallback } from 'react'
 import { DefaultToastOptions } from 'react-hot-toast'
 
-import { FetchError, FetchResponse, fetchRequest } from '@/utils/fetch'
+import {
+  FetchError,
+  FetchErrorCode,
+  FetchResponse,
+  fetchRequest,
+} from '@/utils/fetch'
 import { ToastMessages, toastyQuery } from '@/utils/toast'
 
 export type UseCoreQueryProps<TData = unknown> = UseQueryOptions<
@@ -27,12 +32,20 @@ export type UseCoreQueryProps<TData = unknown> = UseQueryOptions<
   }
   /** Whether to show progress bar during request. @default false */
   showProgress?: boolean
+  /**
+   * Whether to throw database errors to error boundary.
+   * If true, DATABASE_FAILURE errors will trigger error.tsx
+   * If false, errors are returned in response.error for manual handling
+   * @default false (graceful degradation)
+   */
+  throwOnDatabaseError?: boolean
 }
 
 export const useCoreQuery = <TData = unknown>({
   url,
   toast,
   showProgress = false,
+  throwOnDatabaseError = false,
   ...options
 }: UseCoreQueryProps<TData>) => {
   const toastConfig = {
@@ -81,6 +94,9 @@ export const useCoreQuery = <TData = unknown>({
     FetchError<TData>
   >({
     queryFn,
+    throwOnError: throwOnDatabaseError
+      ? (err) => err.code === FetchErrorCode.DATABASE_FAILURE
+      : false,
     ...options,
   })
 
