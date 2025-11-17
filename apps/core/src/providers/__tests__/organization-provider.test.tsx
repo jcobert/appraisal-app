@@ -765,7 +765,7 @@ describe('OrganizationProvider Security Tests', () => {
 
       // Should be called with enabled: false when no userId
       expect(mockUseGetOrganizations).toHaveBeenCalledWith({
-        options: { enabled: false },
+        options: { enabled: false, retryDelay: 500 },
       })
     })
 
