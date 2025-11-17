@@ -51,7 +51,7 @@ const Form: FC<FormProps> = ({
   children,
   loading = false,
   disableOnLoading = 'all',
-  loader = 'fullscreen',
+  loader = 'none',
   onSubmit,
   className,
   containerClassName,
@@ -66,12 +66,9 @@ const Form: FC<FormProps> = ({
     setIsSubmitting(true)
     try {
       await onSubmit?.(e)
-    } catch (error) {
+    } finally {
       setIsSubmitting(false)
-      // eslint-disable-next-line no-console
-      console.error(error)
     }
-    setIsSubmitting(false)
   }
 
   useDisableInteraction({

@@ -21,6 +21,7 @@ const {
   PrismaClientKnownRequestError,
   PrismaClientUnknownRequestError,
   PrismaClientValidationError,
+  PrismaClientInitializationError,
 } = Prisma
 
 describe('Error Classes', () => {
@@ -273,6 +274,17 @@ describe('isPrismaError', () => {
     })
   })
 
+  describe('PrismaClientInitializationError detection', () => {
+    it('should return true for PrismaClientInitializationError instances', () => {
+      const error = new PrismaClientInitializationError(
+        'Prisma Client could not connect to database',
+        '5.0.0',
+      )
+
+      expect(isPrismaError(error)).toBe(true)
+    })
+  })
+
   describe('Network error detection', () => {
     it('should return true for ECONNREFUSED errors', () => {
       const error = { code: 'ECONNREFUSED', message: 'Connection refused' }
@@ -426,6 +438,44 @@ describe('isPrismaError', () => {
 
 describe('parsePrismaError', () => {
   describe('PrismaClientKnownRequestError handling', () => {
+    describe('Connection errors', () => {
+      it('should handle P1000 database authentication failed', () => {
+        const error = new PrismaClientKnownRequestError(
+          'Authentication failed',
+          {
+            code: 'P1000',
+            clientVersion: '5.0.0',
+          },
+        )
+
+        const result = parsePrismaError(error)
+
+        expect(result).toEqual({
+          message: 'Database connection failed. Please try again later.',
+          code: FetchErrorCode.DATABASE_FAILURE,
+          status: 503,
+        })
+      })
+
+      it('should handle P1001 database unreachable', () => {
+        const error = new PrismaClientKnownRequestError(
+          'Database unreachable',
+          {
+            code: 'P1001',
+            clientVersion: '5.0.0',
+          },
+        )
+
+        const result = parsePrismaError(error)
+
+        expect(result).toEqual({
+          message: 'Database connection failed. Please try again later.',
+          code: FetchErrorCode.DATABASE_FAILURE,
+          status: 503,
+        })
+      })
+    })
+
     it('should handle P2002 unique constraint violation', () => {
       const error = new PrismaClientKnownRequestError(
         'Unique constraint failed',
@@ -631,6 +681,87 @@ describe('parsePrismaError', () => {
       })
     })
 
+    it('should handle P2016 query interpretation error', () => {
+      const error = new PrismaClientKnownRequestError(
+        'Query interpretation error',
+        {
+          code: 'P2016',
+          clientVersion: '5.0.0',
+        },
+      )
+
+      const result = parsePrismaError(error)
+
+      expect(result).toEqual({
+        message: 'The query could not be interpreted.',
+        code: FetchErrorCode.INVALID_DATA,
+        status: 400,
+      })
+    })
+
+    it('should handle P2017 records not connected', () => {
+      const error = new PrismaClientKnownRequestError('Records not connected', {
+        code: 'P2017',
+        clientVersion: '5.0.0',
+      })
+
+      const result = parsePrismaError(error)
+
+      expect(result).toEqual({
+        message: 'The records are not connected.',
+        code: FetchErrorCode.INVALID_DATA,
+        status: 400,
+      })
+    })
+
+    it('should handle P2018 required connected records not found', () => {
+      const error = new PrismaClientKnownRequestError(
+        'Required connected records not found',
+        {
+          code: 'P2018',
+          clientVersion: '5.0.0',
+        },
+      )
+
+      const result = parsePrismaError(error)
+
+      expect(result).toEqual({
+        message: 'Required connected records were not found.',
+        code: FetchErrorCode.NOT_FOUND,
+        status: 404,
+      })
+    })
+
+    it('should handle P2019 input error', () => {
+      const error = new PrismaClientKnownRequestError('Input error', {
+        code: 'P2019',
+        clientVersion: '5.0.0',
+      })
+
+      const result = parsePrismaError(error)
+
+      expect(result).toEqual({
+        message: 'Input error in the provided data.',
+        code: FetchErrorCode.INVALID_DATA,
+        status: 400,
+      })
+    })
+
+    it('should handle P2020 value out of range', () => {
+      const error = new PrismaClientKnownRequestError('Value out of range', {
+        code: 'P2020',
+        clientVersion: '5.0.0',
+      })
+
+      const result = parsePrismaError(error)
+
+      expect(result).toEqual({
+        message: 'Value out of range for the field type.',
+        code: FetchErrorCode.INVALID_DATA,
+        status: 400,
+      })
+    })
+
     it('should handle P2021 table does not exist', () => {
       const error = new PrismaClientKnownRequestError('Table does not exist', {
         code: 'P2021',
@@ -641,6 +772,39 @@ describe('parsePrismaError', () => {
 
       expect(result).toEqual({
         message: 'The table does not exist in the current database.',
+        code: FetchErrorCode.DATABASE_FAILURE,
+        status: 500,
+      })
+    })
+
+    it('should handle P2022 column does not exist', () => {
+      const error = new PrismaClientKnownRequestError('Column does not exist', {
+        code: 'P2022',
+        clientVersion: '5.0.0',
+      })
+
+      const result = parsePrismaError(error)
+
+      expect(result).toEqual({
+        message: 'The column does not exist in the current database.',
+        code: FetchErrorCode.DATABASE_FAILURE,
+        status: 500,
+      })
+    })
+
+    it('should handle P2023 inconsistent column data', () => {
+      const error = new PrismaClientKnownRequestError(
+        'Inconsistent column data',
+        {
+          code: 'P2023',
+          clientVersion: '5.0.0',
+        },
+      )
+
+      const result = parsePrismaError(error)
+
+      expect(result).toEqual({
+        message: 'Inconsistent column data in the database.',
         code: FetchErrorCode.DATABASE_FAILURE,
         status: 500,
       })
@@ -664,7 +828,22 @@ describe('parsePrismaError', () => {
       })
     })
 
-    it('should handle unknown Prisma error codes', () => {
+    it('should handle P2027 multiple errors', () => {
+      const error = new PrismaClientKnownRequestError('Multiple errors', {
+        code: 'P2027',
+        clientVersion: '5.0.0',
+      })
+
+      const result = parsePrismaError(error)
+
+      expect(result).toEqual({
+        message: 'Multiple database errors occurred during the operation.',
+        code: FetchErrorCode.DATABASE_FAILURE,
+        status: 500,
+      })
+    })
+
+    it('should fall through to default for unknown Prisma error codes', () => {
       const error = new PrismaClientKnownRequestError('Unknown error', {
         code: 'P9999',
         clientVersion: '5.0.0',
@@ -673,7 +852,7 @@ describe('parsePrismaError', () => {
       const result = parsePrismaError(error)
 
       expect(result).toEqual({
-        message: 'Database error: Unknown error',
+        message: 'An unknown database error occurred.',
         code: FetchErrorCode.DATABASE_FAILURE,
         status: 500,
       })
@@ -715,6 +894,53 @@ describe('parsePrismaError', () => {
     })
   })
 
+  describe('PrismaClientInitializationError handling', () => {
+    it('should handle initialization errors with generic message', () => {
+      const error = new PrismaClientInitializationError(
+        'Prisma Client could not connect to database',
+        '5.0.0',
+      )
+
+      const result = parsePrismaError(error)
+
+      expect(result).toEqual({
+        message: 'Database connection failed. Please try again later.',
+        code: FetchErrorCode.DATABASE_FAILURE,
+        status: 503,
+      })
+    })
+
+    it('should handle initialization errors with specific connection details', () => {
+      const error = new PrismaClientInitializationError(
+        "Can't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`.",
+        '5.0.0',
+      )
+
+      const result = parsePrismaError(error)
+
+      expect(result).toEqual({
+        message: 'Database connection failed. Please try again later.',
+        code: FetchErrorCode.DATABASE_FAILURE,
+        status: 503,
+      })
+    })
+
+    it('should handle initialization errors with authentication failure', () => {
+      const error = new PrismaClientInitializationError(
+        'Authentication failed against database server at `localhost`, the provided database credentials are not valid.',
+        '5.0.0',
+      )
+
+      const result = parsePrismaError(error)
+
+      expect(result).toEqual({
+        message: 'Database connection failed. Please try again later.',
+        code: FetchErrorCode.DATABASE_FAILURE,
+        status: 503,
+      })
+    })
+  })
+
   describe('Connection error handling', () => {
     it('should handle ECONNREFUSED errors', () => {
       const error = { code: 'ECONNREFUSED', message: 'Connection refused' }
@@ -748,7 +974,7 @@ describe('parsePrismaError', () => {
       const result = parsePrismaError(error)
 
       expect(result).toEqual({
-        message: 'Generic error message',
+        message: 'An unknown database error occurred.',
         code: FetchErrorCode.DATABASE_FAILURE,
         status: 500,
       })

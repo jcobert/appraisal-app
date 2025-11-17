@@ -5,9 +5,10 @@ import toast, {
 } from 'react-hot-toast'
 
 import {
+  FetchError,
   FetchErrorCode,
   FetchResponse,
-  isStatusCodeSuccess,
+  isFetchError,
 } from '@/utils/fetch'
 
 export type ErrorToastMessages<TRes = unknown, TCtx = unknown> = {
@@ -57,12 +58,7 @@ const promiseToast = <TRes = unknown, TCtx = unknown>(
     loading: loadingMsg,
   } = msgs || {}
   const response = toast.promise<FetchResponse<TRes>>(
-    request().then((res) => {
-      if (!isStatusCodeSuccess(res.status)) {
-        return Promise.reject(res)
-      }
-      return res
-    }),
+    request(),
     {
       ...defaultToastMessages,
       loading: loadingMsg || defaultToastMessages.loading,
@@ -70,21 +66,27 @@ const promiseToast = <TRes = unknown, TCtx = unknown>(
         if (successMsg) return successMsg({ response, context })
         return defaultToastMessages.success()
       },
-      error: (response: FetchResponse<TRes>) => {
-        const { error } = response || {}
-        if (errorMsgs && error?.code && errorMsgs?.[error?.code]) {
+      error: (error: FetchError<TRes>) => {
+        // Extract response from FetchError
+        const response = isFetchError(error) ? error.response : null
+        const errorDetails = response?.error
+
+        if (errorMsgs && errorDetails?.code && errorMsgs[errorDetails.code]) {
           return (
-            errorMsgs?.[error?.code]?.({ response, context }) ||
-            defaultToastMessages.error?.[error?.code]?.({
-              response,
+            errorMsgs[errorDetails.code]?.({
+              response: response || { data: null },
+              context,
+            }) ||
+            defaultToastMessages.error?.[errorDetails.code]?.({
+              response: response || { data: null },
               context,
             }) ||
             genericErrorMessage
           )
         }
-        return error?.code
-          ? defaultToastMessages.error?.[error?.code]?.({
-              response,
+        return errorDetails?.code
+          ? defaultToastMessages.error?.[errorDetails.code]?.({
+              response: response || { data: null },
               context,
             }) || genericErrorMessage
           : genericErrorMessage
@@ -99,22 +101,8 @@ const promiseToast = <TRes = unknown, TCtx = unknown>(
 export const toastyRequest = async <TRes = unknown, TCtx = unknown>(
   ...args: Parameters<typeof promiseToast<TRes, TCtx>>
 ) => {
-  try {
-    const response = await promiseToast<TRes, TCtx>(...args)
-    return response
-  } catch (error) {
-    if (typeof error === 'object' && (error as FetchResponse<TRes>)?.status) {
-      return error as Awaited<ReturnType<typeof promiseToast<TRes, TCtx>>>
-    }
-    return {
-      data: null,
-      status: 500,
-      error: {
-        code: FetchErrorCode.INTERNAL_ERROR,
-        message: 'An unexpected error occurred',
-      },
-    } as FetchResponse<TRes>
-  }
+  const response = await promiseToast<TRes, TCtx>(...args)
+  return response
 }
 
 /**
@@ -129,42 +117,6 @@ export const toastyQuery = async <TData = unknown>(
   try {
     const res = await queryFn()
 
-    // If not successful, treat it as an error and show error toast
-    if (!isStatusCodeSuccess(res?.status)) {
-      let errorMessage: Renderable = genericErrorMessage
-
-      // Check custom messages first
-      if (
-        res?.error?.code &&
-        messages?.error?.[res.error.code as keyof typeof FetchErrorCode]
-      ) {
-        const customMessageGetter =
-          messages.error[res.error.code as keyof typeof FetchErrorCode]
-        if (customMessageGetter) {
-          errorMessage = customMessageGetter({
-            response: res,
-            context: undefined,
-          })
-        }
-      } else if (
-        res?.error?.code &&
-        defaultToastMessages.error[
-          res.error.code as keyof typeof FetchErrorCode
-        ]
-      ) {
-        const messageGetter =
-          defaultToastMessages.error[
-            res.error.code as keyof typeof FetchErrorCode
-          ]
-        if (messageGetter) {
-          errorMessage = messageGetter({ response: res, context: undefined })
-        }
-      }
-
-      toast.error(errorMessage, options)
-      return res // Return the error response instead of throwing
-    }
-
     // Request was successful - show success toast if configured
     if (messages?.success) {
       const successMessage = messages.success({
@@ -175,32 +127,36 @@ export const toastyQuery = async <TData = unknown>(
     }
 
     return res
-  } catch (error: any) {
-    // Handle actual thrown errors (network errors, etc.)
+  } catch (error: unknown) {
+    // Handle FetchError instances
     let errorMessage: Renderable = genericErrorMessage
 
-    // Check custom messages first
-    if (messages?.error?.[error?.code as keyof typeof FetchErrorCode]) {
-      const customMessageGetter =
-        messages.error[error.code as keyof typeof FetchErrorCode]
-      if (customMessageGetter) {
-        errorMessage = customMessageGetter({
-          response: error,
-          context: undefined,
-        })
-      }
-    } else if (
-      error?.code &&
-      defaultToastMessages.error[error.code as keyof typeof FetchErrorCode]
-    ) {
-      const messageGetter =
-        defaultToastMessages.error[error.code as keyof typeof FetchErrorCode]
-      if (messageGetter) {
-        errorMessage = messageGetter({ response: error, context: undefined })
+    if (isFetchError(error)) {
+      const errorCode = error.code
+
+      // Check custom messages first
+      if (messages?.error?.[errorCode]) {
+        const customMessageGetter = messages.error[errorCode]
+        if (customMessageGetter) {
+          errorMessage = customMessageGetter({
+            response: error.response,
+            context: undefined,
+          })
+        }
+      } else if (defaultToastMessages.error[errorCode]) {
+        const messageGetter = defaultToastMessages.error[errorCode]
+        if (messageGetter) {
+          errorMessage = messageGetter({
+            response: error.response,
+            context: undefined,
+          })
+        }
       }
     }
 
     toast.error(errorMessage, options)
-    throw error // Re-throw to maintain React Query's error handling
+
+    // Re-throw to maintain React Query's error handling
+    throw error
   }
 }

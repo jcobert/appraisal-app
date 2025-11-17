@@ -224,6 +224,8 @@ describe('organization-handlers', () => {
               inviteeEmail: true,
               roles: true,
               organizationId: true,
+              createdAt: true,
+              updatedAt: true,
             },
           },
         },

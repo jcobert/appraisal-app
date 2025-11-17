@@ -119,21 +119,6 @@ describe('useOrganizationMutations', () => {
         exact: true,
       })
     })
-
-    it('should not invalidate queries on non-success status', async () => {
-      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries')
-
-      renderHook(() => useOrganizationMutations(), { wrapper })
-
-      const callArgs = mockUseCoreMutation.mock.calls[0]?.[0]
-      await callArgs?.onSuccess?.(
-        { status: 400, data: null },
-        {} as any,
-        undefined,
-      )
-
-      expect(invalidateSpy).not.toHaveBeenCalled()
-    })
   })
 
   describe('updateOrganization', () => {
@@ -181,23 +166,6 @@ describe('useOrganizationMutations', () => {
         queryKey: expect.arrayContaining(['organizations']),
         exact: true,
       })
-    })
-
-    it('should not refetch on non-success status', async () => {
-      const refetchSpy = jest.spyOn(queryClient, 'refetchQueries')
-
-      renderHook(() => useOrganizationMutations({ organizationId }), {
-        wrapper,
-      })
-
-      const callArgs = mockUseCoreMutation.mock.calls[1]?.[0]
-      await callArgs?.onSuccess?.(
-        { status: 404, data: null },
-        {} as any,
-        undefined,
-      )
-
-      expect(refetchSpy).not.toHaveBeenCalled()
     })
   })
 
@@ -247,25 +215,6 @@ describe('useOrganizationMutations', () => {
         queryKey: expect.arrayContaining(['organizations']),
         exact: true,
       })
-    })
-
-    it('should not remove or invalidate on failure', async () => {
-      const removeSpy = jest.spyOn(queryClient, 'removeQueries')
-      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries')
-
-      renderHook(() => useOrganizationMutations({ organizationId }), {
-        wrapper,
-      })
-
-      const callArgs = mockUseCoreMutation.mock.calls[2]?.[0]
-      await callArgs?.onSuccess?.(
-        { status: 500, data: null },
-        {} as any,
-        undefined,
-      )
-
-      expect(removeSpy).not.toHaveBeenCalled()
-      expect(invalidateSpy).not.toHaveBeenCalled()
     })
   })
 

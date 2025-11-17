@@ -32,6 +32,39 @@ export type FetchResponse<TData = any> = {
   }
 }
 
+/**
+ * Custom error class for fetch/API request failures.
+ * Wraps FetchResponse structure for consistent error handling across the application.
+ */
+export class FetchError<TData = any> extends Error {
+  public readonly response: FetchResponse<TData>
+  public readonly status: number
+  public readonly code: FetchErrorCode
+  public readonly details?: ZodFieldErrors | null
+
+  constructor(response: FetchResponse<TData>) {
+    const message =
+      response.error?.message || response.message || 'Request failed'
+    super(message)
+
+    this.name = 'FetchError'
+    this.response = response
+    this.status = response.status ?? 500
+    this.code = response.error?.code ?? FetchErrorCode.INTERNAL_ERROR
+    this.details = response.error?.details
+
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, FetchError)
+    }
+  }
+}
+
+/** Type guard to check if an error is a `FetchError` instance. */
+export const isFetchError = (error: unknown): error is FetchError => {
+  return error instanceof FetchError
+}
+
 /** Returns whether the provided `status` is a valid HTTP response status code. */
 export const isValidHttpStatusCode = (status?: number): status is number => {
   return Number.isInteger(status) && status! >= 100 && status! <= 599
@@ -46,17 +79,17 @@ export const isStatusCodeSuccess = (status?: number): status is number => {
   return status >= 200 && status < 300
 }
 
-/** Helper function to get cookies for server-side requests */
+/** Helper function to get cookies for server-side requests. */
 const getServerSideHeaders = async (): Promise<Record<string, string>> => {
   if (typeof window === 'undefined') {
-    // Server-side: dynamically import and forward cookies
+    // Server-side: dynamically import and forward cookies.
     try {
       const { cookies } = await import('next/headers')
       const cookieStore = await cookies()
       const cookieHeader = cookieStore.toString()
       return cookieHeader ? { Cookie: cookieHeader } : {}
     } catch {
-      // If import fails or we're not in a server context that supports cookies, return empty headers
+      // If import fails or we're not in a server context that supports cookies, return empty headers.
       return {}
     }
   }
@@ -107,17 +140,26 @@ const createFetchFunction = async <
     try {
       responseData = (await res.json()) as FetchResponse<TResData>
     } catch (parseError) {
-      // If JSON parsing fails, create a generic error response
+      // If JSON parsing fails, it's always a 500 error regardless of HTTP status
+      // (either server sent invalid JSON or our parsing logic failed)
       // eslint-disable-next-line no-console
       console.error('Failed to parse API response as JSON:', parseError)
-      return {
+      throw new FetchError<TResData>({
         data: null,
-        status: res.status || 500,
+        status: 500,
         error: {
           code: FetchErrorCode.INTERNAL_ERROR,
           message: 'Failed to parse server response.',
         },
-      }
+      })
+    }
+
+    // For non-OK responses, throw the error to trigger React Query's error handling
+    if (!res?.ok) {
+      throw new FetchError<TResData>({
+        status: res.status,
+        ...responseData,
+      })
     }
 
     return {
@@ -125,11 +167,12 @@ const createFetchFunction = async <
       ...responseData,
     }
   } catch (error) {
-    // Only catch actual network/fetch errors here
-    // eslint-disable-next-line no-console
-    console.error('Network or internal fetch error:', error)
+    // If it's already a FetchError, re-throw it.
+    if (isFetchError(error)) {
+      throw error
+    }
 
-    // Network connectivity issues - these should get status 0
+    // Handle network connectivity issues (TypeError, AbortError, etc.)
     if (
       error instanceof TypeError ||
       error instanceof DOMException ||
@@ -138,7 +181,7 @@ const createFetchFunction = async <
         'name' in error &&
         error.name === 'AbortError')
     ) {
-      return {
+      throw new FetchError<TResData>({
         data: null,
         status: 0,
         error: {
@@ -146,18 +189,20 @@ const createFetchFunction = async <
           message:
             'Network connection failed. Please check your internet connection.',
         },
-      }
+      })
     }
 
-    // Programming errors or unexpected system issues - these should get status 500
-    return {
+    // Programming errors or unexpected system issues
+    // eslint-disable-next-line no-console
+    console.error('Unexpected fetch error:', error)
+    throw new FetchError<TResData>({
       data: null,
       status: 500,
       error: {
         code: FetchErrorCode.INTERNAL_ERROR,
         message: 'An unexpected error occurred.',
       },
-    }
+    })
   }
 }
 
@@ -251,6 +296,6 @@ const DELETE = async <
   })
 }
 
-const coreFetch = { GET, POST, PUT, PATCH, DELETE }
+const fetchRequest = { GET, POST, PUT, PATCH, DELETE }
 
-export { coreFetch }
+export { fetchRequest }

@@ -1,3 +1,4 @@
+import { FetchError, FetchResponse, isStatusCodeSuccess } from './fetch'
 import { QueryClient, QueryClientConfig, QueryKey } from '@tanstack/react-query'
 
 export const createQueryClient = (config?: QueryClientConfig) => {
@@ -32,4 +33,28 @@ export const filteredQueryKey = (
     queryKey = queryKey?.concat(filteredParams)
   }
   return queryKey
+}
+
+/**
+ * Wrapper for React Query prefetch queryFn that handles error throwing.
+ * Converts non-successful FetchResponse results into thrown FetchError instances.
+ *
+ * Use this for server-side prefetching with database handlers that return FetchResponse objects.
+ *
+ * @example
+ * queryClient.prefetchQuery({
+ *   queryKey: organizationsQueryKey.filtered({ id: organizationId }),
+ *   queryFn: prefetchQuery(() => handleGetOrganization(organizationId)),
+ * })
+ */
+export const prefetchQuery = <TData>(
+  handler: () => Promise<FetchResponse<TData>>,
+) => {
+  return async (): Promise<FetchResponse<TData>> => {
+    const result = await handler()
+    if (!isStatusCodeSuccess(result.status)) {
+      throw new FetchError(result)
+    }
+    return result
+  }
 }

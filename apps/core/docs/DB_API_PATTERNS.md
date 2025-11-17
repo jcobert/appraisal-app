@@ -49,7 +49,7 @@ Standardized error responses across all endpoints and server operations.
 
 ### Handler Pattern
 
-```typescript
+```tsx
 // /src/lib/db/handlers/user-handlers.ts
 export async function handleGetUsers() {
   return createApiHandler(async () => {
@@ -93,7 +93,7 @@ export async function handleCreateUserProfile(
 
 ### API Route Pattern
 
-```typescript
+```tsx
 // /src/app/api/core/user/route.ts
 import { toNextResponse } from '@/lib/api-handlers'
 import {
@@ -117,7 +117,7 @@ export const POST = async (req: NextRequest) => {
 
 ### Query Function Pattern
 
-```typescript
+```tsx
 // /src/lib/db/queries/user.ts
 export const getUserProfiles = async (
   params?: Prisma.UserFindManyArgs,
@@ -140,7 +140,7 @@ export const createUserProfile = async (params: Prisma.UserCreateArgs) => {
 
 ### 1. API Routes
 
-```typescript
+```tsx
 // Simple delegation to handlers
 export const GET = async (_req: NextRequest) => {
   const result = await handleGetUsers()
@@ -150,7 +150,7 @@ export const GET = async (_req: NextRequest) => {
 
 ### 2. Server-Side Prefetching
 
-```typescript
+```tsx
 // /src/app/(authorized)/users/page.tsx
 const Page: FC<Props> = async () => {
   const queryClient = createQueryClient()
@@ -158,13 +158,7 @@ const Page: FC<Props> = async () => {
   // Use same handlers as API routes
   await queryClient.prefetchQuery({
     queryKey: usersQueryKey.all,
-    queryFn: async () => {
-      const result = await handleGetUsers()
-      if (!isStatusCodeSuccess(result.status)) {
-        throw new Error(result.error?.message || 'Failed to fetch users')
-      }
-      return result
-    },
+    queryFn: prefetchQuery(() => handleGetUsers()),
   })
 
   return (
@@ -177,7 +171,7 @@ const Page: FC<Props> = async () => {
 
 ### 3. Server Components
 
-```typescript
+```tsx
 // Direct handler usage in server components
 const ServerComponent = async () => {
   const result = await handleGetUsers()
@@ -192,7 +186,7 @@ const ServerComponent = async () => {
 
 ### 4. Server Actions
 
-```typescript
+```tsx
 // /src/features/user/actions.ts
 'use server'
 
@@ -218,7 +212,7 @@ export async function createUserAction(formData: FormData) {
 
 ### Handler-Level Authentication
 
-```typescript
+```tsx
 export async function handleGetUserProfile(userId: string) {
   return createApiHandler(async () => {
     // createApiHandler automatically handles:
@@ -238,7 +232,7 @@ export async function handleGetUserProfile(userId: string) {
 
 ### Authorization Patterns
 
-```typescript
+```tsx
 export async function handleUpdateOrgMember(
   organizationId: string,
   memberId: string,
@@ -274,7 +268,7 @@ export async function handleUpdateOrgMember(
 
 ### Standardized Error Response
 
-```typescript
+```tsx
 type FetchResponse<TData = any> = {
   status?: number
   data: TData | null
@@ -289,7 +283,7 @@ type FetchResponse<TData = any> = {
 
 ### Error Types
 
-```typescript
+```tsx
 enum FetchErrorCode {
   NOT_AUTHENTICATED = 'NOT_AUTHENTICATED', // 401 - User needs to sign in
   NOT_AUTHORIZED = 'NOT_AUTHORIZED', // 403 - User lacks permission
@@ -316,7 +310,7 @@ The `createApiHandler` automatically handles:
 
 ### Zod Schema Validation
 
-```typescript
+```tsx
 // Schema definition
 export const userProfileSchema = {
   form: baseSchema.extend({
@@ -334,7 +328,7 @@ if (!validation?.success) {
 
 ### Validation Error Response
 
-```typescript
+```tsx
 {
   status: 400,
   data: null,
@@ -353,7 +347,7 @@ if (!validation?.success) {
 
 ### Handler Testing with ES6 Imports
 
-```typescript
+```tsx
 // Mock dependencies with ES6 imports
 jest.mock('@/utils/auth', () => ({
   isAuthenticated: jest.fn(),
@@ -454,7 +448,7 @@ src/
 
 ❌ **Before** (Direct database calls in API routes):
 
-```typescript
+```tsx
 export const GET = async () => {
   const { allowed } = await isAuthenticated()
   if (!allowed) {
@@ -472,7 +466,7 @@ export const GET = async () => {
 
 ✅ **After** (Using handlers):
 
-```typescript
+```tsx
 export const GET = async () => {
   const result = await handleGetUsers()
   return toNextResponse(result)
@@ -483,13 +477,13 @@ export const GET = async () => {
 
 ❌ **Before**:
 
-```typescript
+```tsx
 const { getUserProfiles } = require('@/lib/db/queries/user')
 ```
 
 ✅ **After**:
 
-```typescript
+```tsx
 import { getUserProfiles } from '@/lib/db/queries/user'
 
 jest.mock('@/lib/db/queries/user', () => ({

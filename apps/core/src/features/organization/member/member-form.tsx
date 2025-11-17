@@ -9,7 +9,6 @@ import { fullName } from '@repo/utils'
 
 import { orgMemberSchema } from '@/lib/db/schemas/org-member'
 
-import { isStatusCodeSuccess } from '@/utils/fetch'
 import { formDefaults } from '@/utils/form'
 
 import FormActionBar from '@/components/form/form-action-bar'
@@ -53,6 +52,11 @@ const MemberForm: FC<Props> = ({
 }) => {
   const [isBusy, setIsBusy] = useState(false)
 
+  const { updateOrgMember } = useOrganizationMutations({
+    organizationId: member?.organizationId,
+    memberId: member?.id,
+  })
+
   const { control, handleSubmit } = useZodForm<MemberFormData>(formSchema, {
     mode: 'onSubmit',
     reValidateMode: 'onChange',
@@ -61,14 +65,10 @@ const MemberForm: FC<Props> = ({
       lastName: member?.user?.lastName,
       roles: member?.roles,
     } satisfies Partial<MemberFormData>),
+    disabled: isBusy || updateOrgMember.isPending,
   })
 
   const { isDirty } = useFormState({ control })
-
-  const { updateOrgMember } = useOrganizationMutations({
-    organizationId: member?.organizationId,
-    memberId: member?.id,
-  })
 
   const onSubmit: SubmitHandler<MemberFormData> = async (data) => {
     if (!isDirty) {
@@ -79,10 +79,8 @@ const MemberForm: FC<Props> = ({
     await updateOrgMember.mutateAsync(
       { roles: data?.roles },
       {
-        onSuccess: ({ status }) => {
-          if (isStatusCodeSuccess(status)) {
-            onOpenChange(false)
-          }
+        onSuccess: () => {
+          onOpenChange(false)
         },
       },
     )
@@ -139,10 +137,7 @@ const MemberForm: FC<Props> = ({
           >
             Cancel
           </Button>
-          <Button
-            type='submit'
-            // loading={isBusy}
-          >
+          <Button type='submit' loading={isBusy} disabled={isBusy}>
             Save changes
           </Button>
         </FormActionBar>

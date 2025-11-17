@@ -10,8 +10,7 @@ import {
 } from '@/lib/db/handlers/organization-handlers'
 import { protectPage } from '@/lib/db/utils'
 
-import { isStatusCodeSuccess } from '@/utils/fetch'
-import { createQueryClient } from '@/utils/query'
+import { createQueryClient, prefetchQuery } from '@/utils/query'
 
 import FullScreenLoader from '@/components/layout/full-screen-loader'
 
@@ -45,15 +44,7 @@ const Page: FC<Props> = async ({ params }) => {
     // Org
     queryClient.prefetchQuery({
       queryKey: organizationsQueryKey.filtered({ id: organizationId }),
-      queryFn: async () => {
-        const result = await handleGetOrganization(organizationId)
-        if (!isStatusCodeSuccess(result.status)) {
-          throw new Error(
-            result.error?.message || 'Failed to fetch organization',
-          )
-        }
-        return result
-      },
+      queryFn: prefetchQuery(() => handleGetOrganization(organizationId)),
     }),
     // Permissions
     queryClient.prefetchQuery({
@@ -61,15 +52,9 @@ const Page: FC<Props> = async ({ params }) => {
         area: 'organization',
         organizationId,
       }),
-      queryFn: async () => {
-        const result = await handleGetOrganizationPermissions(organizationId)
-        if (!isStatusCodeSuccess(result.status)) {
-          throw new Error(
-            result.error?.message || 'Failed to fetch permissions',
-          )
-        }
-        return result
-      },
+      queryFn: prefetchQuery(() =>
+        handleGetOrganizationPermissions(organizationId),
+      ),
     }),
   ])
 

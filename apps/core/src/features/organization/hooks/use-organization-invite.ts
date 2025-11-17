@@ -26,9 +26,12 @@ export type OrgInvitePayload = Partial<
 type UseOrganizationInviteProps = {
   organizationId?: Organization['id']
   inviteId?: OrgInvitation['id']
-  options?: UseCoreMutationProps<
-    OrgInvitePayload,
-    FetchResponse<Partial<OrgInvitation>>
+  options?: Omit<
+    UseCoreMutationProps<
+      OrgInvitePayload,
+      FetchResponse<Partial<OrgInvitation>>
+    >,
+    'url'
   >
 }
 

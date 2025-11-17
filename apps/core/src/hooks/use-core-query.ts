@@ -8,11 +8,17 @@ import {
 import { useCallback } from 'react'
 import { DefaultToastOptions } from 'react-hot-toast'
 
-import { FetchResponse, coreFetch } from '@/utils/fetch'
+import {
+  FetchError,
+  FetchErrorCode,
+  FetchResponse,
+  fetchRequest,
+} from '@/utils/fetch'
 import { ToastMessages, toastyQuery } from '@/utils/toast'
 
 export type UseCoreQueryProps<TData = unknown> = UseQueryOptions<
-  FetchResponse<TData>
+  FetchResponse<TData>,
+  FetchError<TData>
 > & {
   url: string
   /** Configuration for toast notifications. */
@@ -26,12 +32,20 @@ export type UseCoreQueryProps<TData = unknown> = UseQueryOptions<
   }
   /** Whether to show progress bar during request. @default false */
   showProgress?: boolean
+  /**
+   * Whether to throw database errors to error boundary.
+   * If true, DATABASE_FAILURE errors will trigger error.tsx
+   * If false, errors are returned in response.error for manual handling
+   * @default false (graceful degradation)
+   */
+  throwOnDatabaseError?: boolean
 }
 
 export const useCoreQuery = <TData = unknown>({
   url,
   toast,
   showProgress = false,
+  throwOnDatabaseError = false,
   ...options
 }: UseCoreQueryProps<TData>) => {
   const toastConfig = {
@@ -48,7 +62,7 @@ export const useCoreQuery = <TData = unknown>({
       }
 
       try {
-        const res = await coreFetch.GET<TData>({
+        const res = await fetchRequest.GET<TData>({
           url,
           options: { signal: context?.signal },
         })
@@ -75,8 +89,14 @@ export const useCoreQuery = <TData = unknown>({
     return queryFetch(context)
   }
 
-  const { data: response, ...query } = useQuery<FetchResponse<TData>>({
+  const { data: response, ...query } = useQuery<
+    FetchResponse<TData>,
+    FetchError<TData>
+  >({
     queryFn,
+    throwOnError: throwOnDatabaseError
+      ? (err) => err.code === FetchErrorCode.DATABASE_FAILURE
+      : false,
     ...options,
   })
 

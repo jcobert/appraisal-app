@@ -1,6 +1,5 @@
 import { useProgress } from '@bprogress/next'
 import {
-  DefaultError,
   MutationFunction,
   UseMutationOptions,
   useMutation,
@@ -8,7 +7,12 @@ import {
 import { useCallback } from 'react'
 import { DefaultToastOptions } from 'react-hot-toast'
 
-import { FetchMethod, FetchResponse, coreFetch } from '@/utils/fetch'
+import {
+  FetchError,
+  FetchMethod,
+  FetchResponse,
+  fetchRequest,
+} from '@/utils/fetch'
 import { ToastMessages, toastyRequest } from '@/utils/toast'
 import { sanitizeFormData } from '@/utils/zod'
 
@@ -17,7 +21,7 @@ export type UseCoreMutationProps<
   TResData extends unknown = unknown,
 > = UseMutationOptions<
   FetchResponse<TResData>,
-  DefaultError,
+  FetchError<TResData>,
   TPayload,
   unknown
 > & {
@@ -78,17 +82,20 @@ export const useCoreMutation = <
 
         switch (method) {
           case 'PUT':
-            return coreFetch.PUT({ url, payload }) as FetchResponse<TResData>
+            return fetchRequest.PUT({ url, payload }) as FetchResponse<TResData>
           case 'PATCH':
-            return coreFetch.PATCH({
+            return fetchRequest.PATCH({
               url,
               payload,
             }) as FetchResponse<TResData>
           case 'DELETE':
-            return coreFetch.DELETE({ url }) as FetchResponse<TResData>
+            return fetchRequest.DELETE({ url }) as FetchResponse<TResData>
           case 'POST':
           default:
-            return coreFetch.POST({ url, payload }) as FetchResponse<TResData>
+            return fetchRequest.POST({
+              url,
+              payload,
+            }) as FetchResponse<TResData>
         }
       } finally {
         if (showProgress) {
@@ -116,7 +123,12 @@ export const useCoreMutation = <
     return mutationFetch(data)
   }
 
-  return useMutation<FetchResponse<TResData>, DefaultError, TPayload, unknown>({
+  return useMutation<
+    FetchResponse<TResData>,
+    FetchError<TResData>,
+    TPayload,
+    unknown
+  >({
     mutationFn,
     ...options,
   })

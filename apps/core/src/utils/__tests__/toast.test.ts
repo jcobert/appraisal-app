@@ -18,15 +18,6 @@ jest.mock('react-hot-toast', () => ({
   },
 }))
 
-// Mock fetch utils
-jest.mock('@/utils/fetch', () => ({
-  ...jest.requireActual('@/utils/fetch'),
-  successful: jest.fn((status?: number) => {
-    if (!status) return false
-    return status >= 200 && status < 300
-  }),
-}))
-
 const mockToast = {
   error: toast.error as jest.MockedFunction<typeof toast.error>,
   success: toast.success as jest.MockedFunction<typeof toast.success>,
@@ -243,9 +234,18 @@ describe('Toast Utils', () => {
     })
 
     it('should use custom error messages when provided', async () => {
-      const mockError = { code: 'NOT_FOUND' }
+      const { FetchError, FetchErrorCode } = jest.requireActual('@/utils/fetch')
+      const mockError = new FetchError({
+        status: 404,
+        data: null,
+        error: {
+          code: FetchErrorCode.NOT_FOUND,
+          message: 'Not found',
+        },
+      })
+
       const queryFn = jest.fn().mockRejectedValue(mockError)
-      const customMessages = {
+      const customMessages: ToastMessages = {
         error: {
           NOT_FOUND: () => 'Custom not found message',
         },
@@ -309,21 +309,17 @@ describe('Toast Utils', () => {
       expect(mockToast.error).not.toHaveBeenCalled()
     })
 
-    it('should show error toast for unsuccessful status codes (e.g., 404)', async () => {
+    it('should return successful response without error toast', async () => {
       const mockResponse = {
-        status: 404,
-        data: null,
-        error: { code: 'NOT_FOUND', message: 'Resource not found' },
+        status: 200,
+        data: { id: 1, name: 'test' },
       }
       const queryFn = jest.fn().mockResolvedValue(mockResponse)
 
       const result = await toastyQuery(queryFn)
 
       expect(result).toEqual(mockResponse)
-      expect(mockToast.error).toHaveBeenCalledWith(
-        'An unexpected error occurred. Please try again.',
-        undefined,
-      )
+      expect(mockToast.error).not.toHaveBeenCalled()
       expect(mockToast.success).not.toHaveBeenCalled()
     })
   })
