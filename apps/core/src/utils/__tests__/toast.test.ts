@@ -48,7 +48,7 @@ describe('Toast Utils', () => {
 
       expect(
         defaultToastMessages.error.INVALID_DATA?.({ response: mockResponse }),
-      ).toBe('There was a problem with your request.\nError: Test error')
+      ).toBe('Error: Test error')
 
       expect(defaultToastMessages.error.NOT_AUTHENTICATED?.()).toBe(
         'Please sign in to continue.',
