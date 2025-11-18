@@ -25,6 +25,7 @@ export const handleGetUserOrganizations = async () => {
         members: {
           some: {
             user: { accountId: user?.id },
+            active: true,
           },
         },
       },
@@ -47,6 +48,7 @@ export const handleGetOrganization = async (organizationId: string) => {
         where: { id: organizationId },
         include: {
           members: {
+            where: { active: true },
             include: {
               user: {
                 select: {

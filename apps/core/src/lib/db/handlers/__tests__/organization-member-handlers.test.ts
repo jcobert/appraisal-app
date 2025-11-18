@@ -2,9 +2,9 @@
  * @jest-environment node
  */
 import {
-  handleDeleteOrgMember,
   handleGetActiveUserOrgMember,
   handleGetOrgMember,
+  handleLeaveOrganization,
   handleUpdateActiveUserOrgMember,
   handleUpdateOrgMember,
 } from '../organization-member-handlers'
@@ -42,6 +42,7 @@ jest.mock('@/lib/db/client', () => ({
     },
     orgMember: {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     },
@@ -123,6 +124,7 @@ describe('organization-member-handlers', () => {
 
     // Mock database operations
     ;(mockDb.orgMember.findUnique as jest.Mock).mockResolvedValue(mockOrgMember)
+    ;(mockDb.orgMember.findMany as jest.Mock).mockResolvedValue([])
     ;(mockDb.orgMember.update as jest.Mock).mockResolvedValue(mockOrgMember)
     ;(mockDb.orgMember.delete as jest.Mock).mockResolvedValue(mockOrgMember)
   })
@@ -322,6 +324,34 @@ describe('organization-member-handlers', () => {
           roles: [MemberRole.manager],
           updatedBy: 'user-profile-123', // Set by withUserFields, not from payload
         },
+        select: { id: true },
+      })
+    })
+
+    it('should allow updating active field to deactivate member', async () => {
+      const deactivatePayload = { active: false }
+      const deactivatedMember = { ...mockOrgMember, active: false }
+      mockUserIsOwner.mockResolvedValue(true)
+      ;(mockDb.orgMember.update as jest.Mock).mockResolvedValue(
+        deactivatedMember,
+      )
+
+      const result = await handleUpdateOrgMember(
+        organizationId,
+        memberId,
+        deactivatePayload,
+      )
+
+      expect(result).toEqual({
+        status: 200,
+        data: deactivatedMember,
+        message: 'Member updated successfully.',
+      })
+      expect(mockDb.orgMember.update).toHaveBeenCalledWith({
+        where: { id: memberId, organizationId },
+        data: expect.objectContaining({
+          active: false,
+        }),
         select: { id: true },
       })
     })
@@ -535,58 +565,75 @@ describe('organization-member-handlers', () => {
     })
   })
 
-  describe('handleDeleteOrgMember', () => {
+  describe('handleLeaveOrganization', () => {
     const organizationId = 'org-123'
-    const memberId = 'member-456'
 
-    it('should delete organization member when user is owner', async () => {
-      mockUserIsOwner.mockResolvedValue(true)
+    beforeEach(() => {
+      mockGetActiveUserOrgMember.mockResolvedValue(mockOrgMember)
+    })
 
-      const result = await handleDeleteOrgMember(organizationId, memberId)
+    it('should deactivate member when user is a member and not last owner', async () => {
+      mockUserIsMember.mockResolvedValue(true)
+      ;(mockDb.orgMember.findMany as jest.Mock).mockResolvedValue([
+        { ...mockOrgMember, id: 'other-owner' },
+        mockOrgMember,
+      ])
+      ;(mockDb.orgMember.update as jest.Mock).mockResolvedValue({
+        ...mockOrgMember,
+        active: false,
+        organization: { id: organizationId, name: 'Test Org' },
+      } as any)
+
+      const result = await handleLeaveOrganization(organizationId)
 
       expect(result).toEqual({
         status: 200,
-        data: mockOrgMember,
-        message: 'Member removed from organization successfully.',
+        data: expect.objectContaining({
+          active: false,
+        }),
+        message: 'You have left the organization.',
       })
-      expect(mockDb.orgMember.delete).toHaveBeenCalledWith({
-        where: { id: memberId, organizationId },
+      expect(mockDb.orgMember.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: mockOrgMember.id, organizationId },
+          data: expect.objectContaining({ active: false }),
+        }),
+      )
+    })
+
+    it('should return 400 when user is the last owner', async () => {
+      mockUserIsMember.mockResolvedValue(true)
+      ;(mockDb.orgMember.findMany as jest.Mock).mockResolvedValue([
+        mockOrgMember,
+      ])
+
+      const result = await handleLeaveOrganization(organizationId)
+
+      expect(result).toEqual({
+        status: 400,
+        data: null,
+        error: {
+          code: FetchErrorCode.INVALID_DATA,
+          message:
+            'Cannot leave organization. You are the only owner. Please transfer ownership or delete the organization.',
+          details: {},
+        },
       })
     })
 
-    it('should return 403 when user is not owner', async () => {
-      mockUserIsOwner.mockResolvedValue(false)
+    it('should return 403 when user is not a member', async () => {
+      mockUserIsMember.mockResolvedValue(false)
 
-      const result = await handleDeleteOrgMember(organizationId, memberId)
+      const result = await handleLeaveOrganization(organizationId)
 
       expect(result).toEqual({
         status: 403,
         data: null,
         error: {
           code: FetchErrorCode.NOT_AUTHORIZED,
-          message: 'Unauthorized to delete organization members.',
+          message: 'Unauthorized to leave this organization.',
         },
       })
-    })
-
-    it('should return 500 when authorization check fails', async () => {
-      mockUserIsOwner.mockRejectedValue(new Error('Database error'))
-
-      const consoleSpy = jest
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
-      const result = await handleDeleteOrgMember(organizationId, memberId)
-
-      expect(result).toEqual({
-        status: 500,
-        data: null,
-        error: {
-          code: FetchErrorCode.INTERNAL_ERROR,
-          message: 'Authorization check failed.',
-        },
-      })
-
-      consoleSpy.mockRestore()
     })
   })
 })

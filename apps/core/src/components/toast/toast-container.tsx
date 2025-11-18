@@ -10,12 +10,18 @@ const ToasterOven: FC = () => {
     <Toaster
       position='top-right'
       containerStyle={{ zIndex: 10987654321 }}
-      toastOptions={{ success: { duration: 4000 } }}
+      toastOptions={{
+        success: { duration: 4000 },
+        error: { duration: Infinity },
+      }}
     >
       {(t) => (
         <ToastBar
           toast={t}
-          // style={{ maxWidth: 'none' }}
+          style={{
+            // maxWidth: '33vw'
+            maxWidth: '500px',
+          }}
         >
           {({ icon, message }) => {
             return (

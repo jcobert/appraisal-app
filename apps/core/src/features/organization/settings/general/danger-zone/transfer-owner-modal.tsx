@@ -132,6 +132,7 @@ const TransferOwnerModal: FC<Props> = ({
                   aria-labelledby='transfer-owner-conf-label'
                   error={error?.message}
                   applyErrorStateToLabel={false}
+                  autoComplete='off'
                 />
               )}
             />

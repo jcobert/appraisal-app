@@ -6,6 +6,7 @@ import { FormMode } from '@repo/types'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 import { type DeleteOrganizationResult } from '@/lib/db/handlers/organization-handlers'
+import { type LeaveOrganizationResult } from '@/lib/db/handlers/organization-member-handlers'
 
 import useCoreMutation, {
   UseCoreMutationProps,
@@ -112,11 +113,40 @@ export const useOrganizationMutations = ({
     },
   })
 
-  const deleteOrgMember = useCoreMutation<{}, OrgMember>({
+  const removeOrgMember = useCoreMutation<
+    { active: false },
+    Pick<OrgMember, 'id'>
+  >({
     url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/members/${memberId}`,
-    method: 'DELETE',
+    method: 'PUT',
+    toast: {
+      messages: {
+        success: () => 'Member removed from organization successfully.',
+      },
+    },
     ...(options as Omit<
-      UseCoreMutationProps<Partial<OrgMember> | {}, OrgMember>,
+      UseCoreMutationProps<{ active: false }, Pick<OrgMember, 'id'>>,
+      'url' | 'method'
+    >),
+    onSuccess: async () => {
+      await refreshData({ mode: 'update' })
+    },
+  })
+
+  const leaveOrganization = useCoreMutation<
+    {},
+    LeaveOrganizationResult['data']
+  >({
+    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/leave`,
+    method: 'POST',
+    toast: {
+      messages: {
+        success: ({ response: { data } }) =>
+          `You have left ${data?.organization?.name || 'the organization'}.`,
+      },
+    },
+    ...(options as Omit<
+      UseCoreMutationProps<{}, LeaveOrganizationResult['data']>,
       'url' | 'method'
     >),
     onSuccess: async () => {
@@ -129,6 +159,7 @@ export const useOrganizationMutations = ({
     updateOrganization,
     deleteOrganization,
     updateOrgMember,
-    deleteOrgMember,
+    removeOrgMember,
+    leaveOrganization,
   }
 }

@@ -266,7 +266,7 @@ describe('useOrganizationMutations', () => {
     })
   })
 
-  describe('deleteOrgMember', () => {
+  describe('removeOrgMember', () => {
     const organizationId = 'org-123'
     const memberId = 'member-456'
 
@@ -276,11 +276,11 @@ describe('useOrganizationMutations', () => {
         { wrapper },
       )
 
-      expect(result.current.deleteOrgMember).toBeDefined()
+      expect(result.current.removeOrgMember).toBeDefined()
       expect(mockUseCoreMutation).toHaveBeenCalledWith(
         expect.objectContaining({
           url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/members/${memberId}`,
-          method: 'DELETE',
+          method: 'PUT',
         }),
       )
     })
@@ -294,6 +294,53 @@ describe('useOrganizationMutations', () => {
       })
 
       const callArgs = mockUseCoreMutation.mock.calls[4]?.[0]
+      await callArgs?.onSuccess?.(
+        { status: 200, data: {} },
+        {} as any,
+        undefined,
+      )
+
+      expect(refetchSpy).toHaveBeenCalledWith({
+        queryKey: expect.arrayContaining([
+          'organizations',
+          { id: organizationId },
+        ]),
+        exact: true,
+      })
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: expect.arrayContaining(['organizations']),
+        exact: true,
+      })
+    })
+  })
+
+  describe('leaveOrganization', () => {
+    const organizationId = 'org-123'
+
+    it('should configure mutation with correct endpoint and method', () => {
+      const { result } = renderHook(
+        () => useOrganizationMutations({ organizationId }),
+        { wrapper },
+      )
+
+      expect(result.current.leaveOrganization).toBeDefined()
+      expect(mockUseCoreMutation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/leave`,
+          method: 'POST',
+        }),
+      )
+    })
+
+    it('should refetch specific organization and invalidate all on success', async () => {
+      const refetchSpy = jest.spyOn(queryClient, 'refetchQueries')
+      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries')
+
+      renderHook(() => useOrganizationMutations({ organizationId }), {
+        wrapper,
+      })
+
+      const callArgs = mockUseCoreMutation.mock.calls[5]?.[0]
       await callArgs?.onSuccess?.(
         { status: 200, data: {} },
         {} as any,
@@ -462,7 +509,8 @@ describe('useOrganizationMutations', () => {
         updateOrganization: expect.any(Object),
         deleteOrganization: expect.any(Object),
         updateOrgMember: expect.any(Object),
-        deleteOrgMember: expect.any(Object),
+        removeOrgMember: expect.any(Object),
+        leaveOrganization: expect.any(Object),
       })
     })
 
