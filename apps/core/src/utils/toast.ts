@@ -34,7 +34,7 @@ export const defaultToastMessages = {
   success: () => 'Your changes have been saved!',
   error: {
     INVALID_DATA: ({ response: { error } }) =>
-      `There was a problem with your request.${error?.message ? `\nError: ${error?.message}` : ''}`,
+      `${error?.message ? `Error: ${error?.message}` : ''}`,
     NOT_AUTHENTICATED: () => 'Please sign in to continue.',
     NOT_AUTHORIZED: () => 'You are not authorized to perform this action.',
     NETWORK_ERROR: () =>
