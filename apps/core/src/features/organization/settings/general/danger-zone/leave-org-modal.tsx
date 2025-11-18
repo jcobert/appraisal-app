@@ -1,3 +1,4 @@
+import { useRouter } from 'next/navigation'
 import { FC, useCallback, useMemo } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 import { z } from 'zod'
@@ -5,12 +6,16 @@ import { z } from 'zod'
 import { Organization } from '@repo/database'
 import { Button } from '@repo/ui'
 
+import { homeUrl } from '@/utils/nav'
+
 import FormActionBar from '@/components/form/form-action-bar'
 import TextInput from '@/components/form/inputs/text-input'
 import Banner from '@/components/general/banner'
 import Modal, { ModalProps } from '@/components/layout/modal'
 
 import useZodForm from '@/hooks/use-zod-form'
+
+import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
 
 type Props = {
   organizationId: Organization['id']
@@ -32,6 +37,10 @@ const LeaveOrgModal: FC<Props> = ({
   onOpenChange,
   ...modalProps
 }) => {
+  const router = useRouter()
+
+  const { leaveOrganization } = useOrganizationMutations({ organizationId })
+
   const schema = useMemo(() => {
     return z.object({
       conf: z.literal(organizationName, { errorMap }),
@@ -48,7 +57,16 @@ const LeaveOrgModal: FC<Props> = ({
   )
 
   const onSubmit: SubmitHandler<z.infer<typeof schema>> =
-    useCallback(async () => {}, [])
+    useCallback(async () => {
+      await leaveOrganization.mutateAsync(
+        {},
+        {
+          onSuccess: () => {
+            router.replace(homeUrl(true))
+          },
+        },
+      )
+    }, [leaveOrganization, router])
 
   return (
     <Modal
@@ -80,6 +98,7 @@ const LeaveOrgModal: FC<Props> = ({
                   aria-labelledby='leave-org-conf-label'
                   error={error?.message}
                   applyErrorStateToLabel={false}
+                  autoComplete='off'
                 />
               )}
             />

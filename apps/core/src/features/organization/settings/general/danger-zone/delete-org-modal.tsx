@@ -102,6 +102,7 @@ const DeleteOrgModal: FC<Props> = ({
                   aria-labelledby='danger-zone-conf1-label'
                   error={error?.message}
                   applyErrorStateToLabel={false}
+                  autoComplete='off'
                 />
               )}
             />
@@ -120,6 +121,7 @@ const DeleteOrgModal: FC<Props> = ({
                   aria-labelledby='danger-zone-conf2-label'
                   error={error?.message}
                   applyErrorStateToLabel={false}
+                  autoComplete='off'
                 />
               )}
             />

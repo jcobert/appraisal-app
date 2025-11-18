@@ -124,10 +124,33 @@ describe('organization-handlers', () => {
           members: {
             some: {
               user: { accountId: mockUser.id },
+              active: true,
             },
           },
         },
       })
+    })
+
+    it('should only return organizations with active memberships', async () => {
+      const organizations = [mockOrganization]
+      ;(mockDb.organization.findMany as jest.Mock).mockResolvedValue(
+        organizations,
+      )
+
+      await handleGetUserOrganizations()
+
+      // Verify that the query filters for active members only
+      expect(mockDb.organization.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            members: {
+              some: expect.objectContaining({
+                active: true,
+              }),
+            },
+          },
+        }),
+      )
     })
 
     it('should return empty array when no organizations found', async () => {
@@ -201,6 +224,7 @@ describe('organization-handlers', () => {
         where: { id: organizationId },
         include: {
           members: {
+            where: { active: true },
             include: {
               user: {
                 select: {

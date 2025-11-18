@@ -5,6 +5,7 @@ import { FC, useMemo, useState } from 'react'
 import Confirmation from '@/components/layout/confirmation'
 
 import { useGetOrgMember } from '@/features/organization/hooks/use-get-org-member'
+import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
 import MemberForm from '@/features/organization/member/member-form'
 import OrgMemberCardBase, {
   OrgMemberCardBaseProps,
@@ -22,7 +23,15 @@ const OrgMemberCard: FC<Props> = (props) => {
     organizationId: member?.organizationId,
   })
 
+  const { removeOrgMember } = useOrganizationMutations({
+    organizationId: member?.organizationId,
+    memberId: member?.id,
+  })
+
   const isActiveUser = member?.id === activeUserMemberQuery?.data?.id
+
+  const memberName =
+    `${member?.user?.firstName || ''} ${member?.user?.lastName || ''}`.trim()
 
   const actions = useMemo<OrgMemberCardBaseProps['actions']>(() => {
     const acts: OrgMemberCardBaseProps['actions'] = [
@@ -42,7 +51,6 @@ const OrgMemberCard: FC<Props> = (props) => {
         onSelect: () => {
           setDeleteOpen(true)
         },
-        disabled: true,
       })
     }
     return acts
@@ -50,18 +58,22 @@ const OrgMemberCard: FC<Props> = (props) => {
 
   return (
     <>
-      {/* <Confirmation
+      <Confirmation
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title='Remove User'
-        description={`Are you sure you want to remove ${name} from the organization? This action cannot be undone.`}
+        title='Remove Member'
+        description={`Are you sure you want to remove ${memberName || 'this member'} from the organization?`}
         onConfirm={async ({ closeModal }) => {
-          const res = await deleteOrgMember.mutateAsync({})
-          if (isStatusCodeSuccess(res?.status)) {
-            closeModal()
-          }
+          await removeOrgMember.mutateAsync(
+            { active: false },
+            {
+              onSuccess: () => {
+                closeModal()
+              },
+            },
+          )
         }}
-      /> */}
+      />
 
       {editOpen ? (
         <MemberForm

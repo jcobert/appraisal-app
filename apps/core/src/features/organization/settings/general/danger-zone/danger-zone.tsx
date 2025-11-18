@@ -6,7 +6,7 @@ import { cn } from '@repo/utils'
 import { usePermissions } from '@/hooks/use-permissions'
 
 import DeleteOrgModal from '@/features/organization/settings/general/danger-zone/delete-org-modal'
-import LeaveOrgModal from '@/features/organization/settings/general/danger-zone/leave-org'
+import LeaveOrgModal from '@/features/organization/settings/general/danger-zone/leave-org-modal'
 import TransferOwnerModal from '@/features/organization/settings/general/danger-zone/transfer-owner-modal'
 import SectionHeading from '@/features/organization/settings/section-heading'
 import { DetailedOrganization } from '@/features/organization/types'

@@ -175,31 +175,68 @@ export const handleUpdateActiveUserOrgMember = async (
 }
 
 /**
- * Delete an organization member.
+ * Leave an organization (self-removal).
+ * Deactivates the active user's membership in the organization.
  * Can be used in both API routes and server components.
  */
-export const handleDeleteOrgMember = async (
-  organizationId: string,
-  memberId: string,
-) => {
+export const handleLeaveOrganization = async (organizationId: string) => {
   return createApiHandler(
-    async () => {
-      const result = await db.orgMember.delete({
-        where: { id: memberId, organizationId },
+    async ({ user, userProfileId }) => {
+      // Simple check for required route parameter
+      if (!organizationId) {
+        throw new ValidationError('Organization ID is required.', {})
+      }
+
+      // Get the active user's member record
+      const activeUserMember = await getActiveUserOrgMember({
+        organizationId,
+        accountId: user?.id,
       })
+
+      if (!activeUserMember?.id) {
+        throw new Error('Failed to get active member.')
+      }
+
+      // Prevent the last owner from leaving
+      const owners = await db.orgMember.findMany({
+        where: {
+          organizationId,
+          active: true,
+          roles: { has: 'owner' },
+        },
+      })
+
+      const isLastOwner =
+        owners.length === 1 && owners[0]?.id === activeUserMember.id
+
+      if (isLastOwner) {
+        throw new ValidationError(
+          'Cannot leave organization. You are the only owner. Please transfer ownership or delete the organization.',
+          {},
+        )
+      }
+
+      // Deactivate the member
+      const result = await db.orgMember.update({
+        where: { id: activeUserMember.id, organizationId },
+        data: withUserFields({ active: false }, userProfileId),
+        include: { organization: true },
+      })
+
       return result
     },
     {
       authorizationCheck: async ({ user }) => {
-        const isOwner = await userIsOwner({
+        // User must be a member to leave
+        const isMember = await userIsMember({
           organizationId,
           accountId: user?.id,
         })
-        return isOwner
+        return isMember
       },
       messages: {
-        unauthorized: 'Unauthorized to delete organization members.',
-        success: 'Member removed from organization successfully.',
+        unauthorized: 'Unauthorized to leave this organization.',
+        success: 'You have left the organization.',
       },
       isMutation: true,
     },
@@ -216,6 +253,6 @@ export type UpdateOrgMemberResult = Awaited<
 export type UpdateActiveUserOrgMemberResult = Awaited<
   ReturnType<typeof handleUpdateActiveUserOrgMember>
 >
-export type DeleteOrgMemberResult = Awaited<
-  ReturnType<typeof handleDeleteOrgMember>
+export type LeaveOrganizationResult = Awaited<
+  ReturnType<typeof handleLeaveOrganization>
 >
