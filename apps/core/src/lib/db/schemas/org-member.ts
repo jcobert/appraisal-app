@@ -41,6 +41,7 @@ const apiSchema = z.object({
     .array(z.nativeEnum(MemberRole))
     .min(1, 'At least one role is required'),
   active: z.boolean().optional(),
+  isOwner: z.boolean().optional(),
 })
 
 /**

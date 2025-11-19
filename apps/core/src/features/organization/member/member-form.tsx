@@ -89,7 +89,7 @@ const MemberForm: FC<Props> = ({
 
   useDisableInteraction({ disable: isBusy })
 
-  const isActiveOwner = isActiveUser && member?.roles?.includes('owner')
+  const isActiveOwner = isActiveUser && member?.isOwner
 
   return (
     <Modal

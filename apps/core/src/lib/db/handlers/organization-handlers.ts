@@ -211,7 +211,7 @@ export const handleCreateOrganization = async (
           members: {
             some: {
               user: { accountId: user?.id },
-              roles: { has: 'owner' },
+              isOwner: true,
             },
           },
           name: { equals: payload?.name, mode: 'insensitive' },
@@ -232,7 +232,8 @@ export const handleCreateOrganization = async (
           members: {
             create: {
               userId: userProfileId,
-              roles: ['owner'],
+              isOwner: true,
+              roles: [],
               createdBy: userProfileId,
               updatedBy: userProfileId,
             },

@@ -38,7 +38,8 @@ export const userIsOwner = async (params: {
       members: {
         some: {
           user: { accountId },
-          roles: { has: 'owner' },
+          isOwner: true,
+          active: true,
         },
       },
     },

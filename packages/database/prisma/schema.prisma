@@ -89,6 +89,7 @@ model OrgMember {
   createdBy      String?
   updatedBy      String?
   active         Boolean      @default(true)
+  isOwner        Boolean      @default(false)
   roles          MemberRole[]
   // Relations
   userId         String

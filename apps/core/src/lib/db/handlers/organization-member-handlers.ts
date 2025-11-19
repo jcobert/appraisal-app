@@ -202,7 +202,7 @@ export const handleLeaveOrganization = async (organizationId: string) => {
         where: {
           organizationId,
           active: true,
-          roles: { has: 'owner' },
+          isOwner: true,
         },
       })
 
