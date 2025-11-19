@@ -117,9 +117,7 @@ const MemberForm: FC<Props> = ({
             return (
               <MemberRoleFieldset
                 {...field}
-                disabled={(role) =>
-                  (role === 'owner' && isActiveOwner) || !!field?.disabled
-                }
+                disabled={field?.disabled}
                 required
                 error={error}
               />

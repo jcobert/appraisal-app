@@ -233,7 +233,7 @@ export const handleCreateOrganization = async (
             create: {
               userId: userProfileId,
               isOwner: true,
-              roles: [],
+              roles: ['admin'],
               createdBy: userProfileId,
               updatedBy: userProfileId,
             },

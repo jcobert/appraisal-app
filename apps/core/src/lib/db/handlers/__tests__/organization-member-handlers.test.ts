@@ -272,7 +272,7 @@ describe('organization-member-handlers', () => {
 
     it('should accept partial payload (any subset of fields)', async () => {
       // Only updating roles, not all fields
-      const partialPayload = { roles: [MemberRole.owner] }
+      const partialPayload = { roles: [MemberRole.manager] }
       const updatedMember = { ...mockOrgMember, ...partialPayload }
       mockUserIsOwner.mockResolvedValue(true)
       ;(mockDb.orgMember.update as jest.Mock).mockResolvedValue(updatedMember)
@@ -291,7 +291,7 @@ describe('organization-member-handlers', () => {
       expect(mockDb.orgMember.update).toHaveBeenCalledWith({
         where: { id: memberId, organizationId },
         data: expect.objectContaining({
-          roles: [MemberRole.owner],
+          roles: [MemberRole.manager],
           updatedBy: 'user-profile-123',
         }),
         select: { id: true },

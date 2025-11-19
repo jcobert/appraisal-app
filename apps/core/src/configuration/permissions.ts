@@ -23,6 +23,9 @@ export type PermissionAction = {
 /**
  * Mapping of actions around the app to allowed user roles.
  * This is our single source of truth for role-based permissions.
+ *
+ * Note: Some actions are owner-only and should be checked separately
+ * using the isOwner field rather than roles array.
  */
 export const APP_PERMISSIONS: {
   [Area in PermissionArea]: {
@@ -30,18 +33,18 @@ export const APP_PERMISSIONS: {
   }
 } = {
   organization: {
-    view_org: ['owner', 'appraiser', 'manager'],
-    edit_org_info: ['owner'],
-    edit_org_members: ['owner'],
-    delete_org: ['owner'],
-    transfer_org: ['owner'],
-    view_org_member_details: ['owner', 'manager'],
+    view_org: ['admin', 'manager', 'appraiser'],
+    edit_org_info: ['admin'], // Admin or owner
+    edit_org_members: ['admin'], // Admin or owner
+    delete_org: [], // Owner-only: check isOwner field
+    transfer_org: [], // Owner-only: check isOwner field
+    view_org_member_details: ['admin', 'manager'],
   },
   /** @todo Move these under organization. */
   orders: {
-    create_order: ['owner', 'manager', 'appraiser'],
-    edit_order: ['owner', 'manager', 'appraiser'],
-    delete_order: ['owner', 'manager'],
-    view_orders: ['owner', 'manager', 'appraiser'],
+    create_order: ['admin', 'manager', 'appraiser'],
+    edit_order: ['admin', 'manager', 'appraiser'],
+    delete_order: ['admin', 'manager'],
+    view_orders: ['admin', 'manager', 'appraiser'],
   },
 }

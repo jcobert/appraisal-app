@@ -16,7 +16,7 @@ export const getOrgInviteUrl = ({
 }
 
 export const ORG_MEMBER_ROLES = [
-  MemberRole.owner,
+  MemberRole.admin,
   MemberRole.manager,
   MemberRole.appraiser,
 ] as const satisfies MemberRole[]
