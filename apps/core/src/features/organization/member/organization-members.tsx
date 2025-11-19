@@ -18,9 +18,7 @@ const OrganizationMembers: FC<Props> = ({
 }) => {
   const { members, invitations } = organization || {}
 
-  const [owners, others] = partition(members, (m) =>
-    m?.roles?.includes('owner'),
-  )
+  const [owners, others] = partition(members, (m) => m?.isOwner)
 
   return (
     <div className='flex flex-col gap-4 sm:w-fit'>

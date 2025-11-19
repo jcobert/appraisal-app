@@ -5,6 +5,7 @@ import {
   handleGetActiveUserOrgMember,
   handleGetOrgMember,
   handleLeaveOrganization,
+  handleTransferOwnership,
   handleUpdateActiveUserOrgMember,
   handleUpdateOrgMember,
 } from '../organization-member-handlers'
@@ -89,6 +90,7 @@ describe('organization-member-handlers', () => {
     userId: 'user-profile-123',
     roles: [MemberRole.appraiser],
     active: true,
+    isOwner: false,
     createdAt: new Date(),
     updatedAt: new Date(),
     createdBy: 'user-123',
@@ -272,7 +274,7 @@ describe('organization-member-handlers', () => {
 
     it('should accept partial payload (any subset of fields)', async () => {
       // Only updating roles, not all fields
-      const partialPayload = { roles: [MemberRole.owner] }
+      const partialPayload = { roles: [MemberRole.manager] }
       const updatedMember = { ...mockOrgMember, ...partialPayload }
       mockUserIsOwner.mockResolvedValue(true)
       ;(mockDb.orgMember.update as jest.Mock).mockResolvedValue(updatedMember)
@@ -291,7 +293,7 @@ describe('organization-member-handlers', () => {
       expect(mockDb.orgMember.update).toHaveBeenCalledWith({
         where: { id: memberId, organizationId },
         data: expect.objectContaining({
-          roles: [MemberRole.owner],
+          roles: [MemberRole.manager],
           updatedBy: 'user-profile-123',
         }),
         select: { id: true },
@@ -634,6 +636,402 @@ describe('organization-member-handlers', () => {
           message: 'Unauthorized to leave this organization.',
         },
       })
+    })
+  })
+
+  describe('handleTransferOwnership', () => {
+    const organizationId = 'org-123'
+    const mockOwnerMember = {
+      ...mockOrgMember,
+      id: 'owner-member-123',
+      isOwner: true,
+      roles: [MemberRole.admin, MemberRole.manager],
+    }
+    const mockNewOwnerMember = {
+      id: 'new-owner-member-456',
+      organizationId: 'org-123',
+      userId: 'user-profile-456',
+      roles: [MemberRole.manager],
+      active: true,
+      isOwner: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: 'user-456',
+      updatedBy: 'user-456',
+    }
+
+    beforeEach(() => {
+      mockGetActiveUserOrgMember.mockResolvedValue(mockOwnerMember)
+      mockUserIsOwner.mockResolvedValue(true)
+    })
+
+    it('should transfer ownership successfully without keeping admin role', async () => {
+      const payload = {
+        newOwnerMemberId: 'new-owner-member-456',
+        keepAdminRole: false,
+      }
+
+      ;(mockDb.orgMember.findUnique as jest.Mock).mockResolvedValue(
+        mockNewOwnerMember,
+      )
+
+      const mockTransaction = jest.fn(async (callback) => {
+        const tx = {
+          orgMember: {
+            update: jest
+              .fn()
+              .mockResolvedValueOnce({
+                ...mockOwnerMember,
+                isOwner: false,
+                roles: [MemberRole.manager], // admin removed
+              })
+              .mockResolvedValueOnce({
+                ...mockNewOwnerMember,
+                isOwner: true,
+                roles: [MemberRole.admin, MemberRole.manager], // admin added
+              }),
+          },
+        }
+        return callback(tx)
+      })
+      ;(mockDb.$transaction as jest.Mock) = mockTransaction
+
+      const result = await handleTransferOwnership(organizationId, payload)
+
+      expect(result).toEqual({
+        status: 200,
+        data: expect.objectContaining({
+          previousOwner: expect.objectContaining({
+            isOwner: false,
+            roles: expect.not.arrayContaining([MemberRole.admin]),
+          }),
+          newOwner: expect.objectContaining({
+            isOwner: true,
+            roles: expect.arrayContaining([MemberRole.admin]),
+          }),
+        }),
+        message: 'Ownership transferred successfully.',
+      })
+
+      expect(mockDb.$transaction).toHaveBeenCalled()
+    })
+
+    it('should transfer ownership successfully while keeping admin role', async () => {
+      const payload = {
+        newOwnerMemberId: 'new-owner-member-456',
+        keepAdminRole: true,
+      }
+
+      ;(mockDb.orgMember.findUnique as jest.Mock).mockResolvedValue(
+        mockNewOwnerMember,
+      )
+
+      const mockTransaction = jest.fn(async (callback) => {
+        const tx = {
+          orgMember: {
+            update: jest
+              .fn()
+              .mockResolvedValueOnce({
+                ...mockOwnerMember,
+                isOwner: false,
+                roles: [MemberRole.admin, MemberRole.manager], // admin kept
+              })
+              .mockResolvedValueOnce({
+                ...mockNewOwnerMember,
+                isOwner: true,
+                roles: [MemberRole.admin, MemberRole.manager],
+              }),
+          },
+        }
+        return callback(tx)
+      })
+      ;(mockDb.$transaction as jest.Mock) = mockTransaction
+
+      const result = await handleTransferOwnership(organizationId, payload)
+
+      expect(result).toEqual({
+        status: 200,
+        data: expect.objectContaining({
+          previousOwner: expect.objectContaining({
+            isOwner: false,
+            roles: expect.arrayContaining([MemberRole.admin]), // kept admin
+          }),
+          newOwner: expect.objectContaining({
+            isOwner: true,
+            roles: expect.arrayContaining([MemberRole.admin]),
+          }),
+        }),
+        message: 'Ownership transferred successfully.',
+      })
+    })
+
+    it('should ensure new owner gets admin role even if they did not have it', async () => {
+      const payload = {
+        newOwnerMemberId: 'new-owner-member-456',
+        keepAdminRole: false,
+      }
+
+      const memberWithoutAdmin = {
+        ...mockNewOwnerMember,
+        roles: [MemberRole.appraiser], // no admin role
+      }
+
+      ;(mockDb.orgMember.findUnique as jest.Mock).mockResolvedValue(
+        memberWithoutAdmin,
+      )
+
+      const mockTransaction = jest.fn(async (callback) => {
+        const tx = {
+          orgMember: {
+            update: jest
+              .fn()
+              .mockResolvedValueOnce({
+                ...mockOwnerMember,
+                isOwner: false,
+                roles: [MemberRole.manager],
+              })
+              .mockResolvedValueOnce({
+                ...memberWithoutAdmin,
+                isOwner: true,
+                roles: [MemberRole.admin, MemberRole.appraiser], // admin added
+              }),
+          },
+        }
+        return callback(tx)
+      })
+      ;(mockDb.$transaction as jest.Mock) = mockTransaction
+
+      await handleTransferOwnership(organizationId, payload)
+
+      // Verify the transaction was called and admin was added
+      expect(mockDb.$transaction).toHaveBeenCalled()
+    })
+
+    it('should return 403 when user is not the owner', async () => {
+      const payload = {
+        newOwnerMemberId: 'new-owner-member-456',
+        keepAdminRole: false,
+      }
+
+      mockUserIsOwner.mockResolvedValue(false)
+
+      const result = await handleTransferOwnership(organizationId, payload)
+
+      expect(result).toEqual({
+        status: 403,
+        data: null,
+        error: {
+          code: FetchErrorCode.NOT_AUTHORIZED,
+          message: 'Only the owner can transfer ownership.',
+        },
+      })
+    })
+
+    it('should return 400 when current user is not marked as owner in member record', async () => {
+      const payload = {
+        newOwnerMemberId: 'new-owner-member-456',
+        keepAdminRole: false,
+      }
+
+      // Mock a member who is not owner (even though userIsOwner might return true)
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        ...mockOrgMember,
+        isOwner: false,
+      })
+
+      const result = await handleTransferOwnership(organizationId, payload)
+
+      expect(result).toEqual({
+        status: 400,
+        data: null,
+        error: {
+          code: FetchErrorCode.INVALID_DATA,
+          message: 'Only the current owner can transfer ownership.',
+          details: {},
+        },
+      })
+    })
+
+    it('should return 400 when new owner member does not exist', async () => {
+      const payload = {
+        newOwnerMemberId: 'non-existent-member',
+        keepAdminRole: false,
+      }
+
+      ;(mockDb.orgMember.findUnique as jest.Mock).mockResolvedValue(null)
+
+      const result = await handleTransferOwnership(organizationId, payload)
+
+      expect(result).toEqual({
+        status: 400,
+        data: null,
+        error: {
+          code: FetchErrorCode.INVALID_DATA,
+          message: 'New owner must be an active member of the organization.',
+          details: {},
+        },
+      })
+    })
+
+    it('should return 400 when new owner member is inactive', async () => {
+      const payload = {
+        newOwnerMemberId: 'inactive-member-456',
+        keepAdminRole: false,
+      }
+
+      // When active: true is in the where clause, inactive members return null
+      ;(mockDb.orgMember.findUnique as jest.Mock).mockResolvedValue(null)
+
+      const result = await handleTransferOwnership(organizationId, payload)
+
+      expect(result).toEqual({
+        status: 400,
+        data: null,
+        error: {
+          code: FetchErrorCode.INVALID_DATA,
+          message: 'New owner must be an active member of the organization.',
+          details: {},
+        },
+      })
+    })
+
+    it('should return 400 when trying to transfer to self', async () => {
+      const payload = {
+        newOwnerMemberId: mockOwnerMember.id, // same as current owner
+        keepAdminRole: false,
+      }
+
+      ;(mockDb.orgMember.findUnique as jest.Mock).mockResolvedValue(
+        mockOwnerMember,
+      )
+
+      const result = await handleTransferOwnership(organizationId, payload)
+
+      expect(result).toEqual({
+        status: 400,
+        data: null,
+        error: {
+          code: FetchErrorCode.INVALID_DATA,
+          message: 'Cannot transfer ownership to yourself.',
+          details: {},
+        },
+      })
+    })
+
+    it('should return 400 when organizationId is missing', async () => {
+      const payload = {
+        newOwnerMemberId: 'new-owner-member-456',
+        keepAdminRole: false,
+      }
+
+      const result = await handleTransferOwnership('', payload)
+
+      expect(result).toEqual({
+        status: 400,
+        data: null,
+        error: {
+          code: FetchErrorCode.INVALID_DATA,
+          message: 'Organization ID is required.',
+          details: {},
+        },
+      })
+    })
+
+    it('should return 400 when validation fails', async () => {
+      const invalidPayload = {
+        newOwnerMemberId: 'not-a-uuid', // invalid UUID
+        keepAdminRole: 'invalid', // invalid boolean
+      }
+
+      const validationErrors = {
+        newOwnerMemberId: {
+          code: ZodIssueCode.invalid_type,
+          message: 'Invalid UUID',
+        },
+      }
+      mockValidatePayload.mockReturnValue({
+        success: false,
+        data: null,
+        errors: validationErrors,
+      })
+
+      const result = await handleTransferOwnership(
+        organizationId,
+        invalidPayload as any,
+      )
+
+      expect(result).toEqual({
+        status: 400,
+        data: null,
+        error: {
+          code: FetchErrorCode.INVALID_DATA,
+          message: 'Invalid data provided.',
+          details: validationErrors,
+        },
+      })
+    })
+
+    it('should handle missing current owner member gracefully', async () => {
+      const payload = {
+        newOwnerMemberId: 'new-owner-member-456',
+        keepAdminRole: false,
+      }
+
+      mockGetActiveUserOrgMember.mockResolvedValue(null)
+
+      const result = await handleTransferOwnership(organizationId, payload)
+
+      expect(result).toEqual({
+        status: 500,
+        data: null,
+        error: {
+          code: FetchErrorCode.INTERNAL_ERROR,
+          message: 'Failed to get current owner member record.',
+        },
+      })
+    })
+
+    it('should default keepAdminRole to false when not provided', async () => {
+      const payload = {
+        newOwnerMemberId: 'new-owner-member-456',
+        // keepAdminRole not provided, should default to false
+      }
+
+      ;(mockDb.orgMember.findUnique as jest.Mock).mockResolvedValue(
+        mockNewOwnerMember,
+      )
+
+      const mockTransaction = jest.fn(async (callback) => {
+        const tx = {
+          orgMember: {
+            update: jest
+              .fn()
+              .mockResolvedValueOnce({
+                ...mockOwnerMember,
+                isOwner: false,
+                roles: [MemberRole.manager], // admin removed (default behavior)
+              })
+              .mockResolvedValueOnce({
+                ...mockNewOwnerMember,
+                isOwner: true,
+                roles: [MemberRole.admin, MemberRole.manager],
+              }),
+          },
+        }
+        return callback(tx)
+      })
+      ;(mockDb.$transaction as jest.Mock) = mockTransaction
+
+      const result = await handleTransferOwnership(organizationId, payload)
+
+      expect(result.status).toBe(200)
+      expect(result.data).toEqual(
+        expect.objectContaining({
+          previousOwner: expect.objectContaining({
+            roles: expect.not.arrayContaining([MemberRole.admin]),
+          }),
+        }),
+      )
     })
   })
 })

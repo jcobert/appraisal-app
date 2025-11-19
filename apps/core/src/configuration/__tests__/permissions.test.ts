@@ -8,47 +8,47 @@ describe('APP_PERMISSIONS configuration', () => {
   })
 
   describe('organization permissions', () => {
-    it('should restrict edit_org_info to owner only', () => {
-      expect(APP_PERMISSIONS.organization.edit_org_info).toEqual(['owner'])
+    it('should allow admin to edit org info', () => {
+      expect(APP_PERMISSIONS.organization.edit_org_info).toEqual(['admin'])
     })
 
-    it('should allow only owner to edit members', () => {
-      expect(APP_PERMISSIONS.organization.edit_org_members).toEqual(['owner'])
+    it('should allow admin to edit members', () => {
+      expect(APP_PERMISSIONS.organization.edit_org_members).toEqual(['admin'])
     })
 
-    it('should restrict delete_org to owner only', () => {
-      expect(APP_PERMISSIONS.organization.delete_org).toEqual(['owner'])
+    it('should restrict delete_org to owner only (empty array - check isOwner field)', () => {
+      expect(APP_PERMISSIONS.organization.delete_org).toEqual([])
     })
 
-    it('should restrict transfer_org to owner only', () => {
-      expect(APP_PERMISSIONS.organization.transfer_org).toEqual(['owner'])
+    it('should restrict transfer_org to owner only (empty array - check isOwner field)', () => {
+      expect(APP_PERMISSIONS.organization.transfer_org).toEqual([])
     })
   })
 
   describe('orders permissions', () => {
-    it('should allow all roles to create orders', () => {
+    it('should allow admin, manager and appraiser roles to create orders', () => {
       expect(APP_PERMISSIONS.orders.create_order).toEqual([
-        'owner',
+        'admin',
         'manager',
         'appraiser',
       ])
     })
 
-    it('should allow all roles to edit orders', () => {
+    it('should allow admin, manager and appraiser roles to edit orders', () => {
       expect(APP_PERMISSIONS.orders.edit_order).toEqual([
-        'owner',
+        'admin',
         'manager',
         'appraiser',
       ])
     })
 
-    it('should restrict delete_order to owner and manager', () => {
-      expect(APP_PERMISSIONS.orders.delete_order).toEqual(['owner', 'manager'])
+    it('should restrict delete_order to admin and manager roles', () => {
+      expect(APP_PERMISSIONS.orders.delete_order).toEqual(['admin', 'manager'])
     })
 
-    it('should allow all roles to view orders', () => {
+    it('should allow admin, manager and appraiser roles to view orders', () => {
       expect(APP_PERMISSIONS.orders.view_orders).toEqual([
-        'owner',
+        'admin',
         'manager',
         'appraiser',
       ])

@@ -5,7 +5,7 @@ import {
   handleGetActiveUserOrgMember,
   handleUpdateActiveUserOrgMember,
 } from '@/lib/db/handlers/organization-member-handlers'
-import { MemberInviteApiData } from '@/lib/db/schemas/org-member'
+import { MemberInviteApiSchema } from '@/lib/db/schemas/org-member'
 
 export const GET = async (
   _req: NextRequest,
@@ -21,7 +21,7 @@ export const PUT = async (
   { params }: { params: Promise<{ id: string }> },
 ) => {
   const { id: organizationId } = await params
-  const payload = (await req.json()) as MemberInviteApiData
+  const payload = (await req.json()) as MemberInviteApiSchema
 
   const result = await handleUpdateActiveUserOrgMember(organizationId, payload)
   return toNextResponse(result)

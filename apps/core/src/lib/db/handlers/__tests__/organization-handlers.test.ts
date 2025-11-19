@@ -625,7 +625,8 @@ describe('organization-handlers', () => {
           members: {
             create: {
               userId: 'user-profile-123',
-              roles: ['owner'],
+              isOwner: true,
+              roles: ['admin'],
               createdBy: 'user-profile-123', // Now uses profile ID
               updatedBy: 'user-profile-123', // Now uses profile ID
             },

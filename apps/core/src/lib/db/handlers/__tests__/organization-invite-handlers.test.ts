@@ -771,7 +771,7 @@ describe('organization-invite-handlers', () => {
     it('should accept partial payload (any subset of fields)', async () => {
       // Only updating roles, not all fields
       const partialPayload: Partial<OrgInvitePayload> = {
-        roles: [MemberRole.owner],
+        roles: [MemberRole.manager],
       }
 
       mockCreateApiHandler.mockImplementation(
@@ -799,7 +799,7 @@ describe('organization-invite-handlers', () => {
           {
             inviteeFirstName: undefined,
             inviteeLastName: undefined,
-            roles: [MemberRole.owner],
+            roles: [MemberRole.manager],
           },
           mockActiveUser.id,
         ),

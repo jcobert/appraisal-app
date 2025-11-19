@@ -41,6 +41,7 @@ const apiSchema = z.object({
     .array(z.nativeEnum(MemberRole))
     .min(1, 'At least one role is required'),
   active: z.boolean().optional(),
+  isOwner: z.boolean().optional(),
 })
 
 /**
@@ -57,15 +58,33 @@ const inviteTokenSchema = z.object(
   { errorMap: formErrorMap },
 )
 
+/**
+ * Schema for transferring organization ownership.
+ * Requires the new owner's member ID and optionally whether to keep admin role.
+ */
+const transferOwnershipSchema = z.object(
+  {
+    newOwnerMemberId: sanitizedField.uuid(),
+    keepAdminRole: z.boolean().optional(),
+  },
+  { errorMap: formErrorMap },
+)
+
 export const orgMemberSchema = {
   form: formSchema,
   api: apiSchema,
   inviteToken: inviteTokenSchema,
+  transferOwnership: transferOwnershipSchema,
 } satisfies SchemaBundle & {
   /** Specialized schema for invitation token operations */
   inviteToken: z.ZodSchema
+  /** Specialized schema for transferring ownership */
+  transferOwnership: z.ZodSchema
 }
 
-export type MemberInviteFormData = z.infer<typeof orgMemberSchema.form>
-export type MemberInviteApiData = z.infer<typeof orgMemberSchema.api>
-export type InviteTokenData = z.infer<typeof orgMemberSchema.inviteToken>
+export type MemberInviteFormSchema = z.infer<typeof orgMemberSchema.form>
+export type MemberInviteApiSchema = z.infer<typeof orgMemberSchema.api>
+export type InviteTokenSchema = z.infer<typeof orgMemberSchema.inviteToken>
+export type TransferOwnershipSchema = z.infer<
+  typeof orgMemberSchema.transferOwnership
+>

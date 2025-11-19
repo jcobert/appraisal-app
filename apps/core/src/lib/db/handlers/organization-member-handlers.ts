@@ -6,7 +6,10 @@ import {
   userIsOwner,
   userIsMember,
 } from '@/lib/db/queries/organization'
-import { orgMemberSchema } from '@/lib/db/schemas/org-member'
+import {
+  orgMemberSchema,
+  TransferOwnershipSchema,
+} from '@/lib/db/schemas/org-member'
 
 import {
   createApiHandler,
@@ -202,7 +205,7 @@ export const handleLeaveOrganization = async (organizationId: string) => {
         where: {
           organizationId,
           active: true,
-          roles: { has: 'owner' },
+          isOwner: true,
         },
       })
 
@@ -243,6 +246,139 @@ export const handleLeaveOrganization = async (organizationId: string) => {
   )
 }
 
+/**
+ * Transfer organization ownership to another member.
+ * Only the current owner can transfer ownership.
+ * Optionally keep admin role after transferring ownership.
+ * Can be used in both API routes and server components.
+ */
+export const handleTransferOwnership = async (
+  organizationId: string,
+  payload: TransferOwnershipSchema,
+) => {
+  return createApiHandler(
+    async ({ user, userProfileId }) => {
+      // Validate payload
+      const validation = validatePayload(
+        orgMemberSchema.transferOwnership,
+        payload,
+      )
+      if (!isValidationSuccess(validation)) {
+        throw new ValidationError(
+          'Invalid data provided.',
+          validation.errors || {},
+        )
+      }
+
+      // Simple check for required route parameter
+      if (!organizationId) {
+        throw new ValidationError('Organization ID is required.', {})
+      }
+
+      const { newOwnerMemberId, keepAdminRole } = validation.data
+
+      // Get current owner's member record
+      const currentOwnerMember = await getActiveUserOrgMember({
+        organizationId,
+        accountId: user?.id,
+      })
+
+      if (!currentOwnerMember?.id) {
+        throw new Error('Failed to get current owner member record.')
+      }
+
+      // Verify current user is the owner
+      if (!currentOwnerMember.isOwner) {
+        throw new ValidationError(
+          'Only the current owner can transfer ownership.',
+          {},
+        )
+      }
+
+      // Get new owner's member record
+      const newOwnerMember = await db.orgMember.findUnique({
+        where: {
+          id: newOwnerMemberId,
+          organizationId,
+          active: true,
+        },
+      })
+
+      if (!newOwnerMember) {
+        throw new ValidationError(
+          'New owner must be an active member of the organization.',
+          {},
+        )
+      }
+
+      // Prevent transferring to self
+      if (currentOwnerMember.id === newOwnerMember.id) {
+        throw new ValidationError('Cannot transfer ownership to yourself.', {})
+      }
+
+      // Execute transfer in transaction
+      const result = await db.$transaction(async (tx) => {
+        // Remove ownership from current owner
+        const updatedCurrentOwner = await tx.orgMember.update({
+          where: { id: currentOwnerMember.id, organizationId },
+          data: withUserFields(
+            {
+              isOwner: false,
+              // Optionally keep admin role
+              roles: keepAdminRole
+                ? currentOwnerMember.roles
+                : currentOwnerMember.roles.filter((role) => role !== 'admin'),
+            },
+            userProfileId,
+          ),
+          select: {
+            user: { select: { firstName: true, lastName: true, avatar: true } },
+          },
+        })
+
+        // Grant ownership to new owner (and ensure they have admin role)
+        const updatedNewOwner = await tx.orgMember.update({
+          where: { id: newOwnerMember.id, organizationId },
+          data: withUserFields(
+            {
+              isOwner: true,
+              // Ensure new owner has admin role
+              roles: newOwnerMember.roles.includes('admin')
+                ? newOwnerMember.roles
+                : [...newOwnerMember.roles, 'admin'],
+            },
+            userProfileId,
+          ),
+          select: {
+            user: { select: { firstName: true, lastName: true, avatar: true } },
+          },
+        })
+
+        return {
+          previousOwner: updatedCurrentOwner,
+          newOwner: updatedNewOwner,
+        }
+      })
+
+      return result
+    },
+    {
+      authorizationCheck: async ({ user }) => {
+        const isOwner = await userIsOwner({
+          organizationId,
+          accountId: user?.id,
+        })
+        return isOwner
+      },
+      messages: {
+        unauthorized: 'Only the owner can transfer ownership.',
+        success: 'Ownership transferred successfully.',
+      },
+      isMutation: true,
+    },
+  )
+}
+
 export type GetOrgMemberResult = Awaited<ReturnType<typeof handleGetOrgMember>>
 export type GetActiveUserOrgMemberResult = Awaited<
   ReturnType<typeof handleGetActiveUserOrgMember>
@@ -255,4 +391,7 @@ export type UpdateActiveUserOrgMemberResult = Awaited<
 >
 export type LeaveOrganizationResult = Awaited<
   ReturnType<typeof handleLeaveOrganization>
+>
+export type TransferOwnershipResult = Awaited<
+  ReturnType<typeof handleTransferOwnership>
 >

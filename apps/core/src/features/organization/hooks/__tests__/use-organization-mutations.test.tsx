@@ -361,6 +361,80 @@ describe('useOrganizationMutations', () => {
     })
   })
 
+  describe('transferOwnership', () => {
+    const organizationId = 'org-123'
+
+    it('should configure mutation with correct endpoint and method', () => {
+      const { result } = renderHook(
+        () => useOrganizationMutations({ organizationId }),
+        { wrapper },
+      )
+
+      expect(result.current.transferOwnership).toBeDefined()
+      expect(mockUseCoreMutation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/transfer-ownership`,
+          method: 'POST',
+        }),
+      )
+    })
+
+    it('should include custom success toast message with new owner name', () => {
+      renderHook(() => useOrganizationMutations({ organizationId }), {
+        wrapper,
+      })
+
+      const callArgs = mockUseCoreMutation.mock.calls[6]?.[0]
+      const successMessage = callArgs?.toast?.messages?.success
+
+      if (typeof successMessage === 'function') {
+        const message = successMessage({
+          response: {
+            status: 200,
+            data: {
+              newOwner: {
+                user: {
+                  firstName: 'John',
+                  lastName: 'Doe',
+                },
+              },
+            },
+          },
+          context: undefined,
+        })
+        expect(message).toBe('Ownership transferred to John Doe.')
+      }
+    })
+
+    it('should refetch specific organization and invalidate all on success', async () => {
+      const refetchSpy = jest.spyOn(queryClient, 'refetchQueries')
+      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries')
+
+      renderHook(() => useOrganizationMutations({ organizationId }), {
+        wrapper,
+      })
+
+      const callArgs = mockUseCoreMutation.mock.calls[6]?.[0]
+      await callArgs?.onSuccess?.(
+        { status: 200, data: {} },
+        {} as any,
+        undefined,
+      )
+
+      expect(refetchSpy).toHaveBeenCalledWith({
+        queryKey: expect.arrayContaining([
+          'organizations',
+          { id: organizationId },
+        ]),
+        exact: true,
+      })
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: expect.arrayContaining(['organizations']),
+        exact: true,
+      })
+    })
+  })
+
   describe('custom options', () => {
     it('should merge custom options with default configuration', () => {
       const customOptions = {
@@ -511,6 +585,7 @@ describe('useOrganizationMutations', () => {
         updateOrgMember: expect.any(Object),
         removeOrgMember: expect.any(Object),
         leaveOrganization: expect.any(Object),
+        transferOwnership: expect.any(Object),
       })
     })
 

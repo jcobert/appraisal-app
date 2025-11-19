@@ -89,7 +89,7 @@ const MemberForm: FC<Props> = ({
 
   useDisableInteraction({ disable: isBusy })
 
-  const isActiveOwner = isActiveUser && member?.roles?.includes('owner')
+  const isActiveOwner = isActiveUser && member?.isOwner
 
   return (
     <Modal
@@ -117,9 +117,7 @@ const MemberForm: FC<Props> = ({
             return (
               <MemberRoleFieldset
                 {...field}
-                disabled={(role) =>
-                  (role === 'owner' && isActiveOwner) || !!field?.disabled
-                }
+                disabled={field?.disabled}
                 required
                 error={error}
               />

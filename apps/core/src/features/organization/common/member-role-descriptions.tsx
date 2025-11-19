@@ -16,9 +16,13 @@ const descriptions = {
     overview: 'Manages jobs and oversees operations.',
     bullets: ['Add and assign jobs', 'View organization finances'],
   },
-  owner: {
-    overview: 'Has full admin access to the organization.',
-    bullets: ['Add/remove members', 'Change organization settings'],
+  admin: {
+    overview: 'Has administrative access to manage the organization.',
+    bullets: [
+      'Add/remove members',
+      'Change organization settings',
+      'Manage all jobs and finances',
+    ],
   },
 } as {
   [x in (typeof ORG_MEMBER_ROLES)[number]]: {
