@@ -17,6 +17,7 @@ import Modal, { ModalProps } from '@/components/layout/modal'
 
 import useZodForm from '@/hooks/use-zod-form'
 
+import { useOrganizationMutations } from '@/features/organization/hooks/use-organization-mutations'
 import { DetailedOrganization } from '@/features/organization/types'
 
 type Props = {
@@ -47,7 +48,7 @@ const TransferOwnerModal: FC<Props> = ({
   const schema = useMemo(() => {
     return z.object({
       ownerType: z.nativeEnum(OwnerType),
-      member: z.string().optional(),
+      member: z.string(),
       newUser: fieldBuilder.email({ label: 'Email' }),
       conf: z.literal(orgName, { errorMap }),
     })
@@ -65,7 +66,9 @@ const TransferOwnerModal: FC<Props> = ({
     },
   )
 
-  /** @todo Use same member invite mutation? */
+  const { transferOwnership } = useOrganizationMutations({
+    organizationId: organization?.id,
+  })
 
   const memberOptions = useMemo<SelectOption[]>(() => {
     if (!members || !members?.length) return []
@@ -75,8 +78,17 @@ const TransferOwnerModal: FC<Props> = ({
     }))
   }, [members])
 
-  const onSubmit: SubmitHandler<z.infer<typeof schema>> =
-    useCallback(async () => {}, [])
+  const onSubmit: SubmitHandler<z.infer<typeof schema>> = useCallback(
+    async (data) => {
+      await transferOwnership.mutateAsync(
+        {
+          newOwnerMemberId: data?.member,
+        },
+        { onSuccess: () => onOpenChange?.(false) },
+      )
+    },
+    [onOpenChange, transferOwnership],
+  )
 
   return (
     <Modal
