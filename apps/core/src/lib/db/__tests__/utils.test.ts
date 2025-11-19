@@ -160,6 +160,7 @@ describe('db utils', () => {
       mockGetActiveUserOrgMember.mockResolvedValue({
         id: 'member-123',
         active: true,
+        isOwner: false,
         roles: ['manager'],
         user: {
           id: 'user-profile-123',
@@ -280,6 +281,7 @@ describe('db utils', () => {
       mockGetActiveUserOrgMember.mockResolvedValue({
         id: 'member-123',
         active: true,
+        isOwner: false,
         roles: ['manager'],
         user: {
           id: 'user-profile-123',
@@ -341,6 +343,7 @@ describe('db utils', () => {
       mockGetActiveUserOrgMember.mockResolvedValue({
         id: 'member-123',
         active: true,
+        isOwner: false,
         roles: ['manager'],
         user: {
           id: 'user-profile-123',
@@ -370,6 +373,7 @@ describe('db utils', () => {
       mockGetActiveUserOrgMember.mockResolvedValue({
         id: 'member-123',
         active: true,
+        isOwner: false,
         roles: ['appraiser'],
         user: {
           id: 'user-profile-123',
@@ -399,6 +403,7 @@ describe('db utils', () => {
       mockGetActiveUserOrgMember.mockResolvedValue({
         id: 'member-123',
         active: false,
+        isOwner: false,
         roles: ['manager'],
         user: {
           id: 'user-profile-123',
@@ -436,6 +441,7 @@ describe('db utils', () => {
       mockGetActiveUserOrgMember.mockResolvedValue({
         id: 'member-123',
         active: true,
+        isOwner: false,
         roles: ['manager'],
         user: {
           id: 'user-profile-123',
@@ -463,6 +469,7 @@ describe('db utils', () => {
       mockGetActiveUserOrgMember.mockResolvedValue({
         id: 'member-123',
         active: true,
+        isOwner: false,
         roles: ['appraiser'],
         user: {
           id: 'user-profile-123',

@@ -6,7 +6,7 @@ import { Button } from '@repo/ui'
 
 import { ORG_INVITE_EXPIRY } from '@/lib/db/config'
 import {
-  MemberInviteFormData,
+  MemberInviteFormSchema,
   orgMemberSchema,
 } from '@/lib/db/schemas/org-member'
 
@@ -37,7 +37,7 @@ const DEFAULT_FORM_VALUES = {
   firstName: '',
   lastName: '',
   roles: [],
-} satisfies MemberInviteFormData
+} satisfies MemberInviteFormSchema
 
 const MemberInviteForm: FC<Props> = ({
   organization,
@@ -75,7 +75,7 @@ const MemberInviteForm: FC<Props> = ({
     inviteId: initialData?.id,
   })
 
-  const { control, handleSubmit, reset } = useZodForm<MemberInviteFormData>(
+  const { control, handleSubmit, reset } = useZodForm<MemberInviteFormSchema>(
     schema,
     {
       defaultValues: formDefaults(DEFAULT_FORM_VALUES, {
@@ -84,13 +84,13 @@ const MemberInviteForm: FC<Props> = ({
           initialData?.inviteeFirstName || DEFAULT_FORM_VALUES.firstName,
         lastName: initialData?.inviteeLastName || DEFAULT_FORM_VALUES.lastName,
         roles: initialData?.roles || DEFAULT_FORM_VALUES.roles,
-      } as Partial<MemberInviteFormData>),
+      } as Partial<MemberInviteFormSchema>),
       disabled:
         createInvitation.isPending || updateInvitation.isPending || isBusy,
     },
   )
 
-  const onSubmit: SubmitHandler<MemberInviteFormData> = async (data) => {
+  const onSubmit: SubmitHandler<MemberInviteFormSchema> = async (data) => {
     setIsBusy(true)
     if (isUpdate) {
       await updateInvitation.mutateAsync(data, {

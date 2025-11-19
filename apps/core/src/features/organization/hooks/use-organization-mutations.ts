@@ -6,7 +6,11 @@ import { FormMode } from '@repo/types'
 
 import { CORE_API_ENDPOINTS } from '@/lib/db/config'
 import { type DeleteOrganizationResult } from '@/lib/db/handlers/organization-handlers'
-import { type LeaveOrganizationResult } from '@/lib/db/handlers/organization-member-handlers'
+import {
+  type LeaveOrganizationResult,
+  type TransferOwnershipResult,
+} from '@/lib/db/handlers/organization-member-handlers'
+import { TransferOwnershipSchema } from '@/lib/db/schemas/org-member'
 
 import useCoreMutation, {
   UseCoreMutationProps,
@@ -154,6 +158,30 @@ export const useOrganizationMutations = ({
     },
   })
 
+  const transferOwnership = useCoreMutation<
+    TransferOwnershipSchema,
+    TransferOwnershipResult['data']
+  >({
+    url: `${CORE_API_ENDPOINTS.organization}/${organizationId}/transfer-ownership`,
+    method: 'POST',
+    toast: {
+      messages: {
+        success: ({ response: { data } }) =>
+          `Ownership transferred to ${data?.newOwner?.user?.firstName} ${data?.newOwner?.user?.lastName}.`,
+      },
+    },
+    ...(options as Omit<
+      UseCoreMutationProps<
+        TransferOwnershipSchema,
+        TransferOwnershipResult['data']
+      >,
+      'url' | 'method'
+    >),
+    onSuccess: async () => {
+      await refreshData({ mode: 'update' })
+    },
+  })
+
   return {
     createOrganization,
     updateOrganization,
@@ -161,5 +189,6 @@ export const useOrganizationMutations = ({
     updateOrgMember,
     removeOrgMember,
     leaveOrganization,
+    transferOwnership,
   }
 }

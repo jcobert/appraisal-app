@@ -64,6 +64,7 @@ export const getActiveUserOrgMember = async (params: {
       select: {
         active: true,
         roles: true,
+        isOwner: true,
         id: true,
         user: true,
       },
