@@ -95,20 +95,18 @@ describe('Welcome Page', () => {
     expect(mockRedirect).toHaveBeenCalledTimes(1)
   })
 
-  it('should NOT redirect when profile creation returns no data', async () => {
+  it('should throw error when profile creation returns no data', async () => {
     // Mock the handler to return success but no data
     mockHandleRegisterUser.mockResolvedValue({
       status: 200,
       data: null,
     })
 
-    // This should not throw (would throw if redirect was called)
-    const result = await Page(mockPageProps)
-
-    // Should not redirect
+    // Should throw error
+    await expect(Page(mockPageProps)).rejects.toThrow(
+      'An unexpected error occurred.',
+    )
     expect(mockRedirect).not.toHaveBeenCalled()
-    // Should return some JSX (the full screen loader)
-    expect(result).toBeDefined()
   })
 
   it('should NOT redirect when profile is created successfully', async () => {
@@ -127,7 +125,7 @@ describe('Welcome Page', () => {
     expect(result).toBeDefined()
   })
 
-  it('should NOT redirect on authentication errors', async () => {
+  it('should throw error on authentication errors', async () => {
     // Mock authentication error
     mockHandleRegisterUser.mockResolvedValue({
       status: 401,
@@ -138,13 +136,11 @@ describe('Welcome Page', () => {
       },
     })
 
-    await Page(mockPageProps)
-
-    // Should NOT redirect on auth errors
+    await expect(Page(mockPageProps)).rejects.toThrow('User not authenticated.')
     expect(mockRedirect).not.toHaveBeenCalled()
   })
 
-  it('should NOT redirect on server errors', async () => {
+  it('should throw error on server errors', async () => {
     // Mock server error
     mockHandleRegisterUser.mockResolvedValue({
       status: 500,
@@ -155,13 +151,11 @@ describe('Welcome Page', () => {
       },
     })
 
-    await Page(mockPageProps)
-
-    // Should NOT redirect on server errors
+    await expect(Page(mockPageProps)).rejects.toThrow('Internal server error.')
     expect(mockRedirect).not.toHaveBeenCalled()
   })
 
-  it('should NOT redirect on non-DUPLICATE 409 errors', async () => {
+  it('should throw error on non-DUPLICATE 409 errors', async () => {
     // Mock a different 409 error that isn't duplicate
     mockHandleRegisterUser.mockResolvedValue({
       status: 409,
@@ -172,9 +166,7 @@ describe('Welcome Page', () => {
       },
     })
 
-    await Page(mockPageProps)
-
-    // Should NOT redirect since it's not a DUPLICATE error
+    await expect(Page(mockPageProps)).rejects.toThrow('Some other conflict.')
     expect(mockRedirect).not.toHaveBeenCalled()
   })
 

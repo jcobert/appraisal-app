@@ -1,5 +1,6 @@
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { ReactNode } from 'react'
 
 import { SidebarInset, SidebarProvider } from '@repo/ui'
@@ -12,6 +13,7 @@ import {
 import { handleGetActiveUserProfile } from '@/lib/db/handlers/user-handlers'
 
 import { isAuthenticated } from '@/utils/auth'
+import { FetchErrorCode } from '@/utils/fetch'
 import { createQueryClient, prefetchQuery } from '@/utils/query'
 
 import BreadcrumbProvider from '@/providers/breadcrumbs/breadcrumb-provider'
@@ -41,6 +43,12 @@ const Layout = async ({
 
   if (!allowed || !user) return null
 
+  const profile = await handleGetActiveUserProfile()
+
+  if (profile.error?.code === FetchErrorCode.NOT_FOUND) {
+    redirect('/user/welcome')
+  }
+
   const cookieStore = await cookies()
   const sidebarOpen = cookieStore.get('sidebar_state')?.value === 'true'
   const activeOrgId = cookieStore.get(getActiveOrgCookieName(user.id))?.value
@@ -50,7 +58,7 @@ const Layout = async ({
   const prefetchQueries = [
     queryClient.prefetchQuery({
       queryKey: usersQueryKey.active,
-      queryFn: prefetchQuery(() => handleGetActiveUserProfile()),
+      queryFn: prefetchQuery(() => Promise.resolve(profile)),
     }),
     queryClient.prefetchQuery({
       queryKey: organizationsQueryKey.all,

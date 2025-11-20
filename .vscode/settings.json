@@ -27,5 +27,6 @@
   },
   "jest.jestCommandLine": "pnpm test --",
   "jest.rootPath": "apps/core",
-  "jest.runMode": "on-demand"
+  "jest.runMode": "on-demand",
+  "prisma.pinToPrisma6": true
 }
