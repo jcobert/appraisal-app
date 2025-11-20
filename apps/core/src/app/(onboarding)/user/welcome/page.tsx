@@ -22,6 +22,7 @@ const Page: FC<PageParams> = async () => {
     // Redirect to dashboard if profile already exists.
     if (profile.error.code === FetchErrorCode.DUPLICATE) {
       redirect('/dashboard')
+      return null
     }
 
     // Throw error to trigger error boundary (allows retry)
