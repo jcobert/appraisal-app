@@ -104,7 +104,7 @@ const MemberForm: FC<Props> = ({
       {...modalProps}
     >
       {isActiveOwner ? (
-        <Banner>You cannot remove yourself as owner.</Banner>
+        <Banner>As an owner, you cannot remove the admin role.</Banner>
       ) : null}
       <form
         onSubmit={handleSubmit(onSubmit)}
@@ -117,7 +117,9 @@ const MemberForm: FC<Props> = ({
             return (
               <MemberRoleFieldset
                 {...field}
-                disabled={field?.disabled}
+                disabled={(role) =>
+                  (role === 'admin' && isActiveOwner) || !!field?.disabled
+                }
                 required
                 error={error}
               />
