@@ -13,9 +13,9 @@ import Logo from '@/components/general/logo'
 
 import { siteConfig } from '@/configuration/site'
 
-type Props = PageParams
+export const dynamic = 'force-dynamic'
 
-const Page: FC<Props> = async () => {
+const Page: FC<PageParams> = async () => {
   const profile = await handleRegisterUser()
 
   if (profile?.error) {
