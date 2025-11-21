@@ -1,50 +1,47 @@
 import { MemberRole } from '@repo/database'
 
-/** @todo Separate orders area doesn't make sense. Remove. */
 /**
- * Areas of the application where permissions are required.
+ * All permission actions in the application.
+ * Uses colon-separated notation (resource:action) following industry standards.
+ * All permissions are organization-scoped.
  */
-export type PermissionArea = 'organization' | 'orders'
+export type PermissionAction =
+  | 'organization:edit'
+  | 'members:edit'
+  | 'organization:delete'
+  | 'organization:transfer'
+  | 'organization:view'
+  | 'members:view_details'
+  | 'orders:create'
+  | 'orders:edit'
+  | 'orders:delete'
+  | 'orders:view'
 
 /**
- * Actions that can be performed in different areas of the application
+ * Permission requirement that can specify role-based access, ownership requirements, or both.
  */
-export type PermissionAction = {
-  organization:
-    | 'edit_org_info'
-    | 'edit_org_members'
-    | 'delete_org'
-    | 'transfer_org'
-    | 'view_org'
-    | 'view_org_member_details'
-  orders: 'create_order' | 'edit_order' | 'delete_order' | 'view_orders'
+export type PermissionRequirement = {
+  /** Roles that grant this permission. */
+  roles: MemberRole[]
+  /** Whether ownership is required to perform this action. */
+  requiresOwner?: boolean
 }
 
 /**
- * Mapping of actions around the app to allowed user roles.
- * This is our single source of truth for role-based permissions.
- *
- * Note: Some actions are owner-only and should be checked separately
- * using the isOwner field rather than roles array.
+ * Mapping of actions around the app to their permission requirements.
+ * This is our single source of truth for role-based and ownership-based permissions.
+ * All permissions are scoped to organizations.
  */
-export const APP_PERMISSIONS: {
-  [Area in PermissionArea]: {
-    [Action in PermissionAction[Area]]: MemberRole[]
+export const APP_PERMISSIONS: Record<PermissionAction, PermissionRequirement> =
+  {
+    'organization:view': { roles: ['admin', 'manager', 'appraiser'] },
+    'organization:edit': { roles: ['admin'] },
+    'members:edit': { roles: ['admin'] },
+    'organization:delete': { roles: [], requiresOwner: true },
+    'organization:transfer': { roles: [], requiresOwner: true },
+    'members:view_details': { roles: ['admin', 'manager'] },
+    'orders:create': { roles: ['admin', 'manager', 'appraiser'] },
+    'orders:edit': { roles: ['admin', 'manager', 'appraiser'] },
+    'orders:delete': { roles: ['admin', 'manager'] },
+    'orders:view': { roles: ['admin', 'manager', 'appraiser'] },
   }
-} = {
-  organization: {
-    view_org: ['admin', 'manager', 'appraiser'],
-    edit_org_info: ['admin'], // Admin or owner
-    edit_org_members: ['admin'], // Admin or owner
-    delete_org: [], // Owner-only: check isOwner field
-    transfer_org: [], // Owner-only: check isOwner field
-    view_org_member_details: ['admin', 'manager'],
-  },
-  /** @todo Move these under organization. */
-  orders: {
-    create_order: ['admin', 'manager', 'appraiser'],
-    edit_order: ['admin', 'manager', 'appraiser'],
-    delete_order: ['admin', 'manager'],
-    view_orders: ['admin', 'manager', 'appraiser'],
-  },
-}

@@ -34,7 +34,6 @@ const { can } = useActiveOrgPermissions()
 ```tsx
 // For page-specific content - uses explicit org ID
 const { can } = usePermissions({
-  area: 'organization',
   organizationId: specificOrgId, // The org this page/component is about
 })
 ```
@@ -67,7 +66,6 @@ export const OrganizationProvider = ({ children }) => {
 
   // Permissions for the ACTIVE organization only
   const permissions = usePermissions({
-    area: 'organization',
     organizationId: activeOrgId || '',
   })
 
@@ -93,11 +91,10 @@ export const OrganizationProvider = ({ children }) => {
 const OrganizationPage = ({ organizationId }) => {
   // CRITICAL: Use permissions for the SPECIFIC organization this page is about
   const { can } = usePermissions({
-    area: 'organization',
     organizationId, // The org this page represents, NOT the active org
   })
 
-  const userCanEdit = can('edit_org_info')
+  const userCanEdit = can('organization:edit')
   // ...
 }
 ```
@@ -130,17 +127,16 @@ const OrganizationPage = ({ organizationId }) => {
 // Navigation component (uses active org)
 const Navigation = () => {
   const { can } = useActiveOrgPermissions()
-  return <nav>{can('edit_org_info') && <CreateOrgButton />}</nav>
+  return <nav>{can('organization:edit') && <CreateOrgButton />}</nav>
 }
 
 // Organization page (uses specific org)
 const OrganizationPage = ({ orgId }) => {
   const { can } = usePermissions({
-    area: 'organization',
     organizationId: orgId,
   })
 
-  return <div>{can('edit_org_info') && <EditButton />}</div>
+  return <div>{can('organization:edit') && <EditButton />}</div>
 }
 ```
 
@@ -153,7 +149,7 @@ const OrganizationPage = ({ orgId }) => {
 
   return (
     <div>
-      {can('edit_org_info') && <EditButton />}{' '}
+      {can('organization:edit') && <EditButton />}{' '}
       {/* Could show edit for wrong org! */}
     </div>
   )

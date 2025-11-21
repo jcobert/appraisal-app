@@ -32,7 +32,10 @@ const Page: FC<Props> = async ({ params }) => {
   const { id: organizationId, memberId } = await params
 
   await protectPage({
-    permission: { area: 'organization', action: 'view_org', organizationId },
+    permission: {
+      action: 'organization:view',
+      organizationId,
+    },
   })
 
   const queryClient = createQueryClient()
@@ -66,7 +69,6 @@ const Page: FC<Props> = async ({ params }) => {
     // Permissions
     queryClient.prefetchQuery({
       queryKey: permissionsQueryKey.filtered({
-        area: 'organization',
         organizationId,
       }),
       queryFn: async () => {

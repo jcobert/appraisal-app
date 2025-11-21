@@ -25,13 +25,12 @@ const GeneralSettings: FC<Props> = ({ organizationId }) => {
   } = useProtectPage()
 
   const { can, isLoading: isCheckingPermissions } = usePermissions({
-    area: 'organization',
     organizationId,
   })
 
   useOrgPageRedirect(organizationId)
 
-  const userCanEditInfo = can('edit_org_info')
+  const userCanEditInfo = can('organization:edit')
 
   const isClient = useIsClient()
 

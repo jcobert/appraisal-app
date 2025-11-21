@@ -17,8 +17,7 @@ const Layout = async ({
 
   await protectPage({
     permission: {
-      area: 'organization',
-      action: 'edit_org_info',
+      action: 'organization:edit',
       organizationId,
     },
   })

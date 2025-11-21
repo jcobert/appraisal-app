@@ -25,7 +25,6 @@ const OrgMemberPage: FC<Props> = ({ organizationId, memberId }) => {
   useProtectPage()
 
   const { can } = usePermissions({
-    area: 'organization',
     organizationId: organizationId || '',
   })
 
@@ -36,7 +35,7 @@ const OrgMemberPage: FC<Props> = ({ organizationId, memberId }) => {
    * Unsure how this page will be used yet, but will probably
    * want to add exception for if this is user's own member page.
    */
-  const userCanViewMember = can('view_org_member_details')
+  const userCanViewMember = can('members:view_details')
 
   // As extra security, redirect if user doesn't have permissions.
   // Could happen if user's rights were changed by admin while user is here.

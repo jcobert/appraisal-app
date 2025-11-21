@@ -43,13 +43,12 @@ const MembersSettings: FC<Props> = ({ organizationId }) => {
   const isClient = useIsClient()
 
   const { can, isLoading: isCheckingPermissions } = usePermissions({
-    area: 'organization',
     organizationId,
   })
 
   useOrgPageRedirect(organizationId)
 
-  const userCanEditMembers = can('edit_org_members')
+  const userCanEditMembers = can('members:edit')
 
   const { response, isLoading } = useGetOrganizations({
     id: organizationId,

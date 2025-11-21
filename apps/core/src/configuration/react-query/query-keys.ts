@@ -2,11 +2,9 @@ import { OrgMember, Organization, User } from '@repo/database'
 
 import { filteredQueryKey } from '@/utils/query'
 
-import { PermissionArea } from '@/configuration/permissions'
-
 export const permissionsQueryKey = {
   all: ['permissions'],
-  filtered: (params: { organizationId: string; area: PermissionArea }) =>
+  filtered: (params: { organizationId: string }) =>
     filteredQueryKey(params, permissionsQueryKey.all),
 } as const
 

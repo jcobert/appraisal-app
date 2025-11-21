@@ -66,11 +66,11 @@ const mockPermissionsOrg1 = {
   can: jest.fn((action: string) => {
     // User has full permissions for org-1
     return [
-      'edit_org_info',
-      'edit_org_members',
-      'delete_org',
-      'view_org',
-      'view_org_member_details',
+      'organization:edit',
+      'members:edit',
+      'organization:delete',
+      'organization:view',
+      'members:view_details',
     ].includes(action)
   }),
   isLoading: false,
@@ -80,7 +80,7 @@ const mockPermissionsOrg1 = {
 const mockPermissionsOrg2 = {
   can: jest.fn((action: string) => {
     // User only has view permissions for org-2
-    return ['view_org'].includes(action)
+    return ['organization:view'].includes(action)
   }),
   isLoading: false,
   error: null,
@@ -155,9 +155,9 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       // Should have permissions for org-1 (active org)
-      expect(result.current.can('edit_org_info')).toBe(true)
-      expect(result.current.can('edit_org_members')).toBe(true)
-      expect(result.current.can('delete_org')).toBe(true)
+      expect(result.current.can('organization:edit')).toBe(true)
+      expect(result.current.can('members:edit')).toBe(true)
+      expect(result.current.can('organization:delete')).toBe(true)
     })
 
     it('should NOT provide permissions for non-active organizations', () => {
@@ -174,12 +174,12 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       // Should NOT have edit permissions for org-2
-      expect(result.current.can('edit_org_info')).toBe(false)
-      expect(result.current.can('edit_org_members')).toBe(false)
-      expect(result.current.can('delete_org')).toBe(false)
+      expect(result.current.can('organization:edit')).toBe(false)
+      expect(result.current.can('members:edit')).toBe(false)
+      expect(result.current.can('organization:delete')).toBe(false)
 
       // Should only have view permission
-      expect(result.current.can('view_org')).toBe(true)
+      expect(result.current.can('organization:view')).toBe(true)
     })
 
     it('should deny all permissions when no active organization is set', () => {
@@ -195,8 +195,8 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       // Should deny all permissions when no active org
-      expect(result.current.can('edit_org_info')).toBe(false)
-      expect(result.current.can('view_org')).toBe(false)
+      expect(result.current.can('organization:edit')).toBe(false)
+      expect(result.current.can('organization:view')).toBe(false)
     })
   })
 
@@ -244,7 +244,7 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       // Initially org-1 permissions
-      expect(result.current.can('edit_org_info')).toBe(true)
+      expect(result.current.can('organization:edit')).toBe(true)
 
       // Simulate organization switch to org-2 (limited permissions)
       mockUseStoredSettings.mockReturnValue({
@@ -256,8 +256,8 @@ describe('OrganizationProvider Security Tests', () => {
       rerender()
 
       // Should now have org-2 permissions (limited)
-      expect(result.current.can('edit_org_info')).toBe(false)
-      expect(result.current.can('view_org')).toBe(true)
+      expect(result.current.can('organization:edit')).toBe(false)
+      expect(result.current.can('organization:view')).toBe(true)
     })
 
     it('should refresh permissions for active organization', async () => {
@@ -353,8 +353,8 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       // Should deny all permissions for invalid org
-      expect(result.current.can('edit_org_info')).toBe(false)
-      expect(result.current.can('view_org')).toBe(false)
+      expect(result.current.can('organization:edit')).toBe(false)
+      expect(result.current.can('organization:view')).toBe(false)
     })
 
     it('should handle permissions loading state securely', () => {
@@ -370,7 +370,7 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       // Should deny permissions while loading
-      expect(result.current.can('edit_org_info')).toBe(false)
+      expect(result.current.can('organization:edit')).toBe(false)
       expect(result.current.isLoading).toBe(true)
     })
 
@@ -387,7 +387,7 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       // Should deny permissions on error
-      expect(result.current.can('edit_org_info')).toBe(false)
+      expect(result.current.can('organization:edit')).toBe(false)
       expect(result.current.error).toBeDefined()
     })
 
@@ -420,7 +420,7 @@ describe('OrganizationProvider Security Tests', () => {
       const { result: result1 } = renderHook(() => useActiveOrgPermissions(), {
         wrapper,
       })
-      expect(result1.current.can('delete_org')).toBe(true)
+      expect(result1.current.can('organization:delete')).toBe(true)
 
       // Test org-3 permissions (no permissions)
       mockUseStoredSettings.mockReturnValue({
@@ -432,8 +432,8 @@ describe('OrganizationProvider Security Tests', () => {
       const { result: result3 } = renderHook(() => useActiveOrgPermissions(), {
         wrapper,
       })
-      expect(result3.current.can('delete_org')).toBe(false)
-      expect(result3.current.can('view_org')).toBe(false)
+      expect(result3.current.can('organization:delete')).toBe(false)
+      expect(result3.current.can('organization:view')).toBe(false)
     })
 
     it('should verify permission actions are type-safe', () => {
@@ -443,8 +443,8 @@ describe('OrganizationProvider Security Tests', () => {
       })
 
       // Valid permission actions should work
-      expect(() => result.current.can('edit_org_info')).not.toThrow()
-      expect(() => result.current.can('view_org')).not.toThrow()
+      expect(() => result.current.can('organization:edit')).not.toThrow()
+      expect(() => result.current.can('organization:view')).not.toThrow()
 
       // The TypeScript compiler should prevent invalid actions at compile time
       // This test verifies the types are properly defined

@@ -1,73 +1,90 @@
-import { APP_PERMISSIONS, PermissionArea } from '../permissions'
+import { APP_PERMISSIONS } from '../permissions'
 
 describe('APP_PERMISSIONS configuration', () => {
-  const areas: PermissionArea[] = ['organization', 'orders']
+  it('should have all permissions defined', () => {
+    const expectedPermissions = [
+      'organization:edit',
+      'members:edit',
+      'organization:delete',
+      'organization:transfer',
+      'orders:create',
+      'orders:edit',
+      'orders:delete',
+      'orders:view',
+    ]
 
-  it('should have all permission areas defined', () => {
-    expect(Object.keys(APP_PERMISSIONS)).toEqual(expect.arrayContaining(areas))
+    expectedPermissions.forEach((permission) => {
+      expect(APP_PERMISSIONS).toHaveProperty(permission)
+    })
   })
 
   describe('organization permissions', () => {
-    it('should allow admin to edit org info', () => {
-      expect(APP_PERMISSIONS.organization.edit_org_info).toEqual(['admin'])
+    it('should allow admin to edit organization', () => {
+      expect(APP_PERMISSIONS['organization:edit']).toEqual({
+        roles: ['admin'],
+      })
     })
 
     it('should allow admin to edit members', () => {
-      expect(APP_PERMISSIONS.organization.edit_org_members).toEqual(['admin'])
+      expect(APP_PERMISSIONS['members:edit']).toEqual({
+        roles: ['admin'],
+      })
     })
 
-    it('should restrict delete_org to owner only (empty array - check isOwner field)', () => {
-      expect(APP_PERMISSIONS.organization.delete_org).toEqual([])
+    it('should restrict organization:delete to owner only (requiresOwner flag)', () => {
+      expect(APP_PERMISSIONS['organization:delete']).toEqual({
+        roles: [],
+        requiresOwner: true,
+      })
     })
 
-    it('should restrict transfer_org to owner only (empty array - check isOwner field)', () => {
-      expect(APP_PERMISSIONS.organization.transfer_org).toEqual([])
+    it('should restrict organization:transfer to owner only (requiresOwner flag)', () => {
+      expect(APP_PERMISSIONS['organization:transfer']).toEqual({
+        roles: [],
+        requiresOwner: true,
+      })
     })
   })
 
   describe('orders permissions', () => {
     it('should allow admin, manager and appraiser roles to create orders', () => {
-      expect(APP_PERMISSIONS.orders.create_order).toEqual([
-        'admin',
-        'manager',
-        'appraiser',
-      ])
+      expect(APP_PERMISSIONS['orders:create']).toEqual({
+        roles: ['admin', 'manager', 'appraiser'],
+      })
     })
 
     it('should allow admin, manager and appraiser roles to edit orders', () => {
-      expect(APP_PERMISSIONS.orders.edit_order).toEqual([
-        'admin',
-        'manager',
-        'appraiser',
-      ])
+      expect(APP_PERMISSIONS['orders:edit']).toEqual({
+        roles: ['admin', 'manager', 'appraiser'],
+      })
     })
 
-    it('should restrict delete_order to admin and manager roles', () => {
-      expect(APP_PERMISSIONS.orders.delete_order).toEqual(['admin', 'manager'])
+    it('should restrict orders:delete to admin and manager roles', () => {
+      expect(APP_PERMISSIONS['orders:delete']).toEqual({
+        roles: ['admin', 'manager'],
+      })
     })
 
     it('should allow admin, manager and appraiser roles to view orders', () => {
-      expect(APP_PERMISSIONS.orders.view_orders).toEqual([
-        'admin',
-        'manager',
-        'appraiser',
-      ])
+      expect(APP_PERMISSIONS['orders:view']).toEqual({
+        roles: ['admin', 'manager', 'appraiser'],
+      })
     })
   })
 
   describe('type safety', () => {
-    it('should have all actions defined for each area', () => {
+    it('should have all actions defined', () => {
       // Organization actions
-      expect(APP_PERMISSIONS.organization).toHaveProperty('edit_org_info')
-      expect(APP_PERMISSIONS.organization).toHaveProperty('edit_org_members')
-      expect(APP_PERMISSIONS.organization).toHaveProperty('delete_org')
-      expect(APP_PERMISSIONS.organization).toHaveProperty('transfer_org')
+      expect(APP_PERMISSIONS).toHaveProperty('organization:edit')
+      expect(APP_PERMISSIONS).toHaveProperty('members:edit')
+      expect(APP_PERMISSIONS).toHaveProperty('organization:delete')
+      expect(APP_PERMISSIONS).toHaveProperty('organization:transfer')
 
       // Orders actions
-      expect(APP_PERMISSIONS.orders).toHaveProperty('create_order')
-      expect(APP_PERMISSIONS.orders).toHaveProperty('edit_order')
-      expect(APP_PERMISSIONS.orders).toHaveProperty('delete_order')
-      expect(APP_PERMISSIONS.orders).toHaveProperty('view_orders')
+      expect(APP_PERMISSIONS).toHaveProperty('orders:create')
+      expect(APP_PERMISSIONS).toHaveProperty('orders:edit')
+      expect(APP_PERMISSIONS).toHaveProperty('orders:delete')
+      expect(APP_PERMISSIONS).toHaveProperty('orders:view')
     })
   })
 })

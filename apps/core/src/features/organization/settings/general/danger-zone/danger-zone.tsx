@@ -50,10 +50,10 @@ const DangerZone: FC<Props> = ({ organization }) => {
 
   const { id: organizationId, name: organizationName } = organization
 
-  const { can } = usePermissions({ area: 'organization', organizationId })
+  const { can } = usePermissions({ organizationId })
 
-  const canDelete = can('delete_org')
-  const canTransfer = can('transfer_org')
+  const canDelete = can('organization:delete')
+  const canTransfer = can('organization:transfer')
 
   const transferTrigger = useMemo(() => {
     return (
