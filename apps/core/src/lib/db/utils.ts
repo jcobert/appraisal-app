@@ -16,22 +16,16 @@ import {
 import { redirect } from 'next/navigation'
 import { homeUrl } from '@/utils/nav'
 import { handleGetActiveUserOrgMember } from '@/lib/db/handlers/organization-member-handlers'
-import { handleGetActiveUserProfile } from '@/lib/db/handlers/user-handlers'
-import { handleGetUserOrganizations } from '@/lib/db/handlers/organization-handlers'
 import { SessionData } from '@/types/auth'
 
-/** Returns active user account (Kinde auth DB) and profile (core DB) data. */
+/** Returns active user account (Kinde auth DB) and login status. Profile and organizations should be fetched client-side via React Query hooks for reactive updates. */
 export const getSessionData = async (): Promise<SessionData> => {
   const session = getKindeServerSession()
   const { getUser, isAuthenticated } = session
   // User account (from Kinde DB)
   const account = await getUser()
   const loggedIn = !!(await isAuthenticated())
-  // User profile (from core DB)
-  const profile = (await handleGetActiveUserProfile())?.data ?? null
-  // User organizations
-  const organizations = (await handleGetUserOrganizations())?.data ?? []
-  return { account, loggedIn, profile, organizations }
+  return { account, loggedIn }
 }
 
 /**

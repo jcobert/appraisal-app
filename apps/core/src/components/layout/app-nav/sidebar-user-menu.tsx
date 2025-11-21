@@ -34,9 +34,9 @@ type Props = {
 
 const SidebarUserMenu: FC<Props> = ({ sessionData }) => {
   const { loggedIn } = sessionData || {}
-  const { response } = useGetUserProfile()
+  const { response } = useGetUserProfile({ options: { enabled: true } })
 
-  const profile = response?.data || sessionData?.profile
+  const profile = response?.data
   const { avatar, email } = profile || {}
 
   const name = fullName(profile?.firstName, profile?.lastName)

@@ -26,12 +26,17 @@ import SidebarUserMenu from '@/components/layout/app-nav/sidebar-user-menu'
 
 import { SessionData } from '@/types/auth'
 
+import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
+
 type Props = {
   sessionData: Partial<SessionData>
 }
 
 const AppSidebarCore: FC<Props> = ({ sessionData }) => {
-  const { organizations } = sessionData || {}
+  const { response: orgsResponse } = useGetOrganizations({
+    options: { enabled: true },
+  })
+  const organizations = orgsResponse?.data
 
   const {
     activeOrgId,

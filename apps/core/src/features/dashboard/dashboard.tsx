@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { FC } from 'react'
 import { IoAdd } from 'react-icons/io5'
 
-import { Organization, User } from '@repo/database'
 import { Button } from '@repo/ui'
 import { greeting } from '@repo/utils'
 
@@ -12,12 +11,19 @@ import Banner from '@/components/general/banner'
 import NoResults from '@/components/general/no-results'
 import Heading from '@/components/layout/heading'
 
-type Props = {
-  user: User | null
-  organizations: Organization[] | null
-}
+import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
+import { useGetUserProfile } from '@/features/user/hooks/use-get-user-profile'
 
-const Dashboard: FC<Props> = ({ user, organizations }) => {
+const Dashboard: FC = () => {
+  const { response: profileResponse } = useGetUserProfile({
+    options: { enabled: true },
+  })
+  const { response: orgsResponse } = useGetOrganizations({
+    options: { enabled: true },
+  })
+
+  const user = profileResponse?.data
+  const organizations = orgsResponse?.data
   const hasOrgs = !!organizations?.length
 
   return (
