@@ -16,7 +16,6 @@ import { cn } from '@repo/utils'
 import AuthLink from '@/components/auth/auth-link'
 import LogoLink from '@/components/general/logo-link'
 import Drawer from '@/components/layout/drawer'
-import UserGreeting from '@/components/layout/header/user-greeting'
 
 import { useNavigation } from '@/hooks/use-navigation'
 
@@ -31,7 +30,7 @@ type Props = {
 }
 
 const MobileNav: FC<Props> = ({
-  sessionData: { loggedIn, profile },
+  sessionData: { loggedIn },
   // navItems,
   className,
 }) => {
@@ -98,28 +97,14 @@ const MobileNav: FC<Props> = ({
 
         <div className='flex flex-col gap-4 pb-8'>
           {/* User */}
-          {profile ? (
-            <div className='flex items-center justify-center pb-4'>
-              <Link
-                className='w-fit'
-                href='/user/profile'
-                onClick={() => {
-                  if (isActivePath('/user/profile')) {
-                    setIsMenuOpen(false)
-                  }
-                }}
-              >
-                <UserGreeting user={profile} />
-              </Link>
-            </div>
-          ) : (
+          {!loggedIn ? (
             <div className='flex flex-col items-center gap-4 mt-4'>
               <p className='text-balance leading-none'>Ready to get started?</p>
               <Button asChild size='lg'>
                 <AuthLink loggedIn={loggedIn} type='register' />
               </Button>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Links */}

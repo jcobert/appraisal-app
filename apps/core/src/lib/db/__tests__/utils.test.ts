@@ -191,22 +191,7 @@ describe('db utils', () => {
   })
 
   describe('getSessionData', () => {
-    it('should return complete session data', async () => {
-      const mockProfile = {
-        id: 'profile_123',
-        accountId: 'user_123',
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        phone: null,
-        avatar: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        createdBy: null,
-        updatedBy: null,
-      }
-      const mockOrgs = [{ id: 'org_123', name: 'Test Org' }]
-
+    it('should return auth session data', async () => {
       const getKindeServerSession = jest.requireMock(
         '@kinde-oss/kinde-auth-nextjs/server',
       ).getKindeServerSession
@@ -214,15 +199,11 @@ describe('db utils', () => {
         isAuthenticated: jest.fn().mockResolvedValue(true),
         getUser: jest.fn().mockResolvedValue(mockUser),
       }))
-      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(mockProfile)
-      ;(mockDb.organization.findMany as jest.Mock).mockResolvedValue(mockOrgs)
 
       const result = await getSessionData()
       expect(result).toEqual({
         account: mockUser,
         loggedIn: true,
-        profile: mockProfile,
-        organizations: mockOrgs,
       })
     })
 
@@ -234,15 +215,11 @@ describe('db utils', () => {
         isAuthenticated: jest.fn().mockResolvedValue(false),
         getUser: jest.fn().mockResolvedValue(null),
       }))
-      ;(mockDb.user.findUnique as jest.Mock).mockResolvedValue(null)
-      ;(mockDb.organization.findMany as jest.Mock).mockResolvedValue(null)
 
       const result = await getSessionData()
       expect(result).toEqual({
         account: null,
         loggedIn: false,
-        profile: null,
-        organizations: [],
       })
     })
   })
