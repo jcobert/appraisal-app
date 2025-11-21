@@ -92,11 +92,11 @@ describe('Critical Security Integration Test', () => {
         return {
           can: jest.fn((action: string) =>
             [
-              'edit_org_info',
-              'edit_org_members',
-              'delete_org',
-              'view_org',
-              'view_org_member_details',
+              'organization:edit',
+              'members:edit',
+              'organization:delete',
+              'organization:view',
+              'members:view_details',
             ].includes(action),
           ),
           isLoading: false,
@@ -106,7 +106,7 @@ describe('Critical Security Integration Test', () => {
 
       if (organizationId === 'org-view-only') {
         return {
-          can: jest.fn((action: string) => action === 'view_org'),
+          can: jest.fn((action: string) => action === 'organization:view'),
           isLoading: false,
           error: null,
         }
@@ -135,35 +135,33 @@ describe('Critical Security Integration Test', () => {
         { wrapper },
       )
 
-      expect(globalPermissions.current.can('edit_org_info')).toBe(true) // Admin access to active org
-      expect(globalPermissions.current.can('delete_org')).toBe(true)
+      expect(globalPermissions.current.can('organization:edit')).toBe(true) // Admin access to active org
+      expect(globalPermissions.current.can('organization:delete')).toBe(true)
 
       // Test 2: Page-specific permissions for Org B should be limited
       const { result: pageBPermissions } = renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: 'org-view-only',
           }),
         { wrapper },
       )
 
-      expect(pageBPermissions.current.can('edit_org_info')).toBe(false) // NO edit access to Org B
-      expect(pageBPermissions.current.can('delete_org')).toBe(false) // NO delete access to Org B
-      expect(pageBPermissions.current.can('view_org')).toBe(true) // Only view access to Org B
+      expect(pageBPermissions.current.can('organization:edit')).toBe(false) // NO edit access to Org B
+      expect(pageBPermissions.current.can('organization:delete')).toBe(false) // NO delete access to Org B
+      expect(pageBPermissions.current.can('organization:view')).toBe(true) // Only view access to Org B
 
       // Test 3: Page-specific permissions for Org A should still work
       const { result: pageAPermissions } = renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: 'org-admin-access',
           }),
         { wrapper },
       )
 
-      expect(pageAPermissions.current.can('edit_org_info')).toBe(true) // Admin access to Org A
-      expect(pageAPermissions.current.can('delete_org')).toBe(true)
+      expect(pageAPermissions.current.can('organization:edit')).toBe(true) // Admin access to Org A
+      expect(pageAPermissions.current.can('organization:delete')).toBe(true)
     })
 
     it('CRITICAL: should ensure page-specific permissions are never affected by active org', () => {
@@ -203,12 +201,11 @@ describe('Critical Security Integration Test', () => {
 
         // Test page permissions - should ONLY depend on pageOrg, not activeOrg
         const { result } = renderHook(
-          () =>
-            usePermissions({ area: 'organization', organizationId: pageOrg }),
+          () => usePermissions({ organizationId: pageOrg }),
           { wrapper },
         )
 
-        expect(result.current.can('edit_org_info')).toBe(expectedEdit)
+        expect(result.current.can('organization:edit')).toBe(expectedEdit)
       })
     })
 
@@ -225,19 +222,18 @@ describe('Critical Security Integration Test', () => {
       expect(context.current.selectedOrganization?.id).toBe('org-admin-access')
 
       // Context permissions should be for active org only
-      expect(context.current.permissions.can('edit_org_info')).toBe(true)
+      expect(context.current.permissions.can('organization:edit')).toBe(true)
 
       // But when we check permissions for a different org specifically, it should be isolated
       const { result: specificPermissions } = renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: 'org-view-only',
           }),
         { wrapper },
       )
 
-      expect(specificPermissions.current.can('edit_org_info')).toBe(false)
+      expect(specificPermissions.current.can('organization:edit')).toBe(false)
     })
 
     it('CRITICAL: should handle organization switching securely', async () => {
@@ -247,7 +243,7 @@ describe('Critical Security Integration Test', () => {
       })
 
       // Initially active org has admin permissions
-      expect(context.current.permissions.can('edit_org_info')).toBe(true)
+      expect(context.current.permissions.can('organization:edit')).toBe(true)
 
       // Switch to Org B (view-only)
       mockUseStoredSettings.mockReturnValue({
@@ -261,19 +257,20 @@ describe('Critical Security Integration Test', () => {
         () => useOrganizationContext(),
         { wrapper },
       )
-      expect(newContext.current.permissions.can('edit_org_info')).toBe(false)
-      expect(newContext.current.permissions.can('view_org')).toBe(true)
+      expect(newContext.current.permissions.can('organization:edit')).toBe(
+        false,
+      )
+      expect(newContext.current.permissions.can('organization:view')).toBe(true)
 
       // Page-specific permissions should remain isolated
       const { result: pageSpecific } = renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: 'org-admin-access',
           }),
         { wrapper },
       )
-      expect(pageSpecific.current.can('edit_org_info')).toBe(true) // Still has admin access to Org A
+      expect(pageSpecific.current.can('organization:edit')).toBe(true) // Still has admin access to Org A
     })
 
     it('CRITICAL: should deny permissions for non-existent organizations', () => {
@@ -282,15 +279,14 @@ describe('Critical Security Integration Test', () => {
       const { result } = renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: 'non-existent-org',
           }),
         { wrapper },
       )
 
-      expect(result.current.can('view_org')).toBe(false)
-      expect(result.current.can('edit_org_info')).toBe(false)
-      expect(result.current.can('delete_org')).toBe(false)
+      expect(result.current.can('organization:view')).toBe(false)
+      expect(result.current.can('organization:edit')).toBe(false)
+      expect(result.current.can('organization:delete')).toBe(false)
     })
 
     it('CRITICAL: should handle malicious organization ID inputs', () => {
@@ -310,16 +306,15 @@ describe('Critical Security Integration Test', () => {
         const { result } = renderHook(
           () =>
             usePermissions({
-              area: 'organization',
               organizationId: maliciousId,
             }),
           { wrapper },
         )
 
         // All malicious inputs should result in no permissions
-        expect(result.current.can('view_org')).toBe(false)
-        expect(result.current.can('edit_org_info')).toBe(false)
-        expect(result.current.can('delete_org')).toBe(false)
+        expect(result.current.can('organization:view')).toBe(false)
+        expect(result.current.can('organization:edit')).toBe(false)
+        expect(result.current.can('organization:delete')).toBe(false)
       })
     })
   })
@@ -333,12 +328,11 @@ describe('Critical Security Integration Test', () => {
       const { result: legitAccess } = renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: 'org-admin-access',
           }),
         { wrapper },
       )
-      expect(legitAccess.current.can('delete_org')).toBe(true)
+      expect(legitAccess.current.can('organization:delete')).toBe(true)
 
       // But cannot access Org B even if they manipulate the active org setting
       mockUseStoredSettings.mockReturnValue({
@@ -350,15 +344,14 @@ describe('Critical Security Integration Test', () => {
       const { result: attackAttempt } = renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: 'org-view-only',
           }), // But views this page
         { wrapper },
       )
 
       // Should still be restricted to view-only for Org B
-      expect(attackAttempt.current.can('delete_org')).toBe(false)
-      expect(attackAttempt.current.can('edit_org_info')).toBe(false)
+      expect(attackAttempt.current.can('organization:delete')).toBe(false)
+      expect(attackAttempt.current.can('organization:edit')).toBe(false)
     })
 
     it('should maintain security during rapid organization switches', () => {
@@ -375,12 +368,12 @@ describe('Critical Security Integration Test', () => {
 
       switches.forEach((orgId) => {
         const { result } = renderHook(
-          () => usePermissions({ area: 'organization', organizationId: orgId }),
+          () => usePermissions({ organizationId: orgId }),
           { wrapper },
         )
 
         const expectedCanEdit = orgId === 'org-admin-access'
-        expect(result.current.can('edit_org_info')).toBe(expectedCanEdit)
+        expect(result.current.can('organization:edit')).toBe(expectedCanEdit)
       })
     })
   })

@@ -143,8 +143,7 @@ describe('db utils', () => {
 
       await protectPage({
         permission: {
-          area: 'organization',
-          action: 'edit_org_info',
+          action: 'organization:edit',
           organizationId: mockOrgId,
         },
       })
@@ -179,8 +178,7 @@ describe('db utils', () => {
 
       const { can } = await protectPage({
         permission: {
-          area: 'organization',
-          action: 'view_org_member_details',
+          action: 'members:view_details',
           organizationId: mockOrgId,
         },
       })
@@ -248,10 +246,7 @@ describe('db utils', () => {
 
       const result = await getUserPermissions(mockOrgId)
 
-      expect(result).toEqual({
-        organization: [],
-        orders: [],
-      })
+      expect(result).toEqual([])
     })
 
     it('should return correct permissions based on user roles', async () => {
@@ -278,28 +273,78 @@ describe('db utils', () => {
       const result = await getUserPermissions(mockOrgId)
 
       // Manager should have these permissions based on APP_PERMISSIONS
-      expect(result.organization).toContain(
-        'view_org_member_details' satisfies PermissionAction['organization'],
+      expect(result).toContain(
+        'members:view_details' satisfies PermissionAction,
       )
-      expect(result.organization).not.toContain(
-        'delete_org' satisfies PermissionAction['organization'],
+      expect(result).not.toContain(
+        'organization:delete' satisfies PermissionAction,
       )
-      expect(result.orders).toContain(
-        'create_order' satisfies PermissionAction['orders'],
-      )
-      expect(result.orders).toContain(
-        'edit_order' satisfies PermissionAction['orders'],
-      )
-      expect(result.orders).toContain(
-        'delete_order' satisfies PermissionAction['orders'],
-      )
-      expect(result.orders).toContain(
-        'view_orders' satisfies PermissionAction['orders'],
-      )
+      expect(result).toContain('orders:create' satisfies PermissionAction)
+      expect(result).toContain('orders:edit' satisfies PermissionAction)
+      expect(result).toContain('orders:delete' satisfies PermissionAction)
+      expect(result).toContain('orders:view' satisfies PermissionAction)
 
       // Manager should not have these permissions
-      expect(result.organization).not.toContain('delete_org')
-      expect(result.organization).not.toContain('edit_org_info')
+      expect(result).not.toContain('organization:delete')
+      expect(result).not.toContain('organization:edit')
+    })
+
+    it('should include owner-only permissions when user is owner', async () => {
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
+        active: true,
+        isOwner: true,
+        roles: ['admin'],
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      })
+
+      const result = await getUserPermissions(mockOrgId)
+
+      // Owner should have owner-only permissions
+      expect(result).toContain('organization:delete' satisfies PermissionAction)
+      expect(result).toContain(
+        'organization:transfer' satisfies PermissionAction,
+      )
+    })
+
+    it('should not include owner-only permissions when user is not owner', async () => {
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
+        active: true,
+        isOwner: false,
+        roles: ['admin'],
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      })
+
+      const result = await getUserPermissions(mockOrgId)
+
+      // Non-owner should not have owner-only permissions
+      expect(result).not.toContain('organization:delete')
+      expect(result).not.toContain('organization:transfer')
     })
   })
 
@@ -308,8 +353,7 @@ describe('db utils', () => {
       mockGetActiveUserOrgMember.mockResolvedValue(null)
 
       const result = await userCan({
-        area: 'organization',
-        action: 'edit_org_members',
+        action: 'members:edit',
         organizationId: mockOrgId,
       })
 
@@ -338,8 +382,7 @@ describe('db utils', () => {
       })
 
       const result = await userCan({
-        area: 'organization',
-        action: 'view_org_member_details',
+        action: 'members:view_details',
         organizationId: mockOrgId,
       })
 
@@ -368,8 +411,7 @@ describe('db utils', () => {
       })
 
       const result = await userCan({
-        area: 'organization',
-        action: 'edit_org_members',
+        action: 'members:edit',
         organizationId: mockOrgId,
       })
 
@@ -398,8 +440,65 @@ describe('db utils', () => {
       })
 
       const result = await userCan({
-        area: 'organization',
-        action: 'view_org',
+        action: 'organization:view',
+        organizationId: mockOrgId,
+      })
+
+      expect(result).toBe(false)
+    })
+
+    it('should return true when user is owner and permission requires ownership', async () => {
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
+        active: true,
+        isOwner: true,
+        roles: ['admin'],
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      })
+
+      const result = await userCan({
+        action: 'organization:delete',
+        organizationId: mockOrgId,
+      })
+
+      expect(result).toBe(true)
+    })
+
+    it('should return false when user is not owner but permission requires ownership', async () => {
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
+        active: true,
+        isOwner: false,
+        roles: ['admin'],
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      })
+
+      const result = await userCan({
+        action: 'organization:transfer',
         organizationId: mockOrgId,
       })
 
@@ -435,7 +534,7 @@ describe('db utils', () => {
         },
       })
 
-      const wrappedFn = withPermission('orders', 'create_order', mockFn)
+      const wrappedFn = withPermission('orders:create', mockFn)
       const result = await wrappedFn(mockOrgId)
 
       expect(result).toBe('success')
@@ -463,7 +562,7 @@ describe('db utils', () => {
         },
       })
 
-      const wrappedFn = withPermission('organization', 'delete_org', mockFn)
+      const wrappedFn = withPermission('organization:delete', mockFn)
       const result = await wrappedFn(mockOrgId)
 
       expect(result).toBeNull()

@@ -50,10 +50,10 @@ const DangerZone: FC<Props> = ({ organization }) => {
 
   const { id: organizationId, name: organizationName } = organization
 
-  const { can } = usePermissions({ area: 'organization', organizationId })
+  const { can } = usePermissions({ organizationId })
 
-  const canDelete = can('delete_org')
-  const canTransfer = can('transfer_org')
+  const canDelete = can('organization:delete')
+  const canTransfer = can('organization:transfer')
 
   const transferTrigger = useMemo(() => {
     return (
@@ -96,6 +96,7 @@ const DangerZone: FC<Props> = ({ organization }) => {
       <SectionHeading title='Danger Zone' />
 
       <div className='flex flex-col border border-red-100 rounded divide-y'>
+        {/* Owners have transfer option. Others have leave option. */}
         {canTransfer ? (
           <SubSection
             title='Transfer ownership'
@@ -108,20 +109,20 @@ const DangerZone: FC<Props> = ({ organization }) => {
               trigger={transferTrigger}
             />
           </SubSection>
-        ) : null}
-
-        <SubSection
-          title='Leave this organization'
-          description='Remove yourself from this organization.'
-        >
-          <LeaveOrgModal
-            organizationId={organizationId}
-            organizationName={organizationName}
-            open={isLeaveModalOpen}
-            onOpenChange={setIsLeaveModalOpen}
-            trigger={leaveTrigger}
-          />
-        </SubSection>
+        ) : (
+          <SubSection
+            title='Leave this organization'
+            description='Remove yourself from this organization.'
+          >
+            <LeaveOrgModal
+              organizationId={organizationId}
+              organizationName={organizationName}
+              open={isLeaveModalOpen}
+              onOpenChange={setIsLeaveModalOpen}
+              trigger={leaveTrigger}
+            />
+          </SubSection>
+        )}
 
         {canDelete ? (
           <SubSection

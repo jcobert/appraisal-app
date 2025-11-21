@@ -67,15 +67,14 @@ describe('usePermissions', () => {
     const { result } = renderHook(
       () =>
         usePermissions({
-          area: 'organization',
           organizationId: '123',
         }),
       { wrapper },
     )
 
     expect(result.current.isLoading).toBe(true)
-    expect(result.current.can('edit_org_info')).toBe(false)
-    expect(result.current.can('edit_org_members')).toBe(false)
+    expect(result.current.can('organization:edit')).toBe(false)
+    expect(result.current.can('members:edit')).toBe(false)
   })
 
   it('should return false for any permission when there is an error', () => {
@@ -97,22 +96,19 @@ describe('usePermissions', () => {
     const { result } = renderHook(
       () =>
         usePermissions({
-          area: 'organization',
           organizationId: '123',
         }),
       { wrapper },
     )
 
     expect(result.current.error).toBeTruthy()
-    expect(result.current.can('edit_org_info')).toBe(false)
+    expect(result.current.can('organization:edit')).toBe(false)
   })
 
   it('should return true for allowed permissions', () => {
     mockUseCoreQuery.mockReturnValue({
       response: {
-        data: {
-          organization: ['edit_org_info', 'edit_org_members'],
-        },
+        data: ['organization:edit', 'members:edit'],
         status: 200,
       },
       error: null,
@@ -130,50 +126,14 @@ describe('usePermissions', () => {
     const { result } = renderHook(
       () =>
         usePermissions({
-          area: 'organization',
           organizationId: '123',
         }),
       { wrapper },
     )
 
-    expect(result.current.can('edit_org_info')).toBe(true)
-    expect(result.current.can('edit_org_members')).toBe(true)
-    expect(result.current.can('delete_org')).toBe(false)
-  })
-
-  it('should return false for permissions from different areas', () => {
-    mockUseCoreQuery.mockReturnValue({
-      response: {
-        data: {
-          organization: ['edit_org_info'],
-          orders: ['create_order'],
-        },
-        status: 200,
-      },
-      error: null,
-      isError: false,
-      isPending: false,
-      isLoading: false,
-      isLoadingError: false,
-      isRefetchError: false,
-      isSuccess: true,
-      isPlaceholderData: false,
-      status: 'success',
-      ...baseMockResponse,
-    })
-
-    const { result } = renderHook(
-      () =>
-        usePermissions({
-          area: 'organization',
-          organizationId: '123',
-        }),
-      { wrapper },
-    )
-
-    expect(result.current.can('edit_org_info')).toBe(true)
-    // @ts-expect-error - Testing invalid permission area
-    expect(result.current.can('create_order')).toBe(false)
+    expect(result.current.can('organization:edit')).toBe(true)
+    expect(result.current.can('members:edit')).toBe(true)
+    expect(result.current.can('organization:delete')).toBe(false)
   })
 
   it('should handle null response data', () => {
@@ -197,13 +157,12 @@ describe('usePermissions', () => {
     const { result } = renderHook(
       () =>
         usePermissions({
-          area: 'organization',
           organizationId: '123',
         }),
       { wrapper },
     )
 
-    expect(result.current.can('edit_org_info')).toBe(false)
+    expect(result.current.can('organization:edit')).toBe(false)
   })
 
   it('should pass query options to useCoreQuery', () => {
@@ -215,7 +174,6 @@ describe('usePermissions', () => {
     renderHook(
       () =>
         usePermissions({
-          area: 'organization',
           organizationId: '123',
           options,
         }),
@@ -232,12 +190,10 @@ describe('usePermissions', () => {
 
   it('should use correct query key', () => {
     const organizationId = '123'
-    const area = 'organization'
 
     renderHook(
       () =>
         usePermissions({
-          area,
           organizationId,
         }),
       { wrapper },
@@ -245,7 +201,7 @@ describe('usePermissions', () => {
 
     expect(mockUseCoreQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: ['permissions', { organizationId, area }],
+        queryKey: ['permissions', { organizationId }],
       }),
     )
   })

@@ -35,7 +35,7 @@ type OrganizationContextValue = {
   isLoadingOrganizations: boolean
   /** Current user's permissions for the active organization. */
   permissions: {
-    can: (action: PermissionAction['organization']) => boolean
+    can: (action: PermissionAction) => boolean
     isLoading: boolean
     error: Error | null
   }
@@ -116,7 +116,6 @@ export const OrganizationProvider: FC<OrganizationProviderProps> = ({
   }, [effectiveActiveOrgId, organizations, fetchedActiveOrg])
 
   const permissions = usePermissions({
-    area: 'organization',
     organizationId: effectiveActiveOrgId || '',
   })
 
@@ -130,7 +129,6 @@ export const OrganizationProvider: FC<OrganizationProviderProps> = ({
       // Invalidate and refetch permissions for the new org
       await queryClient.invalidateQueries({
         queryKey: permissionsQueryKey.filtered({
-          area: 'organization',
           organizationId: newOrgId,
         }),
         exact: true,
@@ -146,7 +144,6 @@ export const OrganizationProvider: FC<OrganizationProviderProps> = ({
 
     await queryClient.invalidateQueries({
       queryKey: permissionsQueryKey.filtered({
-        area: 'organization',
         organizationId: effectiveActiveOrgId,
       }),
       exact: true,
@@ -233,19 +230,19 @@ export const useOrganizationContext = (): OrganizationContextValue => {
  * // ✅ Good: Navigation component
  * const Sidebar = () => {
  *   const { can } = useActiveOrgPermissions()
- *   return <nav>{can('edit_org_info') && <CreateButton />}</nav>
+ *   return <nav>{can('organization:edit') && <CreateButton />}</nav>
  * }
  *
  * // ❌ Bad: Organization page component
  * const OrgPage = ({ orgId }) => {
  *   const { can } = useActiveOrgPermissions() // WRONG! Could be different org
- *   return <div>{can('edit_org_info') && <EditButton />}</div>
+ *   return <div>{can('organization:edit') && <EditButton />}</div>
  * }
  *
  * // ✅ Good: Organization page component
  * const OrgPage = ({ orgId }) => {
- *   const { can } = usePermissions({ area: 'organization', organizationId: orgId })
- *   return <div>{can('edit_org_info') && <EditButton />}</div>
+ *   const { can } = usePermissions({ organizationId: orgId })
+ *   return <div>{can('organization:edit') && <EditButton />}</div>
  * }
  * ```
  */

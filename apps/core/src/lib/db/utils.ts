@@ -11,7 +11,7 @@ import { objectEntries, objectKeys } from '@repo/utils'
 import {
   APP_PERMISSIONS,
   PermissionAction,
-  PermissionArea,
+  PermissionRequirement,
 } from '@/configuration/permissions'
 import { redirect } from 'next/navigation'
 import { homeUrl } from '@/utils/nav'
@@ -29,38 +29,35 @@ export const getSessionData = async (): Promise<SessionData> => {
 }
 
 /**
- * Get all permissions for a user in an organization based on their roles.
+ * Get all permissions for a user in an organization based on their roles and ownership status.
  */
 export const getUserPermissions = async (
   organizationId: Organization['id'],
-): Promise<{ [Area in PermissionArea]: PermissionAction[Area][] }> => {
+): Promise<PermissionAction[]> => {
   try {
-    const { active, roles = [] } =
-      (await handleGetActiveUserOrgMember(organizationId))?.data || {}
+    const {
+      active,
+      roles = [],
+      isOwner = false,
+    } = (await handleGetActiveUserOrgMember(organizationId))?.data || {}
     const userRoles = !active ? [] : roles
 
-    const permsByArea = objectEntries(APP_PERMISSIONS)?.map(
-      ([area, actions]) => {
-        const userAllowedActions: (keyof typeof actions)[] = !userRoles?.length
-          ? []
-          : objectKeys(actions)?.filter((action) => {
-              const allowedRoles = actions[action]
-              return !!intersection(allowedRoles, userRoles)?.length
-            })
-        return [area, userAllowedActions]
-      },
-    )
-    return Object.fromEntries(permsByArea)
+    const userAllowedActions: PermissionAction[] = objectKeys(
+      APP_PERMISSIONS,
+    )?.filter((action) => {
+      const requirement = APP_PERMISSIONS[action]
+      const hasRole = !!intersection(requirement.roles, userRoles)?.length
+      const meetsOwnerReq = !requirement.requiresOwner || isOwner
+      // User has permission if they have a required role OR if ownership is required and they are the owner
+      return hasRole || (!!requirement.requiresOwner && isOwner)
+    })
+    return userAllowedActions
   } catch (error) {
     // If database query fails, return empty permissions (no access).
     // This ensures the function always returns a valid permissions object.
     // eslint-disable-next-line no-console
     console.error('Error fetching user permissions:', error)
-    const permsByArea = objectEntries(APP_PERMISSIONS)?.map(([area]) => [
-      area,
-      [],
-    ])
-    return Object.fromEntries(permsByArea)
+    return []
   }
 }
 
@@ -79,23 +76,27 @@ export const canQuery = async (_options: CanQueryOptions = {}) => {
 
 /**
  * Checks if a user has permission to perform a specific action in an organization.
+ * Checks both role-based permissions and ownership requirements.
  */
-export const userCan = async <Area extends PermissionArea>({
-  area,
+export const userCan = async ({
   action,
   organizationId,
 }: {
-  area: Area
-  action: PermissionAction[Area]
+  action: PermissionAction
   organizationId: Organization['id']
 }): Promise<boolean> => {
   try {
-    const { active, roles = [] } =
-      (await handleGetActiveUserOrgMember(organizationId))?.data || {}
+    const {
+      active,
+      roles = [],
+      isOwner = false,
+    } = (await handleGetActiveUserOrgMember(organizationId))?.data || {}
     const userRoles = !active ? [] : roles
-    if (!userRoles?.length) return false
-    const allowedRoles = APP_PERMISSIONS[area][action]
-    return !!intersection(allowedRoles, userRoles)?.length
+    const requirement = APP_PERMISSIONS[action]
+    const hasRole = !!intersection(requirement.roles, userRoles)?.length
+    const meetsOwnerReq = !requirement.requiresOwner || isOwner
+    // User has permission if they have a required role OR if ownership is required and they are the owner
+    return hasRole || (!!requirement.requiresOwner && isOwner)
   } catch (error) {
     // If database query fails, deny permission (fail safe)
     // eslint-disable-next-line no-console
@@ -105,11 +106,11 @@ export const userCan = async <Area extends PermissionArea>({
 }
 
 /** Protects page server side by redirecting if user not authorized. */
-export const protectPage = async <Area extends PermissionArea>(options?: {
+export const protectPage = async (options?: {
   /** By default, redirects home. Provide alternate path for redirect. */
   redirect?: string
   /** Specific permission that user must have to access page. */
-  permission?: Parameters<typeof userCan<Area>>['0']
+  permission?: Parameters<typeof userCan>['0']
 }) => {
   const { redirect: redir, permission } = options || {}
   const { allowed } = await isAuthenticated()
@@ -124,13 +125,12 @@ export const protectPage = async <Area extends PermissionArea>(options?: {
 /**
  * Higher-order function that wraps an async function with permission checking.
  */
-export const withPermission = <Area extends PermissionArea, T>(
-  area: Area,
-  action: PermissionAction[Area],
+export const withPermission = <T>(
+  action: PermissionAction,
   fn: (organizationId: Organization['id']) => Promise<T>,
 ) => {
   return async (organizationId: string): Promise<T | null> => {
-    const hasPermission = await userCan({ area, action, organizationId })
+    const hasPermission = await userCan({ action, organizationId })
     if (!hasPermission) return null
     return fn(organizationId)
   }

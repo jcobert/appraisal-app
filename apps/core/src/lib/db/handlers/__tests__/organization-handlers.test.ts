@@ -19,6 +19,8 @@ import { FetchErrorCode } from '@/utils/fetch'
 
 import { SessionUser } from '@/types/auth'
 
+import { PermissionAction } from '@/configuration/permissions'
+
 jest.mock('../../client', () => ({
   db: {
     organization: {
@@ -86,10 +88,7 @@ describe('organization-handlers', () => {
     mockUserIsMember.mockResolvedValue(true)
 
     // Default mock for getUserPermissions
-    mockGetUserPermissions.mockResolvedValue({
-      organization: [],
-      orders: [],
-    })
+    mockGetUserPermissions.mockResolvedValue([])
 
     // Default mock for user profile ID lookup - ensure createApiHandler can resolve profile ID
     ;(mockDb.user.findUnique as jest.Mock).mockImplementation((query) => {
@@ -719,21 +718,12 @@ describe('organization-handlers', () => {
     const organizationId = 'org-123'
 
     it('should return permissions for valid organization', async () => {
-      const permissions = {
-        organization: ['view_org', 'edit_org_info'] as (
-          | 'view_org'
-          | 'edit_org_info'
-          | 'edit_org_members'
-          | 'delete_org'
-          | 'view_org_member_details'
-        )[],
-        orders: ['view_orders', 'create_order'] as (
-          | 'create_order'
-          | 'edit_order'
-          | 'delete_order'
-          | 'view_orders'
-        )[],
-      }
+      const permissions = [
+        'organization:view',
+        'organization:edit',
+        'orders:view',
+        'orders:create',
+      ] as PermissionAction[]
       mockGetUserPermissions.mockResolvedValue(permissions)
 
       const result = await handleGetOrganizationPermissions(organizationId)

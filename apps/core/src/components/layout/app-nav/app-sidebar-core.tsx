@@ -56,7 +56,7 @@ const AppSidebarCore: FC<Props> = ({ sessionData }) => {
         name: 'Settings',
         url: `/organizations/${activeOrgId}/settings`,
         icon: Settings,
-        hidden: !can('edit_org_info'),
+        hidden: !can('organization:edit'),
       },
       // {
       //   id: 'orders',

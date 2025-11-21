@@ -32,8 +32,7 @@ const Page: FC<Props> = async ({ params }) => {
 
   const { can } = await protectPage({
     permission: {
-      area: 'organization',
-      action: 'edit_org_info',
+      action: 'organization:edit',
       organizationId,
     },
   })
@@ -49,7 +48,6 @@ const Page: FC<Props> = async ({ params }) => {
     // Permissions
     queryClient.prefetchQuery({
       queryKey: permissionsQueryKey.filtered({
-        area: 'organization',
         organizationId,
       }),
       queryFn: prefetchQuery(() =>

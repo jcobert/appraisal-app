@@ -35,10 +35,10 @@ describe('Page-Specific Permissions Security Tests', () => {
       const org1Permissions = {
         can: jest.fn((action: string) =>
           [
-            'edit_org_info',
-            'edit_org_members',
-            'delete_org',
-            'view_org',
+            'organization:edit',
+            'members:edit',
+            'organization:delete',
+            'organization:view',
           ].includes(action),
         ),
         isLoading: false,
@@ -46,7 +46,7 @@ describe('Page-Specific Permissions Security Tests', () => {
       }
 
       const org2Permissions = {
-        can: jest.fn((action: string) => action === 'view_org'),
+        can: jest.fn((action: string) => action === 'organization:view'),
         isLoading: false,
         error: null,
       }
@@ -67,24 +67,24 @@ describe('Page-Specific Permissions Security Tests', () => {
 
       // Test org-1 permissions (user has edit rights)
       const { result: org1Result } = renderHook(
-        () => usePermissions({ area: 'organization', organizationId: 'org-1' }),
+        () => usePermissions({ organizationId: 'org-1' }),
         { wrapper },
       )
 
-      expect(org1Result.current.can('edit_org_info')).toBe(true)
-      expect(org1Result.current.can('edit_org_members')).toBe(true)
-      expect(org1Result.current.can('delete_org')).toBe(true)
+      expect(org1Result.current.can('organization:edit')).toBe(true)
+      expect(org1Result.current.can('members:edit')).toBe(true)
+      expect(org1Result.current.can('organization:delete')).toBe(true)
 
       // Test org-2 permissions (user only has view rights)
       const { result: org2Result } = renderHook(
-        () => usePermissions({ area: 'organization', organizationId: 'org-2' }),
+        () => usePermissions({ organizationId: 'org-2' }),
         { wrapper },
       )
 
-      expect(org2Result.current.can('edit_org_info')).toBe(false)
-      expect(org2Result.current.can('edit_org_members')).toBe(false)
-      expect(org2Result.current.can('delete_org')).toBe(false)
-      expect(org2Result.current.can('view_org')).toBe(true)
+      expect(org2Result.current.can('organization:edit')).toBe(false)
+      expect(org2Result.current.can('members:edit')).toBe(false)
+      expect(org2Result.current.can('organization:delete')).toBe(false)
+      expect(org2Result.current.can('organization:view')).toBe(true)
     })
 
     it('should prevent permission leakage between organizations', () => {
@@ -92,12 +92,12 @@ describe('Page-Specific Permissions Security Tests', () => {
       mockUsePermissions.mockImplementation(({ organizationId }) => {
         const orgPermissions: Record<string, string[]> = {
           'admin-org': [
-            'edit_org_info',
-            'edit_org_members',
-            'delete_org',
-            'view_org',
+            'organization:edit',
+            'members:edit',
+            'organization:delete',
+            'organization:view',
           ],
-          'member-org': ['view_org'],
+          'member-org': ['organization:view'],
           'no-access-org': [],
         }
 
@@ -115,39 +115,36 @@ describe('Page-Specific Permissions Security Tests', () => {
 
       // Test admin org - should have all permissions
       const { result: adminResult } = renderHook(
-        () =>
-          usePermissions({ area: 'organization', organizationId: 'admin-org' }),
+        () => usePermissions({ organizationId: 'admin-org' }),
         { wrapper },
       )
 
-      expect(adminResult.current.can('delete_org')).toBe(true)
+      expect(adminResult.current.can('organization:delete')).toBe(true)
 
       // Test member org - should NOT have admin permissions
       const { result: memberResult } = renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: 'member-org',
           }),
         { wrapper },
       )
 
-      expect(memberResult.current.can('delete_org')).toBe(false)
-      expect(memberResult.current.can('edit_org_info')).toBe(false)
-      expect(memberResult.current.can('view_org')).toBe(true)
+      expect(memberResult.current.can('organization:delete')).toBe(false)
+      expect(memberResult.current.can('organization:edit')).toBe(false)
+      expect(memberResult.current.can('organization:view')).toBe(true)
 
       // Test no-access org - should have no permissions
       const { result: noAccessResult } = renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: 'no-access-org',
           }),
         { wrapper },
       )
 
-      expect(noAccessResult.current.can('view_org')).toBe(false)
-      expect(noAccessResult.current.can('edit_org_info')).toBe(false)
+      expect(noAccessResult.current.can('organization:view')).toBe(false)
+      expect(noAccessResult.current.can('organization:edit')).toBe(false)
     })
 
     it('should handle invalid organization IDs securely', () => {
@@ -174,34 +171,32 @@ describe('Page-Specific Permissions Security Tests', () => {
       const { result: invalidResult } = renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: 'invalid-org-123',
           }),
         { wrapper },
       )
 
-      expect(invalidResult.current.can('view_org')).toBe(false)
-      expect(invalidResult.current.can('edit_org_info')).toBe(false)
+      expect(invalidResult.current.can('organization:view')).toBe(false)
+      expect(invalidResult.current.can('organization:edit')).toBe(false)
 
       // Test empty organization ID
       const { result: emptyResult } = renderHook(
-        () => usePermissions({ area: 'organization', organizationId: '' }),
+        () => usePermissions({ organizationId: '' }),
         { wrapper },
       )
 
-      expect(emptyResult.current.can('view_org')).toBe(false)
+      expect(emptyResult.current.can('organization:view')).toBe(false)
 
       // Test null/undefined organization ID
       const { result: nullResult } = renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: undefined as any,
           }),
         { wrapper },
       )
 
-      expect(nullResult.current.can('view_org')).toBe(false)
+      expect(nullResult.current.can('organization:view')).toBe(false)
     })
 
     it('should fail securely during loading states', () => {
@@ -213,13 +208,13 @@ describe('Page-Specific Permissions Security Tests', () => {
 
       const wrapper = createWrapper()
       const { result } = renderHook(
-        () => usePermissions({ area: 'organization', organizationId: 'org-1' }),
+        () => usePermissions({ organizationId: 'org-1' }),
         { wrapper },
       )
 
       // Should deny all permissions while loading
-      expect(result.current.can('view_org')).toBe(false)
-      expect(result.current.can('edit_org_info')).toBe(false)
+      expect(result.current.can('organization:view')).toBe(false)
+      expect(result.current.can('organization:edit')).toBe(false)
       expect(result.current.isLoading).toBe(true)
     })
 
@@ -232,31 +227,30 @@ describe('Page-Specific Permissions Security Tests', () => {
 
       const wrapper = createWrapper()
       const { result } = renderHook(
-        () => usePermissions({ area: 'organization', organizationId: 'org-1' }),
+        () => usePermissions({ organizationId: 'org-1' }),
         { wrapper },
       )
 
       // Should deny all permissions on error
-      expect(result.current.can('view_org')).toBe(false)
-      expect(result.current.can('edit_org_info')).toBe(false)
+      expect(result.current.can('organization:view')).toBe(false)
+      expect(result.current.can('organization:edit')).toBe(false)
       expect(result.current.error).toBeDefined()
     })
 
     it('should validate permission actions are organization-specific', () => {
-      mockUsePermissions.mockImplementation(({ area, organizationId }) => {
-        // Ensure we're checking the right area and organization
-        expect(area).toBe('organization')
+      mockUsePermissions.mockImplementation(({ organizationId }) => {
+        // Ensure we're checking the right organization
         expect(organizationId).toBeDefined()
 
         return {
           can: jest.fn((action: string) => {
             // Only allow valid organization actions
             const validOrgActions = [
-              'edit_org_info',
-              'edit_org_members',
-              'delete_org',
-              'view_org',
-              'view_org_member_details',
+              'organization:edit',
+              'members:edit',
+              'organization:delete',
+              'organization:view',
+              'members:view_details',
             ]
             return validOrgActions.includes(action)
           }),
@@ -267,13 +261,13 @@ describe('Page-Specific Permissions Security Tests', () => {
 
       const wrapper = createWrapper()
       const { result } = renderHook(
-        () => usePermissions({ area: 'organization', organizationId: 'org-1' }),
+        () => usePermissions({ organizationId: 'org-1' }),
         { wrapper },
       )
 
       // Valid organization actions should work
-      expect(result.current.can('edit_org_info')).toBe(true)
-      expect(result.current.can('view_org')).toBe(true)
+      expect(result.current.can('organization:edit')).toBe(true)
+      expect(result.current.can('organization:view')).toBe(true)
 
       // Invalid actions should not work (would be caught at TypeScript level in real usage)
       expect(result.current.can('invalid_action' as any)).toBe(false)
@@ -304,7 +298,7 @@ describe('Page-Specific Permissions Security Tests', () => {
           // Only org-admin has edit permissions
           return (
             organizationId === 'org-admin' &&
-            ['edit_org_info', 'edit_org_members'].includes(action)
+            ['organization:edit', 'members:edit'].includes(action)
           )
         }),
         isLoading: false,
@@ -315,18 +309,17 @@ describe('Page-Specific Permissions Security Tests', () => {
 
       scenarios.forEach(({ orgId, expectedEdit }) => {
         const { result } = renderHook(
-          () => usePermissions({ area: 'organization', organizationId: orgId }),
+          () => usePermissions({ organizationId: orgId }),
           { wrapper },
         )
 
-        expect(result.current.can('edit_org_info')).toBe(expectedEdit)
-        expect(result.current.can('edit_org_members')).toBe(expectedEdit)
+        expect(result.current.can('organization:edit')).toBe(expectedEdit)
+        expect(result.current.can('members:edit')).toBe(expectedEdit)
       })
     })
 
     it('should ensure each permission check is isolated', () => {
-      const permissionCalls: Array<{ area: string; organizationId: string }> =
-        []
+      const permissionCalls: Array<{ organizationId: string }> = []
 
       mockUsePermissions.mockImplementation((params) => {
         permissionCalls.push(params)
@@ -343,7 +336,6 @@ describe('Page-Specific Permissions Security Tests', () => {
       renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: 'trusted-org',
           }),
         { wrapper },
@@ -352,7 +344,6 @@ describe('Page-Specific Permissions Security Tests', () => {
       renderHook(
         () =>
           usePermissions({
-            area: 'organization',
             organizationId: 'untrusted-org',
           }),
         { wrapper },
@@ -360,12 +351,10 @@ describe('Page-Specific Permissions Security Tests', () => {
 
       // Ensure each call was made with the correct organization ID
       expect(permissionCalls).toContainEqual({
-        area: 'organization',
         organizationId: 'trusted-org',
       })
 
       expect(permissionCalls).toContainEqual({
-        area: 'organization',
         organizationId: 'untrusted-org',
       })
 

@@ -75,7 +75,6 @@ const Layout = async ({
       }),
       queryClient.prefetchQuery({
         queryKey: permissionsQueryKey.filtered({
-          area: 'organization',
           organizationId: activeOrgId,
         }),
         queryFn: prefetchQuery(() =>
