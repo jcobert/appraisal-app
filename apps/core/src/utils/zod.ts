@@ -162,7 +162,9 @@ export const createValidatedField = (options: FieldBuilderOptions = {}) => {
   const finalRequiredMessage = requiredMessage || defaultRequiredMessage
 
   // Start with base schema
-  let schema = z.string().trim()
+  let schema: z.ZodString | z.ZodUnion<[z.ZodString, z.ZodLiteral<''>]> = z
+    .string()
+    .trim()
 
   // Add required validation if needed
   if (required) {
@@ -173,6 +175,7 @@ export const createValidatedField = (options: FieldBuilderOptions = {}) => {
   switch (type) {
     case 'email':
       schema = schema.email(defaultEmailMessage)
+      if (!required) schema = schema.or(z.literal(''))
       break
     case 'name':
     case 'phone':
@@ -193,7 +196,7 @@ export const createValidatedField = (options: FieldBuilderOptions = {}) => {
         rule.message,
       )
     },
-    schema as z.ZodType<string>,
+    schema,
   )
 
   // Apply additional custom refinements
