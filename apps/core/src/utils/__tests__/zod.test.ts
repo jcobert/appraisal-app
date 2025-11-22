@@ -122,90 +122,129 @@ describe('zod utilities', () => {
   })
 
   describe('sanitizedField', () => {
-    describe('name()', () => {
+    describe('text() with type="name"', () => {
       it('should sanitize and validate names', () => {
-        const schema = sanitizedField.name()
+        const schema = sanitizedField.text({ type: 'name' })
 
         const result = schema.parse('  José María  ')
         expect(result).toBe('José María')
       })
 
       it('should reject empty names', () => {
-        const schema = sanitizedField.name()
+        const schema = sanitizedField.text({ type: 'name' })
 
         expect(() => schema.parse('')).toThrow()
         expect(() => schema.parse('   ')).toThrow()
       })
 
-      it('should remove dangerous characters from names', () => {
-        const schema = sanitizedField.name()
+      it('should remove dangerous patterns from names', () => {
+        const schema = sanitizedField.text({ type: 'name' })
 
         const result = schema.parse('John<script>alert("xss")</script>Doe')
         expect(result).toBe('JohnDoe')
       })
 
       it('should preserve Unicode characters in names', () => {
-        const schema = sanitizedField.name()
+        const schema = sanitizedField.text({ type: 'name' })
 
         const result = schema.parse('José 陈伟 محمد')
         expect(result).toBe('José 陈伟 محمد')
       })
+
+      it('should preserve apostrophes in names', () => {
+        const schema = sanitizedField.text({ type: 'name' })
+
+        const result = schema.parse("O'Brien")
+        expect(result).toBe("O'Brien")
+      })
+
+      it('should preserve quotes in names', () => {
+        const schema = sanitizedField.text({ type: 'name' })
+
+        const result = schema.parse('Name "Nickname" Surname')
+        expect(result).toBe('Name "Nickname" Surname')
+      })
+
+      it('should preserve comparison operators in names', () => {
+        const schema = sanitizedField.text({ type: 'name' })
+
+        const result = schema.parse('Sales > $1M')
+        expect(result).toBe('Sales > $1M')
+      })
+
+      it('should preserve numbers in names', () => {
+        const schema = sanitizedField.text({ type: 'name' })
+
+        const result = schema.parse('Building 123')
+        expect(result).toBe('Building 123')
+      })
     })
 
-    describe('email()', () => {
+    describe('text() with type="email"', () => {
       it('should sanitize and validate emails', () => {
-        const schema = sanitizedField.email()
+        const schema = sanitizedField.text({ type: 'email' })
 
         const result = schema.parse('  USER@EXAMPLE.COM  ')
         expect(result).toBe('user@example.com')
       })
 
       it('should reject invalid emails', () => {
-        const schema = sanitizedField.email()
+        const schema = sanitizedField.text({ type: 'email' })
 
         expect(() => schema.parse('invalid-email')).toThrow()
         expect(() => schema.parse('')).toThrow()
       })
 
-      it('should remove dangerous characters from emails', () => {
-        const schema = sanitizedField.email()
+      it('should preserve special characters in emails', () => {
+        const schema = sanitizedField.text({ type: 'email' })
 
-        const result = schema.parse('test<script>@example.com')
-        expect(result).toBe('testscript@example.com') // < and > are removed, but 'script' remains
+        // Email sanitization now normalizes but doesn't remove characters
+        const result = schema.parse('test+tag@example.com')
+        expect(result).toContain('+')
+      })
+
+      it('should remove dangerous patterns from emails', () => {
+        const schema = sanitizedField.text({ type: 'email' })
+
+        const result = schema.parse(
+          'test<script>alert("xss")</script>@example.com',
+        )
+        expect(result).not.toContain('<script>')
+        expect(result).not.toContain('</script>')
       })
     })
 
-    describe('phone()', () => {
+    describe('text() with type="phone"', () => {
       it('should sanitize phone numbers', () => {
-        const schema = sanitizedField.phone()
+        const schema = sanitizedField.text({ type: 'phone' })
 
         const result = schema.parse('555-CALL-NOW')
         expect(result).toBe('555--') // Letters removed, separators kept
       })
 
       it('should preserve valid phone characters', () => {
-        const schema = sanitizedField.phone()
+        const schema = sanitizedField.text({ type: 'phone' })
 
         const result = schema.parse('+1 (555) 123-4567')
         expect(result).toBe('+1 (555) 123-4567')
       })
 
       it('should normalize spaces in phone numbers', () => {
-        const schema = sanitizedField.phone()
+        const schema = sanitizedField.text({ type: 'phone' })
 
         const result = schema.parse('555   123    4567')
         expect(result).toBe('555 123 4567')
       })
     })
 
-    describe('text()', () => {
+    describe('text() without type (general text)', () => {
       it('should sanitize text content', () => {
         const schema = sanitizedField.text()
 
         const result = schema.parse(
           'Hello <script>alert("xss")</script> World!',
         )
-        expect(result).toBe('Hello  World!')
+        expect(result).toBe('Hello World!')
       })
 
       it('should preserve most text content', () => {
@@ -219,32 +258,37 @@ describe('zod utilities', () => {
         const schema = sanitizedField.text()
 
         const result = schema.parse('Hello   world    test')
-        expect(result).toBe('Hello   world    test') // Text field doesn't normalize spaces by default
+        expect(result).toBe('Hello world test') // Text field now normalizes spaces
+      })
+
+      it('should preserve quotes and comparison operators in text', () => {
+        const schema = sanitizedField.text()
+
+        const result = schema.parse('Sales > $1M "Premium" Tier')
+        expect(result).toBe('Sales > $1M "Premium" Tier')
       })
     })
 
-    describe('serverSafe()', () => {
+    describe('text() with context', () => {
       it('should apply strict server-side sanitization', () => {
-        const schema = sanitizedField.serverSafe()
+        const schema = sanitizedField.text({ context: 'server' })
 
         const result = schema.parse('<script>alert("xss")</script>Hello')
         expect(result).toBe('Hello')
       })
-    })
 
-    describe('clientSafe()', () => {
       it('should apply lenient client-side sanitization', () => {
-        const schema = sanitizedField.clientSafe()
+        const schema = sanitizedField.text({ context: 'client' })
 
         const result = schema.parse('<script>alert("xss")</script>Hello')
         expect(result).toBe('Hello')
       })
     })
 
-    describe('uuid()', () => {
+    describe('text() with type="uuid"', () => {
       it('should create sanitized uuid field', () => {
         const schema = z.object({
-          id: sanitizedField.uuid(),
+          id: sanitizedField.text({ type: 'uuid' }),
         })
 
         // Valid UUIDs/tokens with alphanumeric, hyphens, underscores
@@ -260,7 +304,7 @@ describe('zod utilities', () => {
 
       it('should sanitize invalid characters from uuids', () => {
         const schema = z.object({
-          id: sanitizedField.uuid(),
+          id: sanitizedField.text({ type: 'uuid' }),
         })
 
         // Should strip special characters
@@ -278,7 +322,7 @@ describe('zod utilities', () => {
 
       it('should reject empty strings after sanitization', () => {
         const schema = z.object({
-          id: sanitizedField.uuid(),
+          id: sanitizedField.text({ type: 'uuid' }),
         })
 
         // Should fail when all characters are stripped
@@ -289,7 +333,7 @@ describe('zod utilities', () => {
 
       it('should handle hex token format (common for crypto.randomBytes)', () => {
         const schema = z.object({
-          token: sanitizedField.uuid(),
+          token: sanitizedField.text({ type: 'uuid' }),
         })
 
         const hexToken = 'a1b2c3d4e5f67890abcdef'
@@ -352,8 +396,8 @@ describe('zod utilities', () => {
 
   describe('validatePayload', () => {
     const testSchema = z.object({
-      name: sanitizedField.name(),
-      email: sanitizedField.email(),
+      name: sanitizedField.text({ type: 'name' }),
+      email: sanitizedField.text({ type: 'email' }),
       age: z.number().min(0),
     })
 
@@ -427,10 +471,10 @@ describe('zod utilities', () => {
     it('should handle complex nested errors', () => {
       const complexSchema = z.object({
         user: z.object({
-          name: sanitizedField.name(),
+          name: sanitizedField.text({ type: 'name' }),
           contacts: z.array(
             z.object({
-              email: sanitizedField.email(),
+              email: sanitizedField.text({ type: 'email' }),
             }),
           ),
         }),
@@ -477,15 +521,15 @@ describe('zod utilities', () => {
   describe('Integration tests', () => {
     it('should work end-to-end with form validation', () => {
       const userSchema = z.object({
-        firstName: sanitizedField.name(),
-        lastName: sanitizedField.name(),
-        email: sanitizedField.email(),
-        phone: sanitizedField.phone().optional(),
+        firstName: sanitizedField.text({ type: 'name' }),
+        lastName: sanitizedField.text({ type: 'name' }),
+        email: sanitizedField.text({ type: 'email' }),
+        phone: sanitizedField.text({ type: 'phone' }).optional(),
       })
 
       const formData = {
-        firstName: '  John<script>  ',
-        lastName: '  Doe</script>  ',
+        firstName: '  John  ',
+        lastName: '  Doe  ',
         email: '  JOHN.DOE@EXAMPLE.COM  ',
         phone: '555-CALL-NOW',
       }
@@ -494,17 +538,37 @@ describe('zod utilities', () => {
 
       expect(result.success).toBe(true)
       expect(result.data).toEqual({
-        firstName: 'Johnscript', // Script tags removed but 'script' text remains
-        lastName: 'Doescript',
+        firstName: 'John', // Trimmed and normalized
+        lastName: 'Doe',
         email: 'john.doe@example.com',
         phone: '555--', // Letters removed, separators kept
       })
     })
 
+    it('should sanitize and remove complete dangerous patterns', () => {
+      const userSchema = z.object({
+        firstName: sanitizedField.text({ type: 'name' }),
+        description: sanitizedField.text(),
+      })
+
+      const formData = {
+        firstName: 'John<script>alert("xss")</script>Doe',
+        description: 'Hello <script>alert("xss")</script> World',
+      }
+
+      const result = validatePayload(userSchema, formData)
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({
+        firstName: 'JohnDoe', // Complete script tag removed
+        description: 'Hello World', // Complete script tag removed with normalized spaces
+      })
+    })
+
     it('should handle mixed valid and invalid fields', () => {
       const schema = z.object({
-        name: sanitizedField.name(),
-        email: sanitizedField.email(),
+        name: sanitizedField.text({ type: 'name' }),
+        email: sanitizedField.text({ type: 'email' }),
         website: z.string().url().optional(),
       })
 
@@ -524,8 +588,8 @@ describe('zod utilities', () => {
 
     it('should preserve type safety with sanitized fields', () => {
       const schema = z.object({
-        name: sanitizedField.name(),
-        email: sanitizedField.email(),
+        name: sanitizedField.text({ type: 'name' }),
+        email: sanitizedField.text({ type: 'email' }),
       })
 
       type SchemaType = z.infer<typeof schema>
@@ -541,35 +605,40 @@ describe('zod utilities', () => {
   })
 
   describe('fieldBuilder', () => {
-    describe('name()', () => {
+    describe('text() with type="name"', () => {
       it('should accept valid names', () => {
-        const schema = fieldBuilder.name()
+        const schema = fieldBuilder.text({ type: 'name' })
         expect(schema.parse('John Doe')).toBe('John Doe')
         expect(schema.parse('José María')).toBe('José María')
       })
 
-      it('should reject names with dangerous characters', () => {
-        const schema = fieldBuilder.name()
-        expect(() => schema.parse('John<script>')).toThrow(
-          'Names cannot contain special characters',
+      it('should accept names with apostrophes and quotes', () => {
+        const schema = fieldBuilder.text({ type: 'name' })
+        expect(schema.parse("O'Brien")).toBe("O'Brien")
+        expect(schema.parse("D'Angelo")).toBe("D'Angelo")
+        expect(schema.parse('Name "Nickname" Surname')).toBe(
+          'Name "Nickname" Surname',
         )
-        expect(() => schema.parse('John"evil')).toThrow(
-          'Names cannot contain special characters',
-        )
+      })
+
+      it('should accept names with comparison operators', () => {
+        const schema = fieldBuilder.text({ type: 'name' })
+        expect(schema.parse('Sales > $1M')).toBe('Sales > $1M')
+        expect(schema.parse('Value < 100')).toBe('Value < 100')
       })
 
       it('should reject names with dangerous patterns', () => {
-        const schema = fieldBuilder.name()
-        expect(() => schema.parse('javascript:alert(1)')).toThrow(
-          'Invalid content detected',
-        )
-        expect(() => schema.parse('<script>alert(1)</script>')).toThrow(
-          'Invalid content detected',
-        )
+        const schema = fieldBuilder.text({ type: 'name' })
+        expect(() => schema.parse('javascript:alert(1)')).toThrow()
+        expect(() => schema.parse('<script>alert(1)</script>')).toThrow()
       })
 
       it('should generate required message from label', () => {
-        const schema = fieldBuilder.name({ label: 'First name' })
+        const schema = fieldBuilder.text({
+          type: 'name',
+          label: 'First name',
+          required: true,
+        })
         const result = schema.safeParse('')
         expect(result.success).toBe(false)
         if (!result.success) {
@@ -578,9 +647,11 @@ describe('zod utilities', () => {
       })
 
       it('should use custom requiredMessage over label', () => {
-        const schema = fieldBuilder.name({
+        const schema = fieldBuilder.text({
+          type: 'name',
           label: 'First name',
           requiredMessage: 'Custom message required',
+          required: true,
         })
         const result = schema.safeParse('')
         expect(result.success).toBe(false)
@@ -592,21 +663,28 @@ describe('zod utilities', () => {
       })
     })
 
-    describe('email()', () => {
+    describe('text() with type="email"', () => {
       it('should accept valid emails', () => {
-        const schema = fieldBuilder.email()
+        const schema = fieldBuilder.text({ type: 'email' })
         expect(schema.parse('test@example.com')).toBe('test@example.com')
       })
 
-      it('should reject emails with dangerous characters', () => {
-        const schema = fieldBuilder.email()
-        expect(() => schema.parse('test<script>@example.com')).toThrow(
-          'Email cannot contain special characters',
-        )
+      it('should accept emails with special characters', () => {
+        const schema = fieldBuilder.text({ type: 'email' })
+        const result = schema.parse('user+tag@example.com')
+        expect(result).toContain('+')
+      })
+
+      it('should reject emails with dangerous patterns', () => {
+        const schema = fieldBuilder.text({ type: 'email' })
+        expect(() =>
+          schema.parse('test<script>alert(1)</script>@example.com'),
+        ).toThrow()
       })
 
       it('should generate required message from label when required', () => {
-        const schema = fieldBuilder.email({
+        const schema = fieldBuilder.text({
+          type: 'email',
           label: 'Email address',
           required: true,
         })
@@ -620,7 +698,7 @@ describe('zod utilities', () => {
       })
 
       it('should use default email validation message', () => {
-        const schema = fieldBuilder.email()
+        const schema = fieldBuilder.text({ type: 'email' })
         const result = schema.safeParse('invalid-email')
         expect(result.success).toBe(false)
         if (!result.success) {
@@ -631,19 +709,17 @@ describe('zod utilities', () => {
       })
     })
 
-    describe('phone()', () => {
+    describe('text() with type="phone"', () => {
       it('should accept valid phone numbers', () => {
-        const schema = fieldBuilder.phone()
+        const schema = fieldBuilder.text({ type: 'phone' })
         expect(schema.parse('(555) 123-4567')).toBe('(555) 123-4567')
         expect(schema.parse('+1-555-123-4567')).toBe('+1-555-123-4567')
         expect(schema.parse('')).toBe('')
       })
 
       it('should reject invalid phone characters', () => {
-        const schema = fieldBuilder.phone()
-        expect(() => schema.parse('555-abc-1234')).toThrow(
-          'Phone numbers can only contain',
-        )
+        const schema = fieldBuilder.text({ type: 'phone' })
+        expect(() => schema.parse('555-abc-1234')).toThrow()
       })
     })
   })

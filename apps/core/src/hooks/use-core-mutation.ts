@@ -29,10 +29,12 @@ export type UseCoreMutationProps<
   method?: Exclude<`${FetchMethod}`, 'GET'>
   /** Transforms payload before request. */
   transform?: (payload: TPayload) => TPayload
-  /** Sanitize form data before sending. Applied after transform. */
-  sanitize?: Partial<
-    Record<keyof TPayload, 'name' | 'email' | 'phone' | 'text'>
-  >
+  /**
+   * Sanitize form data before sending.
+   * Choose a validation preset per field.
+   * Applied after transform.
+   */
+  sanitize?: Parameters<typeof sanitizeFormData<TPayload>>['1']
   /** Configuration for toast notifications. */
   toast?: {
     /** Whether to display toast. @default true */

@@ -18,10 +18,10 @@ type SchemaBase = ZodObject<
 
 const baseSchema = z.object(
   {
-    firstName: sanitizedField.name(),
-    lastName: sanitizedField.name(),
-    email: sanitizedField.email(),
-    phone: sanitizedField.phone().optional(),
+    firstName: sanitizedField.text({ type: 'name' }),
+    lastName: sanitizedField.text({ type: 'name' }),
+    email: sanitizedField.text({ type: 'email' }),
+    phone: sanitizedField.text({ type: 'phone' }).optional(),
   } satisfies SchemaBase,
   { errorMap: formErrorMap },
 )
@@ -29,17 +29,19 @@ const baseSchema = z.object(
 const form = z.object(
   {
     // firstName is required with custom message
-    firstName: fieldBuilder.name({
+    firstName: fieldBuilder.text({
+      type: 'name',
       label: 'First name',
+      required: true,
     }),
 
     // lastName is optional with custom validation rules
-    lastName: fieldBuilder.name({
+    lastName: fieldBuilder.text({
+      type: 'name',
       label: 'Last name',
       required: false,
       customRules: [
         {
-          id: 'invalidNameChars',
           pattern: /^\s*$/,
           message: 'Last name cannot be only whitespace',
         },
@@ -47,13 +49,15 @@ const form = z.object(
     }),
 
     // Email with label and only dangerous content checking
-    email: fieldBuilder.email({
+    email: fieldBuilder.text({
+      type: 'email',
       label: 'Email',
+      required: true,
       ruleSet: 'dangerousOnly',
     }),
 
     // Phone that allows empty string or follows phone rules
-    phone: fieldBuilder.phone({ required: false }).or(z.literal('')),
+    phone: fieldBuilder.text({ type: 'phone', required: false }),
   } satisfies SchemaBase,
   { errorMap: formErrorMap },
 )

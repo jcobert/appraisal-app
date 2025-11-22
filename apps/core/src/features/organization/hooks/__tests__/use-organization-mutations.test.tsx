@@ -77,7 +77,7 @@ describe('useOrganizationMutations', () => {
         expect.objectContaining({
           url: CORE_API_ENDPOINTS.organization,
           method: 'POST',
-          sanitize: { name: 'text' },
+          sanitize: { name: 'general' },
           toast: {
             messages: {
               success: expect.any(Function),
@@ -135,7 +135,7 @@ describe('useOrganizationMutations', () => {
         expect.objectContaining({
           url: `${CORE_API_ENDPOINTS.organization}/${organizationId}`,
           method: 'PUT',
-          sanitize: { name: 'text' },
+          sanitize: { name: 'general' },
         }),
       )
     })

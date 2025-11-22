@@ -14,13 +14,18 @@ import {
  */
 const formSchema = z.object(
   {
-    firstName: fieldBuilder.name({
+    firstName: fieldBuilder.text({
+      type: 'name',
       label: 'First name',
+      required: true,
     }),
-    lastName: fieldBuilder.name({
+    lastName: fieldBuilder.text({
+      type: 'name',
       label: 'Last name',
+      required: true,
     }),
-    email: fieldBuilder.email({
+    email: fieldBuilder.text({
+      type: 'email',
       label: 'Email',
       required: true,
       ruleSet: 'dangerousOnly',
@@ -34,9 +39,9 @@ const formSchema = z.object(
  * API payload schema for member invitation creation and updates with sanitized fields.
  */
 const apiSchema = z.object({
-  firstName: sanitizedField.name(),
-  lastName: sanitizedField.name(),
-  email: sanitizedField.email(),
+  firstName: sanitizedField.text({ type: 'name' }),
+  lastName: sanitizedField.text({ type: 'name' }),
+  email: sanitizedField.text({ type: 'email' }),
   roles: z
     .array(z.nativeEnum(MemberRole))
     .min(1, 'At least one role is required'),
@@ -51,8 +56,8 @@ const apiSchema = z.object({
  */
 const inviteTokenSchema = z.object(
   {
-    organizationId: sanitizedField.uuid(),
-    token: sanitizedField.uuid(),
+    organizationId: sanitizedField.text({ type: 'uuid' }),
+    token: sanitizedField.text({ type: 'uuid' }),
     status: z.nativeEnum(OrgInvitationStatus).optional(),
   },
   { errorMap: formErrorMap },
@@ -64,7 +69,7 @@ const inviteTokenSchema = z.object(
  */
 const transferOwnershipSchema = z.object(
   {
-    newOwnerMemberId: sanitizedField.uuid(),
+    newOwnerMemberId: sanitizedField.text({ type: 'uuid' }),
     keepAdminRole: z.boolean().optional(),
   },
   { errorMap: formErrorMap },
