@@ -34,7 +34,15 @@ export type ModalProps = {
   desktopProps?: Omit<DialogProps, 'children'>
   /** `Drawer` root props. */
   mobileProps?: Omit<DrawerProps, 'children'>
-} & Pick<DialogProps, 'open' | 'onOpenChange'>
+} & Omit<DialogProps, 'children'>
+
+// Cleans up any focus lock conflict on close.
+// Nested elements like <SelectInput> that are also controlling focus lock
+// might not clear body style if modal closes while it's still open.
+// A hacky solution but keeping in place until a better one is found.
+const clearModalLock = () => {
+  document.body.style.pointerEvents = ''
+}
 
 const Modal = forwardRef<HTMLDivElement, ModalProps>(
   (
@@ -59,6 +67,9 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
           {trigger ? <DrawerTrigger asChild>{trigger}</DrawerTrigger> : null}
           <DrawerContent
             ref={ref}
+            onCloseAutoFocus={() => {
+              clearModalLock()
+            }}
             onInteractOutside={(e) => {
               if (preventOutsideClose) {
                 e.preventDefault()
@@ -88,6 +99,9 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
         {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
         <DialogContent
           ref={ref}
+          onCloseAutoFocus={() => {
+            clearModalLock()
+          }}
           onInteractOutside={(e) => {
             if (preventOutsideClose) {
               e.preventDefault()
