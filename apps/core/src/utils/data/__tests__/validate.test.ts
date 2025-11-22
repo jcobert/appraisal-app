@@ -2,7 +2,6 @@
  * @jest-environment node
  */
 import {
-  CHARACTER_SETS,
   DANGEROUS_PATTERNS,
   FIELD_VALIDATION,
   SANITIZATION_PATTERNS,
@@ -105,74 +104,11 @@ describe('validate.ts', () => {
     })
   })
 
-  describe('CHARACTER_SETS', () => {
-    it('should define HTML unsafe characters', () => {
-      expect(CHARACTER_SETS.htmlUnsafe).toEqual(['<', '>', '"'])
-    })
-
-    it('should define injection risk characters', () => {
-      expect(CHARACTER_SETS.injectionRisk).toEqual([';', '{', '}', '[', ']'])
-    })
-
-    it('should define generally safe characters', () => {
-      expect(CHARACTER_SETS.generalSafe).toEqual(["'", '-', '.'])
-    })
-  })
-
   describe('VALIDATION_PATTERNS', () => {
-    describe('invalidNameChars', () => {
-      it('should detect invalid name characters', () => {
-        const invalidChars = ['<', '>', '"', "'", ';', '{', '}', '[', ']', '\\']
-
-        invalidChars.forEach((char) => {
-          expect(
-            VALIDATION_PATTERNS.invalidNameChars.test(`John${char}Doe`),
-          ).toBe(true)
-        })
-      })
-
-      it('should allow valid name characters', () => {
-        const validNames = [
-          'John Doe',
-          'Jean-Pierre',
-          'Mary-Jane',
-          'José García',
-          '李明',
-          'André',
-          'Müller',
-        ]
-
-        validNames.forEach((name) => {
-          expect(VALIDATION_PATTERNS.invalidNameChars.test(name)).toBe(false)
-        })
-      })
-    })
-
-    describe('invalidEmailChars', () => {
-      it('should detect invalid email characters', () => {
-        const invalidChars = ['<', '>', '"', "'", '{', '}', '[', ']', '\\']
-
-        invalidChars.forEach((char) => {
-          expect(
-            VALIDATION_PATTERNS.invalidEmailChars.test(
-              `user${char}@example.com`,
-            ),
-          ).toBe(true)
-        })
-      })
-
-      it('should allow valid email characters', () => {
-        const validEmails = [
-          'user@example.com',
-          'first.last@domain.co.uk',
-          'user+tag@example.org',
-          'test123@subdomain.example.com',
-        ]
-
-        validEmails.forEach((email) => {
-          expect(VALIDATION_PATTERNS.invalidEmailChars.test(email)).toBe(false)
-        })
-      })
+    it('should not have character-based patterns for names, emails, or text', () => {
+      expect(VALIDATION_PATTERNS).not.toHaveProperty('invalidNameChars')
+      expect(VALIDATION_PATTERNS).not.toHaveProperty('invalidEmailChars')
+      expect(VALIDATION_PATTERNS).not.toHaveProperty('invalidTextChars')
     })
 
     describe('invalidPhoneChars', () => {
@@ -197,31 +133,6 @@ describe('validate.ts', () => {
 
         validPhones.forEach((phone) => {
           expect(VALIDATION_PATTERNS.invalidPhoneChars.test(phone)).toBe(false)
-        })
-      })
-    })
-
-    describe('invalidTextChars', () => {
-      it('should detect invalid text characters', () => {
-        const invalidChars = ['<', '>', '"', "'"]
-
-        invalidChars.forEach((char) => {
-          expect(
-            VALIDATION_PATTERNS.invalidTextChars.test(`Hello${char}World`),
-          ).toBe(true)
-        })
-      })
-
-      it('should allow valid text characters', () => {
-        const validTexts = [
-          'Hello world!',
-          'This is a test message.',
-          'Numbers 123 and symbols @#$%^&*()',
-          'Unicode characters: 你好 мир',
-        ]
-
-        validTexts.forEach((text) => {
-          expect(VALIDATION_PATTERNS.invalidTextChars.test(text)).toBe(false)
         })
       })
     })
@@ -261,7 +172,7 @@ describe('validate.ts', () => {
       expect(FIELD_VALIDATION.name).toBeDefined()
       expect(FIELD_VALIDATION.email).toBeDefined()
       expect(FIELD_VALIDATION.phone).toBeDefined()
-      expect(FIELD_VALIDATION.text).toBeDefined()
+      expect(FIELD_VALIDATION.general).toBeDefined()
     })
 
     it('should have proper structure for validation rules', () => {
@@ -277,7 +188,7 @@ describe('validate.ts', () => {
     })
 
     it('should include dangerous content validation for text fields', () => {
-      const textFields = ['name', 'email', 'text']
+      const textFields = ['name', 'email', 'general']
 
       textFields.forEach((fieldType) => {
         const rules =
@@ -299,55 +210,14 @@ describe('validate.ts', () => {
   })
 
   describe('SANITIZATION_PATTERNS', () => {
-    describe('emailUnsafeChars', () => {
-      it('should match email unsafe characters', () => {
-        // emailUnsafeChars: /[<>"']/g
-        const unsafeChars = ['<', '>', '"', "'"]
-
-        unsafeChars.forEach((char) => {
-          // Test with a string containing the character
-          const testString = `test${char}email`
-          // Create fresh regex to avoid global flag state issues
-          const pattern = /[<>"']/g
-          expect(pattern.test(testString)).toBe(true)
-        })
-      })
-
-      it('should not match safe email characters', () => {
-        const safeChars = ['@', '.', '+', '-', '_']
-
-        safeChars.forEach((char) => {
-          expect(SANITIZATION_PATTERNS.emailUnsafeChars.test(char)).toBe(false)
-        })
-      })
+    it('should not have character-based patterns for names, emails, or text', () => {
+      expect(SANITIZATION_PATTERNS).not.toHaveProperty('nameUnsafeChars')
+      expect(SANITIZATION_PATTERNS).not.toHaveProperty('emailUnsafeChars')
+      expect(SANITIZATION_PATTERNS).not.toHaveProperty('textUnsafeChars')
     })
 
-    describe('textUnsafeChars', () => {
-      it('should match text unsafe characters', () => {
-        // textUnsafeChars: /[<>"]/g (note: no apostrophe)
-        const unsafeChars = ['<', '>', '"']
-
-        unsafeChars.forEach((char) => {
-          // Test with a string containing the character
-          const testString = `test${char}text`
-          // Create fresh regex to avoid global flag state issues
-          const pattern = /[<>"]/g
-          expect(pattern.test(testString)).toBe(true)
-        })
-      })
-
-      it('should not match safe text characters', () => {
-        const safeChars = ['a', 'Z', '1', ' ', '.', '-', "'"]
-
-        safeChars.forEach((char) => {
-          expect(SANITIZATION_PATTERNS.textUnsafeChars.test(char)).toBe(false)
-        })
-      })
-    })
-
-    describe('nameUnsafeChars', () => {
-      it('should match characters not allowed in names', () => {
-        // nameUnsafeChars: /[^\p{L}\p{M}\s\-\.']/gu - matches anything NOT Unicode letters, marks, spaces, hyphens, periods, apostrophes
+    describe('uuidUnsafeChars', () => {
+      it('should match characters not allowed in UUIDs', () => {
         const unsafeChars = [
           '<',
           '>',
@@ -358,54 +228,23 @@ describe('validate.ts', () => {
           '^',
           '&',
           '*',
-          '(',
-          ')',
-          '+',
-          '=',
-          '[',
-          ']',
-          '{',
-          '}',
-          '|',
-          '\\',
-          '/',
-          '?',
+          ' ',
           '!',
-          '1',
-          '2',
-          '3',
+          '=',
         ]
 
         unsafeChars.forEach((char) => {
-          // Test with a string containing the character
-          const testString = `test${char}name`
-          // Create fresh regex to avoid global flag state issues
-          const pattern = /[^\p{L}\p{M}\s\-.']/gu
+          const testString = `test${char}uuid`
+          const pattern = /[^a-zA-Z0-9_-]/g
           expect(pattern.test(testString)).toBe(true)
         })
       })
 
-      it('should not match characters allowed in names', () => {
-        // Unicode letters, marks, spaces, hyphens, periods, apostrophes
-        const safeInputs = [
-          'a',
-          'Z',
-          'é',
-          'ñ',
-          'ü',
-          'ć', // Unicode letters
-          ' ', // spaces
-          '-', // hyphens
-          '.', // periods
-          "'", // apostrophes
-          '李',
-          '明', // Chinese characters
-          'François', // accented characters
-          "O'Connor", // apostrophe in name
-        ]
+      it('should not match safe UUID characters', () => {
+        const safeInputs = ['abc123', 'test-uuid', 'test_uuid', 'ABC-123_def']
 
         safeInputs.forEach((input) => {
-          expect(SANITIZATION_PATTERNS.nameUnsafeChars.test(input)).toBe(false)
+          expect(SANITIZATION_PATTERNS.uuidUnsafeChars.test(input)).toBe(false)
         })
       })
     })
@@ -413,12 +252,19 @@ describe('validate.ts', () => {
 
   describe('validateFieldContent', () => {
     describe('name field validation', () => {
-      it('should validate clean names', () => {
+      it('should validate names with apostrophes, quotes, and comparison operators', () => {
         const validNames = [
-          'John Doe',
+          "O'Brien",
+          "D'Angelo",
+          "N'Dour",
+          'Mary"Jane',
+          'Name < 50 chars',
+          'Score > 90',
           'Jean-Pierre',
           'José García',
-          'Mary Jane',
+          "O''Brien", // multiple apostrophes
+          "'Brien", // leading apostrophe
+          "Brien'", // trailing apostrophe
         ]
 
         validNames.forEach((name) => {
@@ -428,40 +274,25 @@ describe('validate.ts', () => {
         })
       })
 
-      it('should reject names with invalid characters', () => {
-        const invalidNames = [
-          'John<script>alert(1)</script>',
-          'Jane"Doe',
-          "User'Name;DROP TABLE users",
-          'Test{user}',
-          'Name[with]brackets',
-        ]
-
-        invalidNames.forEach((name) => {
-          const result = validateFieldContent(name, 'name')
-          expect(result.isValid).toBe(false)
-          expect(result.errorMessage).toBeDefined()
-        })
-      })
-
       it('should reject names with dangerous content', () => {
         const dangerousNames = [
+          '<script>alert(1)</script>',
           'javascript:alert(1)',
           'data:text/html,<h1>hack</h1>',
           'onload=evil()',
+          'vbscript:msgbox("test")',
         ]
 
         dangerousNames.forEach((name) => {
           const result = validateFieldContent(name, 'name')
           expect(result.isValid).toBe(false)
-          // The specific error message may vary depending on which rule fails first
-          expect(result.errorMessage).toBeDefined()
+          expect(result.errorMessage).toContain('unsafe')
         })
       })
     })
 
     describe('email field validation', () => {
-      it('should validate clean email addresses', () => {
+      it('should validate email addresses (dangerous patterns only)', () => {
         const validEmails = [
           'user@example.com',
           'first.last@domain.co.uk',
@@ -475,17 +306,17 @@ describe('validate.ts', () => {
         })
       })
 
-      it('should reject emails with invalid characters', () => {
-        const invalidEmails = [
-          'user<script>@example.com',
-          'test"user@domain.com',
-          'user{name}@example.com',
+      it('should reject emails with dangerous content', () => {
+        const dangerousEmails = [
+          '<script>alert(1)</script>@example.com',
+          'javascript:alert(1)',
+          'onclick=evil()@domain.com',
         ]
 
-        invalidEmails.forEach((email) => {
+        dangerousEmails.forEach((email) => {
           const result = validateFieldContent(email, 'email')
           expect(result.isValid).toBe(false)
-          expect(result.errorMessage).toBeDefined()
+          expect(result.errorMessage).toContain('unsafe')
         })
       })
     })
@@ -517,9 +348,7 @@ describe('validate.ts', () => {
         invalidPhones.forEach((phone) => {
           const result = validateFieldContent(phone, 'phone')
           expect(result.isValid).toBe(false)
-          expect(result.errorMessage).toBe(
-            'Phone numbers can only contain digits, spaces, +, -, (, ), and .',
-          )
+          expect(result.errorMessage).toBe('Invalid phone number format')
         })
       })
     })
@@ -533,29 +362,47 @@ describe('validate.ts', () => {
         ]
 
         validTexts.forEach((text) => {
-          const result = validateFieldContent(text, 'text')
+          const result = validateFieldContent(text, 'general')
           expect(result.isValid).toBe(true)
           expect(result.errorMessage).toBeUndefined()
         })
       })
 
-      it('should reject text with invalid characters', () => {
-        const invalidTexts = [
+      it('should allow text with special characters (quotes, comparison operators)', () => {
+        const validTexts = [
           'Hello <world>',
           'Test "message"',
           "Single 'quote' test",
+          'Sales > $1M',
+          'Value < 100',
         ]
 
-        invalidTexts.forEach((text) => {
-          const result = validateFieldContent(text, 'text')
+        validTexts.forEach((text) => {
+          const result = validateFieldContent(text, 'general')
+          expect(result.isValid).toBe(true)
+          expect(result.errorMessage).toBeUndefined()
+        })
+      })
+
+      it('should reject text with dangerous patterns', () => {
+        const dangerousTexts = [
+          '<script>alert("xss")</script>',
+          'javascript:alert(1)',
+          '<img onerror=alert(1)>',
+        ]
+
+        dangerousTexts.forEach((text) => {
+          const result = validateFieldContent(text, 'general')
           expect(result.isValid).toBe(false)
-          expect(result.errorMessage).toBeDefined()
+          expect(result.errorMessage).toBe(
+            'Text contains potentially unsafe content',
+          )
         })
       })
     })
 
     it('should handle empty strings', () => {
-      const fieldTypes = ['name', 'email', 'phone', 'text'] as const
+      const fieldTypes = ['name', 'email', 'phone', 'general'] as const
 
       fieldTypes.forEach((fieldType) => {
         const result = validateFieldContent('', fieldType)
@@ -565,7 +412,7 @@ describe('validate.ts', () => {
     })
 
     it('should handle whitespace-only strings', () => {
-      const fieldTypes = ['name', 'email', 'phone', 'text'] as const
+      const fieldTypes = ['name', 'email', 'phone', 'general'] as const
 
       fieldTypes.forEach((fieldType) => {
         const result = validateFieldContent('   ', fieldType)
@@ -578,7 +425,7 @@ describe('validate.ts', () => {
   describe('VALIDATION_RULE_SETS', () => {
     describe('standard rule sets', () => {
       it('should return arrays of validation rules', () => {
-        const ruleSetNames = ['name', 'email', 'phone', 'text'] as const
+        const ruleSetNames = ['name', 'email', 'phone', 'general'] as const
 
         ruleSetNames.forEach((ruleSetName) => {
           const rules = VALIDATION_RULE_SETS[ruleSetName]()
@@ -609,66 +456,44 @@ describe('validate.ts', () => {
 
         expect(rules).toHaveLength(1)
         expect(rules[0]?.pattern).toBe(VALIDATION_PATTERNS.dangerousContent)
-        expect(rules[0]?.message).toBe('Invalid content detected')
+        expect(rules[0]?.message).toBe(
+          'Text contains potentially unsafe content',
+        )
       })
     })
 
     describe('parameterized rule exclusion', () => {
-      it('should allow disabling specific rules for name', () => {
+      it('should allow disabling dangerous content for name', () => {
         const withoutDangerous = VALIDATION_RULE_SETS.name({
           dangerousContent: false,
         })
-        expect(withoutDangerous).toHaveLength(1)
-        expect(
-          withoutDangerous.some((rule) => rule.id === 'invalidNameChars'),
-        ).toBe(true)
-        expect(
-          withoutDangerous.some((rule) => rule.id === 'dangerousContent'),
-        ).toBe(false)
+        expect(withoutDangerous).toHaveLength(0) // Only had dangerousContent rule
 
-        const withoutChars = VALIDATION_RULE_SETS.name({
-          invalidNameChars: false,
-        })
-        expect(withoutChars).toHaveLength(1)
-        expect(
-          withoutChars.some((rule) => rule.id === 'dangerousContent'),
-        ).toBe(true)
+        const allRules = VALIDATION_RULE_SETS.name()
+        expect(allRules).toHaveLength(1)
+        expect(allRules[0]?.id).toBe('dangerousContent')
       })
 
-      it('should allow disabling specific rules for email', () => {
+      it('should allow disabling dangerous content for email', () => {
         const withoutDangerous = VALIDATION_RULE_SETS.email({
           dangerousContent: false,
         })
-        expect(withoutDangerous).toHaveLength(1)
-        expect(
-          withoutDangerous.some((rule) => rule.id === 'invalidEmailChars'),
-        ).toBe(true)
+        expect(withoutDangerous).toHaveLength(0) // Only had dangerousContent rule
 
-        const withoutChars = VALIDATION_RULE_SETS.email({
-          invalidEmailChars: false,
-        })
-        expect(withoutChars).toHaveLength(1)
-        expect(
-          withoutChars.some((rule) => rule.id === 'dangerousContent'),
-        ).toBe(true)
+        const allRules = VALIDATION_RULE_SETS.email()
+        expect(allRules).toHaveLength(1)
+        expect(allRules[0]?.id).toBe('dangerousContent')
       })
 
-      it('should allow disabling specific rules for text', () => {
-        const withoutDangerous = VALIDATION_RULE_SETS.text({
+      it('should allow disabling dangerous content for text', () => {
+        const withoutDangerous = VALIDATION_RULE_SETS.general({
           dangerousContent: false,
         })
-        expect(withoutDangerous).toHaveLength(1)
-        expect(
-          withoutDangerous.some((rule) => rule.id === 'invalidTextChars'),
-        ).toBe(true)
+        expect(withoutDangerous).toHaveLength(0) // Only had dangerousContent rule
 
-        const withoutChars = VALIDATION_RULE_SETS.text({
-          invalidTextChars: false,
-        })
-        expect(withoutChars).toHaveLength(1)
-        expect(
-          withoutChars.some((rule) => rule.id === 'dangerousContent'),
-        ).toBe(true)
+        const allRules = VALIDATION_RULE_SETS.general()
+        expect(allRules).toHaveLength(1)
+        expect(allRules[0]?.id).toBe('dangerousContent')
       })
 
       it('should allow disabling specific rules for uuid', () => {
@@ -689,12 +514,11 @@ describe('validate.ts', () => {
         ).toBe(true)
       })
 
-      it('should allow disabling multiple rules', () => {
-        const noRules = VALIDATION_RULE_SETS.name({
-          invalidNameChars: false,
+      it('should allow disabling all rules', () => {
+        const noNameRules = VALIDATION_RULE_SETS.name({
           dangerousContent: false,
         })
-        expect(noRules).toHaveLength(0)
+        expect(noNameRules).toHaveLength(0)
 
         const noUuidRules = VALIDATION_RULE_SETS.uuid({
           invalidUuidChars: false,
@@ -703,12 +527,12 @@ describe('validate.ts', () => {
         expect(noUuidRules).toHaveLength(0)
       })
 
-      it('should allow enabling rules by not passing false', () => {
-        const allRules = VALIDATION_RULE_SETS.name({})
-        expect(allRules).toHaveLength(2)
+      it('should return all rules when no exclusions specified', () => {
+        const allNameRules = VALIDATION_RULE_SETS.name({})
+        expect(allNameRules).toHaveLength(1) // Only dangerousContent
 
         const allUuidRules = VALIDATION_RULE_SETS.uuid({})
-        expect(allUuidRules).toHaveLength(2)
+        expect(allUuidRules).toHaveLength(2) // invalidUuidChars + dangerousContent
       })
     })
 
@@ -718,7 +542,7 @@ describe('validate.ts', () => {
           'name',
           'email',
           'phone',
-          'text',
+          'general',
           'dangerousContentOnly',
         ]
 
@@ -737,12 +561,12 @@ describe('validate.ts', () => {
   describe('ValidationRule type', () => {
     it('should be compatible with actual validation rule objects', () => {
       const testRule: ValidationRule = {
-        id: 'invalidNameChars',
+        id: 'dangerousContent',
         pattern: /test/,
         message: 'Test message',
       }
 
-      expect(testRule.id).toBe('invalidNameChars')
+      expect(testRule.id).toBe('dangerousContent')
       expect(testRule.pattern).toBeInstanceOf(RegExp)
       expect(typeof testRule.message).toBe('string')
 
@@ -755,28 +579,24 @@ describe('validate.ts', () => {
   describe('pattern consistency', () => {
     it('should have consistent patterns between VALIDATION_PATTERNS and FIELD_VALIDATION', () => {
       // Verify that FIELD_VALIDATION uses the same patterns as VALIDATION_PATTERNS
-      expect(FIELD_VALIDATION.name[0].pattern).toBe(
-        VALIDATION_PATTERNS.invalidNameChars,
+      expect(FIELD_VALIDATION.name[0]?.pattern).toBe(
+        VALIDATION_PATTERNS.dangerousContent,
       )
-      expect(FIELD_VALIDATION.name[1].pattern).toBe(
+      expect(FIELD_VALIDATION.email[0]?.pattern).toBe(
+        VALIDATION_PATTERNS.dangerousContent,
+      )
+      expect(FIELD_VALIDATION.general[0]?.pattern).toBe(
         VALIDATION_PATTERNS.dangerousContent,
       )
 
-      expect(FIELD_VALIDATION.email[0].pattern).toBe(
-        VALIDATION_PATTERNS.invalidEmailChars,
-      )
-      expect(FIELD_VALIDATION.email[1].pattern).toBe(
-        VALIDATION_PATTERNS.dangerousContent,
-      )
-
-      expect(FIELD_VALIDATION.phone[0].pattern).toBe(
+      expect(FIELD_VALIDATION.phone[0]?.pattern).toBe(
         VALIDATION_PATTERNS.invalidPhoneChars,
       )
 
-      expect(FIELD_VALIDATION.text[0].pattern).toBe(
-        VALIDATION_PATTERNS.invalidTextChars,
+      expect(FIELD_VALIDATION.uuid[0]?.pattern).toBe(
+        VALIDATION_PATTERNS.invalidUuidChars,
       )
-      expect(FIELD_VALIDATION.text[1].pattern).toBe(
+      expect(FIELD_VALIDATION.uuid[1]?.pattern).toBe(
         VALIDATION_PATTERNS.dangerousContent,
       )
     })
@@ -786,7 +606,7 @@ describe('validate.ts', () => {
       expect(VALIDATION_RULE_SETS.name()).toEqual(FIELD_VALIDATION.name)
       expect(VALIDATION_RULE_SETS.email()).toEqual(FIELD_VALIDATION.email)
       expect(VALIDATION_RULE_SETS.phone()).toEqual(FIELD_VALIDATION.phone)
-      expect(VALIDATION_RULE_SETS.text()).toEqual(FIELD_VALIDATION.text)
+      expect(VALIDATION_RULE_SETS.general()).toEqual(FIELD_VALIDATION.general)
     })
   })
 
@@ -801,25 +621,15 @@ describe('validate.ts', () => {
       })
     })
 
-    it('should have specific error messages for different validation types', () => {
-      // Check that different field types have different messages for character validation
-      const nameCharMessage = FIELD_VALIDATION.name[0].message
-      const emailCharMessage = FIELD_VALIDATION.email[0].message
-      const phoneCharMessage = FIELD_VALIDATION.phone[0].message
-      const textCharMessage = FIELD_VALIDATION.text[0].message
-
-      expect(nameCharMessage).toContain('Names')
-      expect(emailCharMessage).toContain('Email')
-      expect(phoneCharMessage).toContain('Phone')
-      expect(textCharMessage).toContain('Text')
-
-      // But dangerous content messages should be the same
-      expect(FIELD_VALIDATION.name[1].message).toBe(
-        FIELD_VALIDATION.email[1].message,
+    it('should have consistent dangerous content message across field types', () => {
+      // Dangerous content message should be the same for all text field types
+      expect(FIELD_VALIDATION.name[0]?.message).toBe(
+        FIELD_VALIDATION.email[0]?.message,
       )
-      expect(FIELD_VALIDATION.email[1].message).toBe(
-        FIELD_VALIDATION.text[1].message,
+      expect(FIELD_VALIDATION.email[0]?.message).toBe(
+        FIELD_VALIDATION.general[0]?.message,
       )
+      expect(FIELD_VALIDATION.general[0]?.message).toContain('unsafe')
     })
   })
 })

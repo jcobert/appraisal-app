@@ -49,7 +49,7 @@ const TransferOwnerModal: FC<Props> = ({
     return z.object({
       ownerType: z.nativeEnum(OwnerType),
       member: z.string(),
-      newUser: fieldBuilder.email({ label: 'Email' }),
+      newUser: fieldBuilder.text({ type: 'email', label: 'Email' }),
       conf: z.literal(orgName, { errorMap }),
     })
   }, [orgName])

@@ -1,8 +1,7 @@
 import {
-  CHARACTER_SETS,
   DANGEROUS_PATTERNS,
-  FieldValidationType,
   SANITIZATION_PATTERNS,
+  StringFieldType,
 } from './validate'
 import { escapeRegExp } from 'lodash'
 import validator from 'validator'
@@ -59,7 +58,7 @@ export type SanitizeTextInputOptions = {
    */
   context?: 'client' | 'server'
   /** Field type for context-specific sanitization */
-  fieldType?: FieldValidationType | 'html'
+  fieldType?: StringFieldType | 'html'
   /** Characters to allow. All other characters will be removed. */
   whitelist?: string[]
   /**
@@ -76,16 +75,16 @@ export type SanitizeTextInputOptions = {
 const clientSanitizeOptions = {
   context: 'client',
   trim: true,
-  // Only block the most dangerous characters on client
-  blacklist: [...CHARACTER_SETS.htmlUnsafe],
+  // Dangerous patterns are already removed at the start of sanitizeTextInput
+  blacklist: [],
 } as const satisfies SanitizeTextInputOptions
 
 const serverSanitizeOptions = {
   context: 'server',
   trim: true,
   escapeHtml: false, // Default to removal, not escaping
-  // More comprehensive but still allowing legitimate characters like & and ()
-  blacklist: [...CHARACTER_SETS.htmlUnsafe, ...CHARACTER_SETS.injectionRisk],
+  // Dangerous patterns are already removed at the start of sanitizeTextInput
+  blacklist: [],
 } as const satisfies SanitizeTextInputOptions
 
 /**
@@ -111,8 +110,6 @@ export const sanitizeTextInput = (
       case 'email':
         // Use validator.js for proven email handling
         newVal = normalizeSpaces(newVal, { trim: true })
-        // First remove dangerous characters that shouldn't be in emails
-        newVal = newVal.replace(SANITIZATION_PATTERNS.emailUnsafeChars, '')
         if (validator.isEmail(newVal)) {
           newVal =
             validator.normalizeEmail(newVal, {
@@ -127,17 +124,16 @@ export const sanitizeTextInput = (
         newVal = normalizeSpaces(newVal)
         break
       case 'name':
-        // Support Unicode letters and common name characters
-        // \p{L} = Unicode letters, \p{M} = Unicode marks (accents)
-        newVal = newVal.replace(SANITIZATION_PATTERNS.nameUnsafeChars, '')
+        // Support Unicode letters and common name characters - only normalize spaces
+        newVal = normalizeSpaces(newVal)
         break
       case 'html':
         // Use validator.js for HTML escaping
         newVal = validator.escape(newVal)
         break
-      case 'text':
-        // General text - remove only the most dangerous characters
-        newVal = newVal.replace(SANITIZATION_PATTERNS.textUnsafeChars, '')
+      case 'general':
+        // General text - only normalize spaces
+        newVal = normalizeSpaces(newVal)
         break
       case 'uuid':
         // UUIDs/primary keys - keep only alphanumeric, hyphens, and underscores

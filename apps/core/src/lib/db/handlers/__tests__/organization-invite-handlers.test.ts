@@ -411,7 +411,7 @@ describe('organization-invite-handlers', () => {
     })
 
     it('should sanitize token format and allow database lookup', async () => {
-      // Schema uses sanitizedField.uuid() which strips invalid characters
+      // Schema uses sanitizedField.text({ type: 'uuid' }) which strips invalid characters
       // but still requires at least some valid characters to remain (nonempty).
       const tokenTests = [
         { token: 'valid-token-123', description: 'valid with hyphens' },

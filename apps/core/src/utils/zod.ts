@@ -1,6 +1,6 @@
 import { SanitizeTextInputOptions, sanitizeTextInput } from './data/sanitize'
 import {
-  FieldValidationType,
+  StringFieldType,
   VALIDATION_RULE_SETS,
   ValidationRule,
 } from './data/validate'
@@ -13,16 +13,19 @@ import { ParseParams, ZodError, ZodErrorMap, ZodIssue, ZodSchema, z } from 'zod'
  * ```typescript
  * const userSchema = {
  *   form: z.object({
- *     firstName: fieldBuilder.name({ label: 'First name' }),
- *     lastName: fieldBuilder.name({ label: 'Last name' }),
- *     email: fieldBuilder.email({ label: 'Email address' }),
+ *     firstName: fieldBuilder.text({ type: 'name', label: 'First name' }),
+ *     lastName: fieldBuilder.text({ type: 'name', label: 'Last name' }),
+ *     email: fieldBuilder.text({ type: 'email', label: 'Email address' }),
  *   }),
  *   entity: z.object({ userId: z.string().min(1), organizationId: z.string().min(1) }),
- *   payload: z.object({ firstName: sanitizedField.name(), lastName: sanitizedField.name() }),
+ *   api: z.object({
+ *     firstName: sanitizedField.text({ type: 'name' }),
+ *     lastName: sanitizedField.text({ type: 'name' })
+ *   }),
  * } satisfies SchemaBundle
  *
  * // Usage in handlers:
- * const payloadValidation = validatePayload(userSchema.payload, requestBody)
+ * const payloadValidation = validatePayload(userSchema.api, requestBody)
  * const entityValidation = validatePayload(userSchema.entity, { userId, organizationId })
  * ```
  */
@@ -75,34 +78,48 @@ export const sanitizedString = (options: SanitizeTextInputOptions = {}) => {
  * Pre-configured sanitized string schemas for common field types.
  */
 export const sanitizedField = {
-  /** Sanitized name field (Unicode support, trims, removes dangerous chars). */
-  name: () =>
-    sanitizedString({ fieldType: 'name' }).pipe(z.string().nonempty()),
+  /**
+   * Sanitized text field with optional type specification.
+   * @param options.type - Field type: 'name', 'email', 'phone', 'uuid', or 'general' (default)
+   * @param options.context - Sanitization context: 'server' or 'client'
+   */
+  text: (
+    options: {
+      type?: StringFieldType
+      context?: 'server' | 'client'
+    } = {},
+  ) => {
+    const { type, context } = options
+    const fieldType = type || 'general'
 
-  /** Sanitized email field (normalizes, validates, removes dangerous chars). */
-  email: () => sanitizedString({ fieldType: 'email' }).pipe(z.string().email()),
+    const baseSchema = sanitizedString({ fieldType, context })
 
-  /** Sanitized phone field (digits and separators only, normalizes spaces). */
-  phone: () => sanitizedString({ fieldType: 'phone' }),
-
-  /** Sanitized text field (removes dangerous chars, preserves most content). */
-  text: () => sanitizedString({ fieldType: 'text' }),
-
-  /** Sanitized UUID field (only alphanumeric, hyphens, underscores). Used for server-side validation of IDs in query parameters. */
-  uuid: () =>
-    sanitizedString({ fieldType: 'uuid' }).pipe(z.string().nonempty()),
-
-  /** Server-safe field (strict sanitization for backend). */
-  serverSafe: () => sanitizedString({ context: 'server' }),
-
-  /** Client-friendly field (lenient sanitization for UX). */
-  clientSafe: () => sanitizedString({ context: 'client' }),
+    // Add type-specific validation
+    switch (type) {
+      case 'name':
+        return baseSchema.pipe(z.string().nonempty())
+      case 'email':
+        return baseSchema.pipe(z.string().email())
+      case 'uuid':
+        return baseSchema.pipe(z.string().nonempty())
+      case 'phone':
+      default:
+        return baseSchema
+    }
+  },
 }
+
+/**
+ * Custom validation rule to use in field builder.
+ */
+export type CustomValidationRule = Omit<ValidationRule, 'id'>
 
 /**
  * Flexible field builder options for customizing validation behavior.
  */
 export type FieldBuilderOptions = {
+  /** Field type: 'name', 'email', 'phone', 'uuid', or 'general' (default). */
+  type?: StringFieldType
   /** Field label used to generate default error messages. */
   label?: string
   /** Custom error message for required validation. */
@@ -110,7 +127,7 @@ export type FieldBuilderOptions = {
   /** Whether the field is required (default: false). */
   required?: boolean
   /** Custom validation rules to apply. */
-  customRules?: ValidationRule[]
+  customRules?: CustomValidationRule[]
   /** Predefined rule set to use (overrides customRules if both provided). */
   ruleSet?: ValidationRule[]
   /** Additional Zod refinements to apply. */
@@ -124,11 +141,9 @@ export type FieldBuilderOptions = {
  * Create a flexible validated field with customizable options.
  * This gives you full control over validation rules, messages, and requirements.
  */
-export const createValidatedField = (
-  baseType: 'string' | 'email',
-  options: FieldBuilderOptions = {},
-) => {
+export const createValidatedField = (options: FieldBuilderOptions = {}) => {
   const {
+    type,
     label,
     requiredMessage,
     required = false,
@@ -151,12 +166,20 @@ export const createValidatedField = (
 
   // Add required validation if needed
   if (required) {
-    schema = schema.min(1, finalRequiredMessage)
+    schema = schema.nonempty(finalRequiredMessage)
   }
 
-  // Add email validation for email type
-  if (baseType === 'email') {
-    schema = schema.email(defaultEmailMessage)
+  // Add type-specific validation
+  switch (type) {
+    case 'email':
+      schema = schema.email(defaultEmailMessage)
+      break
+    case 'name':
+    case 'phone':
+    case 'uuid':
+    default:
+      // No additional validation needed
+      break
   }
 
   // Apply validation rules (use ruleSet if provided, otherwise customRules)
@@ -188,83 +211,37 @@ export const createValidatedField = (
  * Convenient preset field builders with sensible defaults but full customization options.
  */
 export const fieldBuilder = {
-  /** Create a name field with optional customization. */
-  name: (
+  /**
+   * Create a text field with optional type specification and customization.
+   * @param options.type - Field type: 'name', 'email', 'phone', 'uuid', or 'general'
+   * @param options.ruleSet - Validation rule set to apply ('standard', 'dangerousOnly', 'none')
+   * @param options.label - Field label for error messages
+   * @param options.required - Whether field is required (default: false)
+   */
+  text: (
     options: Omit<FieldBuilderOptions, 'ruleSet'> & {
-      /** Use a specific rule set instead of default name rules. */
-      ruleSet?: 'standard' | 'dangerousOnly' | 'charsOnly' | 'none'
-    } = {},
-  ) => {
-    const { ruleSet = 'standard', ...otherOptions } = options
-
-    let rules: ValidationRule[] = []
-    switch (ruleSet) {
-      case 'standard':
-        rules = VALIDATION_RULE_SETS.name()
-        break
-      case 'dangerousOnly':
-        rules = VALIDATION_RULE_SETS.dangerousContentOnly()
-        break
-      case 'charsOnly':
-        rules = VALIDATION_RULE_SETS.name({ dangerousContent: false })
-        break
-      case 'none':
-        rules = []
-        break
-    }
-
-    return createValidatedField('string', {
-      required: true,
-      ruleSet: rules,
-      ...otherOptions,
-    })
-  },
-
-  /** Create an email field with optional customization. */
-  email: (
-    options: Omit<FieldBuilderOptions, 'ruleSet'> & {
-      /** Use a specific rule set instead of default email rules. */
-      ruleSet?: 'standard' | 'dangerousOnly' | 'charsOnly' | 'none'
-    } = {},
-  ) => {
-    const { ruleSet = 'standard', ...otherOptions } = options
-
-    let rules: ValidationRule[] = []
-    switch (ruleSet) {
-      case 'standard':
-        rules = VALIDATION_RULE_SETS.email()
-        break
-      case 'dangerousOnly':
-        rules = VALIDATION_RULE_SETS.dangerousContentOnly()
-        break
-      case 'charsOnly':
-        rules = VALIDATION_RULE_SETS.email({ dangerousContent: false })
-        break
-      case 'none':
-        rules = []
-        break
-    }
-
-    return createValidatedField('email', {
-      required: false,
-      ruleSet: rules,
-      ...otherOptions,
-    })
-  },
-
-  /** Create a phone field with optional customization. */
-  phone: (
-    options: Omit<FieldBuilderOptions, 'ruleSet'> & {
-      /** Use a specific rule set instead of default phone rules. */
+      /** Use a specific rule set instead of default rules. */
       ruleSet?: 'standard' | 'dangerousOnly' | 'none'
     } = {},
   ) => {
-    const { ruleSet = 'standard', ...otherOptions } = options
+    const { type, ruleSet = 'standard', ...otherOptions } = options
 
+    // Determine rules based on type and ruleSet
     let rules: ValidationRule[] = []
+
     switch (ruleSet) {
       case 'standard':
-        rules = VALIDATION_RULE_SETS.phone()
+        if (type === 'name') {
+          rules = VALIDATION_RULE_SETS.name()
+        } else if (type === 'email') {
+          rules = VALIDATION_RULE_SETS.email()
+        } else if (type === 'phone') {
+          rules = VALIDATION_RULE_SETS.phone()
+        } else if (type === 'uuid') {
+          rules = VALIDATION_RULE_SETS.uuid()
+        } else {
+          rules = VALIDATION_RULE_SETS.general()
+        }
         break
       case 'dangerousOnly':
         rules = VALIDATION_RULE_SETS.dangerousContentOnly()
@@ -274,40 +251,8 @@ export const fieldBuilder = {
         break
     }
 
-    return createValidatedField('string', {
-      required: false,
-      ruleSet: rules,
-      ...otherOptions,
-    })
-  },
-
-  /** Create a text field with optional customization. */
-  text: (
-    options: Omit<FieldBuilderOptions, 'ruleSet'> & {
-      /** Use a specific rule set instead of default text rules. */
-      ruleSet?: 'standard' | 'dangerousOnly' | 'charsOnly' | 'none'
-    } = {},
-  ) => {
-    const { ruleSet = 'standard', ...otherOptions } = options
-
-    let rules: ValidationRule[] = []
-    switch (ruleSet) {
-      case 'standard':
-        rules = VALIDATION_RULE_SETS.text()
-        break
-      case 'dangerousOnly':
-        rules = VALIDATION_RULE_SETS.dangerousContentOnly()
-        break
-      case 'charsOnly':
-        rules = VALIDATION_RULE_SETS.text({ dangerousContent: false })
-        break
-      case 'none':
-        rules = []
-        break
-    }
-
-    return createValidatedField('string', {
-      required: false,
+    return createValidatedField({
+      type,
       ruleSet: rules,
       ...otherOptions,
     })
@@ -320,7 +265,7 @@ export const fieldBuilder = {
  */
 export const sanitizeFormData = <T extends Record<string, unknown>>(
   data: T,
-  fieldTypes: Partial<Record<keyof T, FieldValidationType>> = {},
+  fieldTypes: Partial<Record<keyof T, StringFieldType>> = {},
 ): T => {
   const sanitized = { ...data }
 

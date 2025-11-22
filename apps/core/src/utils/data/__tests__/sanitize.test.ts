@@ -350,20 +350,23 @@ describe('sanitize', () => {
   })
 
   describe('context-aware sanitization', () => {
-    it('should be more permissive on client', () => {
+    it('should preserve all printable characters in both contexts', () => {
       const input = "O'Brien & Company (LLC)"
       const clientResult = sanitizeTextInput(input, { context: 'client' })
       const serverResult = sanitizeTextInput(input, { context: 'server' })
 
-      // Client should preserve more characters (only removes <, >, ")
-      expect(clientResult).toContain("'")
-      expect(clientResult).toContain('&')
-      expect(clientResult).toContain('(')
+      // Both client and server preserve all characters except dangerous patterns
+      expect(clientResult).toBe(input)
+      expect(serverResult).toBe(input)
+    })
 
-      // Server should be more restrictive (removes {, }, [, ], ;)
-      expect(serverResult).toContain("'") // Still allowed
-      expect(serverResult).toContain('&') // Still allowed
-      expect(serverResult).toContain('(') // Still allowed
+    it('should preserve quotes and comparison operators', () => {
+      const input = 'Sales > $1M "Premium" Tier'
+      const clientResult = sanitizeTextInput(input, { context: 'client' })
+      const serverResult = sanitizeTextInput(input, { context: 'server' })
+
+      expect(clientResult).toBe(input)
+      expect(serverResult).toBe(input)
     })
 
     it('should escape HTML on server when escapeHtml is true', () => {
@@ -390,9 +393,33 @@ describe('sanitize', () => {
         expect(result).toBe('Mary-Jane')
       })
 
-      it('should remove numbers from names', () => {
+      it('should preserve numbers in names', () => {
         const result = sanitizeTextInput('John123', { fieldType: 'name' })
-        expect(result).toBe('John')
+        expect(result).toBe('John123')
+      })
+
+      it('should preserve multiple apostrophes like "D\'Angelo"', () => {
+        const result = sanitizeTextInput("D'Angelo", { fieldType: 'name' })
+        expect(result).toBe("D'Angelo")
+      })
+
+      it('should preserve quotes in names', () => {
+        const result = sanitizeTextInput('Name "Nickname" Surname', {
+          fieldType: 'name',
+        })
+        expect(result).toBe('Name "Nickname" Surname')
+      })
+
+      it('should preserve comparison operators in names', () => {
+        const result = sanitizeTextInput('Company A > B', { fieldType: 'name' })
+        expect(result).toBe('Company A > B')
+      })
+
+      it('should preserve special characters except dangerous patterns', () => {
+        const result = sanitizeTextInput('José & François (LLC)', {
+          fieldType: 'name',
+        })
+        expect(result).toBe('José & François (LLC)')
       })
     })
 
@@ -404,11 +431,21 @@ describe('sanitize', () => {
         expect(result).toBe('user+tag@example.com')
       })
 
-      it('should remove invalid email characters', () => {
-        const result = sanitizeTextInput('user<>@example.com', {
+      it('should normalize email format', () => {
+        const result = sanitizeTextInput('User+Tag@EXAMPLE.COM', {
           fieldType: 'email',
         })
-        expect(result).toBe('user@example.com')
+        // validator.normalizeEmail lowercases and removes dots from gmail
+        expect(result.toLowerCase()).toBe(result)
+      })
+
+      it('should preserve special characters in email', () => {
+        const result = sanitizeTextInput('user<tag>@example.com', {
+          fieldType: 'email',
+        })
+        // Email sanitization now only normalizes, doesn't remove characters
+        expect(result).toContain('<')
+        expect(result).toContain('>')
       })
     })
 
@@ -482,6 +519,50 @@ describe('sanitize', () => {
         const result = sanitizeTextInput('  abc-123  ', { fieldType: 'uuid' })
         expect(result).toBe('abc-123')
       })
+    })
+  })
+
+  describe('validation-sanitization alignment', () => {
+    it('should preserve inputs that pass validation without alteration', () => {
+      // These inputs would pass the new lenient validation
+      const validInputs = [
+        "O'Brien",
+        "D'Angelo",
+        'Name "Nickname" Surname',
+        'Sales > $1M',
+        'Value < 100',
+        'Company A & B (LLC)',
+        'José & François',
+      ]
+
+      validInputs.forEach((input) => {
+        const result = sanitizeTextInput(input, { fieldType: 'name' })
+        expect(result).toBe(input)
+      })
+    })
+
+    it('should only remove dangerous patterns, not individual characters', () => {
+      const input = 'Hello <script>alert("xss")</script> World'
+      const result = sanitizeTextInput(input, { fieldType: 'general' })
+
+      // Should remove the dangerous <script> tag but preserve surrounding text
+      expect(result).not.toContain('<script>')
+      expect(result).not.toContain('</script>')
+      expect(result).toContain('Hello')
+      expect(result).toContain('World')
+    })
+
+    it('should normalize spaces consistently for all field types', () => {
+      const input = 'Multiple    spaces    here'
+      const nameResult = sanitizeTextInput(input, { fieldType: 'name' })
+      const textResult = sanitizeTextInput(input, { fieldType: 'general' })
+      const emailResult = sanitizeTextInput(input, { fieldType: 'email' })
+
+      // All should normalize multiple spaces to single space
+      expect(nameResult).toBe('Multiple spaces here')
+      expect(textResult).toBe('Multiple spaces here')
+      // Email normalization might differ due to validator.normalizeEmail
+      expect(emailResult).not.toContain('    ')
     })
   })
 
