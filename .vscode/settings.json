@@ -28,5 +28,12 @@
   "jest.jestCommandLine": "pnpm test --",
   "jest.rootPath": "apps/core",
   "jest.runMode": "on-demand",
-  "prisma.pinToPrisma6": true
+  "prisma.pinToPrisma6": true,
+  "eslint.enable": true,
+  "eslint.workingDirectories": [
+    { "directory": "apps/core", "changeProcessCWD": true },
+    { "directory": "apps/web", "changeProcessCWD": true }
+  ],
+  "eslint.nodePath": null,
+  "eslint.ignoreUntitled": true
 }
