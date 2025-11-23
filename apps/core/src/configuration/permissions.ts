@@ -18,12 +18,19 @@ export type PermissionAction =
   | 'orders:view'
 
 /**
- * Permission requirement that can specify role-based access, ownership requirements, or both.
+ * Permission requirement that can specify role-based access OR ownership requirements.
+ * If requiresOwner is true, only the owner has this permission (roles are ignored).
+ * If requiresOwner is false/undefined, users with matching roles have this permission.
  */
 export type PermissionRequirement = {
-  /** Roles that grant this permission. */
+  /** Roles that grant this permission (ignored if requiresOwner is true). */
   roles: MemberRole[]
-  /** Whether ownership is required to perform this action. */
+  /**
+   * Whether user must have all roles to have permission or can have any (at least one).
+   * Default is 'any'.
+   */
+  roleConstraint?: 'any' | 'all'
+  /** Whether ownership is required. If true, only owner has access regardless of roles. */
   requiresOwner?: boolean
 }
 

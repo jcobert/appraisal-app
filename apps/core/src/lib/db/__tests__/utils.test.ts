@@ -37,6 +37,15 @@ jest.mock('@/lib/db/client', () => ({
 jest.mock('@/utils/auth')
 jest.mock('@/lib/db/queries/organization')
 
+// Mock permissions configuration
+jest.mock('@/configuration/permissions', () => {
+  const actual = jest.requireActual('@/configuration/permissions')
+  return {
+    ...actual,
+    APP_PERMISSIONS: { ...actual.APP_PERMISSIONS },
+  }
+})
+
 // Mock the DB queries
 const mockGetActiveUserOrgMember =
   getActiveUserOrgMember as jest.MockedFunction<typeof getActiveUserOrgMember>
@@ -312,11 +321,13 @@ describe('db utils', () => {
 
       const result = await getUserPermissions(mockOrgId)
 
-      // Owner should have owner-only permissions
+      // Owner should have owner-only permissions (independent of roles)
       expect(result).toContain('organization:delete' satisfies PermissionAction)
       expect(result).toContain(
         'organization:transfer' satisfies PermissionAction,
       )
+      // Owner should also have role-based permissions from their roles
+      expect(result).toContain('organization:edit' satisfies PermissionAction)
     })
 
     it('should not include owner-only permissions when user is not owner', async () => {
@@ -345,6 +356,218 @@ describe('db utils', () => {
       // Non-owner should not have owner-only permissions
       expect(result).not.toContain('organization:delete')
       expect(result).not.toContain('organization:transfer')
+    })
+
+    it('should respect roleConstraint when set to "any" (default)', async () => {
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
+        active: true,
+        isOwner: false,
+        roles: ['manager'], // Has only one of multiple required roles
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      })
+
+      const result = await getUserPermissions(mockOrgId)
+
+      // Should have permissions where manager is one of the allowed roles
+      expect(result).toContain('organization:view')
+      expect(result).toContain('orders:create')
+    })
+
+    it('should grant permission when user has ANY of the required roles (roleConstraint: "any")', async () => {
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
+        active: true,
+        isOwner: false,
+        roles: ['appraiser'], // Only one role
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      })
+
+      const result = await getUserPermissions(mockOrgId)
+
+      // Appraiser should have these permissions (they're one of the allowed roles)
+      expect(result).toContain('organization:view')
+      expect(result).toContain('orders:create')
+      expect(result).toContain('orders:edit')
+      expect(result).toContain('orders:view')
+
+      // Appraiser should NOT have these (not in allowed roles)
+      expect(result).not.toContain('organization:edit')
+      expect(result).not.toContain('members:edit')
+      expect(result).not.toContain('members:view_details')
+      expect(result).not.toContain('orders:delete')
+    })
+
+    it('should deny permission when user has NONE of the required roles', async () => {
+      mockGetActiveUserOrgMember.mockResolvedValue({
+        id: 'member-123',
+        active: true,
+        isOwner: false,
+        roles: [], // No roles
+        user: {
+          id: 'user-profile-123',
+          accountId: 'user_123',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: null,
+          avatar: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: null,
+          updatedBy: null,
+        },
+      })
+
+      const result = await getUserPermissions(mockOrgId)
+
+      // User with no roles should have no permissions
+      expect(result).toEqual([])
+    })
+
+    describe('roleConstraint: "all"', () => {
+      beforeEach(() => {
+        // Mock APP_PERMISSIONS to include a test permission with roleConstraint: 'all'
+        const { APP_PERMISSIONS } = jest.requireMock(
+          '@/configuration/permissions',
+        )
+        APP_PERMISSIONS['test:all-roles'] = {
+          roles: ['admin', 'manager'],
+          roleConstraint: 'all',
+        }
+      })
+
+      it('should grant permission when user has ALL required roles', async () => {
+        mockGetActiveUserOrgMember.mockResolvedValue({
+          id: 'member-123',
+          active: true,
+          isOwner: false,
+          roles: ['admin', 'manager'], // Has both required roles
+          user: {
+            id: 'user-profile-123',
+            accountId: 'user_123',
+            firstName: 'Test',
+            lastName: 'User',
+            email: 'test@example.com',
+            phone: null,
+            avatar: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            createdBy: null,
+            updatedBy: null,
+          },
+        })
+
+        const result = await getUserPermissions(mockOrgId)
+
+        // User with both admin and manager should have the test permission
+        expect(result).toContain('test:all-roles' as PermissionAction)
+      })
+
+      it('should deny permission when user has only SOME of the required roles', async () => {
+        mockGetActiveUserOrgMember.mockResolvedValue({
+          id: 'member-123',
+          active: true,
+          isOwner: false,
+          roles: ['admin'], // Has only one of two required roles
+          user: {
+            id: 'user-profile-123',
+            accountId: 'user_123',
+            firstName: 'Test',
+            lastName: 'User',
+            email: 'test@example.com',
+            phone: null,
+            avatar: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            createdBy: null,
+            updatedBy: null,
+          },
+        })
+
+        const result = await getUserPermissions(mockOrgId)
+
+        // User with only admin (missing manager) should NOT have the test permission
+        expect(result).not.toContain('test:all-roles' as PermissionAction)
+      })
+
+      it('should deny permission when user has NONE of the required roles', async () => {
+        mockGetActiveUserOrgMember.mockResolvedValue({
+          id: 'member-123',
+          active: true,
+          isOwner: false,
+          roles: ['appraiser'], // Has neither admin nor manager
+          user: {
+            id: 'user-profile-123',
+            accountId: 'user_123',
+            firstName: 'Test',
+            lastName: 'User',
+            email: 'test@example.com',
+            phone: null,
+            avatar: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            createdBy: null,
+            updatedBy: null,
+          },
+        })
+
+        const result = await getUserPermissions(mockOrgId)
+
+        // User with different role should NOT have the test permission
+        expect(result).not.toContain('test:all-roles' as PermissionAction)
+      })
+
+      it('should grant permission when user has all required roles plus extras', async () => {
+        mockGetActiveUserOrgMember.mockResolvedValue({
+          id: 'member-123',
+          active: true,
+          isOwner: false,
+          roles: ['admin', 'manager', 'appraiser'], // Has all required plus extra
+          user: {
+            id: 'user-profile-123',
+            accountId: 'user_123',
+            firstName: 'Test',
+            lastName: 'User',
+            email: 'test@example.com',
+            phone: null,
+            avatar: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            createdBy: null,
+            updatedBy: null,
+          },
+        })
+
+        const result = await getUserPermissions(mockOrgId)
+
+        // User with admin, manager, and appraiser should have the test permission
+        expect(result).toContain('test:all-roles' as PermissionAction)
+      })
     })
   })
 

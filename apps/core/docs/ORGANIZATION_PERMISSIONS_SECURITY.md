@@ -55,6 +55,104 @@ const { can } = usePermissions({
 └─────────────────────────────────────────────────────────────┘
 ```
 
+## Permission Logic
+
+### Core Permission Functions
+
+The application uses two core functions for permission management:
+
+#### `getUserPermissions(organizationId)`
+
+- **Purpose**: Returns all permission actions a user has for a specific organization
+- **Logic**:
+  - If permission `requiresOwner` is `true`: User must be the owner (roles are ignored)
+  - If permission `requiresOwner` is `false/undefined`: User must have required role(s)
+    - `roleConstraint: 'any'` (default): User needs **at least one** of the required roles
+    - `roleConstraint: 'all'`: User needs **all** of the required roles
+- **Returns**: Array of `PermissionAction[]`
+- **Caching**: Results are cached by React Query for performance
+
+````typescript
+// Example: Owner-only permissions
+'organization:delete': { roles: [], requiresOwner: true }
+// Only owner gets this, regardless of roles
+
+// Example: Role-based permissions with 'any' constraint (default)
+'members:edit': { roles: ['admin'], roleConstraint: 'any' }
+// Users with admin role get this
+
+'orders:view': { roles: ['admin', 'manager', 'appraiser'] }
+// Users with ANY of these roles get this (default behavior)
+
+// Example: Role-based permissions with 'all' constraint
+'advanced:action': { roles: ['admin', 'manager'], roleConstraint: 'all' }
+// Only users with BOTH admin AND manager roles get this
+```#### `userCan(action, organizationId)`
+
+- **Purpose**: Check if user has a specific permission
+- **Implementation**: Leverages `getUserPermissions()` for consistency
+- **Returns**: `Promise<boolean>`
+
+```typescript
+// Efficient implementation - reuses permission logic
+export const userCan = async ({ action, organizationId }) => {
+  const permissions = await getUserPermissions(organizationId)
+  return permissions.includes(action)
+}
+````
+
+**Key Benefits:**
+
+- Single source of truth for permission logic
+- No duplicate code between `getUserPermissions` and `userCan`
+- Consistent behavior across the application
+- Easy to maintain and test
+
+### Role Constraint Options
+
+The `roleConstraint` property allows fine-grained control over role requirements:
+
+#### `roleConstraint: 'any'` (Default)
+
+User needs **at least one** of the specified roles. This is the most common pattern.
+
+```typescript
+'orders:view': {
+  roles: ['admin', 'manager', 'appraiser'],
+  roleConstraint: 'any' // Optional, this is the default
+}
+// ✅ User with 'manager' role gets permission
+// ✅ User with 'admin' role gets permission
+// ✅ User with both 'admin' and 'manager' gets permission
+// ❌ User with 'viewer' role does NOT get permission
+```
+
+#### `roleConstraint: 'all'`
+
+User needs **all** of the specified roles. Use this for highly sensitive actions.
+
+```typescript
+'sensitive:action': {
+  roles: ['admin', 'auditor'],
+  roleConstraint: 'all'
+}
+// ✅ User with both 'admin' AND 'auditor' roles gets permission
+// ❌ User with only 'admin' role does NOT get permission
+// ❌ User with only 'auditor' role does NOT get permission
+```
+
+**When to use 'all':**
+
+- Highly sensitive operations requiring multiple oversight roles
+- Actions that require expertise from multiple domains
+- Compliance requirements needing multiple role verification
+
+**When to use 'any' (default):**
+
+- Standard RBAC patterns
+- Most application permissions
+- When any authorized role should have access
+
 ## Implementation Details
 
 ### Organization Provider
