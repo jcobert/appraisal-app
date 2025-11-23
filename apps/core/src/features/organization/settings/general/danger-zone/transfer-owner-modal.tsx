@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo } from 'react'
+import { FC, useCallback, useMemo, useRef } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -45,11 +45,20 @@ const TransferOwnerModal: FC<Props> = ({
 }) => {
   const { name: orgName, members } = organization
 
+  const modalRef = useRef<HTMLDivElement>(null)
+
   const schema = useMemo(() => {
     return z.object({
       ownerType: z.nativeEnum(OwnerType),
-      member: z.string(),
-      newUser: fieldBuilder.text({ type: 'email', label: 'Email' }),
+      member: fieldBuilder.text({
+        type: 'uuid',
+        label: 'Member',
+        required: true,
+      }),
+      newUser: fieldBuilder.text({
+        type: 'email',
+        label: 'Email',
+      }),
       conf: z.literal(orgName, { errorMap }),
     })
   }, [orgName])
@@ -92,6 +101,7 @@ const TransferOwnerModal: FC<Props> = ({
 
   return (
     <Modal
+      ref={modalRef}
       preventOutsideClose={false}
       open={open}
       onOpenChange={(open) => {
@@ -115,15 +125,13 @@ const TransferOwnerModal: FC<Props> = ({
           <Controller
             control={control}
             name='member'
-            render={({ field: { disabled, value, onChange, ...field } }) => (
+            render={({ field, fieldState: { error } }) => (
               <SelectInput
                 {...field}
-                isDisabled={disabled}
+                label='User'
+                error={error?.message}
                 options={memberOptions}
-                value={memberOptions?.find((opt) => opt?.value === value)}
-                onChange={(opt) => {
-                  onChange(opt?.value)
-                }}
+                portal={modalRef.current}
               />
             )}
           />
