@@ -90,6 +90,7 @@ const OrganizationForm: FC<Props> = ({
       return
     }
 
+    /** @todo This seems backwards... */
     const payload = isUpdate ? data : { ...organization, ...data }
 
     if (isUpdate) {

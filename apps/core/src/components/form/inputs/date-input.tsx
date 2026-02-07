@@ -1,68 +1,82 @@
 'use client'
 
+import { format } from 'date-fns'
 import { forwardRef } from 'react'
-import DatePicker, { DatePickerProps } from 'react-datepicker'
 
-import TextInput, {
-  AdditionalInputProps,
-} from '@/components/form/inputs/text-input'
+import {
+  Button,
+  Calendar,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@repo/ui'
+import { cn } from '@repo/utils'
 
-import 'react-datepicker/dist/react-datepicker.css'
+import FieldLabel from '@/components/form/field-label'
+import { TextInputProps } from '@/components/form/inputs/text-input'
 
-export type DateInputProps = DatePickerProps & AdditionalInputProps
+export type DateInputProps = Omit<TextInputProps, 'value' | 'onChange'> & {
+  value: Date | null | undefined
+  onChange: (value: Date | null | undefined) => void
+}
 
-const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd'
-
-const DateInput = forwardRef<DatePicker, DateInputProps>(
+const DateInput = forwardRef<HTMLButtonElement, DateInputProps>(
   (
     {
+      value,
+      onChange,
       id,
       name,
-      selected,
       label,
-      helper,
-      helperMode = 'always',
-      error,
-      className,
       labelClassName,
-      inputClassName,
+      className,
+      required,
+      error,
+      applyErrorStateToLabel,
+      icon,
       tooltip,
       ...props
     },
     ref,
   ) => {
+    const currentValue = value || undefined
+
     return (
-      <DatePicker
-        id={id || name}
-        name={name}
-        selected={selected}
-        dateFormat={DEFAULT_DATE_FORMAT}
-        showMonthDropdown
-        showYearDropdown
-        dropdownMode='select'
-        showIcon={false}
-        placeholderText='mm/dd/yyyy'
-        shouldCloseOnSelect
-        isClearable
-        clearButtonClassName='bg-red-500'
-        popperClassName='!z-[100]'
-        {...props}
-        customInput={
-          <TextInput
-            label={label}
-            icon='calendar'
-            error={error}
-            className={className}
-            tooltip={tooltip}
-            helper={helper}
-            helperMode={helperMode}
-            labelClassName={labelClassName}
-            inputClassName={inputClassName}
-            // value={selected ? format(selected, 'MM/dd/yyyy') : ''}
-          />
-        }
-        ref={ref}
-      />
+      <div className={cn('flex flex-col gap-1', className)}>
+        <FieldLabel
+          htmlFor={id || name}
+          required={required}
+          disabled={props?.disabled}
+          error={!!error && applyErrorStateToLabel}
+          className={labelClassName}
+          icon={icon}
+          tooltip={tooltip}
+        >
+          {label}
+        </FieldLabel>
+
+        <Popover>
+          <PopoverTrigger asChild ref={ref}>
+            <Button
+              id={id || name}
+              variant='outline'
+              className='justify-start font-normal'
+            >
+              {value ? format(value, 'PPP') : <span>Pick a date</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className='w-auto p-0' align='start'>
+            <Calendar
+              mode='single'
+              selected={currentValue}
+              onSelect={(selectedDate) => {
+                onChange(selectedDate)
+              }}
+              defaultMonth={currentValue}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
     )
   },
 )
