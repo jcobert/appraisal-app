@@ -1,12 +1,12 @@
 'use client'
 
-import { Order, OrderStatus } from '@prisma/client'
+import { Order } from '@prisma/client'
 import { useRouter } from 'next/navigation'
 import { FC } from 'react'
-import { Controller, SubmitHandler, useFormState } from 'react-hook-form'
+import { Controller, SubmitHandler } from 'react-hook-form'
 
 import { Button } from '@repo/ui'
-import { fullName, objectKeys } from '@repo/utils'
+import { fullName } from '@repo/utils'
 
 import { OrderFormData, orderSchema } from '@/lib/db/schemas/order'
 
@@ -26,7 +26,6 @@ import {
   UseOrderMutationsProps,
   useOrderMutations,
 } from '@/features/orders/hooks/use-order-mutations'
-import { ORDER_STATUS_LABEL } from '@/features/orders/types'
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 import { DetailedOrgMember } from '@/features/organization/types'
 
@@ -92,20 +91,20 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
     values: formDefaults(defaultFormValues, order),
   })
 
-  const { isDirty } = useFormState({ control })
+  // const { isDirty } = useFormState({ control })
 
   const { createOrder } = useOrderMutations({ organizationId, orderId })
 
   const onSubmit: SubmitHandler<OrderFormData> = async (data) => {
     console.log(data)
 
-    if (!isDirty) return
+    // if (!isDirty) return
 
-    // await createOrder.mutateAsync(data, {
-    //   onSuccess: () => {
-    //     router.replace(ordersPage)
-    //   },
-    // })
+    await createOrder.mutateAsync(data, {
+      onSuccess: () => {
+        router.replace(ordersPage)
+      },
+    })
   }
 
   return (

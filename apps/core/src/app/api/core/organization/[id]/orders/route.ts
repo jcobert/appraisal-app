@@ -7,9 +7,13 @@ import { OrderApiData } from '@/lib/db/schemas/order'
 // ==============
 //      POST
 // ==============
-export const POST = async (req: NextRequest) => {
+export const POST = async (
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) => {
+  const { id: organizationId } = await params
   const payload = (await req.json()) as OrderApiData
 
-  const result = await handleCreateOrder(payload)
+  const result = await handleCreateOrder(organizationId, payload)
   return toNextResponse(result)
 }

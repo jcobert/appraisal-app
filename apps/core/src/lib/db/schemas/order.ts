@@ -12,18 +12,19 @@ import { SchemaBundle, formErrorMap, sanitizedField } from '@/utils/zod'
 
 import { TableMutable } from '@/types/db'
 
-type SchemaBase = ZodObjectShape<TableMutable<Order>>
+type SchemaBase = ZodObjectShape<TableMutable<Omit<Order, 'organizationId'>>>
 
 const apiSchema = z.object(
   {
+    // organizationId: sanitizedField.text({ type: 'uuid' }),
     clientId: sanitizedField.text({ type: 'uuid' }).nullable(),
     appraiserId: sanitizedField.text({ type: 'uuid' }).nullable(),
     borrowerId: sanitizedField.text({ type: 'uuid' }).nullable(),
     propertyId: sanitizedField.text({ type: 'uuid' }).nullable(),
 
-    dueDate: z.date().nullable(),
-    orderDate: z.date().nullable(),
-    inspectionDate: z.date().nullable(),
+    dueDate: z.coerce.date().nullable(),
+    orderDate: z.coerce.date().nullable(),
+    inspectionDate: z.coerce.date().nullable(),
 
     appraisalType: z.nativeEnum(AppraisalType).nullable(),
     orderStatus: z.nativeEnum(OrderStatus),
@@ -42,6 +43,7 @@ const apiSchema = z.object(
 
 const formSchema = z.object(
   {
+    // organizationId: z.string(),
     clientId: z.string().nullable(),
     appraiserId: z.string().nullable(),
     borrowerId: z.string().nullable(),

@@ -110,6 +110,7 @@ model Organization {
   // Relations
   members     OrgMember[]
   invitations OrgInvitation[]
+  orders      Order[]
 }
 
 model OrgInvitation {
@@ -221,6 +222,8 @@ model Order {
   client           Client?        @relation(fields: [clientId], references: [id])
   appraiserId      String?
   appraiser        OrgMember?     @relation(fields: [appraiserId], references: [id])
+  organizationId   String
+  organization     Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   Payment          Payment[]
 }
 

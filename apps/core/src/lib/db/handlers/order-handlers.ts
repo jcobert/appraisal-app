@@ -6,7 +6,11 @@ import { orderSchema } from '@/lib/db/schemas/order'
 import { isValidationSuccess, validatePayload } from '@/utils/zod'
 
 export const handleCreateOrder = async (
-  payload: Parameters<typeof db.order.create>[0]['data'],
+  organizationId: string,
+  payload: Omit<
+    Parameters<typeof db.order.create>[0]['data'],
+    'organizationId'
+  >,
 ) => {
   return createApiHandler(
     async ({ userProfileId }) => {
@@ -19,6 +23,11 @@ export const handleCreateOrder = async (
         )
       }
 
+      // Simple check for required route parameter
+      if (!organizationId) {
+        throw new ValidationError('Organization ID is required.', {})
+      }
+
       if (!userProfileId) {
         throw new ValidationError('No user profile found.', {})
       }
@@ -26,6 +35,7 @@ export const handleCreateOrder = async (
       const result = await db.order.create({
         data: {
           ...validation.data,
+          organizationId,
           createdBy: userProfileId,
           updatedBy: userProfileId,
         },
