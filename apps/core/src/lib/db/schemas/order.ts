@@ -31,6 +31,7 @@ const apiSchema = z.object(
     paymentStatus: z.nativeEnum(PaymentStatus),
 
     fileNumber: z.string().max(100).nullable(),
+    clientOrderNum: z.string().max(100).nullable(),
     baseFee: z.number().min(0).max(Number.MAX_SAFE_INTEGER).nullable(),
     techFee: z.number().min(0).max(Number.MAX_SAFE_INTEGER).nullable(),
     questionnaireFee: z.number().min(0).max(Number.MAX_SAFE_INTEGER).nullable(),
@@ -58,6 +59,7 @@ const formSchema = z.object(
     paymentStatus: z.nativeEnum(PaymentStatus).nullable(),
 
     fileNumber: z.string().max(100),
+    clientOrderNum: z.string().max(100),
     baseFee: z.number().min(0).max(Number.MAX_SAFE_INTEGER).nullable(),
     techFee: z.number().min(0).max(Number.MAX_SAFE_INTEGER).nullable(),
     questionnaireFee: z.number().min(0).max(Number.MAX_SAFE_INTEGER).nullable(),

@@ -62,7 +62,11 @@ const DateInput = forwardRef<HTMLButtonElement, DateInputProps>(
               variant='outline'
               className='justify-start font-normal'
             >
-              {value ? format(value, 'PPP') : <span>Pick a date</span>}
+              {value ? (
+                format(value, 'PP ')
+              ) : (
+                <span className='text-muted-foreground'>Pick a date</span>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className='w-auto p-0' align='start'>

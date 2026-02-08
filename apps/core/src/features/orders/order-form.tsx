@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 
-import { Button } from '@repo/ui'
+import { Button, Separator } from '@repo/ui'
 import { fullName } from '@repo/utils'
 
 import { OrderFormData, orderSchema } from '@/lib/db/schemas/order'
@@ -27,6 +27,7 @@ import {
   useOrderMutations,
 } from '@/features/orders/hooks/use-order-mutations'
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
+import SectionHeading from '@/features/organization/settings/section-heading'
 import { DetailedOrgMember } from '@/features/organization/types'
 
 const schema = orderSchema.form
@@ -43,6 +44,7 @@ const defaultFormValues = {
   contract: false,
   dueDate: null,
   fileNumber: '',
+  clientOrderNum: '',
   inspectionDate: null,
   orderDate: today,
   orderStatus: 'open',
@@ -114,62 +116,105 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
       })}
       containerClassName='self-start max-w-7xl border'
     >
-      <div className='grid grid-cols-1 gap-x-14 gap-y-8 md:grid-cols-3'>
-        {/* <SectionHeading title='Details' /> */}
+      <div className='flex flex-col gap-10'>
+        <div className='flex flex-col gap-4'>
+          <SectionHeading
+            title='Tracking'
+            // className='border-b pb-1'
+          />
+          <div className='grid grid-cols-1 gap-x-14 gap-y-8 md:grid-cols-3'>
+            <Controller
+              control={control}
+              name='fileNumber'
+              render={({ field, fieldState: { error } }) => (
+                <TextInput
+                  {...field}
+                  id={field.name}
+                  label='File Number'
+                  error={error?.message}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name='clientOrderNum'
+              render={({ field, fieldState: { error } }) => (
+                <TextInput
+                  {...field}
+                  id={field.name}
+                  label='Client Order Number'
+                  error={error?.message}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name='appraiserId'
+              render={({ field, fieldState: { error } }) => (
+                <SelectInput
+                  {...field}
+                  id={field.name}
+                  label='Appraiser'
+                  error={error?.message}
+                  options={appraiserOptions}
+                  value={field.value ?? undefined}
+                />
+              )}
+            />
+          </div>
+        </div>
 
-        <Controller
-          control={control}
-          name='orderDate'
-          render={({ field, fieldState: { error } }) => (
-            <DateInput
-              {...field}
-              id={field.name}
-              label='Order Date'
-              error={error?.message}
-            />
-          )}
-        />
-        <Controller
-          control={control}
-          name='appraiserId'
-          render={({ field, fieldState: { error } }) => (
-            <SelectInput
-              {...field}
-              id={field.name}
-              label='Appraiser'
-              error={error?.message}
-              options={appraiserOptions}
-              value={field.value ?? undefined}
-            />
-          )}
-        />
-        {/* <Controller
-          control={control}
-          name='orderStatus'
-          render={({ field, fieldState: { error } }) => (
-            <SelectInput
-              {...field}
-              id={field.name}
-              label='Order Status'
-              error={error?.message}
-              options={orderStatusOptions}
-              value={field.value ?? ''}
-            />
-          )}
-        /> */}
+        <Separator />
 
-        <Controller
-          control={control}
-          name='fileNumber'
-          render={({ field, fieldState: { error } }) => (
-            <TextInput
-              {...field}
-              id={field.name}
-              label='File Number'
-              error={error?.message}
+        <div className='flex flex-col gap-4'>
+          <SectionHeading title='Timeline' />
+          <div className='grid grid-cols-1 gap-x-14 gap-y-8 md:grid-cols-3'>
+            <Controller
+              control={control}
+              name='orderDate'
+              render={({ field, fieldState: { error } }) => (
+                <DateInput
+                  {...field}
+                  id={field.name}
+                  label='Order Received'
+                  error={error?.message}
+                />
+              )}
             />
-          )}
-        />
+            <Controller
+              control={control}
+              name='dueDate'
+              render={({ field, fieldState: { error } }) => (
+                <DateInput
+                  {...field}
+                  id={field.name}
+                  label='Order Due'
+                  error={error?.message}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name='inspectionDate'
+              render={({ field, fieldState: { error } }) => (
+                <DateInput
+                  {...field}
+                  id={field.name}
+                  label='Site Visit'
+                  error={error?.message}
+                />
+              )}
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className='flex flex-col gap-4'>
+          <div className='grid grid-cols-1 gap-x-14 gap-y-8 md:grid-cols-3'>
+            {/*  */}
+          </div>
+        </div>
       </div>
 
       <FormActionBar>
