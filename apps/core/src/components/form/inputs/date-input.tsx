@@ -60,12 +60,14 @@ const DateInput = forwardRef<HTMLButtonElement, DateInputProps>(
             <Button
               id={id || name}
               variant='outline'
-              className='justify-start font-normal'
+              className='justify-start font-normal rounded px-3'
             >
               {value ? (
                 format(value, 'PP ')
               ) : (
-                <span className='text-muted-foreground'>Pick a date</span>
+                <span className='text-muted-foreground text-sm'>
+                  Pick a date
+                </span>
               )}
             </Button>
           </PopoverTrigger>

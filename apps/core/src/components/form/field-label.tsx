@@ -89,7 +89,7 @@ const FieldLabel: FC<FieldLabelProps> = ({
           <PopoverTrigger>
             <FiInfo className='text-white text-xl shrink-0 fill-blue-500' />
           </PopoverTrigger>
-          <PopoverContent className='w-full max-w-[90vw] md:max-w-prose'>
+          <PopoverContent className='w-full max-w-[90vw] md:max-w-prose text-sm'>
             {tooltip}
           </PopoverContent>
         </Popover>

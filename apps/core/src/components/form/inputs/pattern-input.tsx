@@ -53,7 +53,7 @@ const PatternInput = forwardRef<HTMLInputElement, PatternInputProps>(
         <PatternFormat
           aria-required={required}
           className={cn([
-            'w-full h-10 px-[0.875rem] py-2 border border-gray-300 [&:not(:disabled)]:hover:border-gray-400 disabled:text-gray-500 transition rounded disabled:cursor-not-allowed',
+            'w-full h-9 px-3 text-sm py-2 border border-gray-300 [&:not(:disabled)]:hover:border-gray-400 disabled:text-gray-500 transition rounded disabled:cursor-not-allowed',
             !!icon && 'pl-9',
             error && 'border-red-500 hover:border-red-500',
             inputClassName,

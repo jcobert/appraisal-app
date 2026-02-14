@@ -1,4 +1,9 @@
-import { AppraisalType, OrderStatus, PaymentStatus } from '@prisma/client'
+import {
+  AppraisalType,
+  OrderStatus,
+  PaymentStatus,
+  PropertyType,
+} from '@prisma/client'
 
 export const PAYMENT_STATUS_LABEL = {
   paid: 'Paid',
@@ -21,4 +26,15 @@ export const APPRAISAL_TYPE_LABEL = {
   refinance: 'Refinance',
 } as const satisfies {
   [x in AppraisalType]: string
+}
+
+export const PROPERTY_TYPE_LABEL = {
+  condo: 'Condo',
+  coOp: 'Co-op',
+  multiFamily: 'Multi-family',
+  multiFamilyFHA: 'Multi-family FHA',
+  singleFamily: 'Single-family',
+  singleFamilyFHA: 'Single-family FHA',
+} as const satisfies {
+  [x in PropertyType]: string
 }

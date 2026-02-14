@@ -32,6 +32,10 @@ export type SelectOption<
   label: U
 }
 
+// type FormatValue<TOption extends SelectOption = SelectOption> = (
+//   option: TOption,
+// ) => ReactNode
+
 export type SelectInputProps = Omit<
   SelectRootProps,
   'children' | 'onValueChange'
@@ -40,13 +44,15 @@ export type SelectInputProps = Omit<
     AdditionalInputProps,
     'icon' | 'inputClassName' | 'labelClassName' | 'helperMode'
   > & {
-    options?: SelectOption[]
+    options: SelectOption[]
     onChange?: SelectRootProps['onValueChange']
     portal?: SelectContentProps['portal']
     className?: string
     labelProps?: FieldLabelProps
     triggerProps?: SelectTriggerProps
     contentProps?: Omit<SelectContentProps, 'portal'>
+    /** When true, selected value will display as option value instead of label. */
+    displayValue?: boolean
   } & Pick<SelectTriggerProps, 'id'>
 
 const SelectInput = forwardRef<HTMLButtonElement, SelectInputProps>(
@@ -65,6 +71,7 @@ const SelectInput = forwardRef<HTMLButtonElement, SelectInputProps>(
       labelProps,
       triggerProps,
       contentProps,
+      displayValue,
       ...rootProps
     },
     ref,
@@ -97,7 +104,9 @@ const SelectInput = forwardRef<HTMLButtonElement, SelectInputProps>(
               triggerProps?.className,
             )}
           >
-            <SelectValue placeholder='Select...' />
+            <SelectValue className='text-sm' placeholder='Select...'>
+              {displayValue ? rootProps.value : undefined}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent portal={portal} {...contentProps}>
             {options?.map((opt) => (

@@ -5,14 +5,27 @@ import {
   Order,
   OrderStatus,
   PaymentStatus,
+  Property,
+  PropertyType,
 } from '@repo/database'
-import { ZodObjectShape } from '@repo/types'
+import { NullableZodObjectShape, ZodObjectShape } from '@repo/types'
 
-import { SchemaBundle, formErrorMap, sanitizedField } from '@/utils/zod'
+import {
+  SchemaBundle,
+  fieldBuilder,
+  formErrorMap,
+  sanitizedField,
+} from '@/utils/zod'
 
 import { TableMutable } from '@/types/db'
 
-type SchemaBase = ZodObjectShape<TableMutable<Omit<Order, 'organizationId'>>>
+type OrderFields = TableMutable<Omit<Order, 'organizationId'>>
+
+type PropertyFields = TableMutable<Omit<Property, 'id'>>
+
+type ApiSchemaBase = ZodObjectShape<OrderFields & PropertyFields>
+
+type FormSchemaBase = NullableZodObjectShape<OrderFields & PropertyFields>
 
 const apiSchema = z.object(
   {
@@ -38,7 +51,14 @@ const apiSchema = z.object(
     questionnaire: z.boolean(),
     contract: z.boolean(),
     sent: z.boolean(),
-  } satisfies SchemaBase,
+
+    propertyType: z.nativeEnum(PropertyType),
+    street: sanitizedField.text({ type: 'general' }),
+    street2: sanitizedField.text({ type: 'general' }).nullable(),
+    city: sanitizedField.text({ type: 'general' }),
+    state: sanitizedField.text({ type: 'general' }),
+    zip: sanitizedField.text({ type: 'general' }),
+  } satisfies ApiSchemaBase,
   { errorMap: formErrorMap },
 )
 
@@ -66,7 +86,14 @@ const formSchema = z.object(
     questionnaire: z.boolean(),
     contract: z.boolean(),
     sent: z.boolean(),
-  } satisfies SchemaBase,
+
+    propertyType: z.nativeEnum(PropertyType),
+    street: fieldBuilder.text({ label: 'Address', required: true }),
+    street2: fieldBuilder.text({ label: 'Address 2' }),
+    city: fieldBuilder.text({ label: 'City', required: true }),
+    state: fieldBuilder.text({ label: 'State', required: true }),
+    zip: fieldBuilder.text({ label: 'ZIP', required: true }),
+  } satisfies FormSchemaBase,
   { errorMap: formErrorMap },
 )
 

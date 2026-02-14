@@ -19,8 +19,11 @@ const OrdersTable: FC<Props> = ({ data }) => {
   const columns = useMemo<ColDef<OrdersTableData>[]>(() => {
     return [
       { field: 'id', headerName: 'Order ID' },
-      { field: 'appraisalType' },
-      { field: 'fileNumber' },
+      { field: 'clientOrderNum' },
+      { field: 'appraiserId' },
+      { field: 'orderDate' },
+      { field: 'dueDate' },
+      { field: 'inspectionDate' },
     ]
   }, [])
 

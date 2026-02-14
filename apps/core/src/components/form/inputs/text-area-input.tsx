@@ -53,7 +53,7 @@ const TextAreaInput = forwardRef<HTMLTextAreaElement, TextAreaInputProps>(
         <textarea
           aria-required={required}
           className={cn([
-            'w-full px-[0.875rem] py-2 min-h-fit border border-gray-300 [&:not(:disabled)]:hover:border-gray-400 disabled:text-gray-500 transition rounded disabled:cursor-not-allowed',
+            'w-full px-3 text-sm py-2 min-h-fit border border-gray-300 [&:not(:disabled)]:hover:border-gray-400 disabled:text-gray-500 transition rounded disabled:cursor-not-allowed',
             error && 'border-red-500 hover:border-red-500',
             inputClassName,
           ])}

@@ -56,6 +56,7 @@ export const formErrorMap: ZodErrorMap = (error, ctx) => {
         message = `Must be at least ${error.minimum}`
       }
       break
+    case 'invalid_enum_value':
     case 'invalid_string':
       if (!ctx.data) {
         message = 'required'

@@ -204,9 +204,9 @@ model Order {
   orderDate        DateTime?
   inspectionDate   DateTime?
   dueDate          DateTime?
-  orderStatus      OrderStatus?
+  orderStatus      OrderStatus?   @default(open)
   appraisalType    AppraisalType?
-  paymentStatus    PaymentStatus?
+  paymentStatus    PaymentStatus? @default(unpaid)
   baseFee          Int?
   techFee          Int?
   questionnaireFee Int?
