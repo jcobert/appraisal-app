@@ -14,10 +14,12 @@ type FindManyProps = {
 }
 
 export const useGetOrders = ({ organizationId, options }: FindManyProps) => {
+  const { enabled = true, ...opts } = options || {}
   return useCoreQuery({
     url: CORE_API_ENDPOINTS.order({ organizationId }),
     queryKey: ordersQueryKey.filtered({ organizationId }),
-    ...options,
+    enabled: !!organizationId && enabled,
+    ...opts,
   })
 }
 
@@ -32,9 +34,11 @@ export const useGetOrder = ({
   orderId,
   options,
 }: FindOneProps) => {
+  const { enabled = true, ...opts } = options || {}
   return useCoreQuery({
     url: CORE_API_ENDPOINTS.order({ organizationId, orderId }),
     queryKey: ordersQueryKey.filtered({ organizationId, orderId }),
-    ...options,
+    enabled: !!organizationId && !!orderId && enabled,
+    ...opts,
   })
 }

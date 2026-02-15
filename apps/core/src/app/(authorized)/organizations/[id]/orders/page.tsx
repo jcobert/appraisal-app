@@ -4,16 +4,31 @@ import { FC } from 'react'
 import { PageParams } from '@repo/types'
 import { Button } from '@repo/ui'
 
-import { protectPage } from '@/lib/db/utils'
+import { handleGetOrders } from '@/lib/db/handlers/order-handlers'
+import { protectPage, userCan } from '@/lib/db/utils'
+
+import { createQueryClient, prefetchQuery } from '@/utils/query'
 
 import Heading from '@/components/layout/heading'
+
+import { ordersQueryKey } from '@/configuration/react-query/query-keys'
+import OrdersOverview from '@/features/orders/orders-overview'
 
 const Page: FC<PageParams<{ id: string }>> = async ({ params }) => {
   const organizationId = (await params)?.id
 
   await protectPage({ permission: { action: 'orders:view', organizationId } })
 
-  // const userCanEdit = await userCan({ action: 'orders:edit', organizationId })
+  const queryClient = createQueryClient()
+
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ordersQueryKey.filtered({ organizationId }),
+      queryFn: prefetchQuery(() => handleGetOrders(organizationId)),
+    }),
+  ])
+
+  const userCanEdit = await userCan({ action: 'orders:edit', organizationId })
 
   return (
     <div>
@@ -23,7 +38,7 @@ const Page: FC<PageParams<{ id: string }>> = async ({ params }) => {
           Create order
         </Link>
       </Button>
-      {/* <OrdersTable data={data} readonly={!userCanEdit} /> */}
+      <OrdersOverview organizationId={organizationId} readonly={!userCanEdit} />
     </div>
   )
 }
