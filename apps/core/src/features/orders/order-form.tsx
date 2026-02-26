@@ -20,12 +20,12 @@ import { OrderFormData, orderSchema } from '@/lib/db/schemas/order'
 import { formDefaults } from '@/utils/form'
 
 import Form from '@/components/form/form'
-import FormActionBar from '@/components/form/form-action-bar'
 import DateInput from '@/components/form/inputs/date-input'
 import SelectInput, {
   SelectOption,
 } from '@/components/form/inputs/select-input'
 import TextInput from '@/components/form/inputs/text-input'
+import Heading from '@/components/layout/heading'
 
 import useZodForm from '@/hooks/use-zod-form'
 
@@ -140,10 +140,29 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
         // eslint-disable-next-line no-console
         console.log({ errors })
       })}
-      containerClassName='self-start max-w-7xl border'
+      containerClassName='self-start max-w-7xl'
+      header={
+        <div className='flex sm:justify-between sm:items-center max-sm:flex-col max-sm:gap-4'>
+          <Heading text='New Order' />
+          <div className='flex gap-4'>
+            <Button
+              variant='ghost'
+              className='flex-1'
+              onClick={() => {
+                router.push(ordersPage)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type='submit' className='flex-1'>
+              Create
+            </Button>
+          </div>
+        </div>
+      }
     >
-      <div className='flex flex-col gap-10'>
-        <FormSection>
+      <div className='flex flex-col gap-8'>
+        <FormSection title='Tracking'>
           <Controller
             control={control}
             name='orderDate'
@@ -176,9 +195,9 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
               <TextInput
                 {...field}
                 id={field.name}
-                label='Client Order Number'
+                label='Client Reference Number'
                 error={error?.message}
-                tooltip='Job number provided by the client. Used for tracking.'
+                tooltip='Optional reference number/ID provided by the client.'
               />
             )}
           />
@@ -186,7 +205,7 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
 
         <Separator />
 
-        <FormSection>
+        <FormSection title='Assignment & Scheduling'>
           <Controller
             control={control}
             name='appraiserId'
@@ -307,10 +326,6 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
           </div>
         </FormSection>
       </div>
-
-      <FormActionBar>
-        <Button type='submit'>Create</Button>
-      </FormActionBar>
     </Form>
   )
 }

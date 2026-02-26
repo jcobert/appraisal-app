@@ -31,13 +31,17 @@ const Page: FC<PageParams<{ id: string }>> = async ({ params }) => {
   const userCanEdit = await userCan({ action: 'orders:edit', organizationId })
 
   return (
-    <div>
-      <Heading text='Orders' />
-      <Button asChild variant='outline'>
-        <Link href={`/organizations/${organizationId}/orders/create`}>
-          Create order
-        </Link>
-      </Button>
+    <div className='flex flex-col gap-4'>
+      <div className='flex flex-col gap-4'>
+        <Heading text='Orders' />
+        <div className='flex justify-end'>
+          <Button asChild variant='outline'>
+            <Link href={`/organizations/${organizationId}/orders/create`}>
+              Create order
+            </Link>
+          </Button>
+        </div>
+      </div>
       <OrdersOverview organizationId={organizationId} readonly={!userCanEdit} />
     </div>
   )

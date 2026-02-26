@@ -4,6 +4,7 @@ import {
   FC,
   FormEventHandler,
   FormHTMLAttributes,
+  ReactNode,
   SyntheticEvent,
   useRef,
   useState,
@@ -45,6 +46,7 @@ export type FormProps = {
   onSubmit?: (e: SyntheticEvent) => Promise<void> | void
   unstyled?: boolean
   containerClassName?: string
+  header?: ReactNode
 } & Omit<FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>
 
 const Form: FC<FormProps> = ({
@@ -56,6 +58,7 @@ const Form: FC<FormProps> = ({
   className,
   containerClassName,
   unstyled = false,
+  header,
   ...formProps
 }) => {
   const formRef = useRef<HTMLFormElement>(null)
@@ -88,6 +91,11 @@ const Form: FC<FormProps> = ({
         {...formProps}
         className={cn({ 'flex flex-col gap-8': !unstyled }, className)}
       >
+        {header ? (
+          <div className='sticky top-[calc(3rem+1px)] bg-background p-4 shadow -mx-4 -mt-4 z-50'>
+            {header}
+          </div>
+        ) : null}
         {!unstyled ? (
           <div
             className={cn(

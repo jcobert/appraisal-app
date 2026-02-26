@@ -33,6 +33,7 @@ const OrdersTable: FC<OrdersTableProps> = ({ data }) => {
         field: 'orderDate',
         headerName: 'Received',
         valueFormatter: ({ value }) => formatCalendarDate(value as string),
+        sort: 'desc',
       },
       {
         field: 'dueDate',
