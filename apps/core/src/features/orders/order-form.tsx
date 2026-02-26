@@ -1,6 +1,6 @@
 'use client'
 
-import { Order, PropertyType } from '@prisma/client'
+import { Order, OrderStatus, PaymentStatus, PropertyType } from '@prisma/client'
 import { useRouter } from 'next/navigation'
 import { FC } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
@@ -8,6 +8,7 @@ import { Controller, SubmitHandler } from 'react-hook-form'
 import { Button, Separator } from '@repo/ui'
 import {
   US_STATES,
+  formatZipCode,
   fullName,
   objectEntries,
   objectKeys,
@@ -20,6 +21,7 @@ import { OrderFormData, orderSchema } from '@/lib/db/schemas/order'
 import { formDefaults } from '@/utils/form'
 
 import Form from '@/components/form/form'
+import CurrencyInput from '@/components/form/inputs/currency-input'
 import DateInput from '@/components/form/inputs/date-input'
 import SelectInput, {
   SelectOption,
@@ -34,7 +36,11 @@ import {
   UseOrderMutationsProps,
   useOrderMutations,
 } from '@/features/orders/hooks/use-order-mutations'
-import { PROPERTY_TYPE_LABEL } from '@/features/orders/types'
+import {
+  ORDER_STATUS_LABEL,
+  PAYMENT_STATUS_LABEL,
+  PROPERTY_TYPE_LABEL,
+} from '@/features/orders/types'
 import { useGetOrganizations } from '@/features/organization/hooks/use-get-organizations'
 import { DetailedOrgMember } from '@/features/organization/types'
 
@@ -74,6 +80,20 @@ const propertyTypeOptions: SelectOption[] = objectKeys(PropertyType)
   ?.map((val) => ({
     value: val,
     label: PROPERTY_TYPE_LABEL[val],
+  }))
+
+const orderStatusOptions: SelectOption[] = objectKeys(OrderStatus)
+  .sort()
+  ?.map((val) => ({
+    value: val,
+    label: ORDER_STATUS_LABEL[val],
+  }))
+
+const paymentStatusOptions: SelectOption[] = objectKeys(PaymentStatus)
+  .sort()
+  ?.map((val) => ({
+    value: val,
+    label: PAYMENT_STATUS_LABEL[val],
   }))
 
 const stateOptions: SelectOption[] = objectEntries(US_STATES)?.map(
@@ -172,19 +192,7 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
                 id={field.name}
                 label='Order Received'
                 error={error?.message}
-                required
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            name='dueDate'
-            render={({ field, fieldState: { error } }) => (
-              <DateInput
-                {...field}
-                id={field.name}
-                label='Order Due'
-                error={error?.message}
+                // required
               />
             )}
           />
@@ -198,6 +206,20 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
                 label='Client Reference Number'
                 error={error?.message}
                 tooltip='Optional reference number/ID provided by the client.'
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name='orderStatus'
+            render={({ field, fieldState: { error } }) => (
+              <SelectInput
+                {...field}
+                id={field.name}
+                label='Order Status'
+                error={error?.message}
+                options={orderStatusOptions}
+                value={field.value ?? undefined}
               />
             )}
           />
@@ -217,6 +239,18 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
                 error={error?.message}
                 options={appraiserOptions}
                 value={field.value ?? undefined}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name='dueDate'
+            render={({ field, fieldState: { error } }) => (
+              <DateInput
+                {...field}
+                id={field.name}
+                label='Order Due'
+                error={error?.message}
               />
             )}
           />
@@ -319,11 +353,72 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
                     error={error?.message}
                     required
                     className='flex-auto'
+                    maxLength={10}
+                    onChange={(e) => {
+                      const value = formatZipCode(e.target.value)
+                      field.onChange(value)
+                    }}
                   />
                 )}
               />
             </div>
           </div>
+        </FormSection>
+
+        <Separator />
+
+        <FormSection title='Payment'>
+          <Controller
+            control={control}
+            name='baseFee'
+            render={({ field, fieldState: { error } }) => (
+              <CurrencyInput
+                {...field}
+                id={field.name}
+                label='Base Fee'
+                error={error?.message}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name='techFee'
+            render={({ field, fieldState: { error } }) => (
+              <CurrencyInput
+                {...field}
+                id={field.name}
+                label='Tech Fee'
+                error={error?.message}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name='questionnaireFee'
+            render={({ field, fieldState: { error } }) => (
+              <CurrencyInput
+                {...field}
+                id={field.name}
+                label='Questionnaire Fee'
+                error={error?.message}
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name='paymentStatus'
+            render={({ field, fieldState: { error } }) => (
+              <SelectInput
+                {...field}
+                id={field.name}
+                label='Payment Status'
+                error={error?.message}
+                options={paymentStatusOptions}
+                value={field.value ?? undefined}
+              />
+            )}
+          />
         </FormSection>
       </div>
     </Form>

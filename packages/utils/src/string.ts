@@ -14,3 +14,11 @@ export const digitString = (val?: string) => {
 export const greeting = (name?: string) => {
   return `Hi${name ? `, ${name}${name?.endsWith('.') ? '' : '.'}` : ''}`
 }
+
+export const formatZipCode = (val: string) => {
+  let value = digitString(val) // Remove non-digits
+  if (value.length > 5) {
+    value = `${value.slice(0, 5)}-${value.slice(5, 9)}`
+  }
+  return value
+}
