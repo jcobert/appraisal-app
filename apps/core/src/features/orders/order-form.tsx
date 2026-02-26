@@ -6,7 +6,14 @@ import { FC } from 'react'
 import { Controller, SubmitHandler } from 'react-hook-form'
 
 import { Button, Separator } from '@repo/ui'
-import { US_STATES, fullName, objectEntries, objectKeys } from '@repo/utils'
+import {
+  US_STATES,
+  fullName,
+  objectEntries,
+  objectKeys,
+  toUTCDate,
+  toUTCDateTime,
+} from '@repo/utils'
 
 import { OrderFormData, orderSchema } from '@/lib/db/schemas/order'
 
@@ -111,7 +118,16 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
   const onSubmit: SubmitHandler<OrderFormData> = async (data) => {
     // if (!isDirty) return
 
-    await createOrder.mutateAsync(data, {
+    // Normalize calendar dates to UTC midnight so the stored date portion
+    // always matches the user's selected calendar date, regardless of timezone.
+    const normalizedData = {
+      ...data,
+      orderDate: toUTCDate(data.orderDate) ?? null,
+      dueDate: toUTCDate(data.dueDate) ?? null,
+      inspectionDate: toUTCDateTime(data.inspectionDate) ?? null,
+    }
+
+    await createOrder.mutateAsync(normalizedData, {
       onSuccess: () => {
         router.replace(ordersPage)
       },

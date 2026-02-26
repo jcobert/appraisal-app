@@ -201,9 +201,9 @@ model Order {
   updatedBy        String?
   fileNumber       String?
   clientOrderNum   String?
-  orderDate        DateTime?
-  inspectionDate   DateTime?
-  dueDate          DateTime?
+  orderDate        DateTime?      @db.Date
+  inspectionDate   DateTime?                 // full timestamp — stored as wall-clock UTC
+  dueDate          DateTime?      @db.Date
   orderStatus      OrderStatus?   @default(open)
   appraisalType    AppraisalType?
   paymentStatus    PaymentStatus? @default(unpaid)
@@ -234,7 +234,7 @@ model Payment {
   createdBy   String?
   updatedBy   String?
   amount      Int
-  paymentDate DateTime?
+  paymentDate DateTime?      @db.Date
   paymentType PaymentType?
   description String?
   // Relations

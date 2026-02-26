@@ -39,12 +39,7 @@ const PageLayout: FC<PageLayoutProps> = ({
         />
       ) : null}
 
-      <div
-        className={cn([
-          'pb-safe h-full',
-          !!backgroundImage && 'relative',
-        ])}
-      >
+      <div className={cn(['pb-safe h-full', !!backgroundImage && 'relative'])}>
         <div
           className={cn([
             'flex flex-col gap-2 h-full',

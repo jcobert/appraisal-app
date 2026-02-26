@@ -2,11 +2,13 @@
 
 import { AllCommunityModule, ColDef, ModuleRegistry } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
-import { parseISO } from 'date-fns'
 import { FC, useMemo } from 'react'
+
+import { formatCalendarDate, formatCalendarDateTime } from '@repo/utils'
 
 import { GetOrdersResult } from '@/lib/db/handlers/order-handlers'
 
+import { ORDER_STATUS_LABEL } from '@/features/orders/types'
 import { getPropertyAddress } from '@/features/orders/utils'
 
 ModuleRegistry.registerModules([AllCommunityModule])
@@ -22,35 +24,38 @@ export type OrdersTableProps = {
 const OrdersTable: FC<OrdersTableProps> = ({ data }) => {
   const columns = useMemo<ColDef<OrdersTableData>[]>(() => {
     return [
-      { field: 'id', headerName: 'Order ID' },
+      {
+        field: 'orderStatus',
+        headerName: 'Status',
+        valueFormatter: ({ value }) => ORDER_STATUS_LABEL?.[value],
+      },
       {
         field: 'orderDate',
-        valueFormatter: ({ value }) => {
-          return parseISO(value as string).toLocaleDateString(undefined, {
-            dateStyle: 'medium',
-          })
-
-          // const dateStr = (value as string).split('T')[0] || ''
-          // const [year = '', month = '', day = ''] = dateStr?.split('-')
-          // return new Date(+year, +month - 1, +day).toLocaleDateString(
-          //   undefined,
-          //   {
-          //     dateStyle: 'medium',
-          //   },
-          // )
-        },
+        headerName: 'Received',
+        valueFormatter: ({ value }) => formatCalendarDate(value as string),
       },
-      { field: 'dueDate' },
+      {
+        field: 'dueDate',
+        headerName: 'Due',
+        valueFormatter: ({ value }) => formatCalendarDate(value as string),
+      },
       {
         field: 'property.street',
         headerName: 'Address',
         valueGetter: ({ data }) => getPropertyAddress(data?.property).address,
       },
-      { field: 'property.city', headerName: 'City' },
-      { field: 'property.state', headerName: 'State' },
-      { field: 'property.zip', headerName: 'ZIP' },
-      { field: 'appraiser.user.firstName' },
-      { field: 'inspectionDate' },
+      // { field: 'property.city', headerName: 'City' },
+      // { field: 'property.state', headerName: 'State' },
+      // { field: 'property.zip', headerName: 'ZIP' },
+      {
+        field: 'appraiser.user.firstName',
+        headerName: 'Appraiser',
+      },
+      {
+        field: 'inspectionDate',
+        headerName: 'Site Visit',
+        valueFormatter: ({ value }) => formatCalendarDateTime(value as string),
+      },
     ]
   }, [])
 

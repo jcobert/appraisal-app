@@ -374,6 +374,81 @@ async function main() {
     return result
   }
 
+  // Sets a wall-clock UTC time on a date (hours/minutes stored as-is in UTC
+  // so all viewers see the same time regardless of their timezone).
+  const withTime = (date: Date, hours: number, minutes: number) =>
+    new Date(
+      Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        hours,
+        minutes,
+      ),
+    )
+
+  // Pre-planned inspection schedule.
+  // Columns: [daysAgo (order received), inspDaysFromOrder, appraiserIdx (0–2), inspHours, inspMins]
+  //
+  // Inspection day = today - daysAgo + inspDaysFromOrder.
+  // Multiple orders intentionally share inspection days to reflect a realistic
+  // schedule. Constraint: same appraiser on the same day is always ≥60 min apart.
+  //
+  // Shared inspection days (absolute offset from today):
+  //   -25: i=0(a0@9:00),  i=1(a1@11:00), i=2(a2@14:00)
+  //   -22: i=3(a0@10:00), i=4(a1@13:00)
+  //   -20: i=5(a2@9:30),  i=6(a0@14:30), i=7(a1@15:30)
+  //   -17: i=8(a2@8:00),  i=9(a0@11:00)
+  //   -14: i=10(a1@9:00), i=11(a2@10:30), i=12(a0@13:00)
+  //   -11: i=13(a1@14:00),i=14(a2@15:00)
+  //   -15,-16,-17 = cancelled (no inspection)
+  //    -7: i=18(a0@9:00), i=19(a1@10:30), i=20(a2@13:30)
+  //    -3: i=21(a0@11:00),i=22(a1@9:00)
+  //    -1: i=23(a2@10:00),i=24(a0@14:00)
+  const orderSchedule: [
+    daysAgo: number,
+    inspDays: number,
+    appraiserIdx: number,
+    h: number,
+    m: number,
+  ][] = [
+    // ── Inspection day –25 ────────────────────────────────────────────────────
+    [30, 5, 0, 9,  0 ], // i=0  appraiser0 9:00 AM
+    [28, 3, 1, 11, 0 ], // i=1  appraiser1 11:00 AM
+    [27, 2, 2, 14, 0 ], // i=2  appraiser2 2:00 PM
+    // ── Inspection day –22 ────────────────────────────────────────────────────
+    [29, 7, 0, 10, 0 ], // i=3  appraiser0 10:00 AM
+    [26, 4, 1, 13, 0 ], // i=4  appraiser1 1:00 PM
+    // ── Inspection day –20 ────────────────────────────────────────────────────
+    [25, 5, 2, 9,  30], // i=5  appraiser2 9:30 AM
+    [23, 3, 0, 14, 30], // i=6  appraiser0 2:30 PM
+    [22, 2, 1, 15, 30], // i=7  appraiser1 3:30 PM
+    // ── Inspection day –17 ────────────────────────────────────────────────────
+    [24, 7, 2, 8,  0 ], // i=8  appraiser2 8:00 AM
+    [21, 4, 0, 11, 0 ], // i=9  appraiser0 11:00 AM
+    // ── Inspection day –14 ────────────────────────────────────────────────────
+    [20, 6, 1, 9,  0 ], // i=10 appraiser1 9:00 AM
+    [18, 4, 2, 10, 30], // i=11 appraiser2 10:30 AM
+    [17, 3, 0, 13, 0 ], // i=12 appraiser0 1:00 PM
+    // ── Inspection day –11 ────────────────────────────────────────────────────
+    [19, 8, 1, 14, 0 ], // i=13 appraiser1 2:00 PM
+    [16, 5, 2, 15, 0 ], // i=14 appraiser2 3:00 PM
+    // ── Cancelled — inspection dates are null (times unused) ──────────────────
+    [15, 5, 0, 0,  0 ], // i=15 cancelled
+    [14, 5, 1, 0,  0 ], // i=16 cancelled
+    [13, 5, 2, 0,  0 ], // i=17 cancelled
+    // ── Inspection day –7 ─────────────────────────────────────────────────────
+    [12, 5, 0, 9,  0 ], // i=18 appraiser0 9:00 AM
+    [11, 4, 1, 10, 30], // i=19 appraiser1 10:30 AM
+    [10, 3, 2, 13, 30], // i=20 appraiser2 1:30 PM
+    // ── Inspection day –3 ─────────────────────────────────────────────────────
+    [9,  6, 0, 11, 0 ], // i=21 appraiser0 11:00 AM
+    [8,  5, 1, 9,  0 ], // i=22 appraiser1 9:00 AM
+    // ── Inspection day –1 ─────────────────────────────────────────────────────
+    [7,  6, 2, 10, 0 ], // i=23 appraiser2 10:00 AM
+    [6,  5, 0, 14, 0 ], // i=24 appraiser0 2:00 PM
+  ]
+
   // Create 25 Orders with mixed statuses and relative dates
   const orderStatuses = [
     OrderStatus.open,
@@ -442,9 +517,9 @@ async function main() {
   const orders = []
 
   for (let i = 0; i < 25; i++) {
-    const daysAgo = 30 - i
+    const [daysAgo, inspDays, appraiserIdx, h, m] = orderSchedule[i]!
     const orderDate = addDays(today, -daysAgo)
-    const inspectionDate = addDays(orderDate, 5 + (i % 3))
+    const inspectionDate = withTime(addDays(orderDate, inspDays), h, m)
     const dueDate = addDays(orderDate, 14 + (i % 7))
 
     const order = await prisma.order.create({
@@ -453,7 +528,7 @@ async function main() {
         clientId: clients[i % clients.length].id,
         borrowerId: i % 2 === 0 ? borrowers[i % borrowers.length].id : null,
         propertyId: properties[i].id,
-        appraiserId: appraisers[i % appraisers.length].id,
+        appraiserId: appraisers[appraiserIdx]!.id,
         fileNumber: `APR-2026-${String(i + 1).padStart(3, '0')}`,
         clientOrderNum: `ORD-${String(1000 + i)}`,
         orderDate,
