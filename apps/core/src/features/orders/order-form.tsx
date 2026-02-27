@@ -21,6 +21,7 @@ import { OrderFormData, orderSchema } from '@/lib/db/schemas/order'
 import { formDefaults } from '@/utils/form'
 
 import Form from '@/components/form/form'
+import FormHeader from '@/components/form/form-header'
 import CurrencyInput from '@/components/form/inputs/currency-input'
 import DateInput from '@/components/form/inputs/date-input'
 import SelectInput, {
@@ -162,25 +163,28 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
       })}
       containerClassName='self-start max-w-7xl'
       header={
-        <div className='flex sm:justify-between sm:items-center max-sm:flex-col max-sm:gap-4'>
-          <Heading text='New Order' />
-          <div className='flex gap-4'>
-            <Button
-              variant='ghost'
-              className='flex-1'
-              onClick={() => {
-                router.push(ordersPage)
-              }}
-            >
-              Cancel
-            </Button>
-            <Button type='submit' className='flex-1'>
-              Create
-            </Button>
+        <FormHeader>
+          <div className='flex sm:justify-between sm:items-center max-sm:flex-col max-sm:gap-4'>
+            <Heading text='New Order' className='max-sm:hidden' />
+            <div className='flex gap-4'>
+              <Button
+                variant='ghost'
+                className='flex-1'
+                onClick={() => {
+                  router.push(ordersPage)
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type='submit' className='flex-1'>
+                Create
+              </Button>
+            </div>
           </div>
-        </div>
+        </FormHeader>
       }
     >
+      <Heading text='New Order' className='sm:hidden' />
       <div className='flex flex-col gap-8'>
         <FormSection title='Tracking'>
           <Controller

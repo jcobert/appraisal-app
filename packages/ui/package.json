@@ -23,7 +23,8 @@
     "./tabs": "./src/components/tabs.tsx",
     "./tooltip": "./src/components/tooltip.tsx",
     "./calendar": "./src/components/calendar.tsx",
-    "./field": "./src/components/field.tsx"
+    "./field": "./src/components/field.tsx",
+    "./badge": "./src/components/badge.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
