@@ -6,13 +6,9 @@ import { Organization } from '@repo/database'
 import { intersection } from 'lodash'
 
 import { isAuthenticated } from '@/utils/auth'
-import { objectEntries, objectKeys } from '@repo/utils'
+import { objectKeys } from '@repo/utils'
 
-import {
-  APP_PERMISSIONS,
-  PermissionAction,
-  PermissionRequirement,
-} from '@/configuration/permissions'
+import { APP_PERMISSIONS, PermissionAction } from '@/configuration/permissions'
 import { redirect } from 'next/navigation'
 import { homeUrl } from '@/utils/nav'
 import { handleGetActiveUserOrgMember } from '@/lib/db/handlers/organization-member-handlers'
@@ -46,10 +42,20 @@ export const getUserPermissions = async (
       APP_PERMISSIONS,
     )?.filter((action) => {
       const requirement = APP_PERMISSIONS[action]
-      const hasRole = !!intersection(requirement.roles, userRoles)?.length
-      const meetsOwnerReq = !requirement.requiresOwner || isOwner
-      // User has permission if they have a required role OR if ownership is required and they are the owner
-      return hasRole || (!!requirement.requiresOwner && isOwner)
+      // If ownership is required, check ownership.
+      if (requirement.requiresOwner) {
+        return isOwner
+      }
+      // Otherwise check roles based on roleConstraint.
+      const constraint = requirement.roleConstraint || 'any'
+      const sharedRoles = intersection(requirement.roles, userRoles)
+
+      if (constraint === 'all') {
+        // User must have ALL required roles
+        return sharedRoles.length === requirement.roles.length
+      }
+      // Default: User needs at least ONE required role
+      return sharedRoles.length > 0
     })
     return userAllowedActions
   } catch (error) {
@@ -76,7 +82,7 @@ export const canQuery = async (_options: CanQueryOptions = {}) => {
 
 /**
  * Checks if a user has permission to perform a specific action in an organization.
- * Checks both role-based permissions and ownership requirements.
+ * Leverages getUserPermissions for consistent permission logic.
  */
 export const userCan = async ({
   action,
@@ -85,24 +91,8 @@ export const userCan = async ({
   action: PermissionAction
   organizationId: Organization['id']
 }): Promise<boolean> => {
-  try {
-    const {
-      active,
-      roles = [],
-      isOwner = false,
-    } = (await handleGetActiveUserOrgMember(organizationId))?.data || {}
-    const userRoles = !active ? [] : roles
-    const requirement = APP_PERMISSIONS[action]
-    const hasRole = !!intersection(requirement.roles, userRoles)?.length
-    const meetsOwnerReq = !requirement.requiresOwner || isOwner
-    // User has permission if they have a required role OR if ownership is required and they are the owner
-    return hasRole || (!!requirement.requiresOwner && isOwner)
-  } catch (error) {
-    // If database query fails, deny permission (fail safe)
-    // eslint-disable-next-line no-console
-    console.error('Error checking user permissions:', error)
-    return false
-  }
+  const permissions = await getUserPermissions(organizationId)
+  return permissions.includes(action)
 }
 
 /** Protects page server side by redirecting if user not authorized. */

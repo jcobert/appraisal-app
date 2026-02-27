@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Order" ALTER COLUMN "orderDate" SET DATA TYPE DATE,
+ALTER COLUMN "dueDate" SET DATA TYPE DATE;
+
+-- AlterTable
+ALTER TABLE "Payment" ALTER COLUMN "paymentDate" SET DATA TYPE DATE;

@@ -11,6 +11,7 @@
     "prisma:migrate": "dotenv -e ../../.env.local -- prisma migrate dev",
     "prisma:studio": "dotenv -e ../../.env.local -- prisma studio",
     "prisma:validate": "dotenv -e ../../.env.local -- prisma validate",
+    "prisma:reset": "dotenv -e ../../.env.local -- prisma migrate reset",
     "postinstall": "dotenv -e ../../.env.local -- prisma generate"
   },
   "devDependencies": {
@@ -20,9 +21,13 @@
     "dotenv-cli": "7.4.4",
     "eslint": "^8.57.1",
     "prisma": "^6.7.0",
+    "tsx": "^4.19.2",
     "typescript": "workspace:*"
   },
   "dependencies": {
     "@prisma/client": "^6.7.0"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

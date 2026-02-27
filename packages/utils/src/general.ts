@@ -140,3 +140,15 @@ export const isOk = (code?: string) => {
   if (!code) return false
   return code?.toLowerCase() === 'ok'
 }
+
+export const formatCurrency = (
+  val: number | null | undefined,
+  currency: string = 'USD',
+  locale: string = 'en-US',
+): string => {
+  if (!exists(val)) return ''
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+  }).format(val)
+}

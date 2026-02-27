@@ -34,8 +34,7 @@ export const VALIDATION_PATTERNS = {
  * Predefined validation messages for common patterns.
  */
 const VALIDATION_MESSAGES = {
-  invalidPhoneChars:
-    'Invalid phone number format',
+  invalidPhoneChars: 'Invalid phone number format',
   invalidUuidChars:
     'Invalid UUID format. UUIDs must contain only letters, numbers, hyphens, and underscores',
   dangerousContent: 'Text contains potentially unsafe content',

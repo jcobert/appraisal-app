@@ -110,6 +110,7 @@ model Organization {
   // Relations
   members     OrgMember[]
   invitations OrgInvitation[]
+  orders      Order[]
 }
 
 model OrgInvitation {
@@ -200,12 +201,12 @@ model Order {
   updatedBy        String?
   fileNumber       String?
   clientOrderNum   String?
-  orderDate        DateTime?
-  inspectionDate   DateTime?
-  dueDate          DateTime?
-  orderStatus      OrderStatus?
+  orderDate        DateTime?      @db.Date
+  inspectionDate   DateTime?                 // full timestamp — stored as wall-clock UTC
+  dueDate          DateTime?      @db.Date
+  orderStatus      OrderStatus?   @default(open)
   appraisalType    AppraisalType?
-  paymentStatus    PaymentStatus?
+  paymentStatus    PaymentStatus? @default(unpaid)
   baseFee          Int?
   techFee          Int?
   questionnaireFee Int?
@@ -221,6 +222,8 @@ model Order {
   client           Client?        @relation(fields: [clientId], references: [id])
   appraiserId      String?
   appraiser        OrgMember?     @relation(fields: [appraiserId], references: [id])
+  organizationId   String
+  organization     Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   Payment          Payment[]
 }
 
@@ -231,7 +234,7 @@ model Payment {
   createdBy   String?
   updatedBy   String?
   amount      Int
-  paymentDate DateTime?
+  paymentDate DateTime?      @db.Date
   paymentType PaymentType?
   description String?
   // Relations

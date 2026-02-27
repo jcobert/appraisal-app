@@ -1,4 +1,4 @@
-import { OrgMember, Organization, User } from '@repo/database'
+import { Order, OrgMember, Organization, User } from '@repo/database'
 
 import { filteredQueryKey } from '@/utils/query'
 
@@ -12,6 +12,13 @@ export const organizationsQueryKey = {
   all: ['organizations'],
   filtered: (params: Partial<Organization>) =>
     filteredQueryKey(params, organizationsQueryKey.all),
+} as const
+
+export const ordersQueryKey = {
+  all: ['orders'],
+  filtered: (
+    params: Pick<Order, 'organizationId'> & { orderId?: Order['id'] },
+  ) => filteredQueryKey(params, ordersQueryKey.all),
 } as const
 
 export const usersQueryKey = {

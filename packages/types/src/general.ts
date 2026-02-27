@@ -1,4 +1,4 @@
-import { ZodTypeAny } from 'zod'
+import { ZodType, ZodTypeAny } from 'zod'
 
 export type PageParams<
   TRouteParams = Record<string, string>,
@@ -21,12 +21,28 @@ export type Stringified<T extends Record<string, unknown>> = {
     : string
 }
 
+/** Removes readonly modifier from any properties of object type `T`. */
+export type Writeable<T> = { -readonly [P in keyof T]: T[P] }
+
+/** Makes all properties of object type `T` nullable (value | null). */
+export type Nullable<T extends Record<string, unknown>> = {
+  [K in keyof T]: T[K] | null
+}
+
 export type ZodObject<T extends Record<string, unknown>> = {
   [k in keyof T]?: ZodTypeAny
 }
 
-/** Removes readonly modifier from any properties of object type `T`. */
-export type Writeable<T> = { -readonly [P in keyof T]: T[P] }
+export type ZodObjectShape<T extends Record<string, unknown>> = {
+  [K in keyof Writeable<T> as null extends T[K] ? K : never]?: ZodType<T[K]>
+} & {
+  [K in keyof Writeable<T> as null extends T[K] ? never : K]: ZodType<T[K]>
+}
+
+/** ZodObjectShape where all fields accept nullable values (for form schemas). */
+export type NullableZodObjectShape<T extends Record<string, unknown>> = {
+  [K in keyof Writeable<T>]?: ZodType<T[K] | null>
+}
 
 export type PrimitiveValue =
   | string

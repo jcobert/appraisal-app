@@ -1,6 +1,6 @@
 'use client'
 
-import { FC } from 'react'
+import { ComponentProps, FC } from 'react'
 
 import { AvatarFallback, AvatarImage, Avatar as AvatarRoot } from '@repo/ui'
 import { cn } from '@repo/utils'
@@ -12,7 +12,7 @@ type Props = {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   className?: string
   fallbackClassName?: string
-}
+} & Pick<ComponentProps<typeof AvatarRoot>, 'aria-hidden'>
 
 const Avatar: FC<Props> = ({
   name,
@@ -21,6 +21,7 @@ const Avatar: FC<Props> = ({
   size = 'md',
   className,
   fallbackClassName,
+  ...rootProps
 }) => {
   const [first, second] = (name || '').split(' ')
   const fallback =
@@ -28,6 +29,7 @@ const Avatar: FC<Props> = ({
 
   return (
     <AvatarRoot
+      {...rootProps}
       className={cn([
         // 'rounded-lg',
         size === 'xs' && 'size-6',
