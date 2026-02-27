@@ -196,7 +196,7 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
                 id={field.name}
                 label='Order Received'
                 error={error?.message}
-                // required
+                required
               />
             )}
           />
@@ -224,6 +224,7 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
                 error={error?.message}
                 options={orderStatusOptions}
                 value={field.value ?? undefined}
+                required
               />
             )}
           />
@@ -243,6 +244,7 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
                 error={error?.message}
                 options={appraiserOptions}
                 value={field.value ?? undefined}
+                clearable
               />
             )}
           />
@@ -420,6 +422,7 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
                 error={error?.message}
                 options={paymentStatusOptions}
                 value={field.value ?? undefined}
+                required
               />
             )}
           />
