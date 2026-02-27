@@ -15,6 +15,7 @@ import { GetOrdersResult } from '@/lib/db/handlers/order-handlers'
 
 import AddressCell from '@/features/orders/table/address-cell'
 import ClientCell from '@/features/orders/table/client-cell'
+import FeeCell from '@/features/orders/table/fee.cell'
 import OrderStatusCell from '@/features/orders/table/order-status-cell'
 import PaymentStatusCell from '@/features/orders/table/payment-status-cell'
 import {
@@ -25,7 +26,12 @@ import { getPropertyAddress } from '@/features/orders/utils'
 
 ModuleRegistry.registerModules([AllCommunityModule])
 
-export type OrdersTableData = NonNullable<GetOrdersResult['data']>[number]
+export type OrdersTableData = NonNullable<GetOrdersResult['data']>[number] & {
+  fees: Pick<
+    NonNullable<GetOrdersResult['data']>[number],
+    'baseFee' | 'techFee' | 'questionnaireFee'
+  > & { totalFee: number }
+}
 
 export type OrdersTableProps = {
   data: OrdersTableData[] | null | undefined
@@ -96,26 +102,38 @@ const OrdersTable: FC<OrdersTableProps> = ({ data }) => {
         valueFormatter: ({ value }) => formatCalendarDateTime(value as string),
       },
       {
-        field: 'baseFee',
-        headerName: 'Base Fee',
-        valueFormatter: ({ data }) => formatCurrency(data?.baseFee),
+        field: 'fees',
+        headerName: 'Net Pay',
+        valueFormatter: ({ data }) => formatCurrency(data?.fees.totalFee),
         width: 125,
+        cellRenderer: FeeCell,
       },
+      // {
+      //   field: 'baseFee',
+      //   headerName: 'Base Fee',
+      //   valueFormatter: ({ data }) => formatCurrency(data?.baseFee),
+      //   width: 125,
+      // },
+      // {
+      //   field: 'techFee',
+      //   headerName: 'Tech Fee',
+      //   valueFormatter: ({ data }) => formatCurrency(data?.techFee),
+      //   width: 125,
+      // },
+      // {
+      //   field: 'questionnaireFee',
+      //   headerName: 'Quest. Fee',
+      //   valueFormatter: ({ data }) => formatCurrency(data?.questionnaireFee),
+      //   width: 125,
+      // },
       {
-        field: 'techFee',
-        headerName: 'Tech Fee',
-        valueFormatter: ({ data }) => formatCurrency(data?.techFee),
-        width: 125,
-      },
-      {
-        field: 'questionnaireFee',
-        headerName: 'Quest. Fee',
-        valueFormatter: ({ data }) => formatCurrency(data?.questionnaireFee),
-        width: 125,
+        field: 'sent',
+        headerName: 'Sent',
+        width: 100,
       },
       {
         field: 'paymentStatus',
-        headerName: 'Payment',
+        headerName: 'Paid',
         valueFormatter: ({ value }) => PAYMENT_STATUS_LABEL?.[value],
         cellRenderer: PaymentStatusCell,
         width: 125,
