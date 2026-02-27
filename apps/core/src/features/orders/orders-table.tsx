@@ -7,11 +7,14 @@ import { FC, useMemo } from 'react'
 import {
   formatCalendarDate,
   formatCalendarDateTime,
+  formatCurrency,
   fullName,
 } from '@repo/utils'
 
 import { GetOrdersResult } from '@/lib/db/handlers/order-handlers'
 
+import AddressCell from '@/features/orders/table/address-cell'
+import ClientCell from '@/features/orders/table/client-cell'
 import OrderStatusCell from '@/features/orders/table/order-status-cell'
 import PaymentStatusCell from '@/features/orders/table/payment-status-cell'
 import {
@@ -62,7 +65,7 @@ const OrdersTable: FC<OrdersTableProps> = ({ data }) => {
         headerName: 'Property',
         valueFormatter: ({ data }) =>
           getPropertyAddress(data?.property).address,
-        // cellRenderer: AddressCell,
+        cellRenderer: AddressCell,
       },
       // { field: 'property.city', headerName: 'City' },
       // { field: 'property.state', headerName: 'State' },
@@ -71,6 +74,7 @@ const OrdersTable: FC<OrdersTableProps> = ({ data }) => {
         field: 'client',
         headerName: 'Client',
         valueFormatter: ({ data }) => data?.client?.name || '',
+        cellRenderer: ClientCell,
       },
       {
         field: 'clientOrderNum',
@@ -84,11 +88,30 @@ const OrdersTable: FC<OrdersTableProps> = ({ data }) => {
             data?.appraiser?.user.firstName,
             data?.appraiser?.user?.lastName,
           ),
+        width: 150,
       },
       {
         field: 'inspectionDate',
         headerName: 'Site Visit',
         valueFormatter: ({ value }) => formatCalendarDateTime(value as string),
+      },
+      {
+        field: 'baseFee',
+        headerName: 'Base Fee',
+        valueFormatter: ({ data }) => formatCurrency(data?.baseFee),
+        width: 125,
+      },
+      {
+        field: 'techFee',
+        headerName: 'Tech Fee',
+        valueFormatter: ({ data }) => formatCurrency(data?.techFee),
+        width: 125,
+      },
+      {
+        field: 'questionnaireFee',
+        headerName: 'Quest. Fee',
+        valueFormatter: ({ data }) => formatCurrency(data?.questionnaireFee),
+        width: 125,
       },
       {
         field: 'paymentStatus',

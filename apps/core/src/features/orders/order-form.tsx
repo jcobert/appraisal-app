@@ -202,19 +202,6 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
           />
           <Controller
             control={control}
-            name='clientOrderNum'
-            render={({ field, fieldState: { error } }) => (
-              <TextInput
-                {...field}
-                id={field.name}
-                label='Client Reference Number'
-                error={error?.message}
-                tooltip='Optional reference number/ID provided by the client.'
-              />
-            )}
-          />
-          <Controller
-            control={control}
             name='orderStatus'
             render={({ field, fieldState: { error } }) => (
               <SelectInput
@@ -225,6 +212,19 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
                 options={orderStatusOptions}
                 value={field.value ?? undefined}
                 required
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name='clientOrderNum'
+            render={({ field, fieldState: { error } }) => (
+              <TextInput
+                {...field}
+                id={field.name}
+                label='Reference Number'
+                error={error?.message}
+                tooltip='Optional reference number/ID provided by the client.'
               />
             )}
           />

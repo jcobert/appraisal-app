@@ -9,12 +9,15 @@ const AddressCell = ({
   value,
 }: CustomCellRendererProps<OrdersTableData, OrdersTableData['property']>) => {
   const { address, cityStateZip } = getPropertyAddress(value)
-
+  if (!value) return ''
   return (
     <Popover>
-      <PopoverTrigger>{address}</PopoverTrigger>
-      <PopoverContent className='flex flex-col'>
-        <span>{address}</span>
+      <PopoverTrigger className='hover:text-primary transition'>
+        {address}
+      </PopoverTrigger>
+      <PopoverContent className='flex flex-col text-sm w-fit'>
+        <span>{value?.street}</span>
+        {value?.street2 ? <span>{value?.street2}</span> : null}
         <span>{cityStateZip}</span>
       </PopoverContent>
     </Popover>
