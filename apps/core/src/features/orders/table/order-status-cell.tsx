@@ -28,7 +28,11 @@ const OrderStatusCell = ({
 >) => {
   const label = valueFormatted || value
   const variant = getVariant(value)
-  return <Badge variant={variant}>{label}</Badge>
+  return (
+    <Badge variant={variant} className='whitespace-nowrap'>
+      {label}
+    </Badge>
+  )
 }
 
 export default OrderStatusCell

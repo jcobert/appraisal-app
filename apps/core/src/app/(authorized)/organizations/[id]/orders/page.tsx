@@ -1,3 +1,4 @@
+import { PlusIcon } from 'lucide-react'
 import Link from 'next/link'
 import { FC } from 'react'
 
@@ -37,7 +38,8 @@ const Page: FC<PageParams<{ id: string }>> = async ({ params }) => {
         <div className='flex justify-end'>
           <Button asChild variant='outline'>
             <Link href={`/organizations/${organizationId}/orders/create`}>
-              Create order
+              <PlusIcon className='size-4' />
+              New
             </Link>
           </Button>
         </div>
