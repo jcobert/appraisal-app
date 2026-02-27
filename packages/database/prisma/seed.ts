@@ -174,7 +174,10 @@ async function main() {
       city: 'New York',
       state: 'NY',
       zip: '10001',
+      website: 'https://www.firstnationalbank.com',
+      logo: 'https://via.placeholder.com/150/0066CC/FFFFFF?text=FNB',
       poc: 'Jennifer Davis',
+      note: 'Preferred lender - fast turnaround',
       favorite: true,
       createdBy: user1.id,
       updatedBy: user1.id,
@@ -190,6 +193,8 @@ async function main() {
       city: 'Chicago',
       state: 'IL',
       zip: '60601',
+      website: 'https://www.metromortgage.com',
+      logo: 'https://via.placeholder.com/150/FF6B35/FFFFFF?text=MMC',
       poc: 'Robert Chen',
       createdBy: user1.id,
       updatedBy: user1.id,
@@ -205,7 +210,10 @@ async function main() {
       city: 'Miami',
       state: 'FL',
       zip: '33101',
+      website: 'https://www.coastallending.com',
+      logo: 'https://via.placeholder.com/150/00B4D8/FFFFFF?text=CLG',
       poc: 'Maria Santos',
+      note: 'Large volume client',
       favorite: true,
       createdBy: user1.id,
       updatedBy: user1.id,
@@ -221,15 +229,211 @@ async function main() {
       city: 'Denver',
       state: 'CO',
       zip: '80201',
+      logo: 'https://via.placeholder.com/150/8B4513/FFFFFF?text=SFS',
       poc: 'David Park',
       createdBy: user1.id,
       updatedBy: user1.id,
     },
   })
 
-  const clients = [client1, client2, client3, client4]
+  const client5 = await prisma.client.create({
+    data: {
+      name: 'Capital Credit Union',
+      email: 'lending@capitalcu.org',
+      phone: '555-5000',
+      street: '890 Main Street',
+      city: 'Seattle',
+      state: 'WA',
+      zip: '98101',
+      website: 'https://www.capitalcu.org',
+      favorite: true,
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
 
-  console.log('✅ Created 4 clients')
+  const client6 = await prisma.client.create({
+    data: {
+      name: 'Pacific Home Loans',
+      email: 'orders@pacifichomeloans.com',
+      phone: '555-6000',
+      street: '1200 Harbor Way',
+      street2: 'Suite 300',
+      city: 'San Diego',
+      state: 'CA',
+      zip: '92101',
+      website: 'https://www.pacifichomeloans.com',
+      logo: 'https://via.placeholder.com/150/4A90E2/FFFFFF?text=PHL',
+      poc: 'Angela Martinez',
+      note: 'Net 30 payment terms',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const client7 = await prisma.client.create({
+    data: {
+      name: 'Heritage Bank & Trust',
+      email: 'realestate@heritagebank.com',
+      street: '555 Oak Avenue',
+      city: 'Boston',
+      state: 'MA',
+      zip: '02101',
+      website: 'https://www.heritagebank.com',
+      logo: 'https://via.placeholder.com/150/2C3E50/FFFFFF?text=HBT',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const client8 = await prisma.client.create({
+    data: {
+      name: 'Apex Lending Solutions',
+      email: 'appraisals@apexlending.com',
+      phone: '555-8000',
+      street: '2100 Commerce Boulevard',
+      city: 'Austin',
+      state: 'TX',
+      zip: '78701',
+      logo: 'https://via.placeholder.com/150/E74C3C/FFFFFF?text=ALS',
+      poc: 'Michael Foster',
+      favorite: true,
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const client9 = await prisma.client.create({
+    data: {
+      name: 'Riverside Community Bank',
+      email: 'mortgages@riversidecb.com',
+      phone: '555-9000',
+      city: 'Portland',
+      state: 'OR',
+      zip: '97201',
+      poc: 'Sarah Williams',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const client10 = await prisma.client.create({
+    data: {
+      name: 'Empire Realty Group',
+      email: 'commercial@empirerealty.com',
+      phone: '555-1001',
+      street: '750 Park Place',
+      street2: '15th Floor',
+      city: 'New York',
+      state: 'NY',
+      zip: '10022',
+      website: 'https://www.empirerealty.com',
+      logo: 'https://via.placeholder.com/150/9B59B6/FFFFFF?text=ERG',
+      poc: 'Thomas Reed',
+      note: 'Specializes in commercial properties',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const client11 = await prisma.client.create({
+    data: {
+      name: 'Sunshine Mortgage Corp',
+      email: 'orders@sunshinemortgage.com',
+      street: '3400 Palm Boulevard',
+      city: 'Tampa',
+      state: 'FL',
+      zip: '33602',
+      website: 'https://www.sunshinemortgage.com',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const client12 = await prisma.client.create({
+    data: {
+      name: 'Midwest Federal Savings',
+      email: 'appraisals@mwfederal.com',
+      phone: '555-1202',
+      street: '8900 Central Avenue',
+      city: 'Minneapolis',
+      state: 'MN',
+      zip: '55401',
+      logo: 'https://via.placeholder.com/150/27AE60/FFFFFF?text=MFS',
+      poc: 'Patricia Johnson',
+      favorite: true,
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const client13 = await prisma.client.create({
+    data: {
+      name: 'United Home Funding',
+      email: 'info@unitedhomefunding.com',
+      phone: '555-1303',
+      city: 'Phoenix',
+      state: 'AZ',
+      zip: '85001',
+      website: 'https://www.unitedhomefunding.com',
+      logo: 'https://via.placeholder.com/150/F39C12/FFFFFF?text=UHF',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const client14 = await prisma.client.create({
+    data: {
+      name: 'Premier Mortgage Services',
+      phone: '555-1404',
+      street: '1515 Business Park Drive',
+      city: 'Atlanta',
+      state: 'GA',
+      zip: '30301',
+      poc: 'Daniel Kim',
+      note: 'Rush orders available',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const client15 = await prisma.client.create({
+    data: {
+      name: 'Gateway Financial Group',
+      email: 'appraisals@gatewayfinancial.com',
+      phone: '555-1505',
+      street: '6700 Enterprise Way',
+      street2: 'Building C',
+      city: 'St. Louis',
+      state: 'MO',
+      zip: '63101',
+      website: 'https://www.gatewayfinancial.com',
+      logo: 'https://via.placeholder.com/150/16A085/FFFFFF?text=GFG',
+      poc: 'Rebecca Thompson',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const clients = [
+    client1,
+    client2,
+    client3,
+    client4,
+    client5,
+    client6,
+    client7,
+    client8,
+    client9,
+    client10,
+    client11,
+    client12,
+    client13,
+    client14,
+    client15,
+  ]
+
+  console.log('✅ Created 15 clients')
 
   // Create Borrowers
   const borrower1 = await prisma.borrower.create({
@@ -238,6 +442,11 @@ async function main() {
       lastName: 'Thompson',
       email: 'alice.thompson@email.com',
       phone: '555-5000',
+      street: '1234 Elm Street',
+      city: 'Austin',
+      state: 'TX',
+      zip: '78701',
+      note: 'Prefers email contact',
       createdBy: user1.id,
       updatedBy: user1.id,
     },
@@ -258,8 +467,12 @@ async function main() {
     data: {
       firstName: 'Jennifer',
       lastName: 'Lee',
-      email: 'jennifer.lee@email.com',
       phone: '555-5002',
+      street: '890 Ocean View',
+      street2: 'Apt 5B',
+      city: 'San Diego',
+      state: 'CA',
+      zip: '92101',
       createdBy: user1.id,
       updatedBy: user1.id,
     },
@@ -271,6 +484,9 @@ async function main() {
       lastName: 'Anderson',
       email: 'robert.anderson@email.com',
       phone: '555-5003',
+      city: 'Denver',
+      state: 'CO',
+      zip: '80202',
       createdBy: user1.id,
       updatedBy: user1.id,
     },
@@ -282,14 +498,98 @@ async function main() {
       lastName: 'Taylor',
       email: 'lisa.taylor@email.com',
       phone: '555-5004',
+      street: '567 Maple Avenue',
+      city: 'Seattle',
+      state: 'WA',
+      zip: '98101',
       createdBy: user1.id,
       updatedBy: user1.id,
     },
   })
 
-  const borrowers = [borrower1, borrower2, borrower3, borrower4, borrower5]
+  const borrower6 = await prisma.borrower.create({
+    data: {
+      firstName: 'Michael',
+      lastName: 'Chang',
+      email: 'mchang@email.com',
+      street: '2345 Park Place',
+      city: 'Chicago',
+      state: 'IL',
+      zip: '60601',
+      note: 'First-time buyer',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
 
-  console.log('✅ Created 5 borrowers')
+  const borrower7 = await prisma.borrower.create({
+    data: {
+      firstName: 'Emma',
+      lastName: 'Wilson',
+      phone: '555-5007',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const borrower8 = await prisma.borrower.create({
+    data: {
+      firstName: 'James',
+      lastName: "O'Brien",
+      email: 'james.obrien@email.com',
+      phone: '555-5008',
+      street: '4567 Highland Drive',
+      city: 'Boston',
+      state: 'MA',
+      zip: '02101',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const borrower9 = await prisma.borrower.create({
+    data: {
+      firstName: 'Sophia',
+      lastName: 'Patel',
+      email: 'sophia.patel@email.com',
+      street: '789 Valley Road',
+      street2: 'Unit 12',
+      city: 'Phoenix',
+      state: 'AZ',
+      zip: '85001',
+      note: 'Self-employed',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const borrower10 = await prisma.borrower.create({
+    data: {
+      firstName: 'Daniel',
+      lastName: 'Rodriguez',
+      phone: '555-5010',
+      city: 'Miami',
+      state: 'FL',
+      zip: '33101',
+      createdBy: user1.id,
+      updatedBy: user1.id,
+    },
+  })
+
+  const borrowers = [
+    borrower1,
+    borrower2,
+    borrower3,
+    borrower4,
+    borrower5,
+    borrower6,
+    borrower7,
+    borrower8,
+    borrower9,
+    borrower10,
+  ]
+
+  console.log('✅ Created 10 borrowers')
 
   // Create Properties
   const properties = []
@@ -354,9 +654,21 @@ async function main() {
       data: {
         propertyType: propertyTypes[i % propertyTypes.length],
         street: streets[i],
+        street2:
+          i % 5 === 0
+            ? `Unit ${String.fromCharCode(65 + (i % 10))}`
+            : undefined,
         city: cities[i % cities.length],
         state: states[i % states.length],
         zip: zips[i % zips.length],
+        note:
+          i % 7 === 0
+            ? 'Corner lot'
+            : i % 11 === 0
+              ? 'Recently renovated'
+              : i % 13 === 0
+                ? 'Needs foundation inspection'
+                : undefined,
         createdBy: user1.id,
         updatedBy: user1.id,
       },
@@ -413,40 +725,40 @@ async function main() {
     m: number,
   ][] = [
     // ── Inspection day –25 ────────────────────────────────────────────────────
-    [30, 5, 0, 9,  0 ], // i=0  appraiser0 9:00 AM
-    [28, 3, 1, 11, 0 ], // i=1  appraiser1 11:00 AM
-    [27, 2, 2, 14, 0 ], // i=2  appraiser2 2:00 PM
+    [30, 5, 0, 9, 0], // i=0  appraiser0 9:00 AM
+    [28, 3, 1, 11, 0], // i=1  appraiser1 11:00 AM
+    [27, 2, 2, 14, 0], // i=2  appraiser2 2:00 PM
     // ── Inspection day –22 ────────────────────────────────────────────────────
-    [29, 7, 0, 10, 0 ], // i=3  appraiser0 10:00 AM
-    [26, 4, 1, 13, 0 ], // i=4  appraiser1 1:00 PM
+    [29, 7, 0, 10, 0], // i=3  appraiser0 10:00 AM
+    [26, 4, 1, 13, 0], // i=4  appraiser1 1:00 PM
     // ── Inspection day –20 ────────────────────────────────────────────────────
-    [25, 5, 2, 9,  30], // i=5  appraiser2 9:30 AM
+    [25, 5, 2, 9, 30], // i=5  appraiser2 9:30 AM
     [23, 3, 0, 14, 30], // i=6  appraiser0 2:30 PM
     [22, 2, 1, 15, 30], // i=7  appraiser1 3:30 PM
     // ── Inspection day –17 ────────────────────────────────────────────────────
-    [24, 7, 2, 8,  0 ], // i=8  appraiser2 8:00 AM
-    [21, 4, 0, 11, 0 ], // i=9  appraiser0 11:00 AM
+    [24, 7, 2, 8, 0], // i=8  appraiser2 8:00 AM
+    [21, 4, 0, 11, 0], // i=9  appraiser0 11:00 AM
     // ── Inspection day –14 ────────────────────────────────────────────────────
-    [20, 6, 1, 9,  0 ], // i=10 appraiser1 9:00 AM
+    [20, 6, 1, 9, 0], // i=10 appraiser1 9:00 AM
     [18, 4, 2, 10, 30], // i=11 appraiser2 10:30 AM
-    [17, 3, 0, 13, 0 ], // i=12 appraiser0 1:00 PM
+    [17, 3, 0, 13, 0], // i=12 appraiser0 1:00 PM
     // ── Inspection day –11 ────────────────────────────────────────────────────
-    [19, 8, 1, 14, 0 ], // i=13 appraiser1 2:00 PM
-    [16, 5, 2, 15, 0 ], // i=14 appraiser2 3:00 PM
+    [19, 8, 1, 14, 0], // i=13 appraiser1 2:00 PM
+    [16, 5, 2, 15, 0], // i=14 appraiser2 3:00 PM
     // ── Cancelled — inspection dates are null (times unused) ──────────────────
-    [15, 5, 0, 0,  0 ], // i=15 cancelled
-    [14, 5, 1, 0,  0 ], // i=16 cancelled
-    [13, 5, 2, 0,  0 ], // i=17 cancelled
+    [15, 5, 0, 0, 0], // i=15 cancelled
+    [14, 5, 1, 0, 0], // i=16 cancelled
+    [13, 5, 2, 0, 0], // i=17 cancelled
     // ── Inspection day –7 ─────────────────────────────────────────────────────
-    [12, 5, 0, 9,  0 ], // i=18 appraiser0 9:00 AM
+    [12, 5, 0, 9, 0], // i=18 appraiser0 9:00 AM
     [11, 4, 1, 10, 30], // i=19 appraiser1 10:30 AM
     [10, 3, 2, 13, 30], // i=20 appraiser2 1:30 PM
     // ── Inspection day –3 ─────────────────────────────────────────────────────
-    [9,  6, 0, 11, 0 ], // i=21 appraiser0 11:00 AM
-    [8,  5, 1, 9,  0 ], // i=22 appraiser1 9:00 AM
+    [9, 6, 0, 11, 0], // i=21 appraiser0 11:00 AM
+    [8, 5, 1, 9, 0], // i=22 appraiser1 9:00 AM
     // ── Inspection day –1 ─────────────────────────────────────────────────────
-    [7,  6, 2, 10, 0 ], // i=23 appraiser2 10:00 AM
-    [6,  5, 0, 14, 0 ], // i=24 appraiser0 2:00 PM
+    [7, 6, 2, 10, 0], // i=23 appraiser2 10:00 AM
+    [6, 5, 0, 14, 0], // i=24 appraiser0 2:00 PM
   ]
 
   // Create 25 Orders with mixed statuses and relative dates
@@ -478,32 +790,36 @@ async function main() {
     OrderStatus.open,
   ]
 
+  // Payment statuses must follow business rules:
+  // - Closed orders must be paid
+  // - Cancelled orders must be unpaid
+  // - Partial payments are rare (only on open orders)
   const paymentStatuses = [
-    PaymentStatus.unpaid,
-    PaymentStatus.partial,
-    PaymentStatus.unpaid,
-    PaymentStatus.unpaid,
-    PaymentStatus.partial,
-    PaymentStatus.unpaid,
-    PaymentStatus.unpaid,
-    PaymentStatus.unpaid,
-    PaymentStatus.paid,
-    PaymentStatus.paid,
-    PaymentStatus.paid,
-    PaymentStatus.paid,
-    PaymentStatus.partial,
-    PaymentStatus.paid,
-    PaymentStatus.paid,
-    PaymentStatus.unpaid,
-    PaymentStatus.unpaid,
-    PaymentStatus.partial,
-    PaymentStatus.unpaid,
-    PaymentStatus.partial,
-    PaymentStatus.paid,
-    PaymentStatus.paid,
-    PaymentStatus.unpaid,
-    PaymentStatus.unpaid,
-    PaymentStatus.partial,
+    PaymentStatus.unpaid, // 0: open
+    PaymentStatus.partial, // 1: open - rare partial payment
+    PaymentStatus.unpaid, // 2: open
+    PaymentStatus.unpaid, // 3: open
+    PaymentStatus.unpaid, // 4: open
+    PaymentStatus.unpaid, // 5: open
+    PaymentStatus.unpaid, // 6: open
+    PaymentStatus.partial, // 7: open - rare partial payment
+    PaymentStatus.paid, // 8: closed (must be paid)
+    PaymentStatus.paid, // 9: closed (must be paid)
+    PaymentStatus.paid, // 10: closed (must be paid)
+    PaymentStatus.paid, // 11: closed (must be paid)
+    PaymentStatus.paid, // 12: closed (must be paid)
+    PaymentStatus.paid, // 13: closed (must be paid)
+    PaymentStatus.paid, // 14: closed (must be paid)
+    PaymentStatus.unpaid, // 15: cancelled (must be unpaid)
+    PaymentStatus.unpaid, // 16: cancelled (must be unpaid)
+    PaymentStatus.unpaid, // 17: cancelled (must be unpaid)
+    PaymentStatus.unpaid, // 18: open
+    PaymentStatus.unpaid, // 19: open
+    PaymentStatus.paid, // 20: closed (must be paid)
+    PaymentStatus.paid, // 21: closed (must be paid)
+    PaymentStatus.unpaid, // 22: open
+    PaymentStatus.unpaid, // 23: open
+    PaymentStatus.unpaid, // 24: open
   ]
 
   const appraisalTypes = [
@@ -516,21 +832,116 @@ async function main() {
 
   const orders = []
 
+  // Fee structure for more realistic variation
+  // baseFee: typically 200-900, with a few outliers
+  const baseFees = [
+    450, 375, 525, 600, 325, 750, 425, 550, 800, 650, 350, 475, 700, 400, 575,
+    150, 900, 625, 1200, 500, 825, 675, 450, 1000, 550,
+  ]
+
+  // techFee: typically under 100, some missing, one outlier
+  const techFees = [
+    45,
+    60,
+    undefined,
+    75,
+    50,
+    85,
+    40,
+    65,
+    90,
+    55,
+    70,
+    undefined,
+    80,
+    150,
+    50,
+    60,
+    75,
+    45,
+    undefined,
+    85,
+    65,
+    55,
+    70,
+    60,
+    80,
+  ]
+
+  // questionnaireFee: when present, typically under 100
+  const questionnaireFees = [50, 75]
+
+  // Only orders 3 and 17 have questionnaires (8% of orders)
+  const questionnaireOrders = [3, 17]
+
+  // Client-specific order number formats and counters
+  // Each client has their own numbering system
+  const clientOrderCounters = new Map<number, number>()
+  const generateClientOrderNum = (
+    clientIndex: number,
+    orderDate: Date,
+  ): string | undefined => {
+    // Initialize counter for this client
+    const count = (clientOrderCounters.get(clientIndex) || 0) + 1
+    clientOrderCounters.set(clientIndex, count)
+
+    const year = orderDate.getFullYear()
+    const month = String(orderDate.getMonth() + 1).padStart(2, '0')
+
+    // Different clients use different order number formats
+    switch (clientIndex) {
+      case 0: // First National Bank
+        return `FNB-${year}-${String(1200 + count * 5).padStart(4, '0')}`
+      case 1: // Metro Mortgage Company
+        return `MMC${year}${month}${String(count).padStart(3, '0')}`
+      case 2: // Coastal Lending Group
+        return `CL-${String(5000 + count * 10).padStart(5, '0')}`
+      case 3: // Summit Financial Services
+        return `SFS-APR-${String(count).padStart(4, '0')}`
+      case 4: // Capital Credit Union
+        return undefined // This client doesn't provide order numbers
+      case 5: // Pacific Home Loans
+        return `PHL${year.toString().slice(-2)}${month}-${String(count).padStart(2, '0')}`
+      case 6: // Heritage Bank & Trust
+        return `HB${String(10000 + count * 25).padStart(5, '0')}`
+      case 7: // Apex Lending Solutions
+        return undefined // This client doesn't provide order numbers
+      case 8: // Riverside Community Bank
+        return `RCB-${year}-${String.fromCharCode(65 + count - 1)}${String(100 + count).padStart(3, '0')}`
+      case 9: // Empire Realty Group
+        return `ERG-COM-${String(count).padStart(3, '0')}`
+      case 10: // Sunshine Mortgage Corp
+        return `SM${String(8000 + count * 15).padStart(4, '0')}`
+      case 11: // Midwest Federal Savings
+        return `MW-${year}${month}-${String(count).padStart(4, '0')}`
+      case 12: // United Home Funding
+        return `UHF${String(count * 100).padStart(4, '0')}`
+      case 13: // Premier Mortgage Services
+        return undefined // This client doesn't provide order numbers
+      case 14: // Gateway Financial Group
+        return `GFG-${String(2000 + count * 7).padStart(4, '0')}-${year.toString().slice(-2)}`
+      default:
+        return `ORD-${String(1000 + count)}`
+    }
+  }
+
   for (let i = 0; i < 25; i++) {
     const [daysAgo, inspDays, appraiserIdx, h, m] = orderSchedule[i]!
     const orderDate = addDays(today, -daysAgo)
     const inspectionDate = withTime(addDays(orderDate, inspDays), h, m)
     const dueDate = addDays(orderDate, 14 + (i % 7))
+    const hasQuestionnaire = questionnaireOrders.includes(i)
+    const clientIndex = i % clients.length
 
     const order = await prisma.order.create({
       data: {
         organizationId: organization.id,
-        clientId: clients[i % clients.length].id,
-        borrowerId: i % 2 === 0 ? borrowers[i % borrowers.length].id : null,
+        clientId: clients[clientIndex].id,
+        borrowerId: i % 3 === 0 ? borrowers[i % borrowers.length].id : null,
         propertyId: properties[i].id,
         appraiserId: appraisers[appraiserIdx]!.id,
         fileNumber: `APR-2026-${String(i + 1).padStart(3, '0')}`,
-        clientOrderNum: `ORD-${String(1000 + i)}`,
+        clientOrderNum: generateClientOrderNum(clientIndex, orderDate),
         orderDate,
         inspectionDate:
           orderStatuses[i] !== OrderStatus.cancelled ? inspectionDate : null,
@@ -538,11 +949,13 @@ async function main() {
         appraisalType: appraisalTypes[i % appraisalTypes.length],
         orderStatus: orderStatuses[i],
         paymentStatus: paymentStatuses[i],
-        baseFee: 40000 + (i % 10) * 2500,
-        techFee: 5000 + (i % 3) * 500,
-        questionnaireFee: i % 4 === 0 ? 5000 : null,
-        questionnaire: i % 4 === 0,
-        contract: true,
+        baseFee: baseFees[i],
+        techFee: techFees[i],
+        questionnaireFee: hasQuestionnaire
+          ? questionnaireFees[questionnaireOrders.indexOf(i)]
+          : undefined,
+        questionnaire: hasQuestionnaire,
+        contract: i % 9 !== 0,
         sent: i % 3 !== 0,
         createdBy: user1.id,
         updatedBy: user1.id,
@@ -555,6 +968,17 @@ async function main() {
 
   // Create some payments for the orders
   let paymentCount = 0
+  const paymentDescriptions = [
+    'Wire transfer received',
+    'Check payment',
+    'ACH payment processed',
+    'Credit card payment',
+    'Full payment received',
+    undefined,
+    'Deposit received',
+    'Partial payment',
+  ]
+
   for (let i = 0; i < orders.length; i++) {
     const order = orders[i]
     if (
@@ -563,22 +987,27 @@ async function main() {
     ) {
       const paymentAmount =
         paymentStatuses[i] === PaymentStatus.paid
-          ? (order.baseFee || 0) + (order.techFee || 0)
-          : Math.floor(((order.baseFee || 0) + (order.techFee || 0)) * 0.5)
+          ? (order.baseFee || 0) +
+            (order.techFee || 0) +
+            (order.questionnaireFee || 0)
+          : Math.floor(
+              ((order.baseFee || 0) +
+                (order.techFee || 0) +
+                (order.questionnaireFee || 0)) *
+                (0.4 + (i % 3) * 0.1),
+            )
 
       await prisma.payment.create({
         data: {
           orderId: order.id,
           amount: paymentAmount,
-          paymentDate: addDays(order.orderDate!, 2 + (i % 5)),
+          paymentDate:
+            i % 8 === 0 ? undefined : addDays(order.orderDate!, 2 + (i % 5)),
           paymentType:
             paymentStatuses[i] === PaymentStatus.paid
               ? PaymentType.full
               : PaymentType.partial,
-          description:
-            paymentStatuses[i] === PaymentStatus.paid
-              ? 'Full payment received'
-              : 'Partial payment - deposit',
+          description: paymentDescriptions[i % paymentDescriptions.length],
           createdBy: user1.id,
           updatedBy: user1.id,
         },

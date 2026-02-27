@@ -41,6 +41,7 @@ const OrdersTable: FC<OrdersTableProps> = ({ data }) => {
         width: 125,
         minWidth: 125,
       },
+
       {
         field: 'orderDate',
         headerName: 'Received',
@@ -67,6 +68,15 @@ const OrdersTable: FC<OrdersTableProps> = ({ data }) => {
       // { field: 'property.state', headerName: 'State' },
       // { field: 'property.zip', headerName: 'ZIP' },
       {
+        field: 'client',
+        headerName: 'Client',
+        valueFormatter: ({ data }) => data?.client?.name || '',
+      },
+      {
+        field: 'clientOrderNum',
+        headerName: 'Client Ref No.',
+      },
+      {
         field: 'appraiser.user.firstName',
         headerName: 'Appraiser',
         valueFormatter: ({ data }) =>
@@ -85,6 +95,7 @@ const OrdersTable: FC<OrdersTableProps> = ({ data }) => {
         headerName: 'Payment',
         valueFormatter: ({ value }) => PAYMENT_STATUS_LABEL?.[value],
         cellRenderer: PaymentStatusCell,
+        width: 125,
       },
     ]
   }, [])
