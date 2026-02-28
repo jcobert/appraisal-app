@@ -44,8 +44,13 @@ const ClientsTable: FC<ClientsTableProps> = ({ data }) => {
         width: 250,
       },
       {
-        field: 'poc',
+        field: 'pocFirstName',
         headerName: 'Point of Contact',
+        valueGetter: ({ data }) => {
+          const firstName = data?.pocFirstName || ''
+          const lastName = data?.pocLastName || ''
+          return [firstName, lastName].filter(Boolean).join(' ') || null
+        },
         width: 180,
       },
       {

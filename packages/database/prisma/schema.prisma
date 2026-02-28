@@ -134,26 +134,29 @@ model OrgInvitation {
 }
 
 model Client {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String?
-  updatedBy String?
-  name      String?
-  phone     String?
-  email     String?
-  street    String?
-  street2   String?
-  city      String?
-  state     String?
-  zip       String?
-  website   String?
-  logo      String?
-  poc       String? // point of contact
-  note      String?
-  favorite  Boolean? @default(false)
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  name         String?
+  phone        String?
+  email        String?
+  street       String?
+  street2      String?
+  city         String?
+  state        String?
+  zip          String?
+  website      String?
+  logo         String?
+  pocFirstName String? // point of contact
+  pocLastName  String?
+  pocPhone     String?
+  pocEmail     String?
+  note         String?
+  favorite     Boolean? @default(false)
   // Relations
-  Order     Order[]
+  Order        Order[]
 }
 
 model Borrower {
@@ -202,7 +205,7 @@ model Order {
   fileNumber       String?
   clientOrderNum   String?
   orderDate        DateTime?      @db.Date
-  inspectionDate   DateTime?                 // full timestamp — stored as wall-clock UTC
+  inspectionDate   DateTime? // full timestamp — stored as wall-clock UTC
   dueDate          DateTime?      @db.Date
   orderStatus      OrderStatus?   @default(open)
   appraisalType    AppraisalType?
@@ -234,7 +237,7 @@ model Payment {
   createdBy   String?
   updatedBy   String?
   amount      Int
-  paymentDate DateTime?      @db.Date
+  paymentDate DateTime?    @db.Date
   paymentType PaymentType?
   description String?
   // Relations

@@ -42,7 +42,10 @@ const defaultFormValues = {
   zip: '',
   website: '',
   logo: null,
-  poc: '',
+  pocFirstName: '',
+  pocLastName: '',
+  pocEmail: '',
+  pocPhone: '',
   note: '',
   favorite: null,
 } satisfies ClientFormData
@@ -261,18 +264,57 @@ const ClientForm: FC<Props> = ({ organizationId, clientId, client }) => {
         <Separator />
 
         <FormSection title='Point of Contact'>
-          <Controller
-            control={control}
-            name='poc'
-            render={({ field, fieldState: { error } }) => (
-              <TextInput
-                {...field}
-                id={field.name}
-                label='Point of Contact'
-                error={error?.message}
-              />
-            )}
-          />
+          <fieldset className='grid md:grid-cols-2 gap-6'>
+            <Controller
+              control={control}
+              name='pocFirstName'
+              render={({ field, fieldState: { error } }) => (
+                <TextInput
+                  {...field}
+                  id={field.name}
+                  label='First Name'
+                  error={error?.message}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name='pocLastName'
+              render={({ field, fieldState: { error } }) => (
+                <TextInput
+                  {...field}
+                  id={field.name}
+                  label='Last Name'
+                  error={error?.message}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name='pocEmail'
+              render={({ field, fieldState: { error } }) => (
+                <TextInput
+                  {...field}
+                  id={field.name}
+                  label='Email'
+                  type='email'
+                  error={error?.message}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name='pocPhone'
+              render={({ field, fieldState: { error } }) => (
+                <TextInput
+                  {...field}
+                  id={field.name}
+                  label='Phone'
+                  error={error?.message}
+                />
+              )}
+            />
+          </fieldset>
         </FormSection>
 
         <Separator />
