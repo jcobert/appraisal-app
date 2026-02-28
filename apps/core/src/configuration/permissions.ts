@@ -15,7 +15,11 @@ export type PermissionAction =
   | 'orders:create'
   | 'orders:edit'
   | 'orders:delete'
+  | 'clients:create'
   | 'orders:view'
+  | 'clients:edit'
+  | 'clients:delete'
+  | 'clients:view'
 
 /**
  * Permission requirement that can specify role-based access OR ownership requirements.
@@ -51,4 +55,8 @@ export const APP_PERMISSIONS: Record<PermissionAction, PermissionRequirement> =
     'orders:edit': { roles: ['admin', 'manager', 'appraiser'] },
     'orders:delete': { roles: ['admin', 'manager'] },
     'orders:view': { roles: ['admin', 'manager', 'appraiser'] },
+    'clients:create': { roles: ['admin', 'manager'] },
+    'clients:edit': { roles: ['admin', 'manager'] },
+    'clients:delete': { roles: ['admin', 'manager'] },
+    'clients:view': { roles: ['admin', 'manager', 'appraiser'] },
   }

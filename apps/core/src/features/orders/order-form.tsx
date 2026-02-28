@@ -8,6 +8,7 @@ import { Controller, SubmitHandler } from 'react-hook-form'
 import { Button, Separator } from '@repo/ui'
 import {
   US_STATES,
+  cn,
   formatZipCode,
   fullName,
   objectEntries,
@@ -22,6 +23,7 @@ import { formDefaults } from '@/utils/form'
 
 import Form from '@/components/form/form'
 import FormHeader from '@/components/form/form-header'
+import FormSection from '@/components/form/form-section'
 import CurrencyInput from '@/components/form/inputs/currency-input'
 import DateInput from '@/components/form/inputs/date-input'
 import SelectInput, {
@@ -32,7 +34,6 @@ import Heading from '@/components/layout/heading'
 
 import useZodForm from '@/hooks/use-zod-form'
 
-import FormSection from '@/features/orders/form/order-form-section'
 import {
   UseOrderMutationsProps,
   useOrderMutations,
@@ -292,83 +293,92 @@ const OrderForm: FC<Props> = ({ organizationId, orderId, order }) => {
               />
             )}
           />
-          <div className='flex flex-col gap-4'>
-            <Controller
-              control={control}
-              name='street'
-              render={({ field, fieldState: { error } }) => (
-                <TextInput
-                  {...field}
-                  id={field.name}
-                  label='Address 1'
-                  error={error?.message}
-                  required
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name='street2'
-              render={({ field, fieldState: { error } }) => (
-                <TextInput
-                  {...field}
-                  id={field.name}
-                  label='Address 2'
-                  error={error?.message}
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name='city'
-              render={({ field, fieldState: { error } }) => (
-                <TextInput
-                  {...field}
-                  id={field.name}
-                  label='City'
-                  error={error?.message}
-                  required
-                />
-              )}
-            />
-            <div className='flex gap-4 w-full'>
+          <fieldset
+            className={cn(
+              'grid grid-cols-1 gap-8 md:grid-cols-2 md:col-span-2',
+              'md:border md:p-3 md:rounded-md',
+            )}
+          >
+            <div className='flex flex-col gap-8 md:gap-4'>
               <Controller
                 control={control}
-                name='state'
-                render={({ field, fieldState: { error } }) => (
-                  <SelectInput
-                    {...field}
-                    id={field.name}
-                    label='State'
-                    error={error?.message}
-                    options={stateOptions}
-                    value={field.value ?? undefined}
-                    required
-                    displayValue
-                  />
-                )}
-              />
-              <Controller
-                control={control}
-                name='zip'
+                name='street'
                 render={({ field, fieldState: { error } }) => (
                   <TextInput
                     {...field}
                     id={field.name}
-                    label='ZIP'
+                    label='Address 1'
                     error={error?.message}
                     required
-                    className='flex-auto'
-                    maxLength={10}
-                    onChange={(e) => {
-                      const value = formatZipCode(e.target.value)
-                      field.onChange(value)
-                    }}
+                  />
+                )}
+              />
+              <Controller
+                control={control}
+                name='street2'
+                render={({ field, fieldState: { error } }) => (
+                  <TextInput
+                    {...field}
+                    id={field.name}
+                    label='Address 2'
+                    error={error?.message}
                   />
                 )}
               />
             </div>
-          </div>
+            <div className='flex flex-col gap-8 md:gap-4'>
+              <Controller
+                control={control}
+                name='city'
+                render={({ field, fieldState: { error } }) => (
+                  <TextInput
+                    {...field}
+                    id={field.name}
+                    label='City'
+                    error={error?.message}
+                    required
+                  />
+                )}
+              />
+              <div className='flex gap-8 md:gap-4 w-full'>
+                <Controller
+                  control={control}
+                  name='state'
+                  render={({ field, fieldState: { error } }) => (
+                    <SelectInput
+                      {...field}
+                      id={field.name}
+                      label='State'
+                      error={error?.message}
+                      options={stateOptions}
+                      value={field.value ?? undefined}
+                      displayValue
+                      required
+                    />
+                  )}
+                />
+                <Controller
+                  control={control}
+                  name='zip'
+                  render={({ field, fieldState: { error } }) => (
+                    <TextInput
+                      {...field}
+                      id={field.name}
+                      label='ZIP'
+                      error={error?.message}
+                      className='flex-auto'
+                      maxLength={10}
+                      onChange={(e) => {
+                        const value = formatZipCode(e.target.value)
+                        field.onChange(value)
+                      }}
+                      required
+                    />
+                  )}
+                />
+              </div>
+            </div>
+          </fieldset>
         </FormSection>
 
         <Separator />

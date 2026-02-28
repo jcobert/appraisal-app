@@ -21,6 +21,12 @@ export const ordersQueryKey = {
   ) => filteredQueryKey(params, ordersQueryKey.all),
 } as const
 
+export const clientsQueryKey = {
+  all: ['clients'],
+  filtered: (params: { organizationId: string; clientId?: string }) =>
+    filteredQueryKey(params, clientsQueryKey.all),
+} as const
+
 export const usersQueryKey = {
   all: ['users'],
   active: ['users', 'active'],

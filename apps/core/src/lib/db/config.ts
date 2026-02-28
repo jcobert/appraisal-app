@@ -12,6 +12,17 @@ export const CORE_API_ENDPOINTS = {
     const base = `/api/core/organization/${organizationId}/orders`
     return orderId ? `${base}/${orderId}` : base
   },
+  client: ({
+    organizationId,
+    clientId,
+  }: {
+    organizationId: string
+    clientId?: string
+  }) => {
+    if (!organizationId) return ''
+    const base = `/api/core/organization/${organizationId}/clients`
+    return clientId ? `${base}/${clientId}` : base
+  },
 } as const
 
 /** Number of days an org member invite is valid. */

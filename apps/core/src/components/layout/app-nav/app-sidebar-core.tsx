@@ -1,6 +1,11 @@
 'use client'
 
-import { ClipboardList, LayoutDashboard, Settings } from 'lucide-react'
+import {
+  BookUser,
+  ClipboardList,
+  LayoutDashboard,
+  Settings,
+} from 'lucide-react'
 import { FC, useMemo } from 'react'
 
 import {
@@ -57,12 +62,12 @@ const AppSidebarCore: FC<Props> = ({ sessionData }) => {
         url: `/organizations/${activeOrgId}/orders`,
         icon: ClipboardList,
       },
-      // {
-      //   id: 'clients',
-      //   name: 'Clients',
-      //   url: `/organizations/${activeOrgId}/clients`,
-      //   icon: BookUser,
-      // },
+      {
+        id: 'clients',
+        name: 'Clients',
+        url: `/organizations/${activeOrgId}/clients`,
+        icon: BookUser,
+      },
       {
         id: 'orgSettings',
         name: 'Settings',
