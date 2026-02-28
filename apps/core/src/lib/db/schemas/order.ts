@@ -30,10 +30,10 @@ type FormSchemaBase = NullableZodObjectShape<OrderFields & PropertyFields>
 const apiSchema = z.object(
   {
     // organizationId: sanitizedField.text({ type: 'uuid' }),
-    clientId: sanitizedField.text({ type: 'uuid' }).nullable(),
-    appraiserId: sanitizedField.text({ type: 'uuid' }).nullable(),
-    borrowerId: sanitizedField.text({ type: 'uuid' }).nullable(),
-    propertyId: sanitizedField.text({ type: 'uuid' }).nullable(),
+    clientId: sanitizedField.text({ type: 'uuid', nullable: true }),
+    appraiserId: sanitizedField.text({ type: 'uuid', nullable: true }),
+    borrowerId: sanitizedField.text({ type: 'uuid', nullable: true }),
+    propertyId: sanitizedField.text({ type: 'uuid', nullable: true }),
 
     dueDate: z.coerce.date().nullable(),
     orderDate: z.coerce.date().nullable(),
@@ -54,7 +54,7 @@ const apiSchema = z.object(
 
     propertyType: z.nativeEnum(PropertyType),
     street: sanitizedField.text({ type: 'general' }),
-    street2: sanitizedField.text({ type: 'general' }).nullable(),
+    street2: sanitizedField.text({ type: 'general', nullable: true }),
     city: sanitizedField.text({ type: 'general' }),
     state: sanitizedField.text({ type: 'general' }),
     zip: sanitizedField.text({ type: 'general' }),

@@ -20,7 +20,7 @@ import { formDefaults } from '@/utils/form'
 
 import Form from '@/components/form/form'
 import FormActionBar from '@/components/form/form-action-bar'
-import PatternInput from '@/components/form/inputs/pattern-input'
+import PhoneInput from '@/components/form/inputs/phone-input'
 import TextInput from '@/components/form/inputs/text-input'
 import Banner from '@/components/general/banner'
 import Confirmation from '@/components/layout/confirmation'
@@ -164,16 +164,12 @@ const UserProfileForm: FC<Props> = ({
                   control={control}
                   name='phone'
                   render={({ field, fieldState: { error } }) => (
-                    <PatternInput
+                    <PhoneInput
                       {...field}
                       id={field.name}
                       label='Phone'
                       error={error?.message}
                       className='flex-1 sm:w-[calc(50%-0.75rem)]'
-                      icon='phone'
-                      placeholder='(123) 456-7890'
-                      format='(###) ###-####'
-                      mask='_'
                       disabled={readOnly}
                     />
                   )}

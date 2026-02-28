@@ -15,6 +15,7 @@ import { formDefaults } from '@/utils/form'
 import Form from '@/components/form/form'
 import FormHeader from '@/components/form/form-header'
 import FormSection from '@/components/form/form-section'
+import PhoneInput from '@/components/form/inputs/phone-input'
 import SelectInput, {
   SelectOption,
 } from '@/components/form/inputs/select-input'
@@ -144,7 +145,7 @@ const ClientForm: FC<Props> = ({ organizationId, clientId, client }) => {
             control={control}
             name='phone'
             render={({ field, fieldState: { error } }) => (
-              <TextInput
+              <PhoneInput
                 {...field}
                 id={field.name}
                 label='Phone'
@@ -264,57 +265,55 @@ const ClientForm: FC<Props> = ({ organizationId, clientId, client }) => {
         <Separator />
 
         <FormSection title='Point of Contact'>
-          <fieldset className='grid md:grid-cols-2 gap-6'>
-            <Controller
-              control={control}
-              name='pocFirstName'
-              render={({ field, fieldState: { error } }) => (
-                <TextInput
-                  {...field}
-                  id={field.name}
-                  label='First Name'
-                  error={error?.message}
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name='pocLastName'
-              render={({ field, fieldState: { error } }) => (
-                <TextInput
-                  {...field}
-                  id={field.name}
-                  label='Last Name'
-                  error={error?.message}
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name='pocEmail'
-              render={({ field, fieldState: { error } }) => (
-                <TextInput
-                  {...field}
-                  id={field.name}
-                  label='Email'
-                  type='email'
-                  error={error?.message}
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name='pocPhone'
-              render={({ field, fieldState: { error } }) => (
-                <TextInput
-                  {...field}
-                  id={field.name}
-                  label='Phone'
-                  error={error?.message}
-                />
-              )}
-            />
-          </fieldset>
+          <Controller
+            control={control}
+            name='pocFirstName'
+            render={({ field, fieldState: { error } }) => (
+              <TextInput
+                {...field}
+                id={field.name}
+                label='First Name'
+                error={error?.message}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name='pocLastName'
+            render={({ field, fieldState: { error } }) => (
+              <TextInput
+                {...field}
+                id={field.name}
+                label='Last Name'
+                error={error?.message}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name='pocEmail'
+            render={({ field, fieldState: { error } }) => (
+              <TextInput
+                {...field}
+                id={field.name}
+                label='Email'
+                type='email'
+                error={error?.message}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name='pocPhone'
+            render={({ field, fieldState: { error } }) => (
+              <PhoneInput
+                {...field}
+                id={field.name}
+                label='Phone'
+                error={error?.message}
+              />
+            )}
+          />
         </FormSection>
 
         <Separator />

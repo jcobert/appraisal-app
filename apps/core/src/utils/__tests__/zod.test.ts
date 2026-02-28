@@ -341,6 +341,69 @@ describe('zod utilities', () => {
         expect(result.token).toBe(hexToken)
       })
     })
+
+    describe('text() with nullable option', () => {
+      it('should transform empty strings to null for nullable fields', () => {
+        const schema = sanitizedField.text({ type: 'email', nullable: true })
+
+        expect(schema.parse('')).toBeNull()
+        expect(schema.parse('   ')).toBeNull()
+        expect(schema.parse(null)).toBeNull()
+      })
+
+      it('should accept valid values for nullable fields', () => {
+        const schema = sanitizedField.text({ type: 'email', nullable: true })
+
+        const result = schema.parse('test@example.com')
+        expect(result).toBe('test@example.com')
+      })
+
+      it('should validate before transforming to null', () => {
+        const schema = sanitizedField.text({ type: 'email', nullable: true })
+
+        // Invalid email (not empty) should still fail validation
+        expect(() => schema.parse('invalid-email')).toThrow()
+      })
+
+      it('should work with uuid type and nullable', () => {
+        const schema = sanitizedField.text({ type: 'uuid', nullable: true })
+
+        expect(schema.parse('')).toBeNull()
+        expect(schema.parse('abc-123-def')).toBe('abc-123-def')
+      })
+
+      it('should work with name type and nullable', () => {
+        const schema = sanitizedField.text({ type: 'name', nullable: true })
+
+        expect(schema.parse('')).toBeNull()
+        expect(schema.parse('John Doe')).toBe('John Doe')
+      })
+
+      it('should work with general type and nullable', () => {
+        const schema = sanitizedField.text({ nullable: true })
+
+        expect(schema.parse('')).toBeNull()
+        expect(schema.parse('Some text')).toBe('Some text')
+      })
+
+      it('should work in API schema pattern', () => {
+        const apiSchema = z.object({
+          name: sanitizedField.text({ type: 'general' }),
+          email: sanitizedField.text({ type: 'email', nullable: true }),
+          phone: sanitizedField.text({ type: 'phone', nullable: true }),
+        })
+
+        const result = apiSchema.parse({
+          name: 'John Doe',
+          email: '',
+          phone: '',
+        })
+
+        expect(result.name).toBe('John Doe')
+        expect(result.email).toBeNull()
+        expect(result.phone).toBeNull()
+      })
+    })
   })
 
   describe('getFieldErrors', () => {
@@ -524,7 +587,7 @@ describe('zod utilities', () => {
         firstName: sanitizedField.text({ type: 'name' }),
         lastName: sanitizedField.text({ type: 'name' }),
         email: sanitizedField.text({ type: 'email' }),
-        phone: sanitizedField.text({ type: 'phone' }).optional(),
+        phone: sanitizedField.text({ type: 'phone', nullable: true }),
       })
 
       const formData = {

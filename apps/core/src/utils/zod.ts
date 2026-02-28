@@ -83,30 +83,46 @@ export const sanitizedField = {
    * Sanitized text field with optional type specification.
    * @param options.type - Field type: 'name', 'email', 'phone', 'uuid', or 'general' (default)
    * @param options.context - Sanitization context: 'server' or 'client'
+   * @param options.nullable - If true, allows empty strings, marks as nullable, and transforms empty strings to null
    */
   text: (
     options: {
       type?: StringFieldType
       context?: 'server' | 'client'
+      nullable?: boolean
     } = {},
   ) => {
-    const { type, context } = options
+    const { type, context, nullable = false } = options
     const fieldType = type || 'general'
 
     const baseSchema = sanitizedString({ fieldType, context })
 
     // Add type-specific validation
+    let schema: z.ZodType<string>
     switch (type) {
       case 'name':
-        return baseSchema.pipe(z.string().nonempty())
+        schema = nullable ? baseSchema : baseSchema.pipe(z.string().nonempty())
+        break
       case 'email':
-        return baseSchema.pipe(z.string().email())
+        schema = nullable
+          ? baseSchema.pipe(z.union([z.string().email(), z.literal('')]))
+          : baseSchema.pipe(z.string().email())
+        break
       case 'uuid':
-        return baseSchema.pipe(z.string().nonempty())
+        schema = nullable ? baseSchema : baseSchema.pipe(z.string().nonempty())
+        break
       case 'phone':
       default:
-        return baseSchema
+        schema = baseSchema
+        break
     }
+
+    // For nullable fields: mark nullable and transform empty strings to null
+    if (nullable) {
+      return schema.nullable().transform((val) => val || null)
+    }
+
+    return schema
   },
 }
 

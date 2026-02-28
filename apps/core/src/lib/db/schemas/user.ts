@@ -21,7 +21,7 @@ const baseSchema = z.object(
     firstName: sanitizedField.text({ type: 'name' }),
     lastName: sanitizedField.text({ type: 'name' }),
     email: sanitizedField.text({ type: 'email' }),
-    phone: sanitizedField.text({ type: 'phone' }).optional(),
+    phone: sanitizedField.text({ type: 'phone', nullable: true }),
   } satisfies SchemaBase,
   { errorMap: formErrorMap },
 )
