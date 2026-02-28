@@ -167,6 +167,7 @@ async function main() {
   // Create Clients
   const client1 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'First National Bank',
       email: 'orders@firstnationalbank.com',
       phone: '(212) 789-4500',
@@ -189,6 +190,7 @@ async function main() {
 
   const client2 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Metro Mortgage Company',
       email: 'appraisals@metromorgage.com',
       phone: '(312) 661-8200',
@@ -203,6 +205,7 @@ async function main() {
 
   const client3 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Coastal Lending Group',
       email: 'orders@coastallending.com',
       phone: '(305) 892-3344',
@@ -222,6 +225,7 @@ async function main() {
 
   const client4 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Summit Financial Services',
       email: 'appraisals@summitfs.com',
       phone: '(720) 445-5512',
@@ -239,6 +243,7 @@ async function main() {
 
   const client5 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Capital Credit Union',
       email: 'lending@capitalcu.org',
       phone: '(206) 447-9811',
@@ -253,6 +258,7 @@ async function main() {
 
   const client6 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Pacific Home Loans',
       email: 'orders@pacifichomeloans.com',
       phone: '(619) 221-7630',
@@ -273,6 +279,7 @@ async function main() {
 
   const client7 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Heritage Bank & Trust',
       email: 'realestate@heritagebank.com',
       city: 'Boston',
@@ -285,6 +292,7 @@ async function main() {
 
   const client8 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Apex Lending Solutions',
       email: 'appraisals@apexlending.com',
       phone: '(512) 445-8870',
@@ -302,6 +310,7 @@ async function main() {
 
   const client9 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Riverside Community Bank',
       email: 'mortgages@riversidecb.com',
       phone: '(971) 228-3345',
@@ -315,6 +324,7 @@ async function main() {
 
   const client10 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Empire Realty Group',
       email: 'commercial@empirerealty.com',
       phone: '(917) 558-2290',
@@ -337,6 +347,7 @@ async function main() {
 
   const client11 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Sunshine Mortgage Corp',
       email: 'orders@sunshinemortgage.com',
       city: 'Tampa',
@@ -348,6 +359,7 @@ async function main() {
 
   const client12 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Midwest Federal Savings',
       email: 'appraisals@mwfederal.com',
       phone: '(612) 339-4521',
@@ -364,6 +376,7 @@ async function main() {
 
   const client13 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'United Home Funding',
       email: 'info@unitedhomefunding.com',
       phone: '(602) 254-7766',
@@ -376,6 +389,7 @@ async function main() {
 
   const client14 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Premier Mortgage Services',
       phone: '(404) 873-5692',
       city: 'Atlanta',
@@ -391,6 +405,7 @@ async function main() {
 
   const client15 = await prisma.client.create({
     data: {
+      organizationId: organization.id,
       name: 'Gateway Financial Group',
       email: 'appraisals@gatewayfinancial.com',
       phone: '(314) 567-8901',
@@ -428,6 +443,7 @@ async function main() {
   // Create Borrowers
   const borrower1 = await prisma.borrower.create({
     data: {
+      organizationId: organization.id,
       firstName: 'Alice',
       lastName: 'Thompson',
       email: 'alice.thompson@email.com',
@@ -444,6 +460,7 @@ async function main() {
 
   const borrower2 = await prisma.borrower.create({
     data: {
+      organizationId: organization.id,
       firstName: 'David',
       lastName: 'Martinez',
       email: 'david.martinez@email.com',
@@ -455,6 +472,7 @@ async function main() {
 
   const borrower3 = await prisma.borrower.create({
     data: {
+      organizationId: organization.id,
       firstName: 'Jennifer',
       lastName: 'Lee',
       phone: '555-5002',
@@ -470,6 +488,7 @@ async function main() {
 
   const borrower4 = await prisma.borrower.create({
     data: {
+      organizationId: organization.id,
       firstName: 'Robert',
       lastName: 'Anderson',
       email: 'robert.anderson@email.com',
@@ -484,6 +503,7 @@ async function main() {
 
   const borrower5 = await prisma.borrower.create({
     data: {
+      organizationId: organization.id,
       firstName: 'Lisa',
       lastName: 'Taylor',
       email: 'lisa.taylor@email.com',
@@ -499,6 +519,7 @@ async function main() {
 
   const borrower6 = await prisma.borrower.create({
     data: {
+      organizationId: organization.id,
       firstName: 'Michael',
       lastName: 'Chang',
       email: 'mchang@email.com',
@@ -514,6 +535,7 @@ async function main() {
 
   const borrower7 = await prisma.borrower.create({
     data: {
+      organizationId: organization.id,
       firstName: 'Emma',
       lastName: 'Wilson',
       phone: '555-5007',
@@ -524,6 +546,7 @@ async function main() {
 
   const borrower8 = await prisma.borrower.create({
     data: {
+      organizationId: organization.id,
       firstName: 'James',
       lastName: "O'Brien",
       email: 'james.obrien@email.com',
@@ -539,6 +562,7 @@ async function main() {
 
   const borrower9 = await prisma.borrower.create({
     data: {
+      organizationId: organization.id,
       firstName: 'Sophia',
       lastName: 'Patel',
       email: 'sophia.patel@email.com',
@@ -555,6 +579,7 @@ async function main() {
 
   const borrower10 = await prisma.borrower.create({
     data: {
+      organizationId: organization.id,
       firstName: 'Daniel',
       lastName: 'Rodriguez',
       phone: '555-5010',
@@ -642,6 +667,7 @@ async function main() {
   for (let i = 0; i < 25; i++) {
     const property = await prisma.property.create({
       data: {
+        organizationId: organization.id,
         propertyType: propertyTypes[i % propertyTypes.length],
         street: streets[i],
         street2:
@@ -989,6 +1015,7 @@ async function main() {
 
       await prisma.payment.create({
         data: {
+          organizationId: organization.id,
           orderId: order.id,
           amount: paymentAmount,
           paymentDate:

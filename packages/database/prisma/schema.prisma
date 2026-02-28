@@ -111,6 +111,10 @@ model Organization {
   members     OrgMember[]
   invitations OrgInvitation[]
   orders      Order[]
+  clients     Client[]
+  borrowers   Borrower[]
+  properties  Property[]
+  payments    Payment[]
 }
 
 model OrgInvitation {
@@ -134,66 +138,78 @@ model OrgInvitation {
 }
 
 model Client {
-  id           String   @id @default(uuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  createdBy    String?
-  updatedBy    String?
-  name         String?
-  phone        String?
-  email        String?
-  street       String?
-  street2      String?
-  city         String?
-  state        String?
-  zip          String?
-  website      String?
-  logo         String?
-  pocFirstName String? // point of contact
-  pocLastName  String?
-  pocPhone     String?
-  pocEmail     String?
-  note         String?
-  favorite     Boolean? @default(false)
+  id             String       @id @default(uuid())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  name           String?
+  phone          String?
+  email          String?
+  street         String?
+  street2        String?
+  city           String?
+  state          String?
+  zip            String?
+  website        String?
+  logo           String?
+  pocFirstName   String? // point of contact
+  pocLastName    String?
+  pocPhone       String?
+  pocEmail       String?
+  note           String?
+  favorite       Boolean?     @default(false)
   // Relations
-  Order        Order[]
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  Order          Order[]
+
+  @@index([organizationId])
 }
 
 model Borrower {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String?
-  updatedBy String?
-  firstName String?
-  lastName  String?
-  phone     String?
-  email     String?
-  street    String?
-  street2   String?
-  city      String?
-  state     String?
-  zip       String?
-  note      String?
+  id             String       @id @default(uuid())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  firstName      String?
+  lastName       String?
+  phone          String?
+  email          String?
+  street         String?
+  street2        String?
+  city           String?
+  state          String?
+  zip            String?
+  note           String?
   // Relations
-  Order     Order[]
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  Order          Order[]
+
+  @@index([organizationId])
 }
 
 model Property {
-  id           String       @id @default(uuid())
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  createdBy    String?
-  updatedBy    String?
-  propertyType PropertyType
-  street       String?
-  street2      String?
-  city         String?
-  state        String?
-  zip          String?
-  note         String?
+  id             String       @id @default(uuid())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  propertyType   PropertyType
+  street         String?
+  street2        String?
+  city           String?
+  state          String?
+  zip            String?
+  note           String?
   // Relations
-  Order        Order[]
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  Order          Order[]
+
+  @@index([organizationId])
 }
 
 model Order {
@@ -231,16 +247,20 @@ model Order {
 }
 
 model Payment {
-  id          String       @id @default(uuid())
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  amount      Int
-  paymentDate DateTime?    @db.Date
-  paymentType PaymentType?
-  description String?
+  id             String       @id @default(uuid())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  amount         Int
+  paymentDate    DateTime?    @db.Date
+  paymentType    PaymentType?
+  description    String?
   // Relations
-  orderId     String
-  order       Order        @relation(fields: [orderId], references: [id])
+  orderId        String
+  order          Order        @relation(fields: [orderId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
 }

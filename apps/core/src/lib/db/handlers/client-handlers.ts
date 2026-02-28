@@ -12,14 +12,10 @@ export const handleGetClients = async (organizationId: string) => {
       throw new ValidationError('Organization ID is required.', {})
     }
 
-    // Get all clients that belong to orders in this organization
+    // Get all clients that belong to this organization
     const result = await db.client.findMany({
       where: {
-        Order: {
-          some: {
-            organizationId,
-          },
-        },
+        organizationId,
       },
       include: {
         _count: {
@@ -48,11 +44,7 @@ export const handleGetClient = async (
     const result = await db.client.findFirst({
       where: {
         id: clientId,
-        Order: {
-          some: {
-            organizationId,
-          },
-        },
+        organizationId,
       },
       include: {
         _count: {
@@ -67,7 +59,10 @@ export const handleGetClient = async (
 
 export const handleCreateClient = async (
   organizationId: string,
-  payload: Parameters<typeof db.client.create>[0]['data'],
+  payload: Omit<
+    Parameters<typeof db.client.create>[0]['data'],
+    'organizationId' | 'organization'
+  >,
 ) => {
   return createApiHandler(
     async ({ userProfileId }) => {
@@ -92,6 +87,7 @@ export const handleCreateClient = async (
       const result = await db.client.create({
         data: {
           ...validation.data,
+          organizationId,
           createdBy: userProfileId,
           updatedBy: userProfileId,
         },
@@ -110,7 +106,12 @@ export const handleCreateClient = async (
 export const handleUpdateClient = async (
   organizationId: string,
   clientId: string,
-  payload: Partial<Parameters<typeof db.client.update>[0]['data']>,
+  payload: Partial<
+    Omit<
+      Parameters<typeof db.client.update>[0]['data'],
+      'organizationId' | 'organization'
+    >
+  >,
 ) => {
   return createApiHandler(
     async ({ userProfileId }) => {
@@ -135,15 +136,11 @@ export const handleUpdateClient = async (
         throw new ValidationError('No user profile found.', {})
       }
 
-      // Verify the client belongs to an order in this organization
+      // Verify the client belongs to this organization
       const existingClient = await db.client.findFirst({
         where: {
           id: clientId,
-          Order: {
-            some: {
-              organizationId,
-            },
-          },
+          organizationId,
         },
       })
 

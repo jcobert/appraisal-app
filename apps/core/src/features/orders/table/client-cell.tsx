@@ -7,8 +7,9 @@ import { OrdersTableData } from '@/features/orders/orders-table'
 const ClientCell = ({
   value,
 }: CustomCellRendererProps<OrdersTableData, OrdersTableData['client']>) => {
+  if (!value) return null
   return (
-    <div className='flex gap-2 items-center'>
+    <div className='flex gap-2 items-center h-full'>
       <Avatar
         aria-hidden
         image={value?.logo}

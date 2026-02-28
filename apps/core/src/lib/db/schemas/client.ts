@@ -12,7 +12,7 @@ import {
 
 import { TableMutable } from '@/types/db'
 
-type ClientFields = TableMutable<Client>
+type ClientFields = TableMutable<Omit<Client, 'organizationId'>>
 
 type ApiSchemaBase = ZodObjectShape<ClientFields>
 

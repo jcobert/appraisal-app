@@ -118,6 +118,7 @@ export const handleCreateOrder = async (
             city,
             state,
             zip,
+            organizationId,
             createdBy: userProfileId,
             updatedBy: userProfileId,
           },

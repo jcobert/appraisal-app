@@ -21,7 +21,7 @@ import { TableMutable } from '@/types/db'
 
 type OrderFields = TableMutable<Omit<Order, 'organizationId'>>
 
-type PropertyFields = TableMutable<Omit<Property, 'id'>>
+type PropertyFields = TableMutable<Omit<Property, 'id' | 'organizationId'>>
 
 type ApiSchemaBase = ZodObjectShape<OrderFields & PropertyFields>
 

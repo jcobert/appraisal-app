@@ -76,6 +76,25 @@ export const sanitizedString = (options: SanitizeTextInputOptions = {}) => {
 }
 
 /**
+ * Options for sanitized text field configuration.
+ */
+type SanitizedTextOptions = {
+  type?: StringFieldType
+  context?: 'server' | 'client'
+}
+
+/**
+ * Overloaded call signatures for sanitizedField.text() so TypeScript
+ * correctly narrows the return type based on the `nullable` option.
+ */
+type SanitizedTextField = {
+  /** Non-nullable (default): returns a schema that infers as `string`. */
+  (options?: SanitizedTextOptions & { nullable?: false }): z.ZodType<string>
+  /** Nullable: returns a schema that infers as `string | null`. */
+  (options: SanitizedTextOptions & { nullable: true }): z.ZodType<string | null>
+}
+
+/**
  * Pre-configured sanitized string schemas for common field types.
  */
 export const sanitizedField = {
@@ -85,13 +104,7 @@ export const sanitizedField = {
    * @param options.context - Sanitization context: 'server' or 'client'
    * @param options.nullable - If true, allows empty strings, marks as nullable, and transforms empty strings to null
    */
-  text: (
-    options: {
-      type?: StringFieldType
-      context?: 'server' | 'client'
-      nullable?: boolean
-    } = {},
-  ) => {
+  text: ((options: SanitizedTextOptions & { nullable?: boolean } = {}) => {
     const { type, context, nullable = false } = options
     const fieldType = type || 'general'
 
@@ -123,7 +136,7 @@ export const sanitizedField = {
     }
 
     return schema
-  },
+  }) as SanitizedTextField,
 }
 
 /**
