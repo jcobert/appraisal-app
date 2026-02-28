@@ -48,7 +48,7 @@ const defaultFormValues = {
   pocEmail: '',
   pocPhone: '',
   note: '',
-  favorite: null,
+  favorite: false,
 } satisfies ClientFormData
 
 const stateOptions: SelectOption[] = objectEntries(US_STATES)?.map(
